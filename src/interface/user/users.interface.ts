@@ -1,3 +1,12 @@
+export interface businessHour {
+    id: string,
+    day: string,
+    firstStartTime: string,
+    firstEndTime: string,
+    secondStartTime: string,
+    secondEndTime: string
+}
+
 export interface UsersInterface {
     _id: string;
     email: string;
@@ -11,11 +20,13 @@ export interface UsersInterface {
     streetAddress: string;
     zipCode: number;
     city: string;
+    vatNumber: number;
     province: string;
     website_socialAppLink: string;
     googleMapPin: string;
+    businessHours: businessHour[];
     aboutStore: string;
-    terms_agreements: string;
+    generalTermsAgreements: string;
     profilePicURL: string;
     profilePicBlurHash: string;
     deletedCheck: boolean;

@@ -1,4 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { businessHour } from "src/interface/user/users.interface";
 
 export class UsersDto {
     @ApiProperty()
@@ -38,6 +39,9 @@ export class UsersDto {
     city: string;
 
     @ApiProperty()
+    vatNumber: number;
+
+    @ApiProperty()
     province: string;
 
     @ApiProperty()
@@ -46,11 +50,24 @@ export class UsersDto {
     @ApiProperty()
     googleMapPin: string;
 
+    @ApiProperty({
+        example: [
+            {
+                day: 'string',
+                firstStartTime: 'string',
+                firstEndTime: 'string',
+                secondStartTime: 'string',
+                secondEndTime: 'string'
+            }
+        ]
+    })
+    businessHours: businessHour[];
+
     @ApiProperty()
     aboutStore: string;
 
     @ApiProperty()
-    terms_agreements: string;
+    generalTermsAgreements: string;
 
     @ApiProperty()
     profilePicURL: string;
