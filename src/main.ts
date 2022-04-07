@@ -15,10 +15,12 @@ async function bootstrap() {
   });
 
   const config = new DocumentBuilder()
+    .setBasePath('api/v1/en')
     .setTitle('DiviDeals')
     .setDescription('DiviDeals APIs')
     .setVersion('1.0')
-    .addTag('DiviDeals')
+    .addTag('DiviDeals APIs')
+    .addBearerAuth()
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
