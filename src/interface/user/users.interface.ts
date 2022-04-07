@@ -1,0 +1,32 @@
+export interface UsersInterface {
+    _id: string;
+    email: string;
+    password: string;
+    firstName: string;
+    lastName: string;
+    phoneNumber: string;
+    role: string;
+    businessType: string;
+    companyName: string;
+    streetAddress: string;
+    zipCode: number;
+    city: string;
+    province: string;
+    website_socialAppLink: string;
+    googleMapPin: string;
+    aboutStore: string;
+    terms_agreements: string;
+    profilePicURL: string;
+    deletedCheck: boolean;
+    status: string;
+    totalVoucherSales: number;
+    redeemedVouchers: number;
+    purchasedVouchers: number;
+    totalEarnings: number;
+    paidEarnings: number;
+    pendingEarnings: number;
+    totalDeals: number;
+    scheduledDeals: number;
+    pendingDeals: number;
+    soldDeals: number;
+}
