@@ -22,7 +22,6 @@ export class UsersController {
         return this._usersService.updateUser(usersDto)
      }
 
-      @UseGuards(JwtAdminAuthGuard)
      @Post('deleteUser/:id')
      deleteUser (@Param('id') id:string) {
         return this._usersService.deleteUser(id)

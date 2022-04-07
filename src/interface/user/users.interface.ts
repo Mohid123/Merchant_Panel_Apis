@@ -17,6 +17,7 @@ export interface UsersInterface {
     aboutStore: string;
     terms_agreements: string;
     profilePicURL: string;
+    profilePicBlurHash: string;
     deletedCheck: boolean;
     status: string;
     totalVoucherSales: number;

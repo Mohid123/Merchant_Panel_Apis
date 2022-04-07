@@ -9,18 +9,20 @@ export class UsersService {
     constructor(@InjectModel('User') private readonly _userModel: Model<UsersInterface>) {}
 
     async addUser (usersDto) {
-
-        if (usersDto.profilePicURL) {
-            usersDto['blurHash'] = await encodeImageToBlurhash(
-                usersDto.profilePicURL,
-            );
-          }
+        usersDto.profilePicBlurHash = await encodeImageToBlurhash(
+            usersDto.profilePicURL
+          );
 
         const user = new this._userModel(usersDto).save();
+
         return user;
     }
 
     async updateUser (usersDto) {
+        usersDto.profilePicBlurHash = await encodeImageToBlurhash(
+            usersDto.profilePicURL
+          );
+
         return this._userModel.updateOne(usersDto)
     }
 

@@ -56,6 +56,9 @@ export class UsersDto {
     profilePicURL: string;
 
     @ApiProperty()
+    profilePicBlurHash: string;
+
+    @ApiProperty()
     deletedCheck: boolean;
 
     @ApiProperty()

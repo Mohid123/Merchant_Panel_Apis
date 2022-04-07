@@ -24,6 +24,7 @@ export const UsersSchema = new mongoose.Schema(
       aboutStore: { type: String, default: '' },
       terms_agreements: { type: String, default: '' },
       profilePicURL: { type: String, default: '' },
+      profilePicBlurHash: { type: String, default: '' },
       deletedCheck: { type: Boolean, default: false },
       status: { type: String, default: '' },
       totalVoucherSales: { type: Number, default: 0 },
