@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { UsersInterface } from 'src/interface/user/users.interface';
+import { UsersInterface } from '../../interface/user/users.interface';
 import { encodeImageToBlurhash, generateStringId } from '../file-management/utils/utils';
 
 @Injectable()

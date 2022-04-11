@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { DEALSTATUS } from 'src/enum/deal/dealstatus.enum';
+import { DEALSTATUS } from '../../enum/deal/dealstatus.enum';
 import { CategoryInterface } from '../../interface/category/category.interface';
 import { DealInterface } from '../../interface/deal/deal.interface';
 import { generateStringId } from '../file-management/utils/utils';
