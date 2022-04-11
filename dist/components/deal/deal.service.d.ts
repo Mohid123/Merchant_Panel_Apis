@@ -8,13 +8,15 @@ export declare class DealService {
     createDeal(dealDto: any): Promise<DealInterface & {
         _id: any;
     }>;
-    getAllDeals(): Promise<(DealInterface & {
-        _id: any;
-    })[]>;
+    approveRejectDeal(dealID: any, dealStatusDto: any): Promise<import("mongodb").UpdateResult>;
+    getAllDeals(offset: any, limit: any): Promise<{
+        totalCount: number;
+        data: any[];
+    }>;
     getDeal(id: any): Promise<DealInterface & {
         _id: any;
     }>;
-    getDealByMerchant(id: any): Promise<(DealInterface & {
+    getDealByMerchant(id: any): Promise<DealInterface & {
         _id: any;
-    })[]>;
+    }>;
 }

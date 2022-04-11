@@ -17,6 +17,10 @@ const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const deal_service_1 = require("./deal.service");
 const deal_dto_1 = require("../../dto/deal/deal.dto");
+const jwt_auth_guard_1 = require("../auth/jwt-auth.guard");
+const jwt_admin_auth_guard_1 = require("../auth/jwt-admin-auth.guard");
+const jwt_merchant_auth_guard_1 = require("../auth/jwt-merchant-auth.guard");
+const updatedealstatus_dto_1 = require("../../dto/deal/updatedealstatus.dto");
 let DealController = class DealController {
     constructor(dealService) {
         this.dealService = dealService;
@@ -24,23 +28,36 @@ let DealController = class DealController {
     createDeal(dealDto) {
         return this.dealService.createDeal(dealDto);
     }
+    approveRejectDeal(dealID, dealStatusDto) {
+        return this.dealService.approveRejectDeal(dealID, dealStatusDto);
+    }
     getDeal(id) {
         return this.dealService.getDeal(id);
     }
     getDealByMerchant(merchantId) {
         return this.dealService.getDealByMerchant(merchantId);
     }
-    getAllDeals() {
-        return this.dealService.getAllDeals();
+    getAllDeals(offset = 0, limit = 10) {
+        return this.dealService.getAllDeals(offset, limit);
     }
 };
 __decorate([
+    (0, common_1.UseGuards)(jwt_merchant_auth_guard_1.JwtMerchantAuthGuard),
     (0, common_1.Post)('createDeal'),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [deal_dto_1.DealDto]),
     __metadata("design:returntype", void 0)
 ], DealController.prototype, "createDeal", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_admin_auth_guard_1.JwtAdminAuthGuard),
+    (0, common_1.Post)('approveRejectDeal/:dealID'),
+    __param(0, (0, common_1.Param)('dealID')),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, updatedealstatus_dto_1.DealStatusDto]),
+    __metadata("design:returntype", void 0)
+], DealController.prototype, "approveRejectDeal", null);
 __decorate([
     (0, common_1.Get)('getDeal/:id'),
     __param(0, (0, common_1.Param)('id')),
@@ -57,11 +74,15 @@ __decorate([
 ], DealController.prototype, "getDealByMerchant", null);
 __decorate([
     (0, common_1.Get)('getAllDeals'),
+    __param(0, (0, common_1.Query)("offset")),
+    __param(1, (0, common_1.Query)("limit")),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [Number, Number]),
     __metadata("design:returntype", void 0)
 ], DealController.prototype, "getAllDeals", null);
 DealController = __decorate([
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, swagger_1.ApiTags)('Deal'),
     (0, common_1.Controller)('deal'),
     __metadata("design:paramtypes", [deal_service_1.DealService])

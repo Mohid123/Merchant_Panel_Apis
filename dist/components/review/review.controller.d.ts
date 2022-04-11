@@ -7,8 +7,9 @@ export declare class ReviewController {
     createReview(revieDto: ReviewDto): Promise<import("../../interface/review/review.interface").ReviewInterface & {
         _id: any;
     }>;
-    getAll(): Promise<(import("../../interface/review/review.interface").ReviewInterface & {
-        _id: any;
-    })[]>;
-    updateReview(updateReviewDto: UpdateReviewDto, id: string): Promise<any>;
+    getAllReviews(offset?: number, limit?: number): Promise<{
+        totalCount: number;
+        data: any[];
+    }>;
+    updateReview(updateReviewDto: UpdateReviewDto): Promise<import("mongodb").UpdateResult>;
 }

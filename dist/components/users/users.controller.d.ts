@@ -10,5 +10,8 @@ export declare class UsersController {
     updateUser(usersDto: UsersDto): Promise<import("mongodb").UpdateResult>;
     deleteUser(id: string): Promise<import("mongodb").UpdateResult>;
     geUserById(id: string): Promise<any[]>;
-    getAllUsers(offset?: number, limit?: number): Promise<any[]>;
+    getAllUsers(offset?: number, limit?: number): Promise<{
+        totalCount: number;
+        data: any[];
+    }>;
 }

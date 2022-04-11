@@ -16,6 +16,7 @@ exports.DealService = void 0;
 const common_1 = require("@nestjs/common");
 const mongoose_1 = require("@nestjs/mongoose");
 const mongoose_2 = require("mongoose");
+const dealstatus_enum_1 = require("../../enum/deal/dealstatus.enum");
 const utils_1 = require("../file-management/utils/utils");
 let DealService = class DealService {
     constructor(dealModel, categorymodel) {
@@ -33,11 +34,12 @@ let DealService = class DealService {
             dealDto.endDate = stamp;
             dealDto.categoryName = dealDto.categoryType;
             dealDto.categoryType = category.id;
+            dealDto.dealStatus = dealstatus_enum_1.DEALSTATUS.inReview;
             dealDto.vouchers = dealDto.vouchers.map((el) => {
                 let startTime;
                 let endTime;
-                let discountPercentage = ((el.originalPrice - el.dealPrice) / el.originalPrice) * 100;
-                el.discountPercentage = discountPercentage;
+                let calculateDiscountPercentage = ((el.originalPrice - el.dealPrice) / el.originalPrice) * 100;
+                el.discountPercentage = calculateDiscountPercentage;
                 if (el.voucherValidity > 0) {
                     startTime = new Date(new Date()).getTime();
                     endTime = startTime + el.voucherValidity * 24 * 60 * 60 * 1000;
@@ -58,10 +60,48 @@ let DealService = class DealService {
             throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
         }
     }
-    async getAllDeals() {
+    async approveRejectDeal(dealID, dealStatusDto) {
+        let deal = await this.dealModel.findOne({ _id: dealID, deletedCheck: false, dealStatus: dealstatus_enum_1.DEALSTATUS.inReview });
+        if (dealStatusDto.dealStatus == dealstatus_enum_1.DEALSTATUS.scheduled) {
+            return await this.dealModel.updateOne({ _id: deal.id }, { dealStatus: dealstatus_enum_1.DEALSTATUS.scheduled });
+        }
+        else if (dealStatusDto.dealStatus == dealstatus_enum_1.DEALSTATUS.bounced) {
+            return await this.dealModel.updateOne({ _id: deal.id }, { dealStatus: dealstatus_enum_1.DEALSTATUS.bounced });
+        }
+    }
+    async getAllDeals(offset, limit) {
         try {
-            const deals = await this.dealModel.find();
-            return deals;
+            offset = parseInt(offset) < 0 ? 0 : offset;
+            limit = parseInt(limit) < 1 ? 10 : limit;
+            const totalCount = await this.dealModel.countDocuments({ deletedCheck: false });
+            let deals = await this.dealModel.aggregate([
+                {
+                    $match: {
+                        deletedCheck: false
+                    }
+                },
+                {
+                    $sort: {
+                        createdAt: -1
+                    }
+                },
+                {
+                    $addFields: {
+                        id: "$_id",
+                    },
+                },
+                {
+                    $project: {
+                        _id: 0,
+                    },
+                }
+            ])
+                .skip(parseInt(offset))
+                .limit(parseInt(limit));
+            return {
+                totalCount: totalCount,
+                data: deals
+            };
         }
         catch (err) {
             throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
@@ -69,7 +109,7 @@ let DealService = class DealService {
     }
     async getDeal(id) {
         try {
-            const deals = await this.dealModel.findById(id);
+            const deals = await this.dealModel.findOne({ _id: id, deletedCheck: false });
             return deals;
         }
         catch (err) {
@@ -78,7 +118,7 @@ let DealService = class DealService {
     }
     async getDealByMerchant(id) {
         try {
-            const deal = await this.dealModel.find({ merchantId: id });
+            const deal = await this.dealModel.findOne({ merchantId: id, deletedCheck: false });
             return deal;
         }
         catch (err) {

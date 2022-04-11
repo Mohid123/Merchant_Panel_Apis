@@ -16,6 +16,8 @@ exports.DealSchema = new mongoose.Schema({
     vouchers: { type: Array },
     termsAndCondition: { type: String },
     merchantId: { type: String },
+    dealStatus: { type: String, default: '' },
+    deletedCheck: { type: Boolean, default: false }
 }, {
     collection: 'deals',
 });

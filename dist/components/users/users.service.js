@@ -28,13 +28,13 @@ let UsersService = class UsersService {
     }
     async updateUser(usersDto) {
         usersDto.profilePicBlurHash = await (0, utils_1.encodeImageToBlurhash)(usersDto.profilePicURL);
-        return this._userModel.updateOne(usersDto);
+        return this._userModel.updateOne({ _id: usersDto.id }, usersDto);
     }
     async deleteUser(id) {
         return this._userModel.updateOne({ _id: id }, { deletedCheck: true });
     }
     async geUserById(id) {
-        return this._userModel.aggregate([
+        return await this._userModel.aggregate([
             {
                 $match: {
                     _id: id,
@@ -56,6 +56,7 @@ let UsersService = class UsersService {
     async getAllUsers(offset, limit) {
         offset = parseInt(offset) < 0 ? 0 : offset;
         limit = parseInt(limit) < 1 ? 10 : limit;
+        const totalCount = await this._userModel.countDocuments({ deletedCheck: false });
         const users = await this._userModel.aggregate([
             {
                 $match: {
@@ -77,8 +78,13 @@ let UsersService = class UsersService {
                     _id: 0
                 }
             }
-        ]);
-        return users;
+        ])
+            .skip(parseInt(offset))
+            .limit(parseInt(limit));
+        return {
+            totalCount: totalCount,
+            data: users
+        };
     }
 };
 UsersService = __decorate([

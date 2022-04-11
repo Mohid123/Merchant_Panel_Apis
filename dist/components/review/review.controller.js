@@ -25,11 +25,11 @@ let ReviewController = class ReviewController {
     createReview(revieDto) {
         return this.reviewService.createReview(revieDto);
     }
-    getAll() {
-        return this.reviewService.getAll();
+    getAllReviews(offset = 0, limit = 10) {
+        return this.reviewService.getAllReviews(offset, limit);
     }
-    updateReview(updateReviewDto, id) {
-        return this.reviewService.updateReview(updateReviewDto, id);
+    updateReview(updateReviewDto) {
+        return this.reviewService.updateReview(updateReviewDto);
     }
 };
 __decorate([
@@ -41,16 +41,17 @@ __decorate([
 ], ReviewController.prototype, "createReview", null);
 __decorate([
     (0, common_1.Get)('getAllReviews'),
+    __param(0, (0, common_1.Query)('offset')),
+    __param(1, (0, common_1.Query)('limit')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [Number, Number]),
     __metadata("design:returntype", void 0)
-], ReviewController.prototype, "getAll", null);
+], ReviewController.prototype, "getAllReviews", null);
 __decorate([
-    (0, common_1.Post)('updateReview/:id'),
+    (0, common_1.Post)('updateReview'),
     __param(0, (0, common_1.Body)()),
-    __param(1, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [updateReview_dto_1.UpdateReviewDto, String]),
+    __metadata("design:paramtypes", [updateReview_dto_1.UpdateReviewDto]),
     __metadata("design:returntype", void 0)
 ], ReviewController.prototype, "updateReview", null);
 ReviewController = __decorate([

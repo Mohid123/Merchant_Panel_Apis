@@ -9,5 +9,8 @@ export declare class UsersService {
     updateUser(usersDto: any): Promise<import("mongodb").UpdateResult>;
     deleteUser(id: any): Promise<import("mongodb").UpdateResult>;
     geUserById(id: any): Promise<any[]>;
-    getAllUsers(offset: any, limit: any): Promise<any[]>;
+    getAllUsers(offset: any, limit: any): Promise<{
+        totalCount: number;
+        data: any[];
+    }>;
 }

@@ -9,33 +9,13 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.LoginDto = void 0;
-const class_validator_1 = require("class-validator");
+exports.DealStatusDto = void 0;
 const swagger_1 = require("@nestjs/swagger");
-class LoginDto {
+class DealStatusDto {
 }
 __decorate([
-    (0, swagger_1.ApiProperty)({
-        example: 'divideals@gmail.com',
-        description: 'The email of the User',
-        format: 'email',
-    }),
-    (0, class_validator_1.IsNotEmpty)(),
+    (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
-], LoginDto.prototype, "email", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({
-        example: 'secret password change me!',
-        description: 'The password of the User',
-        format: 'string',
-        minLength: 5,
-        maxLength: 1024,
-    }),
-    (0, class_validator_1.IsNotEmpty)(),
-    (0, class_validator_1.IsString)(),
-    (0, class_validator_1.MinLength)(5),
-    (0, class_validator_1.MaxLength)(1024),
-    __metadata("design:type", String)
-], LoginDto.prototype, "password", void 0);
-exports.LoginDto = LoginDto;
-//# sourceMappingURL=login.dto.js.map
+], DealStatusDto.prototype, "dealStatus", void 0);
+exports.DealStatusDto = DealStatusDto;
+//# sourceMappingURL=updatedealstatus.dto.js.map

@@ -6,18 +6,18 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.JwtAdminAuthGuard = void 0;
+exports.JwtMerchantAuthGuard = void 0;
 const common_1 = require("@nestjs/common");
 const passport_1 = require("@nestjs/passport");
 const userrole_enum_1 = require("../../enum/user/userrole.enum");
-let JwtAdminAuthGuard = class JwtAdminAuthGuard extends (0, passport_1.AuthGuard)('jwt') {
+let JwtMerchantAuthGuard = class JwtMerchantAuthGuard extends (0, passport_1.AuthGuard)('jwt') {
     canActivate(context) {
         const { user } = context.switchToHttp().getRequest();
         return userrole_enum_1.USERROLE.merchant == user.role;
     }
 };
-JwtAdminAuthGuard = __decorate([
+JwtMerchantAuthGuard = __decorate([
     (0, common_1.Injectable)()
-], JwtAdminAuthGuard);
-exports.JwtAdminAuthGuard = JwtAdminAuthGuard;
+], JwtMerchantAuthGuard);
+exports.JwtMerchantAuthGuard = JwtMerchantAuthGuard;
 //# sourceMappingURL=jwt-merchant-auth.guard.js.map
