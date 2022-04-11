@@ -58,6 +58,17 @@ export class DealService {
     }
   }
 
+  async approveRejectDeal (dealID, dealStatusDto) {
+
+    let deal = await this.dealModel.findOne({_id: dealID, deletedCheck: false, dealStatus: DEALSTATUS.inReview});
+
+    if (dealStatusDto.dealStatus == DEALSTATUS.scheduled) {
+      return await this.dealModel.updateOne({_id: deal.id}, {dealStatus: DEALSTATUS.scheduled})
+    } else if (dealStatusDto.dealStatus == DEALSTATUS.bounced) {
+      return await this.dealModel.updateOne({_id: deal.id}, {dealStatus: DEALSTATUS.bounced})
+    }
+  }
+
   async getAllDeals(offset, limit) {
     try {
       offset = parseInt(offset) < 0 ? 0 : offset;
@@ -117,17 +128,6 @@ export class DealService {
       return deal;
     } catch (err) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
-    }
-  }
-
-  async approveDeal (dealID, dealStatusDto) {
-
-    let deal = await this.dealModel.findOne({_id: dealID, deletedCheck: false, dealStatus: DEALSTATUS.inReview});
-
-    if (dealStatusDto.dealStatus == DEALSTATUS.scheduled) {
-      return await this.dealModel.updateOne({_id: deal.id}, {dealStatus: DEALSTATUS.scheduled})
-    } else if (dealStatusDto.dealStatus == DEALSTATUS.bounced) {
-      return await this.dealModel.updateOne({_id: deal.id}, {dealStatus: DEALSTATUS.bounced})
     }
   }
 

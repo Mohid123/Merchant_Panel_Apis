@@ -21,11 +21,11 @@ export class DealController {
   }
 
   @UseGuards(JwtAdminAuthGuard)
-  @Post('approveDeal/:dealID')
-  approveDeal(
+  @Post('approveRejectDeal/:dealID')
+  approveRejectDeal(
     @Param('dealID') dealID: string,
     @Body() dealStatusDto: DealStatusDto) {
-    return this.dealService.approveDeal(dealID, dealStatusDto)
+    return this.dealService.approveRejectDeal(dealID, dealStatusDto)
   }
 
   @Get('getDeal/:id')
