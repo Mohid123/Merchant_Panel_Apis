@@ -1,5 +1,5 @@
 /// <reference types="mongoose" />
-import { UsersDto } from 'src/dto/user/users.dto';
+import { UsersDto } from '../../dto/user/users.dto';
 import { UsersService } from './users.service';
 export declare class UsersController {
     private readonly _usersService;

@@ -1,6 +1,6 @@
 import { JwtService } from '@nestjs/jwt';
 import { Model } from 'mongoose';
-import { UsersInterface } from 'src/interface/user/users.interface';
+import { UsersInterface } from '../../interface/user/users.interface';
 export declare class AuthService {
     private readonly _usersService;
     private jwtService;

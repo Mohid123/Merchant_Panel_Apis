@@ -1,7 +1,7 @@
 /// <reference types="mongoose" />
 import { HttpException } from '@nestjs/common';
-import { LoginDto } from 'src/dto/user/login.dto';
-import { SignUpDTO } from 'src/dto/user/signup.dto';
+import { LoginDto } from '../../dto/user/login.dto';
+import { SignUpDTO } from '../../dto/user/signup.dto';
 import { AuthService } from './auth.service';
 export declare class AuthController {
     private readonly _authService;

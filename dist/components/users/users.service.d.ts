@@ -1,5 +1,5 @@
 import { Model } from 'mongoose';
-import { UsersInterface } from 'src/interface/user/users.interface';
+import { UsersInterface } from '../../interface/user/users.interface';
 export declare class UsersService {
     private readonly _userModel;
     constructor(_userModel: Model<UsersInterface>);

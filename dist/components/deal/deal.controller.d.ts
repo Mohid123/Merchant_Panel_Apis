@@ -1,6 +1,6 @@
 import { DealService } from './deal.service';
 import { DealDto } from '../../dto/deal/deal.dto';
-import { DealStatusDto } from 'src/dto/deal/updatedealstatus.dto';
+import { DealStatusDto } from '../../dto/deal/updatedealstatus.dto';
 export declare class DealController {
     private readonly dealService;
     constructor(dealService: DealService);
