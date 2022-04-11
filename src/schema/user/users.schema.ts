@@ -1,8 +1,7 @@
 import * as mongoose from 'mongoose';
-import { UsersInterface } from 'src/interface/user/users.interface';
+import { UsersInterface } from '../../interface/user/users.interface';
 import { generateStringId } from '../../components/file-management/utils/utils';
 import * as bcrypt from 'bcrypt';
-import { USERSTATUS } from 'src/enum/user/userstatus.enum';
 
 export const UsersSchema = new mongoose.Schema(
     {

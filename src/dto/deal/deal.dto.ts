@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { VoucherInterface } from 'src/interface/deal/deal.interface';
+import { VoucherInterface } from '../../interface/deal/deal.interface';
 
 export class DealDto {
   @ApiProperty()

@@ -1,9 +1,12 @@
-import { Body, Controller, Param, Get, Post, Query } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Param, Get, Post, Query, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { ReviewDto } from '../../dto/review/review.dto';
 import { UpdateReviewDto } from '../../dto/review/updateReview.dto';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { ReviewService } from './review.service';
 
+@UseGuards(JwtAuthGuard)
+@ApiBearerAuth()
 @ApiTags('Review')
 @Controller('review')
 export class ReviewController {
