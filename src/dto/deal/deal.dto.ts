@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { VoucherInterface } from 'src/interface/deal/deal.interface';
 
 export class DealDto {
   @ApiProperty()
@@ -37,11 +38,17 @@ export class DealDto {
       },
     ],
   })
-  vouchers: [object];
+  vouchers: VoucherInterface[];
 
   @ApiProperty()
   termsAndCondition: string;
 
   @ApiProperty()
   merchantId: string;
+
+  @ApiProperty()
+  dealStatus: string;
+
+  @ApiProperty()
+  deletedCheck: boolean;
 }

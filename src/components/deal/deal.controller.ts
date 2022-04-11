@@ -1,16 +1,31 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { DealService } from './deal.service';
 import { DealDto } from '../../dto/deal/deal.dto';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { JwtAdminAuthGuard } from '../auth/jwt-admin-auth.guard';
+import { JwtMerchantAuthGuard } from '../auth/jwt-merchant-auth.guard';
+import { DealStatusDto } from 'src/dto/deal/updatedealstatus.dto';
 
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 @ApiTags('Deal')
 @Controller('deal')
 export class DealController {
   constructor(private readonly dealService: DealService) {}
 
+  @UseGuards(JwtMerchantAuthGuard)
   @Post('createDeal')
   createDeal(@Body() dealDto: DealDto) {
     return this.dealService.createDeal(dealDto);
+  }
+
+  @UseGuards(JwtAdminAuthGuard)
+  @Post('approveDeal/:dealID')
+  approveDeal(
+    @Param('dealID') dealID: string,
+    @Body() dealStatusDto: DealStatusDto) {
+    return this.dealService.approveDeal(dealID, dealStatusDto)
   }
 
   @Get('getDeal/:id')
@@ -24,7 +39,10 @@ export class DealController {
   }
 
   @Get('getAllDeals')
-  getAllDeals() {
-    return this.dealService.getAllDeals();
+  getAllDeals(
+    @Query("offset") offset: number = 0,
+    @Query("limit") limit: number = 10
+  ) {
+    return this.dealService.getAllDeals(offset, limit);
   }
 }
