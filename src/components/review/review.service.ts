@@ -19,22 +19,47 @@ export class ReviewService {
     }
   }
 
-  async getAll() {
+  async getAllReviews(offset, limit) {
     try {
-      const reviews = await this.reviewModel.find();
-      return reviews;
+
+      offset = parseInt(offset) < 0 ? 0 : offset;
+      limit = parseInt(limit) < 1 ? 10 : limit;
+
+      const totalCount = await this.reviewModel.countDocuments({});
+
+      const reviews = await this.reviewModel.aggregate([
+        {
+          $sort: {
+            createdAt: -1
+          }
+        },
+        {
+          $addFields: {
+            id: '$_id'
+          }
+        },
+        {
+          $project: {
+            _id: 0
+          }
+        }
+      ])
+      .skip(parseInt(offset))
+      .limit(parseInt(limit));
+
+      return {
+        totalCount: totalCount,
+        data: reviews
+      }
+
     } catch (err) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
     }
   }
 
-  async updateReview(updateReviewDto, id) {
+  async updateReview(updateReviewDto) {
     try {
-      const updatedReview = await this.reviewModel.findByIdAndUpdate(
-        id,
-        updateReviewDto,
-      );
-      return updateReviewDto;
+      return await this.reviewModel.updateOne({_id: updateReviewDto.id}, updateReviewDto);
     } catch (err) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
     }
