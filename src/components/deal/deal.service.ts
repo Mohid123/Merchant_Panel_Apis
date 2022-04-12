@@ -5,15 +5,18 @@ import { DEALSTATUS } from 'src/enum/deal/dealstatus.enum';
 import { CategoryInterface } from '../../interface/category/category.interface';
 import { DealInterface } from '../../interface/deal/deal.interface';
 import { generateStringId } from '../file-management/utils/utils';
+import { SORT } from '../../enum/sort/sort.enum';
+import { DealStatusDto } from 'src/dto/deal/updatedealstatus.dto';
+import { DealDto } from 'src/dto/deal/deal.dto';
 
 @Injectable()
 export class DealService {
   constructor(
     @InjectModel('Deal') private readonly dealModel: Model<DealInterface>,
-    @InjectModel('Category') private categorymodel: Model<CategoryInterface>
+    @InjectModel('Category') private categorymodel: Model<CategoryInterface>,
   ) {}
 
-  async createDeal(dealDto) {
+  async createDeal(dealDto, req) {
     try {
       const category = await this.categorymodel.findOne({
         type: dealDto.categoryType,
@@ -26,6 +29,10 @@ export class DealService {
 
       dealDto.categoryName = dealDto.categoryType;
       dealDto.categoryType = category.id;
+
+      dealDto.title = dealDto.title.toUpperCase();
+
+      dealDto.merchantId = req.user.id;
 
       dealDto.dealStatus = DEALSTATUS.inReview;
 
@@ -58,56 +65,67 @@ export class DealService {
     }
   }
 
-  async approveRejectDeal (dealID, dealStatusDto) {
-
-    let deal = await this.dealModel.findOne({_id: dealID, deletedCheck: false, dealStatus: DEALSTATUS.inReview});
+  async approveRejectDeal(dealID, dealStatusDto) {
+    let deal = await this.dealModel.findOne({
+      _id: dealID,
+      deletedCheck: false,
+      dealStatus: DEALSTATUS.inReview,
+    });
 
     if (dealStatusDto.dealStatus == DEALSTATUS.scheduled) {
-      return await this.dealModel.updateOne({_id: deal.id}, {dealStatus: DEALSTATUS.scheduled})
+      return await this.dealModel.updateOne(
+        { _id: deal.id },
+        { dealStatus: DEALSTATUS.scheduled },
+      );
     } else if (dealStatusDto.dealStatus == DEALSTATUS.bounced) {
-      return await this.dealModel.updateOne({_id: deal.id}, {dealStatus: DEALSTATUS.bounced})
+      return await this.dealModel.updateOne(
+        { _id: deal.id },
+        { dealStatus: DEALSTATUS.bounced },
+      );
     }
   }
 
-  async getAllDeals(offset, limit) {
+  async getAllDeals(req, offset, limit) {
     try {
       offset = parseInt(offset) < 0 ? 0 : offset;
       limit = parseInt(limit) < 1 ? 10 : limit;
-      
-      const totalCount = await this.dealModel.countDocuments({deletedCheck: false});
 
-      let deals = await this.dealModel.aggregate(
-        [
+      const totalCount = await this.dealModel.countDocuments({
+        merchantId: req.user.id,
+        deletedCheck: false,
+      });
+
+      let deals = await this.dealModel
+        .aggregate([
           {
             $match: {
-              deletedCheck: false
-            }
+              merchantId: req.user.id,
+              deletedCheck: false,
+            },
           },
           {
             $sort: {
-              createdAt: -1
-            }
-          },
-            {
-              $addFields: {
-                id: "$_id",
-              },
+              createdAt: -1,
             },
-            {
-              $project: {
-                _id: 0,
-              },
-            }
-        ]
-      )
-      .skip(parseInt(offset))
-      .limit(parseInt(limit));
+          },
+          {
+            $addFields: {
+              id: '$_id',
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+            },
+          },
+        ])
+        .skip(parseInt(offset))
+        .limit(parseInt(limit));
 
       return {
         totalCount: totalCount,
-        data: deals
+        data: deals,
       };
-
     } catch (err) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
     }
@@ -115,7 +133,10 @@ export class DealService {
 
   async getDeal(id) {
     try {
-      const deals = await this.dealModel.findOne({_id: id, deletedCheck: false});
+      const deals = await this.dealModel.findOne({
+        _id: id,
+        deletedCheck: false,
+      });
       return deals;
     } catch (err) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
@@ -124,8 +145,110 @@ export class DealService {
 
   async getDealByMerchant(id) {
     try {
-      const deal = await this.dealModel.findOne({ merchantId: id, deletedCheck: false });
+      const deal = await this.dealModel.findOne({
+        merchantId: id,
+        deletedCheck: false,
+      });
       return deal;
+    } catch (err) {
+      throw new HttpException(err, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async getDeals(
+    title,
+    price,
+    startDate,
+    endDate,
+    dateFrom,
+    dateTo,
+    offset,
+    limit,
+    req,
+  ) {
+    try {
+      dateFrom = parseInt(dateFrom);
+      dateTo = parseInt(dateTo);
+
+      let dateToFilters = {};
+      let dateFromFilters = {};
+      let matchFilter: {};
+
+      if (dateFrom) {
+        dateFromFilters = {
+          ...dateFromFilters,
+          $gte: dateFrom,
+        };
+      }
+
+      if (dateTo) {
+        dateToFilters = {
+          ...dateToFilters,
+          $lte: dateTo,
+        };
+      }
+
+      if (dateFrom || dateTo) {
+        matchFilter = {
+          ...matchFilter,
+          startDate: {
+            ...dateFromFilters,
+            ...dateToFilters,
+          },
+        };
+      }
+
+      let sortByFieldValue, sort;
+
+      if (title) {
+        sortByFieldValue = title == SORT.ASC ? 1 : -1;
+        sort = {
+          title: sortByFieldValue,
+        };
+      } else if (price) {
+        sortByFieldValue = price == SORT.ASC ? 1 : -1;
+        sort = {
+          price: sortByFieldValue,
+        };
+      } else if (startDate) {
+        sortByFieldValue = startDate == SORT.ASC ? 1 : -1;
+        sort = {
+          startDate: sortByFieldValue,
+        };
+      } else if (endDate) {
+        sortByFieldValue = endDate == SORT.ASC ? 1 : -1;
+        sort = {
+          endDate: sortByFieldValue,
+        };
+      } else {
+        sort = {
+          createdAt: -1,
+        };
+      }
+
+      const totalCount = await this.dealModel.countDocuments({
+        merchantId: req.user.id,
+        deletedCheck: false,
+        ...matchFilter,
+      });
+
+      const deals = await this.dealModel
+        .aggregate([
+          {
+            $match: {
+              merchantId: req.user.id,
+              deletedCheck: false,
+              ...matchFilter,
+            },
+          },
+          {
+            $sort: sort,
+          },
+        ])
+        .skip(parseInt(offset))
+        .limit(parseInt(limit));
+
+      return { totalDeals: totalCount, deals };
     } catch (err) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
     }
