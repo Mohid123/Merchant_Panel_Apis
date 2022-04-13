@@ -172,7 +172,7 @@ export class DealService {
 
       let dateToFilters = {};
       let dateFromFilters = {};
-      let matchFilter: {};
+      let matchFilter = {};
 
       if (dateFrom) {
         dateFromFilters = {
@@ -191,40 +191,64 @@ export class DealService {
       if (dateFrom || dateTo) {
         matchFilter = {
           ...matchFilter,
-          startDate: {
-            ...dateFromFilters,
-            ...dateToFilters,
-          },
+          $and: [
+            {
+              startDate: {
+                ...dateFromFilters,
+              },
+            },
+            {
+              startDate: {
+                ...dateToFilters,
+              },
+            },
+          ],
         };
       }
 
-      let sortByFieldValue, sort;
+      let sort = {};
 
       if (title) {
-        sortByFieldValue = title == SORT.ASC ? 1 : -1;
+        let sortTitle = title == SORT.ASC ? 1 : -1;
+        console.log('title');
         sort = {
-          title: sortByFieldValue,
-        };
-      } else if (price) {
-        sortByFieldValue = price == SORT.ASC ? 1 : -1;
-        sort = {
-          price: sortByFieldValue,
-        };
-      } else if (startDate) {
-        sortByFieldValue = startDate == SORT.ASC ? 1 : -1;
-        sort = {
-          startDate: sortByFieldValue,
-        };
-      } else if (endDate) {
-        sortByFieldValue = endDate == SORT.ASC ? 1 : -1;
-        sort = {
-          endDate: sortByFieldValue,
-        };
-      } else {
-        sort = {
-          createdAt: -1,
+          ...sort,
+          title: sortTitle,
         };
       }
+      if (price) {
+        let sortPrice = price == SORT.ASC ? 1 : -1;
+        console.log('price');
+        sort = {
+          ...sort,
+          price: sortPrice,
+        };
+      }
+      if (startDate) {
+        let sortStartDate = startDate == SORT.ASC ? 1 : -1;
+        console.log('startDate');
+        sort = {
+          ...sort,
+          startDate: sortStartDate,
+        };
+      }
+      if (endDate) {
+        let sortEndDate = endDate == SORT.ASC ? 1 : -1;
+        console.log('endDate');
+        sort = {
+          ...sort,
+          endDate: sortEndDate,
+        };
+      }
+
+      if (Object.keys(sort).length === 0 && sort.constructor === Object) {
+        sort = {
+          createdAt: 1,
+        };
+      }
+
+      console.log(sort);
+      console.log(matchFilter);
 
       const totalCount = await this.dealModel.countDocuments({
         merchantId: req.user.id,
