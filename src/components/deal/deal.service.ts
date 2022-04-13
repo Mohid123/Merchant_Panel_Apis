@@ -145,4 +145,182 @@ export class DealService {
   //       throw new HttpException(err, HttpStatus.BAD_REQUEST);
   //     }
   //   }
+
+  async getSalesStatistics (req) {
+    const totalStats = {
+      totalDeals: 0,
+      scheduledDeals: 0,
+      pendingDeals: 0,
+      publishedDeals: 0,
+    };
+
+    const yearlyStats = {
+      totalDeals: 0,
+      scheduledDeals: 0,
+      pendingDeals: 0,
+      publishedDeals: 0,
+    };
+
+    const monthlyStats = [
+      {
+        totalDeals: 0,
+        scheduledDeals: 0,
+        pendingDeals: 0,
+        publishedDeals: 0,
+      },
+      {
+        totalDeals: 0,
+        scheduledDeals: 0,
+        pendingDeals: 0,
+        publishedDeals: 0,
+      },
+      {
+        totalDeals: 0,
+        scheduledDeals: 0,
+        pendingDeals: 0,
+        publishedDeals: 0,
+      },
+      {
+        totalDeals: 0,
+        scheduledDeals: 0,
+        pendingDeals: 0,
+        publishedDeals: 0,
+      },
+      {
+        totalDeals: 0,
+        scheduledDeals: 0,
+        pendingDeals: 0,
+        publishedDeals: 0,
+      },
+      {
+        totalDeals: 0,
+        scheduledDeals: 0,
+        pendingDeals: 0,
+        publishedDeals: 0,
+      },
+      {
+        totalDeals: 0,
+        scheduledDeals: 0,
+        pendingDeals: 0,
+        publishedDeals: 0,
+      },
+      {
+        totalDeals: 0,
+        scheduledDeals: 0,
+        pendingDeals: 0,
+        publishedDeals: 0,
+      },
+      {
+        totalDeals: 0,
+        scheduledDeals: 0,
+        pendingDeals: 0,
+        publishedDeals: 0,
+      },
+      {
+        totalDeals: 0,
+        scheduledDeals: 0,
+        pendingDeals: 0,
+        publishedDeals: 0,
+      },
+      {
+        totalDeals: 0,
+        scheduledDeals: 0,
+        pendingDeals: 0,
+        publishedDeals: 0,
+      },
+      {
+        totalDeals: 0,
+        scheduledDeals: 0,
+        pendingDeals: 0,
+        publishedDeals: 0,
+      },
+    ];
+
+    const currentDate = new Date();
+
+    let totalDeals;
+    let scheduledDeals;
+    let pendingDeals;
+    let publishedDeals;
+
+    totalDeals = await this.dealModel
+      .find({ merchantId: req.user.id, deletedCheck: false })
+      .sort({ startDate: 1 });
+
+    scheduledDeals = await this.dealModel
+      .find({ merchantId: req.user.id, dealStatus: DEALSTATUS.scheduled, deletedCheck: false })
+      .sort({ startDate: 1 });
+
+    pendingDeals = await this.dealModel
+      .find({ merchantId: req.user.id, nftStatus: DEALSTATUS.inReview, deletedCheck: false })
+      .sort({ startDate: 1 });
+
+      publishedDeals = await this.dealModel
+      .find({ merchantId: req.user.id, deletedCheck: false, dealStatus: DEALSTATUS.published })
+      .sort({ startDate: 1 })
+
+      totalDeals.forEach((data) => {
+      let currentDocDate = new Date(data.startDate);
+      totalStats.totalDeals =
+      totalStats.totalDeals + 1;
+      if (currentDocDate.getFullYear() === currentDate.getFullYear()) {
+        monthlyStats[currentDocDate.getMonth()].totalDeals =
+          monthlyStats[currentDocDate.getMonth()].totalDeals + 1;
+      }
+    });
+
+    scheduledDeals.forEach((data) => {
+      let currentDocDate = new Date(data.createdAt);
+      totalStats.scheduledDeals =
+      totalStats.scheduledDeals + 1;
+      if (currentDocDate.getFullYear() === currentDate.getFullYear()) {
+        monthlyStats[currentDocDate.getMonth()].scheduledDeals =
+          monthlyStats[currentDocDate.getMonth()].scheduledDeals + 1;
+      }
+    });
+
+    // profit.forEach((data) => {
+    //   let currentDocDate = new Date(data.eventDate);
+    //   totalStats.profit =
+    //   totalStats.profit +
+    //   parseFloat(data.price);
+    //   if (currentDocDate.getFullYear() === currentDate.getFullYear()) {
+    //     monthlyStats[currentDocDate.getMonth()].profit =
+    //       monthlyStats[currentDocDate.getMonth()].profit +
+    //       parseFloat(data.price);
+    //   }
+    // });
+
+    pendingDeals.forEach((data) => {
+      let currentDocDate = new Date(data.createdAt);
+      totalStats.pendingDeals = totalStats.pendingDeals + 1;
+      if (currentDocDate.getFullYear() === currentDate.getFullYear()) {
+        monthlyStats[currentDocDate.getMonth()].pendingDeals =
+          monthlyStats[currentDocDate.getMonth()].pendingDeals + 1;
+      }
+    });
+
+    publishedDeals.forEach((data:any)=>{
+      let currentDocDate = new Date(data.createdAt);
+      totalStats.publishedDeals = totalStats.publishedDeals + 1
+      if (currentDocDate.getFullYear() === currentDate.getFullYear()) {
+        monthlyStats[currentDocDate.getMonth()].publishedDeals =
+          monthlyStats[currentDocDate.getMonth()].publishedDeals + 1
+      }
+    });
+    
+    for (let i = 0; i < monthlyStats.length; i++) {
+      yearlyStats.totalDeals = yearlyStats.totalDeals + monthlyStats[i].totalDeals;
+      yearlyStats.scheduledDeals = yearlyStats.scheduledDeals + monthlyStats[i].scheduledDeals;
+      yearlyStats.pendingDeals = yearlyStats.pendingDeals + monthlyStats[i].pendingDeals;
+      yearlyStats.publishedDeals = yearlyStats.publishedDeals +  monthlyStats[i].publishedDeals;
+    }
+
+    return {
+      monthlyStats,
+      yearlyStats,
+      totalStats,
+    };
+  }
+
 }

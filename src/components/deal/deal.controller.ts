@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { DealService } from './deal.service';
 import { DealDto } from '../../dto/deal/deal.dto';
@@ -45,4 +45,10 @@ export class DealController {
   ) {
     return this.dealService.getAllDeals(offset, limit);
   }
+
+  @Get('getSalesStatistics')
+  getSalesStatistics (@Req() req) {
+    return this.dealService.getSalesStatistics(req)
+  }
+
 }
