@@ -279,18 +279,6 @@ export class DealService {
       }
     });
 
-    // profit.forEach((data) => {
-    //   let currentDocDate = new Date(data.eventDate);
-    //   totalStats.profit =
-    //   totalStats.profit +
-    //   parseFloat(data.price);
-    //   if (currentDocDate.getFullYear() === currentDate.getFullYear()) {
-    //     monthlyStats[currentDocDate.getMonth()].profit =
-    //       monthlyStats[currentDocDate.getMonth()].profit +
-    //       parseFloat(data.price);
-    //   }
-    // });
-
     pendingDeals.forEach((data) => {
       let currentDocDate = new Date(data.createdAt);
       totalStats.pendingDeals = totalStats.pendingDeals + 1;
