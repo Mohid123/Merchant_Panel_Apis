@@ -3,7 +3,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { BillingDto } from 'src/dto/billing/billing.dto';
 import { BillingService } from './billing.service';
 
-@ApiTags('Deal')
+@ApiTags('Billing')
 @Controller('billing')
 export class BillingController {
   constructor(private readonly billingService: BillingService) {}

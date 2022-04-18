@@ -9,12 +9,13 @@ import { CategoryModule } from './components/category/category.module';
 import { ReviewModule } from './components/review/review.module';
 import { AuthModule } from './components/auth/auth.module';
 import { UsersModule } from './components/users/users.module';
+import { BillingModule } from './components/billing/billing.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       envFilePath: 'src/config/development.env',
-      isGlobal: true
+      isGlobal: true,
     }),
     MongooseModule.forRoot(process.env.MONGO_URI),
     AuthModule.forRoot(),
@@ -23,6 +24,7 @@ import { UsersModule } from './components/users/users.module';
     CategoryModule,
     ReviewModule,
     UsersModule,
+    BillingModule,
   ],
   controllers: [AppController],
   providers: [AppService],

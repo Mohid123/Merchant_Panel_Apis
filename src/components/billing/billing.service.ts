@@ -26,7 +26,7 @@ export class BillingService {
 
   async getBill(id) {
     try {
-      const bill = await this.billingModel.findById(id);
+      const bill = await this.billingModel.find({ transactionID: id });
       return bill;
     } catch (err) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
