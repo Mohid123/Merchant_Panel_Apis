@@ -18,12 +18,13 @@ const mongoose_1 = require("@nestjs/mongoose");
 const mongoose_2 = require("mongoose");
 const dealstatus_enum_1 = require("../../enum/deal/dealstatus.enum");
 const utils_1 = require("../file-management/utils/utils");
+const sort_enum_1 = require("../../enum/sort/sort.enum");
 let DealService = class DealService {
     constructor(dealModel, categorymodel) {
         this.dealModel = dealModel;
         this.categorymodel = categorymodel;
     }
-    async createDeal(dealDto) {
+    async createDeal(dealDto, req) {
         try {
             const category = await this.categorymodel.findOne({
                 type: dealDto.categoryType,
@@ -34,6 +35,8 @@ let DealService = class DealService {
             dealDto.endDate = stamp;
             dealDto.categoryName = dealDto.categoryType;
             dealDto.categoryType = category.id;
+            dealDto.title = dealDto.title.toUpperCase();
+            dealDto.merchantId = req.user.id;
             dealDto.dealStatus = dealstatus_enum_1.DEALSTATUS.inReview;
             dealDto.vouchers = dealDto.vouchers.map((el) => {
                 let startTime;
@@ -61,7 +64,11 @@ let DealService = class DealService {
         }
     }
     async approveRejectDeal(dealID, dealStatusDto) {
-        let deal = await this.dealModel.findOne({ _id: dealID, deletedCheck: false, dealStatus: dealstatus_enum_1.DEALSTATUS.inReview });
+        let deal = await this.dealModel.findOne({
+            _id: dealID,
+            deletedCheck: false,
+            dealStatus: dealstatus_enum_1.DEALSTATUS.inReview,
+        });
         if (dealStatusDto.dealStatus == dealstatus_enum_1.DEALSTATUS.scheduled) {
             return await this.dealModel.updateOne({ _id: deal.id }, { dealStatus: dealstatus_enum_1.DEALSTATUS.scheduled });
         }
@@ -69,38 +76,43 @@ let DealService = class DealService {
             return await this.dealModel.updateOne({ _id: deal.id }, { dealStatus: dealstatus_enum_1.DEALSTATUS.bounced });
         }
     }
-    async getAllDeals(offset, limit) {
+    async getAllDeals(req, offset, limit) {
         try {
             offset = parseInt(offset) < 0 ? 0 : offset;
             limit = parseInt(limit) < 1 ? 10 : limit;
-            const totalCount = await this.dealModel.countDocuments({ deletedCheck: false });
-            let deals = await this.dealModel.aggregate([
+            const totalCount = await this.dealModel.countDocuments({
+                merchantId: req.user.id,
+                deletedCheck: false,
+            });
+            let deals = await this.dealModel
+                .aggregate([
                 {
                     $match: {
-                        deletedCheck: false
-                    }
+                        merchantId: req.user.id,
+                        deletedCheck: false,
+                    },
                 },
                 {
                     $sort: {
-                        createdAt: -1
-                    }
+                        createdAt: -1,
+                    },
                 },
                 {
                     $addFields: {
-                        id: "$_id",
+                        id: '$_id',
                     },
                 },
                 {
                     $project: {
                         _id: 0,
                     },
-                }
+                },
             ])
                 .skip(parseInt(offset))
                 .limit(parseInt(limit));
             return {
                 totalCount: totalCount,
-                data: deals
+                data: deals,
             };
         }
         catch (err) {
@@ -109,7 +121,10 @@ let DealService = class DealService {
     }
     async getDeal(id) {
         try {
-            const deals = await this.dealModel.findOne({ _id: id, deletedCheck: false });
+            const deals = await this.dealModel.findOne({
+                _id: id,
+                deletedCheck: false,
+            });
             return deals;
         }
         catch (err) {
@@ -118,12 +133,234 @@ let DealService = class DealService {
     }
     async getDealByMerchant(id) {
         try {
-            const deal = await this.dealModel.findOne({ merchantId: id, deletedCheck: false });
+            const deal = await this.dealModel.findOne({
+                merchantId: id,
+                deletedCheck: false,
+            });
             return deal;
         }
         catch (err) {
             throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
         }
+    }
+    async getDeals(title, price, startDate, endDate, dateFrom, dateTo, offset, limit, req) {
+        try {
+            dateFrom = parseInt(dateFrom);
+            dateTo = parseInt(dateTo);
+            let dateToFilters = {};
+            let dateFromFilters = {};
+            let matchFilter = {};
+            if (dateFrom) {
+                dateFromFilters = Object.assign(Object.assign({}, dateFromFilters), { $gte: dateFrom });
+            }
+            if (dateTo) {
+                dateToFilters = Object.assign(Object.assign({}, dateToFilters), { $lte: dateTo });
+            }
+            if (dateFrom || dateTo) {
+                matchFilter = Object.assign(Object.assign({}, matchFilter), { $and: [
+                        {
+                            startDate: Object.assign({}, dateFromFilters),
+                        },
+                        {
+                            startDate: Object.assign({}, dateToFilters),
+                        },
+                    ] });
+            }
+            let sort = {};
+            if (title) {
+                let sortTitle = title == sort_enum_1.SORT.ASC ? 1 : -1;
+                console.log('title');
+                sort = Object.assign(Object.assign({}, sort), { title: sortTitle });
+            }
+            if (price) {
+                let sortPrice = price == sort_enum_1.SORT.ASC ? 1 : -1;
+                console.log('price');
+                sort = Object.assign(Object.assign({}, sort), { price: sortPrice });
+            }
+            if (startDate) {
+                let sortStartDate = startDate == sort_enum_1.SORT.ASC ? 1 : -1;
+                console.log('startDate');
+                sort = Object.assign(Object.assign({}, sort), { startDate: sortStartDate });
+            }
+            if (endDate) {
+                let sortEndDate = endDate == sort_enum_1.SORT.ASC ? 1 : -1;
+                console.log('endDate');
+                sort = Object.assign(Object.assign({}, sort), { endDate: sortEndDate });
+            }
+            if (Object.keys(sort).length === 0 && sort.constructor === Object) {
+                sort = {
+                    createdAt: 1,
+                };
+            }
+            console.log(sort);
+            console.log(matchFilter);
+            const totalCount = await this.dealModel.countDocuments(Object.assign({ merchantId: req.user.id, deletedCheck: false }, matchFilter));
+            const deals = await this.dealModel
+                .aggregate([
+                {
+                    $match: Object.assign({ merchantId: req.user.id, deletedCheck: false }, matchFilter),
+                },
+                {
+                    $sort: sort,
+                },
+            ])
+                .skip(parseInt(offset))
+                .limit(parseInt(limit));
+            return { totalDeals: totalCount, deals };
+        }
+        catch (err) {
+            throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
+        }
+    }
+    async getSalesStatistics(req) {
+        const totalStats = {
+            totalDeals: 0,
+            scheduledDeals: 0,
+            pendingDeals: 0,
+            publishedDeals: 0,
+        };
+        const yearlyStats = {
+            totalDeals: 0,
+            scheduledDeals: 0,
+            pendingDeals: 0,
+            publishedDeals: 0,
+        };
+        const monthlyStats = [
+            {
+                totalDeals: 0,
+                scheduledDeals: 0,
+                pendingDeals: 0,
+                publishedDeals: 0,
+            },
+            {
+                totalDeals: 0,
+                scheduledDeals: 0,
+                pendingDeals: 0,
+                publishedDeals: 0,
+            },
+            {
+                totalDeals: 0,
+                scheduledDeals: 0,
+                pendingDeals: 0,
+                publishedDeals: 0,
+            },
+            {
+                totalDeals: 0,
+                scheduledDeals: 0,
+                pendingDeals: 0,
+                publishedDeals: 0,
+            },
+            {
+                totalDeals: 0,
+                scheduledDeals: 0,
+                pendingDeals: 0,
+                publishedDeals: 0,
+            },
+            {
+                totalDeals: 0,
+                scheduledDeals: 0,
+                pendingDeals: 0,
+                publishedDeals: 0,
+            },
+            {
+                totalDeals: 0,
+                scheduledDeals: 0,
+                pendingDeals: 0,
+                publishedDeals: 0,
+            },
+            {
+                totalDeals: 0,
+                scheduledDeals: 0,
+                pendingDeals: 0,
+                publishedDeals: 0,
+            },
+            {
+                totalDeals: 0,
+                scheduledDeals: 0,
+                pendingDeals: 0,
+                publishedDeals: 0,
+            },
+            {
+                totalDeals: 0,
+                scheduledDeals: 0,
+                pendingDeals: 0,
+                publishedDeals: 0,
+            },
+            {
+                totalDeals: 0,
+                scheduledDeals: 0,
+                pendingDeals: 0,
+                publishedDeals: 0,
+            },
+            {
+                totalDeals: 0,
+                scheduledDeals: 0,
+                pendingDeals: 0,
+                publishedDeals: 0,
+            },
+        ];
+        const currentDate = new Date();
+        let totalDeals;
+        let scheduledDeals;
+        let pendingDeals;
+        let publishedDeals;
+        totalDeals = await this.dealModel
+            .find({ merchantId: req.user.id, deletedCheck: false })
+            .sort({ startDate: 1 });
+        scheduledDeals = await this.dealModel
+            .find({ merchantId: req.user.id, dealStatus: dealstatus_enum_1.DEALSTATUS.scheduled, deletedCheck: false })
+            .sort({ startDate: 1 });
+        pendingDeals = await this.dealModel
+            .find({ merchantId: req.user.id, nftStatus: dealstatus_enum_1.DEALSTATUS.inReview, deletedCheck: false })
+            .sort({ startDate: 1 });
+        publishedDeals = await this.dealModel
+            .find({ merchantId: req.user.id, deletedCheck: false, dealStatus: dealstatus_enum_1.DEALSTATUS.published })
+            .sort({ startDate: 1 });
+        totalDeals.forEach((data) => {
+            let currentDocDate = new Date(data.startDate);
+            totalStats.totalDeals =
+                totalStats.totalDeals + 1;
+            if (currentDocDate.getFullYear() === currentDate.getFullYear()) {
+                monthlyStats[currentDocDate.getMonth()].totalDeals =
+                    monthlyStats[currentDocDate.getMonth()].totalDeals + 1;
+            }
+        });
+        scheduledDeals.forEach((data) => {
+            let currentDocDate = new Date(data.createdAt);
+            totalStats.scheduledDeals =
+                totalStats.scheduledDeals + 1;
+            if (currentDocDate.getFullYear() === currentDate.getFullYear()) {
+                monthlyStats[currentDocDate.getMonth()].scheduledDeals =
+                    monthlyStats[currentDocDate.getMonth()].scheduledDeals + 1;
+            }
+        });
+        pendingDeals.forEach((data) => {
+            let currentDocDate = new Date(data.createdAt);
+            totalStats.pendingDeals = totalStats.pendingDeals + 1;
+            if (currentDocDate.getFullYear() === currentDate.getFullYear()) {
+                monthlyStats[currentDocDate.getMonth()].pendingDeals =
+                    monthlyStats[currentDocDate.getMonth()].pendingDeals + 1;
+            }
+        });
+        publishedDeals.forEach((data) => {
+            let currentDocDate = new Date(data.createdAt);
+            totalStats.publishedDeals = totalStats.publishedDeals + 1;
+            if (currentDocDate.getFullYear() === currentDate.getFullYear()) {
+                monthlyStats[currentDocDate.getMonth()].publishedDeals =
+                    monthlyStats[currentDocDate.getMonth()].publishedDeals + 1;
+            }
+        });
+        for (let i = 0; i < monthlyStats.length; i++) {
+            yearlyStats.totalDeals = yearlyStats.totalDeals + monthlyStats[i].totalDeals;
+            yearlyStats.scheduledDeals = yearlyStats.scheduledDeals + monthlyStats[i].scheduledDeals;
+            yearlyStats.pendingDeals = yearlyStats.pendingDeals + monthlyStats[i].pendingDeals;
+            yearlyStats.publishedDeals = yearlyStats.publishedDeals + monthlyStats[i].publishedDeals;
+        }
+        return {
+            monthlyStats,
+            yearlyStats,
+            totalStats,
+        };
     }
 };
 DealService = __decorate([

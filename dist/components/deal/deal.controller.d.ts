@@ -1,10 +1,11 @@
 import { DealService } from './deal.service';
 import { DealDto } from '../../dto/deal/deal.dto';
 import { DealStatusDto } from '../../dto/deal/updatedealstatus.dto';
+import { SORT } from 'src/enum/sort/sort.enum';
 export declare class DealController {
     private readonly dealService;
     constructor(dealService: DealService);
-    createDeal(dealDto: DealDto): Promise<import("../../interface/deal/deal.interface").DealInterface & {
+    createDeal(dealDto: DealDto, req: any): Promise<import("../../interface/deal/deal.interface").DealInterface & {
         _id: any;
     }>;
     approveRejectDeal(dealID: string, dealStatusDto: DealStatusDto): Promise<import("mongodb").UpdateResult>;
@@ -14,8 +15,32 @@ export declare class DealController {
     getDealByMerchant(merchantId: string): Promise<import("../../interface/deal/deal.interface").DealInterface & {
         _id: any;
     }>;
-    getAllDeals(offset?: number, limit?: number): Promise<{
+    getAllDeals(offset: number, limit: number, req: any): Promise<{
         totalCount: number;
         data: any[];
+    }>;
+    getDeals(title: SORT, price: SORT, startDate: SORT, endDate: SORT, dateFrom: number, dateTo: number, offset: number, limit: number, req: any): Promise<{
+        totalDeals: number;
+        deals: any[];
+    }>;
+    getSalesStatistics(req: any): Promise<{
+        monthlyStats: {
+            totalDeals: number;
+            scheduledDeals: number;
+            pendingDeals: number;
+            publishedDeals: number;
+        }[];
+        yearlyStats: {
+            totalDeals: number;
+            scheduledDeals: number;
+            pendingDeals: number;
+            publishedDeals: number;
+        };
+        totalStats: {
+            totalDeals: number;
+            scheduledDeals: number;
+            pendingDeals: number;
+            publishedDeals: number;
+        };
     }>;
 }

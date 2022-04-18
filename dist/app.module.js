@@ -18,6 +18,8 @@ const category_module_1 = require("./components/category/category.module");
 const review_module_1 = require("./components/review/review.module");
 const auth_module_1 = require("./components/auth/auth.module");
 const users_module_1 = require("./components/users/users.module");
+const billing_module_1 = require("./components/billing/billing.module");
+const orders_module_1 = require("./components/orders/orders.module");
 let AppModule = class AppModule {
 };
 AppModule = __decorate([
@@ -25,14 +27,17 @@ AppModule = __decorate([
         imports: [
             config_1.ConfigModule.forRoot({
                 envFilePath: 'src/config/development.env',
-                isGlobal: true
+                isGlobal: true,
             }),
             mongoose_1.MongooseModule.forRoot(process.env.MONGO_URI),
             auth_module_1.AuthModule.forRoot(),
             media_upload_module_1.MediaUploadModule,
             deal_module_1.DealModule,
+            orders_module_1.OrdersModule,
             category_module_1.CategoryModule,
             review_module_1.ReviewModule,
+            users_module_1.UsersModule,
+            billing_module_1.BillingModule,
             users_module_1.UsersModule,
         ],
         controllers: [app_controller_1.AppController],

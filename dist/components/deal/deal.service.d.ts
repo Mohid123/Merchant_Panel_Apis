@@ -5,11 +5,11 @@ export declare class DealService {
     private readonly dealModel;
     private categorymodel;
     constructor(dealModel: Model<DealInterface>, categorymodel: Model<CategoryInterface>);
-    createDeal(dealDto: any): Promise<DealInterface & {
+    createDeal(dealDto: any, req: any): Promise<DealInterface & {
         _id: any;
     }>;
     approveRejectDeal(dealID: any, dealStatusDto: any): Promise<import("mongodb").UpdateResult>;
-    getAllDeals(offset: any, limit: any): Promise<{
+    getAllDeals(req: any, offset: any, limit: any): Promise<{
         totalCount: number;
         data: any[];
     }>;
@@ -18,5 +18,29 @@ export declare class DealService {
     }>;
     getDealByMerchant(id: any): Promise<DealInterface & {
         _id: any;
+    }>;
+    getDeals(title: any, price: any, startDate: any, endDate: any, dateFrom: any, dateTo: any, offset: any, limit: any, req: any): Promise<{
+        totalDeals: number;
+        deals: any[];
+    }>;
+    getSalesStatistics(req: any): Promise<{
+        monthlyStats: {
+            totalDeals: number;
+            scheduledDeals: number;
+            pendingDeals: number;
+            publishedDeals: number;
+        }[];
+        yearlyStats: {
+            totalDeals: number;
+            scheduledDeals: number;
+            pendingDeals: number;
+            publishedDeals: number;
+        };
+        totalStats: {
+            totalDeals: number;
+            scheduledDeals: number;
+            pendingDeals: number;
+            publishedDeals: number;
+        };
     }>;
 }
