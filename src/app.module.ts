@@ -11,6 +11,7 @@ import { AuthModule } from './components/auth/auth.module';
 import { UsersModule } from './components/users/users.module';
 import { BillingModule } from './components/billing/billing.module';
 import { OrdersModule } from './components/orders/orders.module';
+import { ActivityModule } from './components/activity/activity.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { OrdersModule } from './components/orders/orders.module';
     UsersModule,
     BillingModule,
     UsersModule,
+    ActivityModule,
   ],
   controllers: [AppController],
   providers: [AppService],
