@@ -9,19 +9,24 @@ import { CategoryModule } from './components/category/category.module';
 import { ReviewModule } from './components/review/review.module';
 import { AuthModule } from './components/auth/auth.module';
 import { UsersModule } from './components/users/users.module';
+import { BillingModule } from './components/billing/billing.module';
+import { OrdersModule } from './components/orders/orders.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       envFilePath: 'src/config/development.env',
-      isGlobal: true
+      isGlobal: true,
     }),
     MongooseModule.forRoot(process.env.MONGO_URI),
     AuthModule.forRoot(),
     MediaUploadModule,
     DealModule,
+    OrdersModule,
     CategoryModule,
     ReviewModule,
+    UsersModule,
+    BillingModule,
     UsersModule,
   ],
   controllers: [AppController],
