@@ -4,6 +4,7 @@ import { Model } from 'mongoose';
 import { AMOUNTENUM } from 'src/enum/sorting/sortamount.enum';
 import { NAMEENUM } from 'src/enum/sorting/sortcustomername.enum';
 import { TRANSACTIONDATEENUM } from 'src/enum/sorting/sorttransactiondate.enum';
+import { VOUCHERSTATUSENUM } from 'src/enum/voucher/voucherstatus.enum';
 import { OrderInterface } from '../../interface/orders/orders.interface';
 
 @Injectable()
@@ -85,7 +86,7 @@ export class OrdersService {
         }
     }
 
-    async getOrdersByMerchant(merchantID, dateFrom, dateTo, Name, Date, Amount, Fee, Net, offset, limit) {
+    async getOrdersByMerchant(merchantID, dateFrom, dateTo, Name, Date, Amount, Fee, Net, filterStatus, offset, limit) {
         try {
             offset = parseInt(offset) < 0 ? 0 : offset;
             limit = parseInt(limit) < 1 ? 10 : limit;
@@ -194,6 +195,13 @@ export class OrdersService {
                   ...sortFilters,
                   netAmount: sortNet,
               };
+            }
+
+            if (filterStatus) {
+                matchFilter = {
+                    ...matchFilter,
+                    status: filterStatus
+                }
             }
 
             const totalCount = await this._orderModel.countDocuments({

@@ -6,8 +6,6 @@ import { CategoryInterface } from '../../interface/category/category.interface';
 import { DealInterface } from '../../interface/deal/deal.interface';
 import { generateStringId } from '../file-management/utils/utils';
 import { SORT } from '../../enum/sort/sort.enum';
-import { DealStatusDto } from 'src/dto/deal/updatedealstatus.dto';
-import { DealDto } from 'src/dto/deal/deal.dto';
 
 @Injectable()
 export class DealService {
