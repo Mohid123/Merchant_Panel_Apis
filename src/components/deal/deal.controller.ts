@@ -14,9 +14,8 @@ import { DealDto } from '../../dto/deal/deal.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { JwtAdminAuthGuard } from '../auth/jwt-admin-auth.guard';
 import { JwtMerchantAuthGuard } from '../auth/jwt-merchant-auth.guard';
-import { DealStatusDto } from 'src/dto/deal/updatedealstatus.dto';
-import { SORT } from '../../enum/sort/sort.enum';
-import e from 'express';
+import { DealStatusDto } from '../../dto/deal/updatedealstatus.dto';
+import { SORT } from 'src/enum/sort/sort.enum';
 
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
@@ -88,5 +87,10 @@ export class DealController {
       limit,
       req,
     );
+  }
+
+  @Get('getSalesStatistics')
+  getSalesStatistics(@Req() req) {
+    return this.dealService.getSalesStatistics(req);
   }
 }

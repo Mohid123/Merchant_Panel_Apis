@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { UsersInterface } from 'src/interface/user/users.interface';
-import { encodeImageToBlurhash } from '../file-management/utils/utils';
+import { UsersInterface } from '../../interface/user/users.interface';
+import { encodeImageToBlurhash, generateStringId } from '../file-management/utils/utils';
 
 @Injectable()
 export class UsersService {
@@ -23,15 +23,15 @@ export class UsersService {
             usersDto.profilePicURL
           );
 
-        return this._userModel.updateOne(usersDto)
+        return this._userModel.updateOne({_id: usersDto.id}, usersDto);
     }
 
     async deleteUser (id) {
-        return this._userModel.updateOne({_id: id} , {deletedCheck: true})
+        return this._userModel.updateOne({_id: id} , {deletedCheck: true});
     }
 
     async geUserById (id) {
-        return this._userModel.aggregate([
+        return await this._userModel.aggregate([
             {
                 $match: {
                     _id: id,
@@ -48,12 +48,14 @@ export class UsersService {
                     _id: 0
                 }
             }
-        ])
+        ]);
     }
 
     async getAllUsers (offset, limit) {
         offset = parseInt(offset) < 0 ? 0 : offset;
         limit = parseInt(limit) < 1 ? 10 : limit;
+
+        const totalCount = await this._userModel.countDocuments({deletedCheck: false});
 
         const users = await this._userModel.aggregate([
             {
@@ -76,8 +78,13 @@ export class UsersService {
                     _id: 0
                 }
             }
-        ]);
+        ])
+        .skip(parseInt(offset))
+        .limit(parseInt(limit));
 
-        return users;
+        return {
+            totalCount: totalCount,
+            data: users
+        };
     }
 }

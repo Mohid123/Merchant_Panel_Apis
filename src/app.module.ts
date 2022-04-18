@@ -10,6 +10,7 @@ import { ReviewModule } from './components/review/review.module';
 import { AuthModule } from './components/auth/auth.module';
 import { UsersModule } from './components/users/users.module';
 import { BillingModule } from './components/billing/billing.module';
+import { OrdersModule } from './components/orders/orders.module';
 
 @Module({
   imports: [
@@ -21,10 +22,12 @@ import { BillingModule } from './components/billing/billing.module';
     AuthModule.forRoot(),
     MediaUploadModule,
     DealModule,
+    OrdersModule,
     CategoryModule,
     ReviewModule,
     UsersModule,
     BillingModule,
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
