@@ -16,6 +16,7 @@ exports.BillingService = void 0;
 const common_1 = require("@nestjs/common");
 const mongoose_1 = require("@nestjs/mongoose");
 const mongoose_2 = require("mongoose");
+const sort_enum_1 = require("../../enum/sort/sort.enum");
 let BillingService = class BillingService {
     constructor(billingModel) {
         this.billingModel = billingModel;
@@ -68,6 +69,69 @@ let BillingService = class BillingService {
                 totalBilling,
                 data: billings,
             };
+        }
+        catch (err) {
+            throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
+        }
+    }
+    async getBillingsByMerchant(paymentMethod, amount, date, status, dateFrom, dateTo, offset, limit, merchantId) {
+        try {
+            offset = parseInt(offset) < 0 ? 0 : offset;
+            limit = parseInt(limit) < 1 ? 10 : limit;
+            dateFrom = parseInt(dateFrom);
+            dateTo = parseInt(dateTo);
+            let dateToFilters = {};
+            let dateFromFilters = {};
+            let matchFilter = {};
+            if (status) {
+                matchFilter = Object.assign(Object.assign({}, matchFilter), { status: status });
+            }
+            if (dateFrom) {
+                dateFromFilters = Object.assign(Object.assign({}, dateFromFilters), { $gte: dateFrom });
+            }
+            if (dateTo) {
+                dateToFilters = Object.assign(Object.assign({}, dateToFilters), { $lte: dateTo });
+            }
+            if (dateFrom || dateTo) {
+                matchFilter = Object.assign(Object.assign({}, matchFilter), { transactionDate: Object.assign(Object.assign({}, dateFromFilters), dateToFilters) });
+            }
+            let sort = {};
+            if (paymentMethod) {
+                let sortByPayment = paymentMethod == sort_enum_1.SORT.ASC ? 1 : -1;
+                console.log('paymentMethod');
+                sort = Object.assign(Object.assign({}, sort), { paymentMethod: sortByPayment });
+            }
+            if (amount) {
+                let sortamount = amount == sort_enum_1.SORT.ASC ? 1 : -1;
+                console.log('amount');
+                sort = Object.assign(Object.assign({}, sort), { amount: sortamount });
+            }
+            if (date) {
+                let sortDate = date == sort_enum_1.SORT.ASC ? 1 : -1;
+                console.log('date');
+                sort = Object.assign(Object.assign({}, sort), { transactionDate: sortDate });
+            }
+            if (Object.keys(sort).length === 0 && sort.constructor === Object) {
+                sort = {
+                    createdAt: 1,
+                };
+            }
+            console.log(sort);
+            console.log(matchFilter);
+            console.log(status);
+            const totalCount = await this.billingModel.countDocuments(Object.assign({ merchantID: merchantId }, matchFilter));
+            const billings = await this.billingModel
+                .aggregate([
+                {
+                    $match: Object.assign({ merchantID: merchantId }, matchFilter),
+                },
+                {
+                    $sort: sort,
+                },
+            ])
+                .skip(parseInt(offset))
+                .limit(parseInt(limit));
+            return { totalBillings: totalCount, billings };
         }
         catch (err) {
             throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);

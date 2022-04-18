@@ -16,6 +16,9 @@ exports.BillingController = void 0;
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const billing_dto_1 = require("../../dto/billing/billing.dto");
+const billingStatus_enum_1 = require("../../enum/billing/billingStatus.enum");
+const sort_enum_1 = require("../../enum/sort/sort.enum");
+const jwt_auth_guard_1 = require("../auth/jwt-auth.guard");
 const billing_service_1 = require("./billing.service");
 let BillingController = class BillingController {
     constructor(billingService) {
@@ -29,6 +32,9 @@ let BillingController = class BillingController {
     }
     getAllBillings(offset = 0, limit = 10) {
         return this.billingService.getAllBillings(offset, limit);
+    }
+    getBillingsByMerchant(paymentMethod, amount, date, status, dateFrom, dateTo, offset = 0, limit = 10, merchantId) {
+        return this.billingService.getBillingsByMerchant(paymentMethod, amount, date, status, dateFrom, dateTo, offset, limit, merchantId);
     }
 };
 __decorate([
@@ -53,7 +59,30 @@ __decorate([
     __metadata("design:paramtypes", [Number, Number]),
     __metadata("design:returntype", void 0)
 ], BillingController.prototype, "getAllBillings", null);
+__decorate([
+    (0, swagger_1.ApiQuery)({ name: 'paymentMethod', enum: sort_enum_1.SORT, required: false }),
+    (0, swagger_1.ApiQuery)({ name: 'amount', enum: sort_enum_1.SORT, required: false }),
+    (0, swagger_1.ApiQuery)({ name: 'date', enum: sort_enum_1.SORT, required: false }),
+    (0, swagger_1.ApiQuery)({ name: 'status', enum: billingStatus_enum_1.BILLINGSTATUS, required: false }),
+    (0, swagger_1.ApiQuery)({ name: 'dateFrom', required: false }),
+    (0, swagger_1.ApiQuery)({ name: 'dateTo', required: false }),
+    (0, common_1.Get)('getBillingsByMerchant/:merchantId'),
+    __param(0, (0, common_1.Query)('paymentMethod')),
+    __param(1, (0, common_1.Query)('amount')),
+    __param(2, (0, common_1.Query)('date')),
+    __param(3, (0, common_1.Query)('status')),
+    __param(4, (0, common_1.Query)('dateFrom')),
+    __param(5, (0, common_1.Query)('dateTo')),
+    __param(6, (0, common_1.Query)('offset')),
+    __param(7, (0, common_1.Query)('limit')),
+    __param(8, (0, common_1.Param)('merchantId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, String, String, Number, Number, Number, Number, String]),
+    __metadata("design:returntype", void 0)
+], BillingController.prototype, "getBillingsByMerchant", null);
 BillingController = __decorate([
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, swagger_1.ApiTags)('Billing'),
     (0, common_1.Controller)('billing'),
     __metadata("design:paramtypes", [billing_service_1.BillingService])

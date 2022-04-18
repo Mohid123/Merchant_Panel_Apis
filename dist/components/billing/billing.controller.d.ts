@@ -1,4 +1,6 @@
 import { BillingDto } from 'src/dto/billing/billing.dto';
+import { BILLINGSTATUS } from 'src/enum/billing/billingStatus.enum';
+import { SORT } from 'src/enum/sort/sort.enum';
 import { BillingService } from './billing.service';
 export declare class BillingController {
     private readonly billingService;
@@ -12,5 +14,9 @@ export declare class BillingController {
     getAllBillings(offset?: number, limit?: number): Promise<{
         totalBilling: number;
         data: any[];
+    }>;
+    getBillingsByMerchant(paymentMethod: SORT, amount: SORT, date: SORT, status: BILLINGSTATUS, dateFrom: number, dateTo: number, offset: number, limit: number, merchantId: string): Promise<{
+        totalBillings: number;
+        billings: any[];
     }>;
 }

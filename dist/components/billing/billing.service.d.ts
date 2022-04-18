@@ -13,4 +13,8 @@ export declare class BillingService {
         totalBilling: number;
         data: any[];
     }>;
+    getBillingsByMerchant(paymentMethod: any, amount: any, date: any, status: any, dateFrom: any, dateTo: any, offset: any, limit: any, merchantId: any): Promise<{
+        totalBillings: number;
+        billings: any[];
+    }>;
 }

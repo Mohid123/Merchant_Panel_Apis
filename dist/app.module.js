@@ -20,6 +20,7 @@ const auth_module_1 = require("./components/auth/auth.module");
 const users_module_1 = require("./components/users/users.module");
 const billing_module_1 = require("./components/billing/billing.module");
 const orders_module_1 = require("./components/orders/orders.module");
+const activity_module_1 = require("./components/activity/activity.module");
 let AppModule = class AppModule {
 };
 AppModule = __decorate([
@@ -39,6 +40,7 @@ AppModule = __decorate([
             users_module_1.UsersModule,
             billing_module_1.BillingModule,
             users_module_1.UsersModule,
+            activity_module_1.ActivityModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],
