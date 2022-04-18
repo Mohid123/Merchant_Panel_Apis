@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { BillingDto } from 'src/dto/billing/billing.dto';
+import { BILLINGSTATUS } from 'src/enum/billing/billingStatus.enum';
 import { SORT } from 'src/enum/sort/sort.enum';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { BillingService } from './billing.service';
@@ -42,28 +43,31 @@ export class BillingController {
   @ApiQuery({ name: 'paymentMethod', enum: SORT, required: false })
   @ApiQuery({ name: 'amount', enum: SORT, required: false })
   @ApiQuery({ name: 'date', enum: SORT, required: false })
+  @ApiQuery({ name: 'status', enum: BILLINGSTATUS, required: false })
   @ApiQuery({ name: 'dateFrom', required: false })
   @ApiQuery({ name: 'dateTo', required: false })
-  @Get('getBillingsByMerchant')
+  @Get('getBillingsByMerchant/:merchantId')
   getBillingsByMerchant(
     @Query('paymentMethod') paymentMethod: SORT,
     @Query('amount') amount: SORT,
     @Query('date') date: SORT,
+    @Query('status') status: BILLINGSTATUS,
     @Query('dateFrom') dateFrom: number,
     @Query('dateTo') dateTo: number,
     @Query('offset') offset: number = 0,
     @Query('limit') limit: number = 10,
-    @Req() req,
+    @Param('merchantId') merchantId: string,
   ) {
     return this.billingService.getBillingsByMerchant(
       paymentMethod,
       amount,
       date,
+      status,
       dateFrom,
       dateTo,
       offset,
       limit,
-      req,
+      merchantId,
     );
   }
 }

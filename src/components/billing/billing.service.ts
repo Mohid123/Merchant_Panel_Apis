@@ -1,5 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { stat } from 'fs';
 import { Model } from 'mongoose';
 import { SORT } from 'src/enum/sort/sort.enum';
 import { BillingInterface } from 'src/interface/billing/billing.interface';
@@ -73,11 +74,12 @@ export class BillingService {
     paymentMethod,
     amount,
     date,
+    status,
     dateFrom,
     dateTo,
     offset,
     limit,
-    req,
+    merchantId,
   ) {
     try {
       offset = parseInt(offset) < 0 ? 0 : offset;
@@ -89,6 +91,13 @@ export class BillingService {
       let dateToFilters = {};
       let dateFromFilters = {};
       let matchFilter = {};
+
+      if (status) {
+        matchFilter = {
+          ...matchFilter,
+          status: status,
+        };
+      }
 
       if (dateFrom) {
         dateFromFilters = {
@@ -149,9 +158,10 @@ export class BillingService {
 
       console.log(sort);
       console.log(matchFilter);
+      console.log(status);
 
       const totalCount = await this.billingModel.countDocuments({
-        merchantID: req.user.id,
+        merchantID: merchantId,
         ...matchFilter,
       });
 
@@ -159,7 +169,7 @@ export class BillingService {
         .aggregate([
           {
             $match: {
-              merchantID: req.user.id,
+              merchantID: merchantId,
               ...matchFilter,
             },
           },
