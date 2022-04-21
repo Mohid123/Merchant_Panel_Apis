@@ -8,10 +8,10 @@ export class ReviewDto {
   dealId: string;
 
   @ApiProperty()
-  customerId: string;
+  customerID: string;
 
   @ApiProperty()
-  merchantId: string;
+  merchantID: string;
 
   @ApiProperty()
   text: string;

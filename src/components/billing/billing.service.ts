@@ -39,7 +39,9 @@ export class BillingService {
     try {
       offset = parseInt(offset) < 0 ? 0 : offset;
       limit = parseInt(limit) < 1 ? 10 : limit;
+
       const totalBilling = await this.billingModel.countDocuments();
+
       let billings = await this.billingModel
         .aggregate([
           {
@@ -65,6 +67,7 @@ export class BillingService {
         totalBilling,
         data: billings,
       };
+      
     } catch (err) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
     }
@@ -172,6 +175,16 @@ export class BillingService {
               merchantID: merchantId,
               ...matchFilter,
             },
+          },
+          {
+            $addFields: {
+              id: '$_id'
+            }
+          },
+          {
+            $project: {
+              _id: 0
+            }
           },
           {
             $sort: sort,

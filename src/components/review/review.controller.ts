@@ -17,6 +17,11 @@ export class ReviewController {
     return this.reviewService.createReview(revieDto);
   }
 
+  @Post('deleteReview/:reviewID')
+  deleteReview (@Param('reviewID') reviewID:string) {
+    return this.reviewService.deleteReview(reviewID)
+  }
+
   @Get('getAllReviews')
   getAllReviews(
     @Query('offset') offset: number = 0,
@@ -24,10 +29,12 @@ export class ReviewController {
     return this.reviewService.getAllReviews(offset, limit);
   }
 
-  @Post('updateReview')
-  updateReview(
-    @Body() updateReviewDto: UpdateReviewDto
+  @Get('getReviewsByMerchant/:merchantId')
+  getReviewsByMerchant (
+    @Param('merchantId') merchantId:string,
+    @Query('offset') offset: number = 0,
+    @Query('limit') limit: number = 10
   ) {
-    return this.reviewService.updateReview(updateReviewDto);
+    return this.reviewService.getReviewsByMerchant(merchantId, offset, limit)
   }
 }

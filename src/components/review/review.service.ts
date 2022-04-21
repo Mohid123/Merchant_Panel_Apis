@@ -19,6 +19,10 @@ export class ReviewService {
     }
   }
 
+  async deleteReview (id) {
+    return this.reviewModel.findOneAndDelete({_id:id})
+  }
+
   async getAllReviews(offset, limit) {
     try {
 
@@ -57,9 +61,42 @@ export class ReviewService {
     }
   }
 
-  async updateReview(updateReviewDto) {
+  async getReviewsByMerchant (merchantId, offset, limit) {
     try {
-      return await this.reviewModel.updateOne({_id: updateReviewDto.id}, updateReviewDto);
+      offset = parseInt(offset) < 0 ? 0 : offset;
+      limit = parseInt(limit) < 1 ? 10 : limit;
+
+      const totalCount = await this.reviewModel.countDocuments({merchantID: merchantId});
+
+      const reviews = await this.reviewModel.aggregate([
+        {
+          $match: {
+            merchantID: merchantId
+          }
+        },
+        {
+          $sort: {
+            createdAt: -1
+          }
+        },
+        {
+          $addFields: {
+            id: '$_id'
+          }
+        },
+        {
+          $project: {
+            _id: 0
+          }
+        }
+      ])
+      .skip(parseInt(offset))
+      .limit(parseInt(limit));
+
+      return {
+        totalCount: totalCount,
+        data: reviews
+      }
     } catch (err) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
     }
