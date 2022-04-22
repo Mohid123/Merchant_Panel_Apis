@@ -21,6 +21,8 @@ const users_module_1 = require("./components/users/users.module");
 const billing_module_1 = require("./components/billing/billing.module");
 const orders_module_1 = require("./components/orders/orders.module");
 const activity_module_1 = require("./components/activity/activity.module");
+const vouchers_module_1 = require("./components/vouchers/vouchers.module");
+const invoices_module_1 = require("./components/invoices/invoices.module");
 let AppModule = class AppModule {
 };
 AppModule = __decorate([
@@ -32,15 +34,16 @@ AppModule = __decorate([
             }),
             mongoose_1.MongooseModule.forRoot(process.env.MONGO_URI),
             auth_module_1.AuthModule.forRoot(),
-            media_upload_module_1.MediaUploadModule,
+            users_module_1.UsersModule,
             deal_module_1.DealModule,
-            orders_module_1.OrdersModule,
             category_module_1.CategoryModule,
+            orders_module_1.OrdersModule,
             review_module_1.ReviewModule,
-            users_module_1.UsersModule,
             billing_module_1.BillingModule,
-            users_module_1.UsersModule,
             activity_module_1.ActivityModule,
+            media_upload_module_1.MediaUploadModule,
+            vouchers_module_1.VouchersModule,
+            invoices_module_1.InvoicesModule
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],

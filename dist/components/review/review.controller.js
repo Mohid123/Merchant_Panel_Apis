@@ -16,7 +16,6 @@ exports.ReviewController = void 0;
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const review_dto_1 = require("../../dto/review/review.dto");
-const updateReview_dto_1 = require("../../dto/review/updateReview.dto");
 const jwt_auth_guard_1 = require("../auth/jwt-auth.guard");
 const review_service_1 = require("./review.service");
 let ReviewController = class ReviewController {
@@ -26,11 +25,14 @@ let ReviewController = class ReviewController {
     createReview(revieDto) {
         return this.reviewService.createReview(revieDto);
     }
+    deleteReview(reviewID) {
+        return this.reviewService.deleteReview(reviewID);
+    }
     getAllReviews(offset = 0, limit = 10) {
         return this.reviewService.getAllReviews(offset, limit);
     }
-    updateReview(updateReviewDto) {
-        return this.reviewService.updateReview(updateReviewDto);
+    getReviewsByMerchant(merchantId, offset = 0, limit = 10) {
+        return this.reviewService.getReviewsByMerchant(merchantId, offset, limit);
     }
 };
 __decorate([
@@ -41,6 +43,13 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], ReviewController.prototype, "createReview", null);
 __decorate([
+    (0, common_1.Post)('deleteReview/:reviewID'),
+    __param(0, (0, common_1.Param)('reviewID')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], ReviewController.prototype, "deleteReview", null);
+__decorate([
     (0, common_1.Get)('getAllReviews'),
     __param(0, (0, common_1.Query)('offset')),
     __param(1, (0, common_1.Query)('limit')),
@@ -49,12 +58,14 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], ReviewController.prototype, "getAllReviews", null);
 __decorate([
-    (0, common_1.Post)('updateReview'),
-    __param(0, (0, common_1.Body)()),
+    (0, common_1.Get)('getReviewsByMerchant/:merchantId'),
+    __param(0, (0, common_1.Param)('merchantId')),
+    __param(1, (0, common_1.Query)('offset')),
+    __param(2, (0, common_1.Query)('limit')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [updateReview_dto_1.UpdateReviewDto]),
+    __metadata("design:paramtypes", [String, Number, Number]),
     __metadata("design:returntype", void 0)
-], ReviewController.prototype, "updateReview", null);
+], ReviewController.prototype, "getReviewsByMerchant", null);
 ReviewController = __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, swagger_1.ApiBearerAuth)(),

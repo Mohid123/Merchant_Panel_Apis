@@ -18,12 +18,19 @@ const swagger_1 = require("@nestjs/swagger");
 const category_service_1 = require("./category.service");
 const category_dto_1 = require("../../dto/category/category.dto");
 const jwt_auth_guard_1 = require("../auth/jwt-auth.guard");
+const subcategory_dto_1 = require("../../dto/category/subcategory.dto");
 let CategoryController = class CategoryController {
     constructor(categoryService) {
         this.categoryService = categoryService;
     }
     createCategory(categoryDto) {
         return this.categoryService.createCategory(categoryDto);
+    }
+    createSubCategory(subCategoryDto) {
+        return this.categoryService.createSubCategory(subCategoryDto);
+    }
+    getAllCategories(offset = 0, limit = 10) {
+        return this.categoryService.getAllCategories(offset, limit);
     }
 };
 __decorate([
@@ -33,6 +40,21 @@ __decorate([
     __metadata("design:paramtypes", [category_dto_1.CategoryDto]),
     __metadata("design:returntype", void 0)
 ], CategoryController.prototype, "createCategory", null);
+__decorate([
+    (0, common_1.Post)('createSubCategory'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [subcategory_dto_1.SubCategoryDTO]),
+    __metadata("design:returntype", void 0)
+], CategoryController.prototype, "createSubCategory", null);
+__decorate([
+    (0, common_1.Get)('getAllCategories'),
+    __param(0, (0, common_1.Query)('offset')),
+    __param(1, (0, common_1.Query)('limit')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, Number]),
+    __metadata("design:returntype", void 0)
+], CategoryController.prototype, "getAllCategories", null);
 CategoryController = __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, swagger_1.ApiBearerAuth)(),

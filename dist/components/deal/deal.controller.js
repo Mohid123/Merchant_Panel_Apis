@@ -35,8 +35,8 @@ let DealController = class DealController {
     getDeal(id) {
         return this.dealService.getDeal(id);
     }
-    getDealByMerchant(merchantId) {
-        return this.dealService.getDealByMerchant(merchantId);
+    getDealsReviewStatsByMerchant(merchantId, offset = 0, limit = 10) {
+        return this.dealService.getDealsReviewStatsByMerchant(merchantId, offset, merchantId);
     }
     getAllDeals(offset = 0, limit = 10, req) {
         return this.dealService.getAllDeals(req, offset, limit);
@@ -46,6 +46,12 @@ let DealController = class DealController {
     }
     getSalesStatistics(req) {
         return this.dealService.getSalesStatistics(req);
+    }
+    getDealReviews(id) {
+        return this.dealService.getDealReviews(id);
+    }
+    getTopRatedDeals(merchantId) {
+        return this.dealService.getTopRatedDeals(merchantId);
     }
 };
 __decorate([
@@ -74,12 +80,14 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], DealController.prototype, "getDeal", null);
 __decorate([
-    (0, common_1.Get)('getDealByMerchant/:merchantId'),
+    (0, common_1.Get)('getDealsReviewStatsByMerchant/:merchantId'),
     __param(0, (0, common_1.Param)('merchantId')),
+    __param(1, (0, common_1.Query)('offset')),
+    __param(2, (0, common_1.Query)('limit')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, Number, Number]),
     __metadata("design:returntype", void 0)
-], DealController.prototype, "getDealByMerchant", null);
+], DealController.prototype, "getDealsReviewStatsByMerchant", null);
 __decorate([
     (0, common_1.Get)('getAllDeals'),
     __param(0, (0, common_1.Query)('offset')),
@@ -117,6 +125,20 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], DealController.prototype, "getSalesStatistics", null);
+__decorate([
+    (0, common_1.Get)('getDealReviews/:id'),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], DealController.prototype, "getDealReviews", null);
+__decorate([
+    (0, common_1.Get)('getTopRatedDeals/:merchantId'),
+    __param(0, (0, common_1.Param)('merchantId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], DealController.prototype, "getTopRatedDeals", null);
 DealController = __decorate([
     (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),

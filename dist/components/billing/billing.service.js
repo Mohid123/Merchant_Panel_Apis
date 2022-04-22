@@ -126,6 +126,16 @@ let BillingService = class BillingService {
                     $match: Object.assign({ merchantID: merchantId }, matchFilter),
                 },
                 {
+                    $addFields: {
+                        id: '$_id'
+                    }
+                },
+                {
+                    $project: {
+                        _id: 0
+                    }
+                },
+                {
                     $sort: sort,
                 },
             ])

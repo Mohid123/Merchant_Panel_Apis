@@ -38,8 +38,27 @@ exports.UsersSchema = new mongoose.Schema({
     scheduledDeals: { type: Number, default: 0 },
     pendingDeals: { type: Number, default: 0 },
     soldDeals: { type: Number, default: 0 },
+    ratingsAverage: {
+        type: Number,
+        default: 4.5,
+        min: [1, 'Rating must be above 1.0'],
+        max: [5, 'Rating must be below 5.0'],
+        set: (val) => Math.round(val * 10) / 10,
+    },
+    totalReviews: {
+        type: Number,
+        default: 0,
+    },
+    maxRating: {
+        type: Number,
+        default: 0,
+    },
+    minRating: {
+        type: Number,
+        default: 0,
+    },
 }, {
-    collection: 'users'
+    collection: 'users',
 });
 mongoose.model('User', exports.UsersSchema);
 exports.UsersSchema.set('timestamps', true);

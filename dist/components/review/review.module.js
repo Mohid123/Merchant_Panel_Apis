@@ -12,6 +12,8 @@ const mongoose_1 = require("@nestjs/mongoose");
 const review_controller_1 = require("./review.controller");
 const review_service_1 = require("./review.service");
 const review_schema_1 = require("../../schema/review/review.schema");
+const deal_schema_1 = require("../../schema/deal/deal.schema");
+const users_schema_1 = require("../../schema/user/users.schema");
 let ReviewModule = class ReviewModule {
 };
 ReviewModule = __decorate([
@@ -22,6 +24,8 @@ ReviewModule = __decorate([
                     name: 'Review',
                     schema: review_schema_1.ReviewSchema,
                 },
+                { name: 'Deal', schema: deal_schema_1.DealSchema },
+                { name: 'User', schema: users_schema_1.UsersSchema },
             ]),
         ],
         controllers: [review_controller_1.ReviewController],

@@ -16,6 +16,6 @@ class CategoryDto {
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
-], CategoryDto.prototype, "type", void 0);
+], CategoryDto.prototype, "categoryName", void 0);
 exports.CategoryDto = CategoryDto;
 //# sourceMappingURL=category.dto.js.map

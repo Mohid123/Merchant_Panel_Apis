@@ -24,11 +24,11 @@ __decorate([
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
-], ReviewDto.prototype, "customerId", void 0);
+], ReviewDto.prototype, "customerID", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
-], ReviewDto.prototype, "merchantId", void 0);
+], ReviewDto.prototype, "merchantID", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)

@@ -1,14 +1,24 @@
 import { Model } from 'mongoose';
+import { DealInterface } from 'src/interface/deal/deal.interface';
+import { UsersInterface } from 'src/interface/user/users.interface';
 import { ReviewInterface } from '../../interface/review/review.interface';
 export declare class ReviewService {
     private readonly reviewModel;
-    constructor(reviewModel: Model<ReviewInterface>);
+    private readonly dealModel;
+    private readonly userModel;
+    constructor(reviewModel: Model<ReviewInterface>, dealModel: Model<DealInterface>, userModel: Model<UsersInterface>);
     createReview(reviewDto: any): Promise<ReviewInterface & {
+        _id: any;
+    }>;
+    deleteReview(id: any): Promise<ReviewInterface & {
         _id: any;
     }>;
     getAllReviews(offset: any, limit: any): Promise<{
         totalCount: number;
         data: any[];
     }>;
-    updateReview(updateReviewDto: any): Promise<import("mongodb").UpdateResult>;
+    getReviewsByMerchant(merchantId: any, offset: any, limit: any): Promise<{
+        totalCount: number;
+        data: any[];
+    }>;
 }

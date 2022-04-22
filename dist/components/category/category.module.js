@@ -12,12 +12,14 @@ const mongoose_1 = require("@nestjs/mongoose");
 const category_controller_1 = require("./category.controller");
 const category_schema_1 = require("../../schema/category/category.schema");
 const category_service_1 = require("./category.service");
+const subcategory_schema_1 = require("../../schema/category/subcategory.schema");
 let CategoryModule = class CategoryModule {
 };
 CategoryModule = __decorate([
     (0, common_1.Module)({
         imports: [
             mongoose_1.MongooseModule.forFeature([{ name: 'Category', schema: category_schema_1.CategorySchema }]),
+            mongoose_1.MongooseModule.forFeature([{ name: 'SubCategory', schema: subcategory_schema_1.SubCategorySchema }]),
         ],
         controllers: [category_controller_1.CategoryController],
         providers: [category_service_1.CategoryService],

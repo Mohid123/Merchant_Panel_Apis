@@ -16,13 +16,16 @@ export declare class DealService {
     getDeal(id: any): Promise<DealInterface & {
         _id: any;
     }>;
-    getDealByMerchant(id: any): Promise<DealInterface & {
-        _id: any;
+    getDealReviews(id: any): Promise<any[]>;
+    getDealsReviewStatsByMerchant(id: any, offset: any, limit: any): Promise<{
+        totalDeals: number;
+        data: any[];
     }>;
     getDeals(title: any, price: any, startDate: any, endDate: any, dateFrom: any, dateTo: any, offset: any, limit: any, req: any): Promise<{
         totalDeals: number;
         deals: any[];
     }>;
+    getTopRatedDeals(merchantId: any): Promise<any[]>;
     getSalesStatistics(req: any): Promise<{
         monthlyStats: {
             totalDeals: number;

@@ -2,8 +2,8 @@ import { Document } from 'mongoose';
 export interface ReviewInterface extends Document {
     id: string;
     dealId: string;
-    customerId: string;
-    merchantId: string;
+    customerID: string;
+    merchantID: string;
     text: string;
     rating: number;
     customerEmail: string;

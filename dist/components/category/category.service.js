@@ -17,8 +17,9 @@ const common_1 = require("@nestjs/common");
 const mongoose_1 = require("@nestjs/mongoose");
 const mongoose_2 = require("mongoose");
 let CategoryService = class CategoryService {
-    constructor(categoryModel) {
+    constructor(categoryModel, subCategoryModel) {
         this.categoryModel = categoryModel;
+        this.subCategoryModel = subCategoryModel;
     }
     async createCategory(categoryDto) {
         try {
@@ -29,11 +30,55 @@ let CategoryService = class CategoryService {
             throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
         }
     }
+    async createSubCategory(subCategoryDto) {
+        try {
+            let subCategory = await this.subCategoryModel.create(subCategoryDto);
+            return subCategory;
+        }
+        catch (err) {
+            throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
+        }
+    }
+    async getAllCategories(offset, limit) {
+        try {
+            offset = parseInt(offset) < 0 ? 0 : offset;
+            limit = parseInt(limit) < 1 ? 10 : limit;
+            const totalCount = await this.categoryModel.countDocuments();
+            let categories = await this.categoryModel.aggregate([
+                {
+                    $sort: {
+                        createdAt: -1
+                    }
+                },
+                {
+                    $addFields: {
+                        id: '$_id'
+                    }
+                },
+                {
+                    $project: {
+                        _id: 0
+                    }
+                }
+            ])
+                .skip(parseInt(offset))
+                .limit(parseInt(limit));
+            return {
+                totalCount: totalCount,
+                data: categories
+            };
+        }
+        catch (err) {
+            throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
+        }
+    }
 };
 CategoryService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, mongoose_1.InjectModel)('Category')),
-    __metadata("design:paramtypes", [mongoose_2.Model])
+    __param(1, (0, mongoose_1.InjectModel)('SubCategory')),
+    __metadata("design:paramtypes", [mongoose_2.Model,
+        mongoose_2.Model])
 ], CategoryService);
 exports.CategoryService = CategoryService;
 //# sourceMappingURL=category.service.js.map

@@ -5,7 +5,7 @@ const mongoose = require("mongoose");
 const utils_1 = require("../../components/file-management/utils/utils");
 exports.CategorySchema = new mongoose.Schema({
     _id: { type: String, default: utils_1.generateStringId },
-    type: { type: String, default: '' },
+    categoryName: { type: String, default: '' },
 }, {
     collection: 'categories',
 });
