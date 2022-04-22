@@ -12,6 +12,8 @@ import { UsersModule } from './components/users/users.module';
 import { BillingModule } from './components/billing/billing.module';
 import { OrdersModule } from './components/orders/orders.module';
 import { ActivityModule } from './components/activity/activity.module';
+import { VouchersModule } from './components/vouchers/vouchers.module';
+import { InvoicesModule } from './components/invoices/invoices.module';
 
 @Module({
   imports: [
@@ -29,6 +31,8 @@ import { ActivityModule } from './components/activity/activity.module';
     BillingModule,
     ActivityModule,
     MediaUploadModule,
+    VouchersModule,
+    InvoicesModule
   ],
   controllers: [AppController],
   providers: [AppService],
