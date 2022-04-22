@@ -338,6 +338,29 @@ export class DealService {
     }
   }
 
+  async getTopRatedDeals(merchantId) {
+    try {
+      const deals = this.dealModel
+        .aggregate([
+          {
+            $match: {
+              merchantId: merchantId,
+            },
+          },
+          {
+            $sort: {
+              ratingsAverage: -1,
+            },
+          },
+        ])
+        .limit(5);
+
+      return deals;
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
   //   async createVoucher(voucherDto) {
   //     try {
   //       let dealId = voucherDto.dealId;
