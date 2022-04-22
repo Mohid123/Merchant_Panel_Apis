@@ -44,9 +44,17 @@ export class DealController {
     return this.dealService.getDeal(id);
   }
 
-  @Get('getDealByMerchant/:merchantId')
-  getDealByMerchant(@Param('merchantId') merchantId: string) {
-    return this.dealService.getDealByMerchant(merchantId);
+  @Get('getDealsReviewStatsByMerchant/:merchantId')
+  getDealsReviewStatsByMerchant(
+    @Param('merchantId') merchantId: string,
+    @Query('offset') offset: number = 0,
+    @Query('limit') limit: number = 10,
+  ) {
+    return this.dealService.getDealsReviewStatsByMerchant(
+      merchantId,
+      offset,
+      merchantId,
+    );
   }
 
   @Get('getAllDeals')
@@ -92,5 +100,10 @@ export class DealController {
   @Get('getSalesStatistics')
   getSalesStatistics(@Req() req) {
     return this.dealService.getSalesStatistics(req);
+  }
+
+  @Get('getDealReviews/:id')
+  getDealReviews(@Param('id') id: string) {
+    return this.dealService.getDealReviews(id);
   }
 }
