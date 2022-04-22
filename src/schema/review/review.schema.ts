@@ -7,8 +7,8 @@ export const ReviewSchema = new mongoose.Schema(
   {
     _id: { type: String, default: generateStringId },
     dealId: { type: String, default: '' },
-    customerId: { type: String, default: '' },
-    merchantId: { type: String, default: '' },
+    customerID: { type: String, default: '' },
+    merchantID: { type: String, default: '' },
     text: {
       type: String,
       required: [true, 'A review must not be empty.'],

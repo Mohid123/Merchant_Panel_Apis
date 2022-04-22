@@ -1,4 +1,4 @@
-export enum VOUCHERENUM {
+export enum VOUCHERSTATUSENUM {
     purchased = 'Purchased',
     redeeemed = 'Redeemed'
 }
