@@ -9,8 +9,16 @@ export const ReviewSchema = new mongoose.Schema(
     dealId: { type: String, default: '' },
     customerID: { type: String, default: '' },
     merchantID: { type: String, default: '' },
-    text: { type: String, default: '' },
-    rating: { type: Number, default: 0 },
+    text: {
+      type: String,
+      required: [true, 'A review must not be empty.'],
+      trim: true,
+    },
+    rating: {
+      type: Number,
+      min: [1, 'Rating must be above or equal to 1.0'],
+      max: [5, 'Rating must be below or equal to 5.0'],
+    },
     customerEmail: {
       type: String,
       required: [true, 'Please provide email'],

@@ -17,7 +17,26 @@ export const DealSchema = new mongoose.Schema(
     termsAndCondition: { type: String },
     merchantId: { type: String },
     dealStatus: { type: String, default: '' },
-    deletedCheck: { type: Boolean, default: false }
+    deletedCheck: { type: Boolean, default: false },
+    ratingsAverage: {
+      type: Number,
+      default: 0,
+      min: [0, 'Rating must be above 0.0'],
+      max: [5, 'Rating must be below 5.0'],
+      set: (val) => Math.round(val * 10) / 10,
+    },
+    totalReviews: {
+      type: Number,
+      default: 0,
+    },
+    maxRating: {
+      type: Number,
+      default: 0,
+    },
+    minRating: {
+      type: Number,
+      default: 0,
+    },
   },
   {
     collection: 'deals',
