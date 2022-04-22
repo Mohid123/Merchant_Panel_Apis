@@ -5,7 +5,7 @@ import { CategoryInterface } from '../../interface/category/category.interface';
 export const CategorySchema = new mongoose.Schema(
   {
     _id: { type: String, default: generateStringId },
-    type: { type: String, default: '' },
+    categoryName: { type: String, default: '' },
   },
   {
     collection: 'categories',

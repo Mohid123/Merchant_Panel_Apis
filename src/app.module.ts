@@ -12,6 +12,8 @@ import { UsersModule } from './components/users/users.module';
 import { BillingModule } from './components/billing/billing.module';
 import { OrdersModule } from './components/orders/orders.module';
 import { ActivityModule } from './components/activity/activity.module';
+import { VouchersModule } from './components/vouchers/vouchers.module';
+import { InvoicesModule } from './components/invoices/invoices.module';
 
 @Module({
   imports: [
@@ -21,15 +23,16 @@ import { ActivityModule } from './components/activity/activity.module';
     }),
     MongooseModule.forRoot(process.env.MONGO_URI),
     AuthModule.forRoot(),
-    MediaUploadModule,
+    UsersModule,
     DealModule,
-    OrdersModule,
     CategoryModule,
+    OrdersModule,
     ReviewModule,
-    UsersModule,
     BillingModule,
-    UsersModule,
     ActivityModule,
+    MediaUploadModule,
+    VouchersModule,
+    InvoicesModule
   ],
   controllers: [AppController],
   providers: [AppService],

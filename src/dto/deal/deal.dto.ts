@@ -33,8 +33,8 @@ export class DealDto {
         details: '',
         numberOfVouchers: 0,
         voucherValidity: 0,
-        voucherStartDate: Date(),
-        voucherEndDate: Date(),
+        voucherStartDate: new Date(),
+        voucherEndDate: new Date(),
       },
     ],
   })

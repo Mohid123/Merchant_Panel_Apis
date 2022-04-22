@@ -141,13 +141,73 @@ export class DealService {
     }
   }
 
-  async getDealByMerchant(id) {
+  async getDealReviews(id) {
     try {
-      const deal = await this.dealModel.findOne({
+      const deal = await this.dealModel.aggregate([
+        {
+          $match: {
+            _id: id,
+          },
+        },
+        {
+          $lookup: {
+            from: 'reviews',
+            localField: '_id',
+            foreignField: 'dealId',
+            as: 'Reviews',
+          },
+        },
+        {
+          $project: {
+            title: 1,
+            ratingsAverage: 1,
+            totalReviews: 1,
+            maxRating: 1,
+            minRating: 1,
+            Reviews: 1,
+          },
+        },
+      ]);
+      return deal;
+    } catch (err) {
+      throw new HttpException(err, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async getDealsReviewStatsByMerchant(id, offset, limit) {
+    try {
+      const totalCount = await this.dealModel.countDocuments({
         merchantId: id,
         deletedCheck: false,
       });
-      return deal;
+
+      // const deals = await this.dealModel
+      //   .find({
+      //     merchantId: id,
+      //     deletedCheck: false,
+      //   })
+      //   .skip(parseInt(offset))
+      //   .limit(parseInt(limit));
+
+      const deals = await this.dealModel.aggregate([
+        {
+          $match: {
+            merchantId: id,
+            deletedCheck: false,
+          },
+        },
+        {
+          $project: {
+            title: 1,
+            ratingsAverage: 1,
+            totalReviews: 1,
+            maxRating: 1,
+            minRating: 1,
+          },
+        },
+      ]);
+
+      return { totalDeals: totalCount, data: deals };
     } catch (err) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
     }
@@ -276,6 +336,29 @@ export class DealService {
     }
   }
 
+  async getTopRatedDeals(merchantId) {
+    try {
+      const deals = this.dealModel
+        .aggregate([
+          {
+            $match: {
+              merchantId: merchantId,
+            },
+          },
+          {
+            $sort: {
+              ratingsAverage: -1,
+            },
+          },
+        ])
+        .limit(5);
+
+      return deals;
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
   //   async createVoucher(voucherDto) {
   //     try {
   //       let dealId = voucherDto.dealId;
@@ -291,7 +374,7 @@ export class DealService {
   //     }
   //   }
 
-  async getSalesStatistics (req) {
+  async getSalesStatistics(req) {
     const totalStats = {
       totalDeals: 0,
       scheduledDeals: 0,
@@ -393,21 +476,32 @@ export class DealService {
       .sort({ startDate: 1 });
 
     scheduledDeals = await this.dealModel
-      .find({ merchantId: req.user.id, dealStatus: DEALSTATUS.scheduled, deletedCheck: false })
+      .find({
+        merchantId: req.user.id,
+        dealStatus: DEALSTATUS.scheduled,
+        deletedCheck: false,
+      })
       .sort({ startDate: 1 });
 
     pendingDeals = await this.dealModel
-      .find({ merchantId: req.user.id, nftStatus: DEALSTATUS.inReview, deletedCheck: false })
+      .find({
+        merchantId: req.user.id,
+        nftStatus: DEALSTATUS.inReview,
+        deletedCheck: false,
+      })
       .sort({ startDate: 1 });
 
-      publishedDeals = await this.dealModel
-      .find({ merchantId: req.user.id, deletedCheck: false, dealStatus: DEALSTATUS.published })
-      .sort({ startDate: 1 })
+    publishedDeals = await this.dealModel
+      .find({
+        merchantId: req.user.id,
+        deletedCheck: false,
+        dealStatus: DEALSTATUS.published,
+      })
+      .sort({ startDate: 1 });
 
-      totalDeals.forEach((data) => {
+    totalDeals.forEach((data) => {
       let currentDocDate = new Date(data.startDate);
-      totalStats.totalDeals =
-      totalStats.totalDeals + 1;
+      totalStats.totalDeals = totalStats.totalDeals + 1;
       if (currentDocDate.getFullYear() === currentDate.getFullYear()) {
         monthlyStats[currentDocDate.getMonth()].totalDeals =
           monthlyStats[currentDocDate.getMonth()].totalDeals + 1;
@@ -416,8 +510,7 @@ export class DealService {
 
     scheduledDeals.forEach((data) => {
       let currentDocDate = new Date(data.createdAt);
-      totalStats.scheduledDeals =
-      totalStats.scheduledDeals + 1;
+      totalStats.scheduledDeals = totalStats.scheduledDeals + 1;
       if (currentDocDate.getFullYear() === currentDate.getFullYear()) {
         monthlyStats[currentDocDate.getMonth()].scheduledDeals =
           monthlyStats[currentDocDate.getMonth()].scheduledDeals + 1;
@@ -433,20 +526,24 @@ export class DealService {
       }
     });
 
-    publishedDeals.forEach((data:any)=>{
+    publishedDeals.forEach((data: any) => {
       let currentDocDate = new Date(data.createdAt);
-      totalStats.publishedDeals = totalStats.publishedDeals + 1
+      totalStats.publishedDeals = totalStats.publishedDeals + 1;
       if (currentDocDate.getFullYear() === currentDate.getFullYear()) {
         monthlyStats[currentDocDate.getMonth()].publishedDeals =
-          monthlyStats[currentDocDate.getMonth()].publishedDeals + 1
+          monthlyStats[currentDocDate.getMonth()].publishedDeals + 1;
       }
     });
-    
+
     for (let i = 0; i < monthlyStats.length; i++) {
-      yearlyStats.totalDeals = yearlyStats.totalDeals + monthlyStats[i].totalDeals;
-      yearlyStats.scheduledDeals = yearlyStats.scheduledDeals + monthlyStats[i].scheduledDeals;
-      yearlyStats.pendingDeals = yearlyStats.pendingDeals + monthlyStats[i].pendingDeals;
-      yearlyStats.publishedDeals = yearlyStats.publishedDeals +  monthlyStats[i].publishedDeals;
+      yearlyStats.totalDeals =
+        yearlyStats.totalDeals + monthlyStats[i].totalDeals;
+      yearlyStats.scheduledDeals =
+        yearlyStats.scheduledDeals + monthlyStats[i].scheduledDeals;
+      yearlyStats.pendingDeals =
+        yearlyStats.pendingDeals + monthlyStats[i].pendingDeals;
+      yearlyStats.publishedDeals =
+        yearlyStats.publishedDeals + monthlyStats[i].publishedDeals;
     }
 
     return {
@@ -455,5 +552,4 @@ export class DealService {
       totalStats,
     };
   }
-
 }
