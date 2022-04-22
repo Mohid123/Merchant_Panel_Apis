@@ -106,4 +106,9 @@ export class DealController {
   getDealReviews(@Param('id') id: string) {
     return this.dealService.getDealReviews(id);
   }
+
+  @Get('getTopRatedDeals/:merchantId')
+  getTopRatedDeals(@Param('merchantId') merchantId: string) {
+    return this.dealService.getTopRatedDeals(merchantId);
+  }
 }
