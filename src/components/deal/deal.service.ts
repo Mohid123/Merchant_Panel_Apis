@@ -486,7 +486,7 @@ export class DealService {
     pendingDeals = await this.dealModel
       .find({
         merchantId: req.user.id,
-        nftStatus: DEALSTATUS.inReview,
+        dealStatus: DEALSTATUS.inReview,
         deletedCheck: false,
       })
       .sort({ startDate: 1 });
