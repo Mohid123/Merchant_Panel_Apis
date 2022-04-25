@@ -41,6 +41,15 @@ export class UsersDto {
     @ApiProperty()
     vatNumber: number;
 
+    // @ApiProperty()
+    // iban: string;
+
+    // @ApiProperty()
+    // bankName: string;
+
+    // @ApiProperty()
+    // kycStatus: string;
+
     @ApiProperty()
     province: string;
 
@@ -53,12 +62,54 @@ export class UsersDto {
     @ApiProperty({
         example: [
             {
-                day: 'string',
-                firstStartTime: 'string',
-                firstEndTime: 'string',
-                secondStartTime: 'string',
-                secondEndTime: 'string'
-            }
+                day: 'MN',
+                firstStartTime: '',
+                firstEndTime: '',
+                secondStartTime: '',
+                secondEndTime: ''
+            },
+            {
+                day: 'TU',
+                firstStartTime: '',
+                firstEndTime: '',
+                secondStartTime: '',
+                secondEndTime: ''
+            },
+            {
+                day: 'WD',
+                firstStartTime: '',
+                firstEndTime: '',
+                secondStartTime: '',
+                secondEndTime: ''
+            },
+            {
+                day: 'TH',
+                firstStartTime: '',
+                firstEndTime: '',
+                secondStartTime: '',
+                secondEndTime: ''
+            },
+            {
+                day: 'FR',
+                firstStartTime: '',
+                firstEndTime: '',
+                secondStartTime: '',
+                secondEndTime: ''
+            },
+            {
+                day: 'SA',
+                firstStartTime: '',
+                firstEndTime: '',
+                secondStartTime: '',
+                secondEndTime: ''
+            },
+            {
+                day: 'SU',
+                firstStartTime: '',
+                firstEndTime: '',
+                secondStartTime: '',
+                secondEndTime: ''
+            },
         ]
     })
     businessHours: businessHour[];

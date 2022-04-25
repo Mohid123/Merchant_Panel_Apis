@@ -67,4 +67,43 @@ export class CategoryService {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
     }
   }
+
+  async getAllSubCategories (offset, limit) {
+    try {
+      offset = parseInt(offset) < 0 ? 0 : offset;
+      limit = parseInt(limit) < 1 ? 10 : limit;
+
+      const totalCount = await this.subCategoryModel.countDocuments();
+
+      let subCategories = await this.subCategoryModel.aggregate(
+        [
+          {
+            $sort: {
+              createdAt: -1
+            }
+          },
+          {
+            $addFields: {
+              id: '$_id'
+            }
+          },
+          {
+            $project: {
+              _id: 0
+            }
+          }
+        ]
+      )
+      .skip(parseInt(offset))
+      .limit(parseInt(limit))
+
+      return {
+        totalCount: totalCount,
+        data: subCategories
+      }
+
+    } catch (err) {
+      throw new HttpException(err, HttpStatus.BAD_REQUEST);
+    }
+  }
 }
