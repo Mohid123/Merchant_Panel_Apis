@@ -53,7 +53,7 @@ export class DealController {
     return this.dealService.getDealsReviewStatsByMerchant(
       merchantId,
       offset,
-      merchantId,
+      limit,
     );
   }
 
