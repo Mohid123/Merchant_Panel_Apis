@@ -34,6 +34,7 @@ export class VouchersController {
   @ApiQuery({ name: 'fee', enum: SORT, required: false })
   @ApiQuery({ name: 'net', enum: SORT, required: false })
   @ApiQuery({ name: 'status', enum: VOUCHERSTATUSENUM, required: false })
+  @ApiQuery({ name: 'paymentStatus', enum: BILLINGSTATUS, required: false })
   @ApiQuery({ name: 'dateFrom', required: false })
   @ApiQuery({ name: 'dateTo', required: false })
   @Get('getAllVouchers/:merchantId')
@@ -44,6 +45,7 @@ export class VouchersController {
     @Query('fee') fee: SORT,
     @Query('net') net: SORT,
     @Query('status') status: VOUCHERSTATUSENUM,
+    @Query('paymentStatus') paymentStatus: BILLINGSTATUS,
     @Query('dateFrom') dateFrom: number,
     @Query('dateTo') dateTo: number,
     @Query('offset') offset: number = 0,
@@ -55,6 +57,7 @@ export class VouchersController {
       fee,
       net,
       status,
+      paymentStatus,
       dateFrom,
       dateTo,
       merchantId,

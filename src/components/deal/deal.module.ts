@@ -5,12 +5,14 @@ import { DealController } from './deal.controller';
 import { DealService } from './deal.service';
 import { DealSchema } from '../../schema/deal/deal.schema';
 import { CategorySchema } from '../../schema/category/category.schema';
+import { VoucherCounterSchema } from 'src/schema/vouchers/vouchersCounter.schema';
 @Module({
   imports: [
     forwardRef(() => CategoryModule),
     MongooseModule.forFeature([
       { name: 'Deal', schema: DealSchema },
       { name: 'Category', schema: CategorySchema },
+      { name: 'Counter', schema: VoucherCounterSchema },
     ]),
   ],
   controllers: [DealController],

@@ -59,6 +59,7 @@ export class VouchersService {
     fee,
     net,
     status,
+    paymentStatus,
     dateFrom,
     dateTo,
     merchantId,
@@ -79,6 +80,23 @@ export class VouchersService {
         matchFilter = {
           ...matchFilter,
           status: status,
+        };
+      } else {
+        matchFilter = {
+          ...matchFilter,
+          status: '',
+        };
+      }
+
+      if (paymentStatus) {
+        matchFilter = {
+          ...matchFilter,
+          paymentStatus: paymentStatus,
+        };
+      } else {
+        matchFilter = {
+          ...matchFilter,
+          paymentStatus: '',
         };
       }
 
