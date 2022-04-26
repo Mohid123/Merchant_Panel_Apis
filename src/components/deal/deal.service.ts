@@ -171,8 +171,11 @@ export class DealService {
     }
   }
 
-  async getDealReviews(id) {
+  async getDealReviews(offset, limit, id) {
     try {
+      offset = parseInt(offset) < 0 ? 0 : offset;
+      limit = parseInt(limit) < 1 ? 10 : limit;
+
       const deal = await this.dealModel.aggregate([
         {
           $match: {
@@ -185,6 +188,10 @@ export class DealService {
             localField: '_id',
             foreignField: 'dealId',
             as: 'Reviews',
+            pipeline: [
+              { $skip: parseInt(offset) },
+              { $limit: parseInt(limit) },
+            ],
           },
         },
         {
@@ -198,6 +205,7 @@ export class DealService {
           },
         },
       ]);
+
       return deal;
     } catch (err) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
@@ -205,6 +213,8 @@ export class DealService {
   }
 
   async getDealsReviewStatsByMerchant(id, offset, limit) {
+    offset = parseInt(offset) < 0 ? 0 : offset;
+    limit = parseInt(limit) < 1 ? 10 : limit;
     try {
       const totalCount = await this.dealModel.countDocuments({
         merchantId: id,
@@ -219,7 +229,27 @@ export class DealService {
       //   .skip(parseInt(offset))
       //   .limit(parseInt(limit));
 
-      const deals = await this.dealModel.aggregate([
+      const deals = await this.dealModel
+        .aggregate([
+          {
+            $match: {
+              merchantId: id,
+              deletedCheck: false,
+            },
+          },
+          {
+            $project: {
+              title: 1,
+              ratingsAverage: 1,
+              totalReviews: 1,
+              maxRating: 1,
+              minRating: 1,
+            },
+          },
+        ])
+        .skip(parseInt(offset))
+        .limit(parseInt(limit));
+      const totalMerchantReviews = await this.dealModel.aggregate([
         {
           $match: {
             merchantId: id,
@@ -227,17 +257,18 @@ export class DealService {
           },
         },
         {
-          $project: {
-            title: 1,
-            ratingsAverage: 1,
-            totalReviews: 1,
-            maxRating: 1,
-            minRating: 1,
+          $group: {
+            _id: '$merchantId',
+            nRating: { $sum: '$totalReviews' },
           },
         },
       ]);
 
-      return { totalDeals: totalCount, data: deals };
+      return {
+        totalDeals: totalCount,
+        totalMerchantReviews: totalMerchantReviews[0].nRating,
+        data: deals,
+      };
     } catch (err) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
     }
