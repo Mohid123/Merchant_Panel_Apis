@@ -18,6 +18,7 @@ const swagger_1 = require("@nestjs/swagger");
 const invoices_dto_1 = require("../../dto/invoices/invoices.dto");
 const sortinvoiceamount_enum_1 = require("../../enum/sorting/sortinvoiceamount.enum");
 const sortinvoicedate_enum_1 = require("../../enum/sorting/sortinvoicedate.enum");
+const jwt_auth_guard_1 = require("../auth/jwt-auth.guard");
 const invoices_service_1 = require("./invoices.service");
 let InvoicesController = class InvoicesController {
     constructor(_invoiceService) {
@@ -76,6 +77,8 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], InvoicesController.prototype, "getAllInvoicesByMerchant", null);
 InvoicesController = __decorate([
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, swagger_1.ApiTags)('Invoices'),
     (0, common_1.Controller)('invoices'),
     __metadata("design:paramtypes", [invoices_service_1.InvoicesService])

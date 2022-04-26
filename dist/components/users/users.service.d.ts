@@ -1,4 +1,5 @@
 import { Model } from 'mongoose';
+import { UpdateHoursDto } from 'src/dto/user/updatehours.dto';
 import { UsersInterface } from '../../interface/user/users.interface';
 export declare class UsersService {
     private readonly _userModel;
@@ -8,6 +9,7 @@ export declare class UsersService {
     }>;
     completeKYC(kycDto: any): Promise<import("mongodb").UpdateResult>;
     updateUser(usersDto: any): Promise<import("mongodb").UpdateResult>;
+    updateBusinessHours(updateHoursDTO: UpdateHoursDto): Promise<import("mongodb").UpdateResult>;
     deleteUser(id: any): Promise<import("mongodb").UpdateResult>;
     geUserById(id: any): Promise<any[]>;
     getAllUsers(offset: any, limit: any): Promise<{

@@ -16,6 +16,7 @@ exports.UsersController = void 0;
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const kyc_dto_1 = require("../../dto/user/kyc.dto");
+const updatehours_dto_1 = require("../../dto/user/updatehours.dto");
 const users_dto_1 = require("../../dto/user/users.dto");
 const jwt_auth_guard_1 = require("../auth/jwt-auth.guard");
 const users_service_1 = require("./users.service");
@@ -31,6 +32,9 @@ let UsersController = class UsersController {
     }
     updateUser(usersDto) {
         return this._usersService.updateUser(usersDto);
+    }
+    updateBusinessHours(updateHoursDTO) {
+        return this._usersService.updateBusinessHours(updateHoursDTO);
     }
     deleteUser(id) {
         return this._usersService.deleteUser(id);
@@ -63,6 +67,13 @@ __decorate([
     __metadata("design:paramtypes", [users_dto_1.UsersDto]),
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "updateUser", null);
+__decorate([
+    (0, common_1.Post)('updateBusinessHours'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [updatehours_dto_1.UpdateHoursDto]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "updateBusinessHours", null);
 __decorate([
     (0, common_1.Post)('deleteUser/:id'),
     __param(0, (0, common_1.Param)('id')),

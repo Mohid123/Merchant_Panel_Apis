@@ -33,6 +33,19 @@ let UsersService = class UsersService {
         usersDto.profilePicBlurHash = await (0, utils_1.encodeImageToBlurhash)(usersDto.profilePicURL);
         return this._userModel.updateOne({ _id: usersDto.id }, usersDto);
     }
+    async updateBusinessHours(updateHoursDTO) {
+        let user = await this._userModel.findOne({ _id: updateHoursDTO.id });
+        const newBusinessHours = user.businessHours.map((hour) => {
+            var _a, _b;
+            if (((_a = updateHoursDTO === null || updateHoursDTO === void 0 ? void 0 : updateHoursDTO.businessHours) === null || _a === void 0 ? void 0 : _a.findIndex(data => data.day == hour.day)) >= 0) {
+                return updateHoursDTO === null || updateHoursDTO === void 0 ? void 0 : updateHoursDTO.businessHours[(_b = updateHoursDTO === null || updateHoursDTO === void 0 ? void 0 : updateHoursDTO.businessHours) === null || _b === void 0 ? void 0 : _b.findIndex(data => data.day == hour.day)];
+            }
+            else {
+                return hour;
+            }
+        });
+        return await this._userModel.updateOne({ _id: updateHoursDTO.id }, { businessHours: newBusinessHours });
+    }
     async deleteUser(id) {
         return this._userModel.updateOne({ _id: id }, { deletedCheck: true });
     }
