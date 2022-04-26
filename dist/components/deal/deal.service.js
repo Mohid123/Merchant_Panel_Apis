@@ -148,8 +148,10 @@ let DealService = class DealService {
             throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
         }
     }
-    async getDealReviews(id) {
+    async getDealReviews(offset, limit, id) {
         try {
+            offset = parseInt(offset) < 0 ? 0 : offset;
+            limit = parseInt(limit) < 1 ? 10 : limit;
             const deal = await this.dealModel.aggregate([
                 {
                     $match: {
@@ -162,6 +164,10 @@ let DealService = class DealService {
                         localField: '_id',
                         foreignField: 'dealId',
                         as: 'Reviews',
+                        pipeline: [
+                            { $skip: parseInt(offset) },
+                            { $limit: parseInt(limit) },
+                        ],
                     },
                 },
                 {
@@ -182,12 +188,15 @@ let DealService = class DealService {
         }
     }
     async getDealsReviewStatsByMerchant(id, offset, limit) {
+        offset = parseInt(offset) < 0 ? 0 : offset;
+        limit = parseInt(limit) < 1 ? 10 : limit;
         try {
             const totalCount = await this.dealModel.countDocuments({
                 merchantId: id,
                 deletedCheck: false,
             });
-            const deals = await this.dealModel.aggregate([
+            const deals = await this.dealModel
+                .aggregate([
                 {
                     $match: {
                         merchantId: id,
@@ -203,8 +212,28 @@ let DealService = class DealService {
                         minRating: 1,
                     },
                 },
+            ])
+                .skip(parseInt(offset))
+                .limit(parseInt(limit));
+            const totalMerchantReviews = await this.dealModel.aggregate([
+                {
+                    $match: {
+                        merchantId: id,
+                        deletedCheck: false,
+                    },
+                },
+                {
+                    $group: {
+                        _id: '$merchantId',
+                        nRating: { $sum: '$totalReviews' },
+                    },
+                },
             ]);
-            return { totalDeals: totalCount, data: deals };
+            return {
+                totalDeals: totalCount,
+                totalMerchantReviews: totalMerchantReviews[0].nRating,
+                data: deals,
+            };
         }
         catch (err) {
             throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);

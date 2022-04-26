@@ -66,14 +66,8 @@ let VouchersService = class VouchersService {
             if (status) {
                 matchFilter = Object.assign(Object.assign({}, matchFilter), { status: status });
             }
-            else {
-                matchFilter = Object.assign(Object.assign({}, matchFilter), { status: '' });
-            }
             if (paymentStatus) {
                 matchFilter = Object.assign(Object.assign({}, matchFilter), { paymentStatus: paymentStatus });
-            }
-            else {
-                matchFilter = Object.assign(Object.assign({}, matchFilter), { paymentStatus: '' });
             }
             if (dateFrom) {
                 dateFromFilters = Object.assign(Object.assign({}, dateFromFilters), { $gte: dateFrom });

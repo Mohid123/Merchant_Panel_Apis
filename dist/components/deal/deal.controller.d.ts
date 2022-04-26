@@ -14,6 +14,7 @@ export declare class DealController {
     }>;
     getDealsReviewStatsByMerchant(merchantId: string, offset?: number, limit?: number): Promise<{
         totalDeals: number;
+        totalMerchantReviews: any;
         data: any[];
     }>;
     getAllDeals(offset: number, limit: number, req: any): Promise<{
@@ -44,6 +45,6 @@ export declare class DealController {
             publishedDeals: number;
         };
     }>;
-    getDealReviews(id: string): Promise<any[]>;
+    getDealReviews(id: string, offset?: number, limit?: number): Promise<any[]>;
     getTopRatedDeals(merchantId: string): Promise<any[]>;
 }
