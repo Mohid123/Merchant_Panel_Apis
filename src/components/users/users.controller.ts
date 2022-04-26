@@ -1,5 +1,7 @@
 import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { KycDto } from 'src/dto/user/kyc.dto';
+import { UpdateHoursDto } from 'src/dto/user/updatehours.dto';
 import { UsersDto } from '../../dto/user/users.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { UsersService } from './users.service';
@@ -16,10 +18,20 @@ export class UsersController {
         return this._usersService.addUser(usersDto)
      }
 
+     @Post('completeKYC')
+     completeKYC (@Body() kycDto:KycDto) {
+         return this._usersService.completeKYC(kycDto)
+      }
+
      @Post('updateUser')
      updateUser (@Body() usersDto:UsersDto) {
         return this._usersService.updateUser(usersDto)
      }
+
+   //   @Post('updateBusinessHours')
+   //   updateBusinessHours (@Body() updateHoursDTO:UpdateHoursDto) {
+   //      return this._usersService.updateBusinessHours(updateHoursDTO)
+   //   }
 
      @Post('deleteUser/:id')
      deleteUser (@Param('id') id:string) {

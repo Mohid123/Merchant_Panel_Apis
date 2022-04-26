@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { UsersInterface } from '../../interface/user/users.interface';
-import { encodeImageToBlurhash, generateStringId } from '../file-management/utils/utils';
+import { encodeImageToBlurhash } from '../file-management/utils/utils';
 
 @Injectable()
 export class UsersService {
@@ -18,6 +18,10 @@ export class UsersService {
         return user;
     }
 
+    async completeKYC (kycDto) {
+        return await this._userModel.updateOne({_id: kycDto.id}, kycDto)
+    }
+
     async updateUser (usersDto) {
         usersDto.profilePicBlurHash = await encodeImageToBlurhash(
             usersDto.profilePicURL
@@ -25,6 +29,10 @@ export class UsersService {
 
         return this._userModel.updateOne({_id: usersDto.id}, usersDto);
     }
+
+    // async updateBusinessHours (updateHoursDTO) {
+    //     return await this._userModel.updateOne({_id: updateHoursDTO.id}, updateHoursDTO);
+    // }
 
     async deleteUser (id) {
         return this._userModel.updateOne({_id: id} , {deletedCheck: true});

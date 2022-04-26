@@ -6,19 +6,43 @@ import { CategoryInterface } from '../../interface/category/category.interface';
 import { DealInterface } from '../../interface/deal/deal.interface';
 import { generateStringId } from '../file-management/utils/utils';
 import { SORT } from '../../enum/sort/sort.enum';
+import { VoucherCounterInterface } from 'src/interface/vouchers/vouchersCounter.interface';
 
 @Injectable()
 export class DealService {
   constructor(
     @InjectModel('Deal') private readonly dealModel: Model<DealInterface>,
-    @InjectModel('Category') private categorymodel: Model<CategoryInterface>,
+    @InjectModel('Category')
+    private readonly categorymodel: Model<CategoryInterface>,
+    @InjectModel('Counter')
+    private readonly voucherCounterModel: Model<VoucherCounterInterface>,
   ) {}
+
+  async generateVoucherId(sequenceName) {
+    const sequenceDocument = await this.voucherCounterModel.findByIdAndUpdate(
+      sequenceName,
+      {
+        $inc: {
+          sequenceValue: 1,
+        },
+      },
+      { new: true },
+    );
+
+    return sequenceDocument.sequenceValue;
+  }
 
   async createDeal(dealDto, req) {
     try {
+      console.log(dealDto);
+      var dealVouchers = 0;
+      var delaSoldVocuhers = 0;
+
       const category = await this.categorymodel.findOne({
         type: dealDto.categoryType,
       });
+
+      dealDto.dealID = await this.generateVoucherId('dealID');
 
       let stamp = new Date(dealDto.startDate).getTime();
       dealDto.startDate = stamp;
@@ -41,9 +65,12 @@ export class DealService {
           ((el.originalPrice - el.dealPrice) / el.originalPrice) * 100;
         el.discountPercentage = calculateDiscountPercentage;
 
+        dealVouchers += el.numberOfVouchers;
+        delaSoldVocuhers += el.soldVouchers;
+
         if (el.voucherValidity > 0) {
-          startTime = new Date(new Date()).getTime();
-          endTime = startTime + el.voucherValidity * 24 * 60 * 60 * 1000;
+          startTime = 0;
+          endTime = 0;
         } else {
           startTime = new Date(el.voucherStartDate).getTime();
           endTime = new Date(el.voucherEndDate).getTime();
@@ -55,6 +82,9 @@ export class DealService {
 
         return el;
       });
+
+      dealDto.numberOfVouchers = dealVouchers;
+      dealDto.soldVouchers = delaSoldVocuhers;
 
       const deal = await this.dealModel.create(dealDto);
       return deal;
@@ -486,7 +516,7 @@ export class DealService {
     pendingDeals = await this.dealModel
       .find({
         merchantId: req.user.id,
-        nftStatus: DEALSTATUS.inReview,
+        dealStatus: DEALSTATUS.inReview,
         deletedCheck: false,
       })
       .sort({ startDate: 1 });
