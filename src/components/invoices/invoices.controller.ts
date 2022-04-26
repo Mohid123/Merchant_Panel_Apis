@@ -1,10 +1,13 @@
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
-import { ApiQuery, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { InvoiceDTO } from 'src/dto/invoices/invoices.dto';
 import { INVOICEAMOUNTENUM } from 'src/enum/sorting/sortinvoiceamount.enum';
 import { INVOICEDATEENUM } from 'src/enum/sorting/sortinvoicedate.enum';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { InvoicesService } from './invoices.service';
 
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 @ApiTags('Invoices')
 @Controller('invoices')
 export class InvoicesController {

@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { UpdateHoursDto } from 'src/dto/user/updatehours.dto';
 import { UsersInterface } from '../../interface/user/users.interface';
 import { encodeImageToBlurhash } from '../file-management/utils/utils';
 
@@ -30,9 +31,21 @@ export class UsersService {
         return this._userModel.updateOne({_id: usersDto.id}, usersDto);
     }
 
-    // async updateBusinessHours (updateHoursDTO) {
-    //     return await this._userModel.updateOne({_id: updateHoursDTO.id}, updateHoursDTO);
-    // }
+    async updateBusinessHours (updateHoursDTO:UpdateHoursDto) {
+
+        let user = await this._userModel.findOne({_id: updateHoursDTO.id});
+
+        const newBusinessHours = user.businessHours.map((hour)=>{
+            if(updateHoursDTO?.businessHours?.findIndex(data=>data.day==hour.day)>=0){
+                return updateHoursDTO?.businessHours[updateHoursDTO?.businessHours?.findIndex(data=>data.day==hour.day)];
+            }else{
+                return hour;
+            }
+        });
+
+        return await this._userModel.updateOne({_id:updateHoursDTO.id},{businessHours: newBusinessHours});
+        
+    }
 
     async deleteUser (id) {
         return this._userModel.updateOne({_id: id} , {deletedCheck: true});
