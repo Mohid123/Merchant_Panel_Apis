@@ -103,8 +103,12 @@ export class DealController {
   }
 
   @Get('getDealReviews/:id')
-  getDealReviews(@Param('id') id: string) {
-    return this.dealService.getDealReviews(id);
+  getDealReviews(
+    @Param('id') id: string,
+    @Query('offset') offset: number = 0,
+    @Query('limit') limit: number = 10,
+  ) {
+    return this.dealService.getDealReviews(offset, limit, id);
   }
 
   @Get('getTopRatedDeals/:merchantId')

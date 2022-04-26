@@ -81,22 +81,12 @@ export class VouchersService {
           ...matchFilter,
           status: status,
         };
-      } else {
-        matchFilter = {
-          ...matchFilter,
-          status: '',
-        };
       }
 
       if (paymentStatus) {
         matchFilter = {
           ...matchFilter,
           paymentStatus: paymentStatus,
-        };
-      } else {
-        matchFilter = {
-          ...matchFilter,
-          paymentStatus: '',
         };
       }
 
