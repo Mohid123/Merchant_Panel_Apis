@@ -5,18 +5,20 @@ import { CategoryDto } from '../../dto/category/category.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { SubCategoryDTO } from 'src/dto/category/subcategory.dto';
 
-@UseGuards(JwtAuthGuard)
-@ApiBearerAuth()
 @ApiTags('Category')
 @Controller('category')
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}
 
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @Post('createCategory')
   createCategory(@Body() categoryDto: CategoryDto) {
     return this.categoryService.createCategory(categoryDto);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @Post('createSubCategory')
   createSubCategory (@Body() subCategoryDto: SubCategoryDTO) {
     return this.categoryService.createSubCategory(subCategoryDto)
@@ -30,6 +32,8 @@ export class CategoryController {
     return this.categoryService.getAllCategories(offset, limit)
   }
 
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @Get('getAllSubCategories')
   getAllSubCategories (
     @Query('offset') offset: number = 0,
