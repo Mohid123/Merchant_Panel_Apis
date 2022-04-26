@@ -28,10 +28,12 @@ export class UsersController {
         return this._usersService.updateUser(usersDto)
      }
 
-   //   @Post('updateBusinessHours')
-   //   updateBusinessHours (@Body() updateHoursDTO:UpdateHoursDto) {
-   //      return this._usersService.updateBusinessHours(updateHoursDTO)
-   //   }
+     @Post('updateBusinessHours')
+     updateBusinessHours (
+       
+        @Body() updateHoursDTO:UpdateHoursDto) {
+        return this._usersService.updateBusinessHours(updateHoursDTO)
+     }
 
      @Post('deleteUser/:id')
      deleteUser (@Param('id') id:string) {
