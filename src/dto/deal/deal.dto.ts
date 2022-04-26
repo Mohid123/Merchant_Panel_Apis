@@ -3,6 +3,9 @@ import { VoucherInterface } from '../../interface/deal/deal.interface';
 
 export class DealDto {
   @ApiProperty()
+  dealID: number;
+
+  @ApiProperty()
   title: string;
 
   @ApiProperty()
@@ -31,6 +34,7 @@ export class DealDto {
         dealPrice: 0,
         discountPercentage: 0,
         details: '',
+        soldVouchers: 0,
         numberOfVouchers: 0,
         voucherValidity: 0,
         voucherStartDate: new Date(),
@@ -41,7 +45,13 @@ export class DealDto {
   vouchers: VoucherInterface[];
 
   @ApiProperty()
-  termsAndCondition: string;
+  termsAndCondition: number;
+
+  @ApiProperty()
+  soldVouchers: number;
+
+  @ApiProperty()
+  numberOfVouchers: string;
 
   @ApiProperty()
   merchantId: string;

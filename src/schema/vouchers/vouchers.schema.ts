@@ -5,7 +5,8 @@ import { VoucherInterface } from 'src/interface/deal/deal.interface';
 export const VoucherSchema = new mongoose.Schema(
   {
     _id: { type: String, default: generateStringId },
-    deal: { type: String, default: '' },
+    voucherID: { type: Number, unique: true },
+    dealName: { type: String, default: '' },
     dealId: { type: String, default: '' },
     merchantId: { type: String, default: '' },
     amount: { type: Number, default: 0 },
@@ -13,6 +14,7 @@ export const VoucherSchema = new mongoose.Schema(
     net: { type: Number, default: 0 },
     status: { type: String, default: '' },
     paymentStatus: { type: String, default: 'Pending' },
+    boughtDate: { type: Number },
   },
   {
     collection: 'vouchers',

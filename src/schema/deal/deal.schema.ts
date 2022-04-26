@@ -5,6 +5,7 @@ import { DealInterface } from '../../interface/deal/deal.interface';
 export const DealSchema = new mongoose.Schema(
   {
     _id: { type: String, default: generateStringId },
+    dealID: { type: Number },
     title: { type: String, default: '' },
     subTitle: { type: String, default: '' },
     description: { type: String, default: '' },
@@ -14,6 +15,8 @@ export const DealSchema = new mongoose.Schema(
     startDate: { type: Number },
     endDate: { type: Number },
     vouchers: { type: Array },
+    numberOfVouchers: { type: Number },
+    soldVouchers: { type: Number },
     termsAndCondition: { type: String },
     merchantId: { type: String },
     dealStatus: { type: String, default: '' },
