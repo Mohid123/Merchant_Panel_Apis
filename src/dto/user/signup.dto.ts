@@ -7,9 +7,9 @@ export class SignUpDTO {
     @IsNotEmpty()
     email: string;
 
-    @ApiProperty()
-    @IsNotEmpty()
-    password: string;
+    // @ApiProperty()
+    // @IsNotEmpty()
+    // password: string;
 
     // Personal Details
 
@@ -40,7 +40,7 @@ export class SignUpDTO {
     streetAddress: string;
 
     @ApiProperty()
-    zipCode: string;
+    zipCode: number;
 
     @ApiProperty()
     city: string;
