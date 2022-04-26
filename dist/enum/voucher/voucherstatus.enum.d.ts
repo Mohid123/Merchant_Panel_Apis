@@ -1,4 +1,5 @@
 export declare enum VOUCHERSTATUSENUM {
     purchased = "Purchased",
-    redeeemed = "Redeemed"
+    redeeemed = "Redeemed",
+    expired = "Expired"
 }

@@ -1,5 +1,6 @@
 import { VoucherInterface } from '../../interface/deal/deal.interface';
 export declare class DealDto {
+    dealID: number;
     title: string;
     subTitle: string;
     description: string;
@@ -8,7 +9,9 @@ export declare class DealDto {
     startDate: Date;
     endDate: Date;
     vouchers: VoucherInterface[];
-    termsAndCondition: string;
+    termsAndCondition: number;
+    soldVouchers: number;
+    numberOfVouchers: string;
     merchantId: string;
     dealStatus: string;
     deletedCheck: boolean;

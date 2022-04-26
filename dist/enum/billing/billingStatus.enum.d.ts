@@ -1,4 +1,6 @@
 export declare enum BILLINGSTATUS {
     paid = "Paid",
-    unpaid = "UnPaid"
+    unpaid = "UnPaid",
+    pending = "Pending",
+    cancelled = "Cancelled"
 }

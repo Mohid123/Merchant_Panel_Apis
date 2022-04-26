@@ -5,6 +5,7 @@ const mongoose = require("mongoose");
 const utils_1 = require("../../components/file-management/utils/utils");
 exports.DealSchema = new mongoose.Schema({
     _id: { type: String, default: utils_1.generateStringId },
+    dealID: { type: Number },
     title: { type: String, default: '' },
     subTitle: { type: String, default: '' },
     description: { type: String, default: '' },
@@ -14,6 +15,8 @@ exports.DealSchema = new mongoose.Schema({
     startDate: { type: Number },
     endDate: { type: Number },
     vouchers: { type: Array },
+    numberOfVouchers: { type: Number },
+    soldVouchers: { type: Number },
     termsAndCondition: { type: String },
     merchantId: { type: String },
     dealStatus: { type: String, default: '' },

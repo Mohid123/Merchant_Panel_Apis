@@ -36,7 +36,7 @@ let DealController = class DealController {
         return this.dealService.getDeal(id);
     }
     getDealsReviewStatsByMerchant(merchantId, offset = 0, limit = 10) {
-        return this.dealService.getDealsReviewStatsByMerchant(merchantId, offset, merchantId);
+        return this.dealService.getDealsReviewStatsByMerchant(merchantId, offset, limit);
     }
     getAllDeals(offset = 0, limit = 10, req) {
         return this.dealService.getAllDeals(req, offset, limit);

@@ -32,6 +32,9 @@ let CategoryController = class CategoryController {
     getAllCategories(offset = 0, limit = 10) {
         return this.categoryService.getAllCategories(offset, limit);
     }
+    getAllSubCategories(offset = 0, limit = 10) {
+        return this.categoryService.getAllSubCategories(offset, limit);
+    }
 };
 __decorate([
     (0, common_1.Post)('createCategory'),
@@ -55,6 +58,14 @@ __decorate([
     __metadata("design:paramtypes", [Number, Number]),
     __metadata("design:returntype", void 0)
 ], CategoryController.prototype, "getAllCategories", null);
+__decorate([
+    (0, common_1.Get)('getAllSubCategories'),
+    __param(0, (0, common_1.Query)('offset')),
+    __param(1, (0, common_1.Query)('limit')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, Number]),
+    __metadata("design:returntype", void 0)
+], CategoryController.prototype, "getAllSubCategories", null);
 CategoryController = __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, swagger_1.ApiBearerAuth)(),

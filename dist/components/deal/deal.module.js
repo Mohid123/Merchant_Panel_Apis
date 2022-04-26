@@ -14,6 +14,7 @@ const deal_controller_1 = require("./deal.controller");
 const deal_service_1 = require("./deal.service");
 const deal_schema_1 = require("../../schema/deal/deal.schema");
 const category_schema_1 = require("../../schema/category/category.schema");
+const vouchersCounter_schema_1 = require("../../schema/vouchers/vouchersCounter.schema");
 let DealModule = class DealModule {
 };
 DealModule = __decorate([
@@ -23,6 +24,7 @@ DealModule = __decorate([
             mongoose_1.MongooseModule.forFeature([
                 { name: 'Deal', schema: deal_schema_1.DealSchema },
                 { name: 'Category', schema: category_schema_1.CategorySchema },
+                { name: 'Counter', schema: vouchersCounter_schema_1.VoucherCounterSchema },
             ]),
         ],
         controllers: [deal_controller_1.DealController],

@@ -6,6 +6,7 @@ export interface VoucherInterface {
     dealPrice: number;
     discountPercentage: number;
     details: string;
+    soldVouchers: number;
     numberOfVouchers: number;
     voucherValidity: number;
     voucherStartDate: Date;
@@ -13,6 +14,7 @@ export interface VoucherInterface {
 }
 export interface DealInterface extends Document {
     id: string;
+    dealID: number;
     title: string;
     subTitle: string;
     description: string;
@@ -22,6 +24,8 @@ export interface DealInterface extends Document {
     startDate: Date;
     endDate: Date;
     vouchers: VoucherInterface[];
+    numberOfVouchers: number;
+    soldVouchers: number;
     termsAndCondition: string;
     merchantId: string;
     dealStatus: string;

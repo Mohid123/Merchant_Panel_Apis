@@ -15,6 +15,10 @@ class DealDto {
 }
 __decorate([
     (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", Number)
+], DealDto.prototype, "dealID", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
 ], DealDto.prototype, "title", void 0);
 __decorate([
@@ -50,6 +54,7 @@ __decorate([
                 dealPrice: 0,
                 discountPercentage: 0,
                 details: '',
+                soldVouchers: 0,
                 numberOfVouchers: 0,
                 voucherValidity: 0,
                 voucherStartDate: new Date(),
@@ -61,8 +66,16 @@ __decorate([
 ], DealDto.prototype, "vouchers", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
-    __metadata("design:type", String)
+    __metadata("design:type", Number)
 ], DealDto.prototype, "termsAndCondition", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", Number)
+], DealDto.prototype, "soldVouchers", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
+], DealDto.prototype, "numberOfVouchers", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)

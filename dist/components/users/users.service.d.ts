@@ -6,6 +6,7 @@ export declare class UsersService {
     addUser(usersDto: any): Promise<import("mongoose").Document<unknown, any, UsersInterface> & UsersInterface & {
         _id: string;
     }>;
+    completeKYC(kycDto: any): Promise<import("mongodb").UpdateResult>;
     updateUser(usersDto: any): Promise<import("mongodb").UpdateResult>;
     deleteUser(id: any): Promise<import("mongodb").UpdateResult>;
     geUserById(id: any): Promise<any[]>;

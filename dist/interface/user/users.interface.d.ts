@@ -1,5 +1,4 @@
 export interface businessHour {
-    id: string;
     day: string;
     firstStartTime: string;
     firstEndTime: string;
@@ -20,6 +19,9 @@ export interface UsersInterface {
     zipCode: number;
     city: string;
     vatNumber: number;
+    iban: string;
+    bankName: string;
+    kycStatus: boolean;
     province: string;
     website_socialAppLink: string;
     googleMapPin: string;

@@ -15,4 +15,8 @@ export declare class CategoryController {
         totalCount: number;
         data: any[];
     }>;
+    getAllSubCategories(offset?: number, limit?: number): Promise<{
+        totalCount: number;
+        data: any[];
+    }>;
 }

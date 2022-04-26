@@ -26,6 +26,9 @@ let UsersService = class UsersService {
         const user = new this._userModel(usersDto).save();
         return user;
     }
+    async completeKYC(kycDto) {
+        return await this._userModel.updateOne({ _id: kycDto.id }, kycDto);
+    }
     async updateUser(usersDto) {
         usersDto.profilePicBlurHash = await (0, utils_1.encodeImageToBlurhash)(usersDto.profilePicURL);
         return this._userModel.updateOne({ _id: usersDto.id }, usersDto);
