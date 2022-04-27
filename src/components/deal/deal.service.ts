@@ -7,6 +7,7 @@ import { DealInterface } from '../../interface/deal/deal.interface';
 import { generateStringId } from '../file-management/utils/utils';
 import { SORT } from '../../enum/sort/sort.enum';
 import { VoucherCounterInterface } from 'src/interface/vouchers/vouchersCounter.interface';
+import { SubCategoryInterface } from 'src/interface/category/subcategory.interface';
 
 @Injectable()
 export class DealService {
@@ -16,6 +17,8 @@ export class DealService {
     private readonly categorymodel: Model<CategoryInterface>,
     @InjectModel('Counter')
     private readonly voucherCounterModel: Model<VoucherCounterInterface>,
+    @InjectModel('SubCategory')
+    private readonly subCategoryModel: Model<SubCategoryInterface>
   ) {}
 
   async generateVoucherId(sequenceName) {
@@ -38,9 +41,12 @@ export class DealService {
       var dealVouchers = 0;
       var delaSoldVocuhers = 0;
 
-      const category = await this.categorymodel.findOne({
-        type: dealDto.categoryType,
-      });
+      let category = await this.categorymodel.findOne({ categoryName: req.user.businessType });
+      dealDto.categoryName = req.user.businessType;
+      dealDto.categoryID = category.id;
+
+      let subCategory = await this.subCategoryModel.findOne({ subCategoryName: dealDto.subCategory });
+      dealDto.subCategoryID = subCategory.id;
 
       dealDto.dealID = await this.generateVoucherId('dealID');
 
@@ -49,12 +55,9 @@ export class DealService {
       stamp = new Date(dealDto.endDate).getTime();
       dealDto.endDate = stamp;
 
-      dealDto.categoryName = dealDto.categoryType;
-      dealDto.categoryType = category.id;
-
       dealDto.title = dealDto.title.toUpperCase();
 
-      dealDto.merchantId = req.user.id;
+      dealDto.merchantID = req.user.id;
 
       dealDto.dealStatus = DEALSTATUS.inReview;
 
@@ -119,7 +122,7 @@ export class DealService {
       limit = parseInt(limit) < 1 ? 10 : limit;
 
       const totalCount = await this.dealModel.countDocuments({
-        merchantId: req.user.id,
+        merchantID: req.user.id,
         deletedCheck: false,
       });
 
@@ -127,7 +130,7 @@ export class DealService {
         .aggregate([
           {
             $match: {
-              merchantId: req.user.id,
+              merchantID: req.user.id,
               deletedCheck: false,
             },
           },
@@ -217,7 +220,7 @@ export class DealService {
     limit = parseInt(limit) < 1 ? 10 : limit;
     try {
       const totalCount = await this.dealModel.countDocuments({
-        merchantId: id,
+        merchantID: id,
         deletedCheck: false,
       });
 
@@ -233,7 +236,7 @@ export class DealService {
         .aggregate([
           {
             $match: {
-              merchantId: id,
+              merchantID: id,
               deletedCheck: false,
             },
           },
@@ -252,13 +255,13 @@ export class DealService {
       const totalMerchantReviews = await this.dealModel.aggregate([
         {
           $match: {
-            merchantId: id,
+            merchantID: id,
             deletedCheck: false,
           },
         },
         {
           $group: {
-            _id: '$merchantId',
+            _id: '$merchantID',
             nRating: { $sum: '$totalReviews' },
           },
         },
@@ -274,7 +277,8 @@ export class DealService {
     }
   }
 
-  async getDeals(
+  async getDealsByMerchantID(
+    merchantID,
     title,
     price,
     startDate,
@@ -283,7 +287,7 @@ export class DealService {
     dateTo,
     offset,
     limit,
-    req,
+    // req,
   ) {
     try {
       dateFrom = parseInt(dateFrom);
@@ -370,7 +374,7 @@ export class DealService {
       console.log(matchFilter);
 
       const totalCount = await this.dealModel.countDocuments({
-        merchantId: req.user.id,
+        merchantID: merchantID,
         deletedCheck: false,
         ...matchFilter,
       });
@@ -379,7 +383,7 @@ export class DealService {
         .aggregate([
           {
             $match: {
-              merchantId: req.user.id,
+              merchantID: merchantID,
               deletedCheck: false,
               ...matchFilter,
             },
@@ -391,19 +395,22 @@ export class DealService {
         .skip(parseInt(offset))
         .limit(parseInt(limit));
 
-      return { totalDeals: totalCount, deals };
+      return {
+        totalDeals: totalCount, 
+        data: deals
+      };
     } catch (err) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
     }
   }
 
-  async getTopRatedDeals(merchantId) {
+  async getTopRatedDeals(merchantID) {
     try {
       const deals = this.dealModel
         .aggregate([
           {
             $match: {
-              merchantId: merchantId,
+              merchantID: merchantID,
             },
           },
           {
@@ -533,12 +540,12 @@ export class DealService {
     let publishedDeals;
 
     totalDeals = await this.dealModel
-      .find({ merchantId: req.user.id, deletedCheck: false })
+      .find({ merchantID: req.user.id, deletedCheck: false })
       .sort({ startDate: 1 });
 
     scheduledDeals = await this.dealModel
       .find({
-        merchantId: req.user.id,
+        merchantID: req.user.id,
         dealStatus: DEALSTATUS.scheduled,
         deletedCheck: false,
       })
@@ -546,7 +553,7 @@ export class DealService {
 
     pendingDeals = await this.dealModel
       .find({
-        merchantId: req.user.id,
+        merchantID: req.user.id,
         dealStatus: DEALSTATUS.inReview,
         deletedCheck: false,
       })
@@ -554,7 +561,7 @@ export class DealService {
 
     publishedDeals = await this.dealModel
       .find({
-        merchantId: req.user.id,
+        merchantID: req.user.id,
         deletedCheck: false,
         dealStatus: DEALSTATUS.published,
       })

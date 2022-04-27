@@ -44,14 +44,14 @@ export class DealController {
     return this.dealService.getDeal(id);
   }
 
-  @Get('getDealsReviewStatsByMerchant/:merchantId')
+  @Get('getDealsReviewStatsByMerchant/:merchantID')
   getDealsReviewStatsByMerchant(
-    @Param('merchantId') merchantId: string,
+    @Param('merchantID') merchantID: string,
     @Query('offset') offset: number = 0,
     @Query('limit') limit: number = 10,
   ) {
     return this.dealService.getDealsReviewStatsByMerchant(
-      merchantId,
+      merchantID,
       offset,
       limit,
     );
@@ -72,8 +72,8 @@ export class DealController {
   @ApiQuery({ name: 'endDate', enum: SORT, required: false })
   @ApiQuery({ name: 'dateFrom', required: false })
   @ApiQuery({ name: 'dateTo', required: false })
-  @Get('getDeals')
-  getDeals(
+  @Get('getDealsByMerchantID')
+  getDealsByMerchantID(
     @Query('title') title: SORT,
     @Query('price') price: SORT,
     @Query('startDate') startDate: SORT,
@@ -84,7 +84,7 @@ export class DealController {
     @Query('limit') limit: number = 10,
     @Req() req,
   ) {
-    return this.dealService.getDeals(
+    return this.dealService.getDealsByMerchantID(
       title,
       price,
       startDate,
@@ -111,8 +111,8 @@ export class DealController {
     return this.dealService.getDealReviews(offset, limit, id);
   }
 
-  @Get('getTopRatedDeals/:merchantId')
-  getTopRatedDeals(@Param('merchantId') merchantId: string) {
-    return this.dealService.getTopRatedDeals(merchantId);
+  @Get('getTopRatedDeals/:merchantID')
+  getTopRatedDeals(@Param('merchantID') merchantID: string) {
+    return this.dealService.getTopRatedDeals(merchantID);
   }
 }
