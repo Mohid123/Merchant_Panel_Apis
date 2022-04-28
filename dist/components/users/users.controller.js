@@ -40,7 +40,10 @@ let UsersController = class UsersController {
         return this._usersService.deleteUser(id);
     }
     geUserById(id) {
-        return this._usersService.geUserById(id);
+        return this._usersService.getUserById(id);
+    }
+    getUserStats(id) {
+        return this._usersService.getMerchantStats(id);
     }
     getAllUsers(offset = 0, limit = 10) {
         return this._usersService.getAllUsers(offset, limit);
@@ -82,12 +85,19 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "deleteUser", null);
 __decorate([
-    (0, common_1.Get)('geUserById/:id'),
+    (0, common_1.Get)('getUserById/:id'),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "geUserById", null);
+__decorate([
+    (0, common_1.Get)('getMerchantStats/:id'),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "getUserStats", null);
 __decorate([
     (0, common_1.Get)('getAllUsers'),
     __param(0, (0, common_1.Query)('offset')),

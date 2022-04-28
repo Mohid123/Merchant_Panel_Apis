@@ -41,8 +41,8 @@ let DealController = class DealController {
     getAllDeals(offset = 0, limit = 10, req) {
         return this.dealService.getAllDeals(req, offset, limit);
     }
-    getDealsByMerchantID(title, price, startDate, endDate, dateFrom, dateTo, offset = 0, limit = 10, req) {
-        return this.dealService.getDealsByMerchantID(title, price, startDate, endDate, dateFrom, dateTo, offset, limit, req);
+    getDealsByMerchantID(merchantID, title, price, startDate, endDate, dateFrom, dateTo, offset = 0, limit = 10) {
+        return this.dealService.getDealsByMerchantID(merchantID, title, price, startDate, endDate, dateFrom, dateTo, offset, limit);
     }
     getSalesStatistics(req) {
         return this.dealService.getSalesStatistics(req);
@@ -104,18 +104,18 @@ __decorate([
     (0, swagger_1.ApiQuery)({ name: 'endDate', enum: sort_enum_1.SORT, required: false }),
     (0, swagger_1.ApiQuery)({ name: 'dateFrom', required: false }),
     (0, swagger_1.ApiQuery)({ name: 'dateTo', required: false }),
-    (0, common_1.Get)('getDealsByMerchantID'),
-    __param(0, (0, common_1.Query)('title')),
-    __param(1, (0, common_1.Query)('price')),
-    __param(2, (0, common_1.Query)('startDate')),
-    __param(3, (0, common_1.Query)('endDate')),
-    __param(4, (0, common_1.Query)('dateFrom')),
-    __param(5, (0, common_1.Query)('dateTo')),
-    __param(6, (0, common_1.Query)('offset')),
-    __param(7, (0, common_1.Query)('limit')),
-    __param(8, (0, common_1.Req)()),
+    (0, common_1.Get)('getDealsByMerchantID/:merchantID'),
+    __param(0, (0, common_1.Param)('merchantID')),
+    __param(1, (0, common_1.Query)('title')),
+    __param(2, (0, common_1.Query)('price')),
+    __param(3, (0, common_1.Query)('startDate')),
+    __param(4, (0, common_1.Query)('endDate')),
+    __param(5, (0, common_1.Query)('dateFrom')),
+    __param(6, (0, common_1.Query)('dateTo')),
+    __param(7, (0, common_1.Query)('offset')),
+    __param(8, (0, common_1.Query)('limit')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, String, String, Number, Number, Number, Number, Object]),
+    __metadata("design:paramtypes", [String, String, String, String, String, Number, Number, Number, Number]),
     __metadata("design:returntype", void 0)
 ], DealController.prototype, "getDealsByMerchantID", null);
 __decorate([
