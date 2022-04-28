@@ -115,7 +115,7 @@ export class UsersDto {
     businessHours: businessHour[];
 
     @ApiProperty()
-    aboutStore: string;
+    businessProfile: string;
 
     @ApiProperty()
     generalTermsAgreements: string;

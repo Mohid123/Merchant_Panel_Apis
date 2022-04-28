@@ -2,6 +2,7 @@ import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/co
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { KycDto } from 'src/dto/user/kyc.dto';
 import { UpdateHoursDto } from 'src/dto/user/updatehours.dto';
+import { UpdateMerchantProfileDto } from 'src/dto/user/updatemerchantprofile.dto';
 import { UsersDto } from '../../dto/user/users.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { UsersService } from './users.service';
@@ -23,9 +24,9 @@ export class UsersController {
          return this._usersService.completeKYC(kycDto)
       }
 
-     @Post('updateUser')
-     updateUser (@Body() usersDto:UsersDto) {
-        return this._usersService.updateUser(usersDto)
+     @Post('updateMerchantprofile')
+     updateMerchantprofile (@Body() usersDto:UpdateMerchantProfileDto) {
+        return this._usersService.updateMerchantprofile(usersDto)
      }
 
      @Post('updateBusinessHours')
