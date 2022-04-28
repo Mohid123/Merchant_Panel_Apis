@@ -8,5 +8,5 @@ export class KycDto {
     iban: string;
 
     @ApiProperty()
-    bankNumber: string;
+    bankName: string;
 }
