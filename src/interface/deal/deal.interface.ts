@@ -17,11 +17,14 @@ export interface VoucherInterface {
 export interface DealInterface extends Document {
   id: string;
   dealID: number;
+  merchantID: string;
   title: string;
   subTitle: string;
   description: string;
-  categoryType: string;
+  categoryID: string;
   categoryName: string;
+  subCategoryID: string;
+  subCategory: string;
   mediaUrl: [string];
   startDate: Date;
   endDate: Date;
@@ -29,7 +32,6 @@ export interface DealInterface extends Document {
   numberOfVouchers: number;
   soldVouchers: number;
   termsAndCondition: string;
-  merchantId: string;
   dealStatus: string;
   deletedCheck: boolean;
 }

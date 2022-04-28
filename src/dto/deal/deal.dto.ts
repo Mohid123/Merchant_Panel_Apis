@@ -6,6 +6,9 @@ export class DealDto {
   dealID: number;
 
   @ApiProperty()
+  merchantID: string;
+
+  @ApiProperty()
   title: string;
 
   @ApiProperty()
@@ -15,7 +18,16 @@ export class DealDto {
   description: string;
 
   @ApiProperty()
-  categoryType: string;
+  categoryID: string;
+
+  @ApiProperty()
+  categoryName: string;
+
+  @ApiProperty()
+  subCategoryID: string;
+
+  @ApiProperty()
+  subCategory: string;
 
   @ApiProperty()
   mediaUrl: [string];
@@ -45,16 +57,13 @@ export class DealDto {
   vouchers: VoucherInterface[];
 
   @ApiProperty()
-  termsAndCondition: number;
+  termsAndCondition: string;
 
   @ApiProperty()
   soldVouchers: number;
 
   @ApiProperty()
-  numberOfVouchers: string;
-
-  @ApiProperty()
-  merchantId: string;
+  numberOfVouchers: number;
 
   @ApiProperty()
   dealStatus: string;

@@ -29,13 +29,13 @@ export class AuthService {
         let user = await this._usersService.findOne({ email: loginDto.email });
 
         if (!user) {
-            throw new UnauthorizedException('Incorrect credentials');
+            throw new UnauthorizedException('Incorrect email!');
         }
 
         const isValidCredentials = await bcrypt.compare(loginDto.password,user.password);
 
         if(!isValidCredentials){
-            throw new UnauthorizedException('Incorrect credentials');
+            throw new UnauthorizedException('Incorrect password!');
         }
         user = JSON.parse(JSON.stringify(user));
 
