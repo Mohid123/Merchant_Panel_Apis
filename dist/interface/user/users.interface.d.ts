@@ -35,6 +35,7 @@ export interface UsersInterface {
     totalVoucherSales: number;
     redeemedVouchers: number;
     purchasedVouchers: number;
+    expiredVouchers: number;
     totalEarnings: number;
     paidEarnings: number;
     pendingEarnings: number;

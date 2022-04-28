@@ -34,6 +34,7 @@ exports.UsersSchema = new mongoose.Schema({
     totalVoucherSales: { type: Number, default: 0 },
     redeemedVouchers: { type: Number, default: 0 },
     purchasedVouchers: { type: Number, default: 0 },
+    expiredVouchers: { type: Number, default: 0 },
     totalEarnings: { type: Number, default: 0 },
     paidEarnings: { type: Number, default: 0 },
     pendingEarnings: { type: Number, default: 0 },
