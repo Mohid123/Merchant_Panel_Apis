@@ -40,9 +40,14 @@ export class UsersController {
         return this._usersService.deleteUser(id)
      }
 
-     @Get('geUserById/:id')
+     @Get('getUserById/:id')
      geUserById (@Param('id') id:string) {
-        return this._usersService.geUserById(id)
+        return this._usersService.getUserById(id)
+     }
+
+     @Get('getMerchantStats/:id')
+     getUserStats (@Param('id') id:string) {
+        return this._usersService.getMerchantStats(id)
      }
 
      @Get('getAllUsers')
