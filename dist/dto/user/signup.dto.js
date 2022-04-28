@@ -21,11 +21,6 @@ __decorate([
 ], SignUpDTO.prototype, "email", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
-    (0, class_validator_1.IsNotEmpty)(),
-    __metadata("design:type", String)
-], SignUpDTO.prototype, "password", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
 ], SignUpDTO.prototype, "firstName", void 0);
 __decorate([
@@ -58,7 +53,7 @@ __decorate([
 ], SignUpDTO.prototype, "streetAddress", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
-    __metadata("design:type", String)
+    __metadata("design:type", Number)
 ], SignUpDTO.prototype, "zipCode", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
@@ -72,5 +67,61 @@ __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
 ], SignUpDTO.prototype, "website_socialAppLink", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        example: [
+            {
+                day: 'MN',
+                firstStartTime: '',
+                firstEndTime: '',
+                secondStartTime: '',
+                secondEndTime: ''
+            },
+            {
+                day: 'TU',
+                firstStartTime: '',
+                firstEndTime: '',
+                secondStartTime: '',
+                secondEndTime: ''
+            },
+            {
+                day: 'WD',
+                firstStartTime: '',
+                firstEndTime: '',
+                secondStartTime: '',
+                secondEndTime: ''
+            },
+            {
+                day: 'TH',
+                firstStartTime: '',
+                firstEndTime: '',
+                secondStartTime: '',
+                secondEndTime: ''
+            },
+            {
+                day: 'FR',
+                firstStartTime: '',
+                firstEndTime: '',
+                secondStartTime: '',
+                secondEndTime: ''
+            },
+            {
+                day: 'SA',
+                firstStartTime: '',
+                firstEndTime: '',
+                secondStartTime: '',
+                secondEndTime: ''
+            },
+            {
+                day: 'SU',
+                firstStartTime: '',
+                firstEndTime: '',
+                secondStartTime: '',
+                secondEndTime: ''
+            },
+        ]
+    }),
+    __metadata("design:type", Array)
+], SignUpDTO.prototype, "businessHours", void 0);
 exports.SignUpDTO = SignUpDTO;
 //# sourceMappingURL=signup.dto.js.map

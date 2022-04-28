@@ -12,7 +12,7 @@ export declare class DealController {
     getDeal(id: string): Promise<import("../../interface/deal/deal.interface").DealInterface & {
         _id: any;
     }>;
-    getDealsReviewStatsByMerchant(merchantId: string, offset?: number, limit?: number): Promise<{
+    getDealsReviewStatsByMerchant(merchantID: string, offset?: number, limit?: number): Promise<{
         totalDeals: number;
         totalMerchantReviews: any;
         data: any[];
@@ -21,9 +21,9 @@ export declare class DealController {
         totalCount: number;
         data: any[];
     }>;
-    getDeals(title: SORT, price: SORT, startDate: SORT, endDate: SORT, dateFrom: number, dateTo: number, offset: number, limit: number, req: any): Promise<{
+    getDealsByMerchantID(title: SORT, price: SORT, startDate: SORT, endDate: SORT, dateFrom: number, dateTo: number, offset: number, limit: number, req: any): Promise<{
         totalDeals: number;
-        deals: any[];
+        data: any[];
     }>;
     getSalesStatistics(req: any): Promise<{
         monthlyStats: {
@@ -46,5 +46,5 @@ export declare class DealController {
         };
     }>;
     getDealReviews(id: string, offset?: number, limit?: number): Promise<any[]>;
-    getTopRatedDeals(merchantId: string): Promise<any[]>;
+    getTopRatedDeals(merchantID: string): Promise<any[]>;
 }

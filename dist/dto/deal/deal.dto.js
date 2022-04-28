@@ -20,6 +20,10 @@ __decorate([
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
+], DealDto.prototype, "merchantID", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
 ], DealDto.prototype, "title", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
@@ -32,7 +36,19 @@ __decorate([
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
-], DealDto.prototype, "categoryType", void 0);
+], DealDto.prototype, "categoryID", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
+], DealDto.prototype, "categoryName", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
+], DealDto.prototype, "subCategoryID", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
+], DealDto.prototype, "subCategory", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", Array)
@@ -66,7 +82,7 @@ __decorate([
 ], DealDto.prototype, "vouchers", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
-    __metadata("design:type", Number)
+    __metadata("design:type", String)
 ], DealDto.prototype, "termsAndCondition", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
@@ -74,12 +90,8 @@ __decorate([
 ], DealDto.prototype, "soldVouchers", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
-    __metadata("design:type", String)
+    __metadata("design:type", Number)
 ], DealDto.prototype, "numberOfVouchers", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)(),
-    __metadata("design:type", String)
-], DealDto.prototype, "merchantId", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)

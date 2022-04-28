@@ -39,11 +39,11 @@ let AuthService = class AuthService {
     async login(loginDto) {
         let user = await this._usersService.findOne({ email: loginDto.email });
         if (!user) {
-            throw new common_1.UnauthorizedException('Incorrect credentials');
+            throw new common_1.UnauthorizedException('Incorrect email!');
         }
         const isValidCredentials = await bcrypt.compare(loginDto.password, user.password);
         if (!isValidCredentials) {
-            throw new common_1.UnauthorizedException('Incorrect credentials');
+            throw new common_1.UnauthorizedException('Incorrect password!');
         }
         user = JSON.parse(JSON.stringify(user));
         delete user.password;

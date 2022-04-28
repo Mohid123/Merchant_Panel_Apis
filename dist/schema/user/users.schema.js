@@ -7,7 +7,7 @@ const bcrypt = require("bcrypt");
 exports.UsersSchema = new mongoose.Schema({
     _id: { type: String, default: utils_1.generateStringId },
     email: { type: String, default: '' },
-    password: { type: String, default: '' },
+    password: { type: String, default: 'qwertyuiop' },
     firstName: { type: String, default: '' },
     lastName: { type: String, default: '' },
     phoneNumber: { type: String, default: '' },

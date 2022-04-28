@@ -2,11 +2,13 @@ import { Model } from 'mongoose';
 import { CategoryInterface } from '../../interface/category/category.interface';
 import { DealInterface } from '../../interface/deal/deal.interface';
 import { VoucherCounterInterface } from 'src/interface/vouchers/vouchersCounter.interface';
+import { SubCategoryInterface } from 'src/interface/category/subcategory.interface';
 export declare class DealService {
     private readonly dealModel;
     private readonly categorymodel;
     private readonly voucherCounterModel;
-    constructor(dealModel: Model<DealInterface>, categorymodel: Model<CategoryInterface>, voucherCounterModel: Model<VoucherCounterInterface>);
+    private readonly subCategoryModel;
+    constructor(dealModel: Model<DealInterface>, categorymodel: Model<CategoryInterface>, voucherCounterModel: Model<VoucherCounterInterface>, subCategoryModel: Model<SubCategoryInterface>);
     generateVoucherId(sequenceName: any): Promise<0>;
     createDeal(dealDto: any, req: any): Promise<DealInterface & {
         _id: any;
@@ -25,11 +27,11 @@ export declare class DealService {
         totalMerchantReviews: any;
         data: any[];
     }>;
-    getDeals(title: any, price: any, startDate: any, endDate: any, dateFrom: any, dateTo: any, offset: any, limit: any, req: any): Promise<{
+    getDealsByMerchantID(merchantID: any, title: any, price: any, startDate: any, endDate: any, dateFrom: any, dateTo: any, offset: any, limit: any): Promise<{
         totalDeals: number;
-        deals: any[];
+        data: any[];
     }>;
-    getTopRatedDeals(merchantId: any): Promise<any[]>;
+    getTopRatedDeals(merchantID: any): Promise<any[]>;
     getSalesStatistics(req: any): Promise<{
         monthlyStats: {
             totalDeals: number;

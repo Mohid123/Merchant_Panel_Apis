@@ -20,10 +20,11 @@ const dealstatus_enum_1 = require("../../enum/deal/dealstatus.enum");
 const utils_1 = require("../file-management/utils/utils");
 const sort_enum_1 = require("../../enum/sort/sort.enum");
 let DealService = class DealService {
-    constructor(dealModel, categorymodel, voucherCounterModel) {
+    constructor(dealModel, categorymodel, voucherCounterModel, subCategoryModel) {
         this.dealModel = dealModel;
         this.categorymodel = categorymodel;
         this.voucherCounterModel = voucherCounterModel;
+        this.subCategoryModel = subCategoryModel;
     }
     async generateVoucherId(sequenceName) {
         const sequenceDocument = await this.voucherCounterModel.findByIdAndUpdate(sequenceName, {
@@ -38,18 +39,18 @@ let DealService = class DealService {
             console.log(dealDto);
             var dealVouchers = 0;
             var delaSoldVocuhers = 0;
-            const category = await this.categorymodel.findOne({
-                type: dealDto.categoryType,
-            });
+            let category = await this.categorymodel.findOne({ categoryName: req.user.businessType });
+            dealDto.categoryName = req.user.businessType;
+            dealDto.categoryID = category.id;
+            let subCategory = await this.subCategoryModel.findOne({ subCategoryName: dealDto.subCategory });
+            dealDto.subCategoryID = subCategory.id;
             dealDto.dealID = await this.generateVoucherId('dealID');
             let stamp = new Date(dealDto.startDate).getTime();
             dealDto.startDate = stamp;
             stamp = new Date(dealDto.endDate).getTime();
             dealDto.endDate = stamp;
-            dealDto.categoryName = dealDto.categoryType;
-            dealDto.categoryType = category.id;
             dealDto.title = dealDto.title.toUpperCase();
-            dealDto.merchantId = req.user.id;
+            dealDto.merchantID = req.user.id;
             dealDto.dealStatus = dealstatus_enum_1.DEALSTATUS.inReview;
             dealDto.vouchers = dealDto.vouchers.map((el) => {
                 let startTime;
@@ -98,14 +99,14 @@ let DealService = class DealService {
             offset = parseInt(offset) < 0 ? 0 : offset;
             limit = parseInt(limit) < 1 ? 10 : limit;
             const totalCount = await this.dealModel.countDocuments({
-                merchantId: req.user.id,
+                merchantID: req.user.id,
                 deletedCheck: false,
             });
             let deals = await this.dealModel
                 .aggregate([
                 {
                     $match: {
-                        merchantId: req.user.id,
+                        merchantID: req.user.id,
                         deletedCheck: false,
                     },
                 },
@@ -192,14 +193,14 @@ let DealService = class DealService {
         limit = parseInt(limit) < 1 ? 10 : limit;
         try {
             const totalCount = await this.dealModel.countDocuments({
-                merchantId: id,
+                merchantID: id,
                 deletedCheck: false,
             });
             const deals = await this.dealModel
                 .aggregate([
                 {
                     $match: {
-                        merchantId: id,
+                        merchantID: id,
                         deletedCheck: false,
                     },
                 },
@@ -218,13 +219,13 @@ let DealService = class DealService {
             const totalMerchantReviews = await this.dealModel.aggregate([
                 {
                     $match: {
-                        merchantId: id,
+                        merchantID: id,
                         deletedCheck: false,
                     },
                 },
                 {
                     $group: {
-                        _id: '$merchantId',
+                        _id: '$merchantID',
                         nRating: { $sum: '$totalReviews' },
                     },
                 },
@@ -239,7 +240,7 @@ let DealService = class DealService {
             throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
         }
     }
-    async getDeals(title, price, startDate, endDate, dateFrom, dateTo, offset, limit, req) {
+    async getDealsByMerchantID(merchantID, title, price, startDate, endDate, dateFrom, dateTo, offset, limit) {
         try {
             dateFrom = parseInt(dateFrom);
             dateTo = parseInt(dateTo);
@@ -290,11 +291,11 @@ let DealService = class DealService {
             }
             console.log(sort);
             console.log(matchFilter);
-            const totalCount = await this.dealModel.countDocuments(Object.assign({ merchantId: req.user.id, deletedCheck: false }, matchFilter));
+            const totalCount = await this.dealModel.countDocuments(Object.assign({ merchantID: merchantID, deletedCheck: false }, matchFilter));
             const deals = await this.dealModel
                 .aggregate([
                 {
-                    $match: Object.assign({ merchantId: req.user.id, deletedCheck: false }, matchFilter),
+                    $match: Object.assign({ merchantID: merchantID, deletedCheck: false }, matchFilter),
                 },
                 {
                     $sort: sort,
@@ -302,19 +303,22 @@ let DealService = class DealService {
             ])
                 .skip(parseInt(offset))
                 .limit(parseInt(limit));
-            return { totalDeals: totalCount, deals };
+            return {
+                totalDeals: totalCount,
+                data: deals
+            };
         }
         catch (err) {
             throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
         }
     }
-    async getTopRatedDeals(merchantId) {
+    async getTopRatedDeals(merchantID) {
         try {
             const deals = this.dealModel
                 .aggregate([
                 {
                     $match: {
-                        merchantId: merchantId,
+                        merchantID: merchantID,
                     },
                 },
                 {
@@ -423,25 +427,25 @@ let DealService = class DealService {
         let pendingDeals;
         let publishedDeals;
         totalDeals = await this.dealModel
-            .find({ merchantId: req.user.id, deletedCheck: false })
+            .find({ merchantID: req.user.id, deletedCheck: false })
             .sort({ startDate: 1 });
         scheduledDeals = await this.dealModel
             .find({
-            merchantId: req.user.id,
+            merchantID: req.user.id,
             dealStatus: dealstatus_enum_1.DEALSTATUS.scheduled,
             deletedCheck: false,
         })
             .sort({ startDate: 1 });
         pendingDeals = await this.dealModel
             .find({
-            merchantId: req.user.id,
+            merchantID: req.user.id,
             dealStatus: dealstatus_enum_1.DEALSTATUS.inReview,
             deletedCheck: false,
         })
             .sort({ startDate: 1 });
         publishedDeals = await this.dealModel
             .find({
-            merchantId: req.user.id,
+            merchantID: req.user.id,
             deletedCheck: false,
             dealStatus: dealstatus_enum_1.DEALSTATUS.published,
         })
@@ -500,7 +504,9 @@ DealService = __decorate([
     __param(0, (0, mongoose_1.InjectModel)('Deal')),
     __param(1, (0, mongoose_1.InjectModel)('Category')),
     __param(2, (0, mongoose_1.InjectModel)('Counter')),
+    __param(3, (0, mongoose_1.InjectModel)('SubCategory')),
     __metadata("design:paramtypes", [mongoose_2.Model,
+        mongoose_2.Model,
         mongoose_2.Model,
         mongoose_2.Model])
 ], DealService);

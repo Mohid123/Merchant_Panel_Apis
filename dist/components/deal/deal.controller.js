@@ -35,14 +35,14 @@ let DealController = class DealController {
     getDeal(id) {
         return this.dealService.getDeal(id);
     }
-    getDealsReviewStatsByMerchant(merchantId, offset = 0, limit = 10) {
-        return this.dealService.getDealsReviewStatsByMerchant(merchantId, offset, limit);
+    getDealsReviewStatsByMerchant(merchantID, offset = 0, limit = 10) {
+        return this.dealService.getDealsReviewStatsByMerchant(merchantID, offset, limit);
     }
     getAllDeals(offset = 0, limit = 10, req) {
         return this.dealService.getAllDeals(req, offset, limit);
     }
-    getDeals(title, price, startDate, endDate, dateFrom, dateTo, offset = 0, limit = 10, req) {
-        return this.dealService.getDeals(title, price, startDate, endDate, dateFrom, dateTo, offset, limit, req);
+    getDealsByMerchantID(title, price, startDate, endDate, dateFrom, dateTo, offset = 0, limit = 10, req) {
+        return this.dealService.getDealsByMerchantID(title, price, startDate, endDate, dateFrom, dateTo, offset, limit, req);
     }
     getSalesStatistics(req) {
         return this.dealService.getSalesStatistics(req);
@@ -50,8 +50,8 @@ let DealController = class DealController {
     getDealReviews(id, offset = 0, limit = 10) {
         return this.dealService.getDealReviews(offset, limit, id);
     }
-    getTopRatedDeals(merchantId) {
-        return this.dealService.getTopRatedDeals(merchantId);
+    getTopRatedDeals(merchantID) {
+        return this.dealService.getTopRatedDeals(merchantID);
     }
 };
 __decorate([
@@ -80,8 +80,8 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], DealController.prototype, "getDeal", null);
 __decorate([
-    (0, common_1.Get)('getDealsReviewStatsByMerchant/:merchantId'),
-    __param(0, (0, common_1.Param)('merchantId')),
+    (0, common_1.Get)('getDealsReviewStatsByMerchant/:merchantID'),
+    __param(0, (0, common_1.Param)('merchantID')),
     __param(1, (0, common_1.Query)('offset')),
     __param(2, (0, common_1.Query)('limit')),
     __metadata("design:type", Function),
@@ -104,7 +104,7 @@ __decorate([
     (0, swagger_1.ApiQuery)({ name: 'endDate', enum: sort_enum_1.SORT, required: false }),
     (0, swagger_1.ApiQuery)({ name: 'dateFrom', required: false }),
     (0, swagger_1.ApiQuery)({ name: 'dateTo', required: false }),
-    (0, common_1.Get)('getDeals'),
+    (0, common_1.Get)('getDealsByMerchantID'),
     __param(0, (0, common_1.Query)('title')),
     __param(1, (0, common_1.Query)('price')),
     __param(2, (0, common_1.Query)('startDate')),
@@ -117,7 +117,7 @@ __decorate([
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, String, String, String, Number, Number, Number, Number, Object]),
     __metadata("design:returntype", void 0)
-], DealController.prototype, "getDeals", null);
+], DealController.prototype, "getDealsByMerchantID", null);
 __decorate([
     (0, common_1.Get)('getSalesStatistics'),
     __param(0, (0, common_1.Req)()),
@@ -135,8 +135,8 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], DealController.prototype, "getDealReviews", null);
 __decorate([
-    (0, common_1.Get)('getTopRatedDeals/:merchantId'),
-    __param(0, (0, common_1.Param)('merchantId')),
+    (0, common_1.Get)('getTopRatedDeals/:merchantID'),
+    __param(0, (0, common_1.Param)('merchantID')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)

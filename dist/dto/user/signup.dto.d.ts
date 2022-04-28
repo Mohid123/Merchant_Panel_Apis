@@ -1,6 +1,6 @@
+import { businessHour } from "src/interface/user/users.interface";
 export declare class SignUpDTO {
     email: string;
-    password: string;
     firstName: string;
     lastName: string;
     phoneNumber: string;
@@ -9,8 +9,9 @@ export declare class SignUpDTO {
     businessType: string;
     companyName: string;
     streetAddress: string;
-    zipCode: string;
+    zipCode: number;
     city: string;
     province: string;
     website_socialAppLink: string;
+    businessHours: businessHour[];
 }
