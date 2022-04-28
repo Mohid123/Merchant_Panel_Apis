@@ -25,7 +25,7 @@ exports.UsersSchema = new mongoose.Schema({
     website_socialAppLink: { type: String, default: '' },
     googleMapPin: { type: String, default: '' },
     businessHours: { type: Array },
-    aboutStore: { type: String, default: '' },
+    businessProfile: { type: String, default: '' },
     generalTermsAgreements: { type: String, default: '' },
     profilePicURL: { type: String, default: '' },
     profilePicBlurHash: { type: String, default: '' },

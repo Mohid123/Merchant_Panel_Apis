@@ -30,8 +30,7 @@ let UsersService = class UsersService {
     async completeKYC(kycDto) {
         return await this._userModel.updateOne({ _id: kycDto.id }, kycDto);
     }
-    async updateUser(usersDto) {
-        usersDto.profilePicBlurHash = await (0, utils_1.encodeImageToBlurhash)(usersDto.profilePicURL);
+    async updateMerchantprofile(usersDto) {
         return this._userModel.updateOne({ _id: usersDto.id }, usersDto);
     }
     async updateBusinessHours(updateHoursDTO) {
@@ -107,7 +106,7 @@ let UsersService = class UsersService {
                     website_socialAppLink: 0,
                     googleMapPin: 0,
                     businessHours: 0,
-                    aboutStore: 0,
+                    businessProfile: 0,
                     generalTermsAgreements: 0,
                     profilePicURL: 0,
                     profilePicBlurHash: 0,

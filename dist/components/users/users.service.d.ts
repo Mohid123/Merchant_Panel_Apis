@@ -8,7 +8,7 @@ export declare class UsersService {
         _id: string;
     }>;
     completeKYC(kycDto: any): Promise<import("mongodb").UpdateResult>;
-    updateUser(usersDto: any): Promise<import("mongodb").UpdateResult>;
+    updateMerchantprofile(usersDto: any): Promise<import("mongodb").UpdateResult>;
     updateBusinessHours(updateHoursDTO: UpdateHoursDto): Promise<import("mongodb").UpdateResult>;
     deleteUser(id: any): Promise<import("mongodb").UpdateResult>;
     getUserById(id: any): Promise<any[]>;

@@ -136,7 +136,7 @@ __decorate([
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
-], UsersDto.prototype, "aboutStore", void 0);
+], UsersDto.prototype, "businessProfile", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)

@@ -26,7 +26,7 @@ export interface UsersInterface {
     website_socialAppLink: string;
     googleMapPin: string;
     businessHours: businessHour[];
-    aboutStore: string;
+    businessProfile: string;
     generalTermsAgreements: string;
     profilePicURL: string;
     profilePicBlurHash: string;

@@ -17,6 +17,7 @@ const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const kyc_dto_1 = require("../../dto/user/kyc.dto");
 const updatehours_dto_1 = require("../../dto/user/updatehours.dto");
+const updatemerchantprofile_dto_1 = require("../../dto/user/updatemerchantprofile.dto");
 const users_dto_1 = require("../../dto/user/users.dto");
 const jwt_auth_guard_1 = require("../auth/jwt-auth.guard");
 const users_service_1 = require("./users.service");
@@ -30,8 +31,8 @@ let UsersController = class UsersController {
     completeKYC(kycDto) {
         return this._usersService.completeKYC(kycDto);
     }
-    updateUser(usersDto) {
-        return this._usersService.updateUser(usersDto);
+    updateMerchantprofile(usersDto) {
+        return this._usersService.updateMerchantprofile(usersDto);
     }
     updateBusinessHours(updateHoursDTO) {
         return this._usersService.updateBusinessHours(updateHoursDTO);
@@ -64,12 +65,12 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "completeKYC", null);
 __decorate([
-    (0, common_1.Post)('updateUser'),
+    (0, common_1.Post)('updateMerchantprofile'),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [users_dto_1.UsersDto]),
+    __metadata("design:paramtypes", [updatemerchantprofile_dto_1.UpdateMerchantProfileDto]),
     __metadata("design:returntype", void 0)
-], UsersController.prototype, "updateUser", null);
+], UsersController.prototype, "updateMerchantprofile", null);
 __decorate([
     (0, common_1.Post)('updateBusinessHours'),
     __param(0, (0, common_1.Body)()),
