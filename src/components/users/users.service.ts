@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { UpdateHoursDto } from 'src/dto/user/updatehours.dto';
+import { USERSTATUS } from 'src/enum/user/userstatus.enum';
 import { UsersInterface } from '../../interface/user/users.interface';
 import { encodeImageToBlurhash } from '../file-management/utils/utils';
 
@@ -51,12 +52,13 @@ export class UsersService {
         return this._userModel.updateOne({_id: id} , {deletedCheck: true});
     }
 
-    async geUserById (id) {
+    async getUserById (id) {
         return await this._userModel.aggregate([
             {
                 $match: {
                     _id: id,
-                    deletedCheck: false
+                    deletedCheck: false,
+                    status: USERSTATUS.approved
                 }
             },
             {
@@ -67,6 +69,56 @@ export class UsersService {
             {
                 $project: {
                     _id: 0
+                }
+            }
+        ]);
+    }
+
+    async getMerchantStats (id) {
+        return await this._userModel.aggregate([
+            {
+                $match: {
+                    _id: id,
+                    deletedCheck: false,
+                    status: USERSTATUS.approved
+                }
+            },
+            {
+                $addFields: {
+                    id: '$_id'
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    email: 0,
+                    password: 0,
+                    firstName: 0,
+                    lastName: 0,
+                    phoneNumber: 0,
+                    role: 0,
+                    businessType: 0,
+                    companyName: 0,
+                    streetAddress: 0,
+                    zipCode: 0,
+                    city: 0,
+                    vatNumber: 0,
+                    iban: 0,
+                    bankName: 0,
+                    kycStatus: 0,
+                    province: 0,
+                    website_socialAppLink: 0,
+                    googleMapPin: 0,
+                    businessHours: 0,
+                    aboutStore: 0,
+                    generalTermsAgreements: 0,
+                    profilePicURL: 0,
+                    profilePicBlurHash: 0,
+                    deletedCheck: 0,
+                    status: 0,
+                    createdAt: 0,
+                    updatedAt: 0,
+                    __v: 0
                 }
             }
         ]);
