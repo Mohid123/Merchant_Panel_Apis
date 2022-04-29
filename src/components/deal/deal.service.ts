@@ -8,6 +8,7 @@ import { generateStringId } from '../file-management/utils/utils';
 import { SORT } from '../../enum/sort/sort.enum';
 import { VoucherCounterInterface } from 'src/interface/vouchers/vouchersCounter.interface';
 import { SubCategoryInterface } from 'src/interface/category/subcategory.interface';
+import { parse } from 'path';
 
 @Injectable()
 export class DealService {
@@ -18,7 +19,7 @@ export class DealService {
     @InjectModel('Counter')
     private readonly voucherCounterModel: Model<VoucherCounterInterface>,
     @InjectModel('SubCategory')
-    private readonly subCategoryModel: Model<SubCategoryInterface>
+    private readonly subCategoryModel: Model<SubCategoryInterface>,
   ) {}
 
   async generateVoucherId(sequenceName) {
@@ -41,11 +42,15 @@ export class DealService {
       var dealVouchers = 0;
       var delaSoldVocuhers = 0;
 
-      let category = await this.categorymodel.findOne({ categoryName: req.user.businessType });
+      let category = await this.categorymodel.findOne({
+        categoryName: req.user.businessType,
+      });
       dealDto.categoryName = req.user.businessType;
       dealDto.categoryID = category.id;
 
-      let subCategory = await this.subCategoryModel.findOne({ subCategoryName: dealDto.subCategory });
+      let subCategory = await this.subCategoryModel.findOne({
+        subCategoryName: dealDto.subCategory,
+      });
       dealDto.subCategoryID = subCategory.id;
 
       dealDto.dealID = await this.generateVoucherId('dealID');
@@ -186,18 +191,6 @@ export class DealService {
           },
         },
         {
-          $lookup: {
-            from: 'reviews',
-            localField: '_id',
-            foreignField: 'dealId',
-            as: 'Reviews',
-            pipeline: [
-              { $skip: parseInt(offset) },
-              { $limit: parseInt(limit) },
-            ],
-          },
-        },
-        {
           $project: {
             title: 1,
             ratingsAverage: 1,
@@ -205,6 +198,35 @@ export class DealService {
             maxRating: 1,
             minRating: 1,
             Reviews: 1,
+          },
+        },
+        {
+          $lookup: {
+            from: 'reviews',
+            let: {
+              dealID: id,
+            },
+
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $and: [
+                      {
+                        $eq: ['$dealID', '$$dealID'],
+                      },
+                    ],
+                  },
+                },
+              },
+              {
+                $skip: parseInt(offset),
+              },
+              {
+                $limit: parseInt(limit),
+              },
+            ],
+            as: 'Reviews',
           },
         },
       ]);
@@ -266,6 +288,10 @@ export class DealService {
           },
         },
       ]);
+
+      if (!totalMerchantReviews[0]) {
+        totalMerchantReviews[0] = 0;
+      }
 
       return {
         totalDeals: totalCount,
@@ -396,8 +422,8 @@ export class DealService {
         .limit(parseInt(limit));
 
       return {
-        totalDeals: totalCount, 
-        data: deals
+        totalDeals: totalCount,
+        data: deals,
       };
     } catch (err) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
