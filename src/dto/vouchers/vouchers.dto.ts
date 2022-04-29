@@ -30,4 +30,7 @@ export class VoucherDto {
 
   @ApiProperty()
   boughtDate: Date;
+
+  @ApiProperty()
+  deletedCheck: boolean;
 }

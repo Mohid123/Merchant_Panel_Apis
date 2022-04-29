@@ -15,6 +15,7 @@ export const VoucherSchema = new mongoose.Schema(
     status: { type: String, default: '' },
     paymentStatus: { type: String, default: 'Pending' },
     boughtDate: { type: Number },
+    deletedCheck: { type: Boolean, default: false }
   },
   {
     collection: 'vouchers',

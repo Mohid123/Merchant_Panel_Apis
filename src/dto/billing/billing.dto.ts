@@ -13,4 +13,6 @@ export class BillingDto {
   status: string;
   @ApiProperty()
   merchantID: string;
+  @ApiProperty()
+  deletedCheck: boolean;
 }
