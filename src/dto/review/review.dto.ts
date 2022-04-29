@@ -5,7 +5,7 @@ export class ReviewDto {
   id: string;
 
   @ApiProperty()
-  dealId: string;
+  dealID: string;
 
   @ApiProperty()
   customerID: string;
