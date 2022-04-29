@@ -27,8 +27,8 @@ let ReviewService = class ReviewService {
             const reviewAlreadyGiven = await this.reviewModel
                 .findOne()
                 .and([
-                { dealId: reviewDto.dealId },
-                { customerId: reviewDto.customerId },
+                { dealID: reviewDto.dealID },
+                { customerID: reviewDto.customerID },
             ]);
             if (reviewAlreadyGiven) {
                 throw new common_1.HttpException('Customer has already reviewed this deal.', common_1.HttpStatus.CONFLICT);
@@ -37,7 +37,7 @@ let ReviewService = class ReviewService {
             const reviewStats = await this.reviewModel.aggregate([
                 {
                     $match: {
-                        dealId: reviewDto.dealId,
+                        dealID: reviewDto.dealID,
                     },
                 },
                 {
@@ -51,7 +51,7 @@ let ReviewService = class ReviewService {
                 },
             ]);
             if (reviewStats.length > 0) {
-                await this.dealModel.findByIdAndUpdate(reviewDto.dealId, {
+                await this.dealModel.findByIdAndUpdate(reviewDto.dealID, {
                     ratingsAverage: reviewStats[0].avgRating,
                     totalReviews: reviewStats[0].nRating,
                     minRating: reviewStats[0].minRating,
@@ -61,12 +61,12 @@ let ReviewService = class ReviewService {
             const userStats = await this.reviewModel.aggregate([
                 {
                     $match: {
-                        merchantId: reviewDto.merchantId,
+                        merchantID: reviewDto.merchantID,
                     },
                 },
                 {
                     $group: {
-                        _id: '$merchantId',
+                        _id: '$merchantID',
                         nRating: { $sum: 1 },
                         avgRating: { $avg: '$rating' },
                         minRating: { $min: '$rating' },
@@ -75,7 +75,7 @@ let ReviewService = class ReviewService {
                 },
             ]);
             if (userStats.length > 0) {
-                await this.userModel.findByIdAndUpdate(reviewDto.merchantId, {
+                await this.userModel.findByIdAndUpdate(reviewDto.merchantID, {
                     ratingsAverage: userStats[0].avgRating,
                     ratingsQuantity: userStats[0].nRating,
                     minRating: userStats[0].minRating,
@@ -83,7 +83,7 @@ let ReviewService = class ReviewService {
                 });
             }
             else {
-                await this.userModel.findByIdAndUpdate(reviewDto.merchantId, {
+                await this.userModel.findByIdAndUpdate(reviewDto.merchantID, {
                     ratingsAverage: 0,
                     ratingsQuantity: 0,
                 });
@@ -135,34 +135,37 @@ let ReviewService = class ReviewService {
         try {
             offset = parseInt(offset) < 0 ? 0 : offset;
             limit = parseInt(limit) < 1 ? 10 : limit;
-            const totalCount = await this.reviewModel.countDocuments({ merchantID: merchantId });
-            const reviews = await this.reviewModel.aggregate([
+            const totalCount = await this.reviewModel.countDocuments({
+                merchantID: merchantId,
+            });
+            const reviews = await this.reviewModel
+                .aggregate([
                 {
                     $match: {
-                        merchantID: merchantId
-                    }
+                        merchantID: merchantId,
+                    },
                 },
                 {
                     $sort: {
-                        createdAt: -1
-                    }
+                        createdAt: -1,
+                    },
                 },
                 {
                     $addFields: {
-                        id: '$_id'
-                    }
+                        id: '$_id',
+                    },
                 },
                 {
                     $project: {
-                        _id: 0
-                    }
-                }
+                        _id: 0,
+                    },
+                },
             ])
                 .skip(parseInt(offset))
                 .limit(parseInt(limit));
             return {
                 totalCount: totalCount,
-                data: reviews
+                data: reviews,
             };
         }
         catch (err) {
