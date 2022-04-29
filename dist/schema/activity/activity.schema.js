@@ -10,6 +10,7 @@ exports.ActivitySchema = new mongoose.Schema({
     merchantID: { type: String, default: '' },
     customerID: { type: String, default: '' },
     dealID: { type: String, default: '' },
+    deletedCheck: { type: Boolean, default: false }
 }, {
     collection: 'activities',
 });

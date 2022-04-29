@@ -117,7 +117,7 @@ let UsersService = class UsersService {
                     __v: 0
                 }
             }
-        ]);
+        ]).then(items => items[0]);
     }
     async getAllUsers(offset, limit) {
         offset = parseInt(offset) < 0 ? 0 : offset;

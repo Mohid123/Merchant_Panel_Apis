@@ -33,5 +33,9 @@ __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
 ], ActivityDto.prototype, "dealID", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", Boolean)
+], ActivityDto.prototype, "deletedCheck", void 0);
 exports.ActivityDto = ActivityDto;
 //# sourceMappingURL=activity.dto.js.map

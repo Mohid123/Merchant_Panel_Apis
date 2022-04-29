@@ -4,4 +4,5 @@ export declare class ActivityDto {
     merchantID: string;
     customerID: string;
     dealID: string;
+    deletedCheck: boolean;
 }

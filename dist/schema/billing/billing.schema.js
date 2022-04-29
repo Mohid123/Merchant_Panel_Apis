@@ -11,6 +11,7 @@ exports.BillingSchema = new mongoose.Schema({
     amount: { type: Number, default: 0 },
     status: { type: String, default: '' },
     merchantID: { type: String, default: '' },
+    deletedCheck: { type: Boolean, default: false }
 }, {
     collection: 'billings',
 });

@@ -6,4 +6,5 @@ export interface ActivityInterface extends Document {
     merchantID: string;
     customerID: string;
     dealID: string;
+    deletedCheck: boolean;
 }

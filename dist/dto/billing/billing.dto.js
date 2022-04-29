@@ -37,5 +37,9 @@ __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
 ], BillingDto.prototype, "merchantID", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", Boolean)
+], BillingDto.prototype, "deletedCheck", void 0);
 exports.BillingDto = BillingDto;
 //# sourceMappingURL=billing.dto.js.map

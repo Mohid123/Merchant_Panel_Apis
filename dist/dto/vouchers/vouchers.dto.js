@@ -53,5 +53,9 @@ __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", Date)
 ], VoucherDto.prototype, "boughtDate", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", Boolean)
+], VoucherDto.prototype, "deletedCheck", void 0);
 exports.VoucherDto = VoucherDto;
 //# sourceMappingURL=vouchers.dto.js.map

@@ -5,4 +5,5 @@ export declare class BillingDto {
     amount: number;
     status: string;
     merchantID: string;
+    deletedCheck: boolean;
 }

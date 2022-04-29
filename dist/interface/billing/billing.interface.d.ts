@@ -7,4 +7,5 @@ export interface BillingInterface extends Document {
     amount: number;
     status: string;
     merchantID: string;
+    deletedCheck: boolean;
 }
