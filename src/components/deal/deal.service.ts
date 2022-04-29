@@ -229,7 +229,7 @@ export class DealService {
             as: 'Reviews',
           },
         },
-      ]);
+      ]).then(items=>items[0])
 
       return deal;
     } catch (err) {
