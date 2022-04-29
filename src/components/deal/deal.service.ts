@@ -101,6 +101,43 @@ export class DealService {
     }
   }
 
+  // async updateDeal (updateDealDto) {
+
+  //   var dealVouchers = 0;
+
+  //   let deal = await this.dealModel.findOne({_id: updateDealDto.id})
+
+  //   updateDealDto.endDate = new Date().getTime();
+
+  //   updateDealDto.vouchers = updateDealDto.vouchers.map((el) => {
+  //     // let startTime;
+  //     // let endTime;
+  //     // let calculateDiscountPercentage =
+  //     //   ((el.originalPrice - el.dealPrice) / el.originalPrice) * 100;
+  //     // el.discountPercentage = calculateDiscountPercentage;
+
+  //     dealVouchers += el.numberOfVouchers;
+  //     // delaSoldVocuhers += el.soldVouchers;
+
+  //     // if (el.voucherValidity > 0) {
+  //     //   startTime = 0;
+  //     //   endTime = 0;
+  //     // } else {
+  //     //   startTime = new Date(el.voucherStartDate).getTime();
+  //     //   endTime = new Date(el.voucherEndDate).getTime();
+  //     // }
+
+  //     // el._id = generateStringId();
+  //     // el.voucherStartDate = startTime;
+  //     // el.voucherEndDate = endTime;
+
+  //     return el;
+  //   });
+
+  //   return await this.dealModel.updateOne({_id: updateDealDto.id}, updateDealDto)
+
+  // }
+
   async approveRejectDeal(dealID, dealStatusDto) {
     let deal = await this.dealModel.findOne({
       _id: dealID,
