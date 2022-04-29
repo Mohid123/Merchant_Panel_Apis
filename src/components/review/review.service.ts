@@ -35,7 +35,7 @@ export class ReviewService {
       const reviewStats = await this.reviewModel.aggregate([
         {
           $match: {
-            dealId: reviewDto.dealId,
+            dealID: reviewDto.dealID,
           },
         },
         {
@@ -50,7 +50,7 @@ export class ReviewService {
       ]);
 
       if (reviewStats.length > 0) {
-        await this.dealModel.findByIdAndUpdate(reviewDto.dealId, {
+        await this.dealModel.findByIdAndUpdate(reviewDto.dealID, {
           ratingsAverage: reviewStats[0].avgRating,
           totalReviews: reviewStats[0].nRating,
           minRating: reviewStats[0].minRating,
@@ -61,12 +61,12 @@ export class ReviewService {
       const userStats = await this.reviewModel.aggregate([
         {
           $match: {
-            merchantId: reviewDto.merchantId,
+            merchantID: reviewDto.merchantID,
           },
         },
         {
           $group: {
-            _id: '$merchantId',
+            _id: '$merchantID',
             nRating: { $sum: 1 },
             avgRating: { $avg: '$rating' },
             minRating: { $min: '$rating' },
@@ -76,14 +76,14 @@ export class ReviewService {
       ]);
 
       if (userStats.length > 0) {
-        await this.userModel.findByIdAndUpdate(reviewDto.merchantId, {
+        await this.userModel.findByIdAndUpdate(reviewDto.merchantID, {
           ratingsAverage: userStats[0].avgRating,
           ratingsQuantity: userStats[0].nRating,
           minRating: userStats[0].minRating,
           maxRating: userStats[0].maxRating,
         });
       } else {
-        await this.userModel.findByIdAndUpdate(reviewDto.merchantId, {
+        await this.userModel.findByIdAndUpdate(reviewDto.merchantID, {
           ratingsAverage: 0,
           ratingsQuantity: 0,
         });
