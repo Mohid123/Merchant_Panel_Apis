@@ -45,6 +45,6 @@ export declare class DealController {
             publishedDeals: number;
         };
     }>;
-    getDealReviews(id: string, offset?: number, limit?: number): Promise<any[]>;
+    getDealReviews(id: string, offset?: number, limit?: number): Promise<any>;
     getTopRatedDeals(merchantID: string): Promise<any[]>;
 }

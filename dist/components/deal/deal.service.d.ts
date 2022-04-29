@@ -21,7 +21,7 @@ export declare class DealService {
     getDeal(id: any): Promise<DealInterface & {
         _id: any;
     }>;
-    getDealReviews(offset: any, limit: any, id: any): Promise<any[]>;
+    getDealReviews(offset: any, limit: any, id: any): Promise<any>;
     getDealsReviewStatsByMerchant(id: any, offset: any, limit: any): Promise<{
         totalDeals: number;
         totalMerchantReviews: any;
