@@ -20,7 +20,7 @@ __decorate([
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
-], ReviewDto.prototype, "dealId", void 0);
+], ReviewDto.prototype, "dealID", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)

@@ -1,6 +1,6 @@
 export declare class ReviewDto {
     id: string;
-    dealId: string;
+    dealID: string;
     customerID: string;
     merchantID: string;
     text: string;

@@ -6,7 +6,7 @@ const utils_1 = require("../../components/file-management/utils/utils");
 const validator = require('validator');
 exports.ReviewSchema = new mongoose.Schema({
     _id: { type: String, default: utils_1.generateStringId },
-    dealId: { type: String, default: '' },
+    dealID: { type: String, default: '' },
     customerID: { type: String, default: '' },
     merchantID: { type: String, default: '' },
     text: {
