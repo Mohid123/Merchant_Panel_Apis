@@ -12,17 +12,19 @@ const mongoose_1 = require("@nestjs/mongoose");
 const invoices_controller_1 = require("./invoices.controller");
 const invoices_service_1 = require("./invoices.service");
 const invoices_schema_1 = require("../../schema/invoices/invoices.schema");
+const vouchersCounter_schema_1 = require("../../schema/vouchers/vouchersCounter.schema");
 let InvoicesModule = class InvoicesModule {
 };
 InvoicesModule = __decorate([
     (0, common_1.Module)({
         imports: [
             mongoose_1.MongooseModule.forFeature([
-                { name: 'Invoices', schema: invoices_schema_1.InvoiceSchema }
-            ])
+                { name: 'Invoices', schema: invoices_schema_1.InvoiceSchema },
+                { name: 'Counter', schema: vouchersCounter_schema_1.VoucherCounterSchema },
+            ]),
         ],
         controllers: [invoices_controller_1.InvoicesController],
-        providers: [invoices_service_1.InvoicesService]
+        providers: [invoices_service_1.InvoicesService],
     })
 ], InvoicesModule);
 exports.InvoicesModule = InvoicesModule;

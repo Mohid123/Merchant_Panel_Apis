@@ -1,8 +1,11 @@
 import { Model } from 'mongoose';
 import { InvoiceInterface } from 'src/interface/invoices/invoices.interface';
+import { VoucherCounterInterface } from 'src/interface/vouchers/vouchersCounter.interface';
 export declare class InvoicesService {
     private readonly _invoicesModel;
-    constructor(_invoicesModel: Model<InvoiceInterface>);
+    private readonly voucherCounterModel;
+    constructor(_invoicesModel: Model<InvoiceInterface>, voucherCounterModel: Model<VoucherCounterInterface>);
+    generateVoucherId(sequenceName: any): Promise<0>;
     createInvoice(invoiceDto: any): Promise<import("mongoose").Document<unknown, any, InvoiceInterface> & InvoiceInterface & {
         _id: import("mongoose").Types.ObjectId;
     }>;

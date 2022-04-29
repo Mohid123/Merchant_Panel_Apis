@@ -19,10 +19,20 @@ const mongoose_2 = require("mongoose");
 const sortinvoiceamount_enum_1 = require("../../enum/sorting/sortinvoiceamount.enum");
 const sortinvoicedate_enum_1 = require("../../enum/sorting/sortinvoicedate.enum");
 let InvoicesService = class InvoicesService {
-    constructor(_invoicesModel) {
+    constructor(_invoicesModel, voucherCounterModel) {
         this._invoicesModel = _invoicesModel;
+        this.voucherCounterModel = voucherCounterModel;
+    }
+    async generateVoucherId(sequenceName) {
+        const sequenceDocument = await this.voucherCounterModel.findByIdAndUpdate(sequenceName, {
+            $inc: {
+                sequenceValue: 1,
+            },
+        }, { new: true });
+        return sequenceDocument.sequenceValue;
     }
     async createInvoice(invoiceDto) {
+        invoiceDto.invoiceNo = await this.generateVoucherId('invoiceID');
         invoiceDto.invoiceDate = new Date().getTime();
         return await new this._invoicesModel(invoiceDto).save();
     }
@@ -34,28 +44,29 @@ let InvoicesService = class InvoicesService {
             offset = parseInt(offset) < 0 ? 0 : offset;
             limit = parseInt(limit) < 1 ? 10 : limit;
             let totalCount = await this._invoicesModel.countDocuments();
-            let invoices = await this._invoicesModel.aggregate([
+            let invoices = await this._invoicesModel
+                .aggregate([
                 {
                     $sort: {
-                        invoiceDate: -1
-                    }
+                        invoiceDate: -1,
+                    },
                 },
                 {
                     $addFields: {
-                        id: '$_id'
-                    }
+                        id: '$_id',
+                    },
                 },
                 {
                     $project: {
-                        _id: 0
-                    }
-                }
+                        _id: 0,
+                    },
+                },
             ])
                 .skip(parseInt(offset))
                 .limit(parseInt(limit));
             return {
                 totalCount: totalCount,
-                data: invoices
+                data: invoices,
             };
         }
         catch (err) {
@@ -72,10 +83,10 @@ let InvoicesService = class InvoicesService {
             let dateFromFilters = {};
             let matchFilter;
             if (dateFrom) {
-                dateFromFilters = Object.assign(Object.assign({}, dateFromFilters), { '$gte': dateFrom });
+                dateFromFilters = Object.assign(Object.assign({}, dateFromFilters), { $gte: dateFrom });
             }
             if (dateTo) {
-                dateToFilters = Object.assign(Object.assign({}, dateToFilters), { "$lte": dateTo });
+                dateToFilters = Object.assign(Object.assign({}, dateToFilters), { $lte: dateTo });
             }
             if (dateFrom || dateTo) {
                 matchFilter = Object.assign(Object.assign({}, matchFilter), { transactionDate: Object.assign(Object.assign({}, dateFromFilters), dateToFilters) });
@@ -102,30 +113,31 @@ let InvoicesService = class InvoicesService {
                 sortFilters = Object.assign(Object.assign({}, sortFilters), { amount: sortInvoiceAmount });
             }
             const totalCount = await this._invoicesModel.countDocuments(Object.assign({ merchantID: merchantID }, matchFilter));
-            let invoices = await this._invoicesModel.aggregate([
+            let invoices = await this._invoicesModel
+                .aggregate([
                 {
-                    $match: Object.assign({ merchantID: merchantID }, matchFilter)
+                    $match: Object.assign({ merchantID: merchantID }, matchFilter),
                 },
                 {
-                    $sort: Object.assign(Object.assign({}, sortFilters), { createdAt: -1 })
+                    $sort: Object.assign(Object.assign({}, sortFilters), { createdAt: -1 }),
                 },
                 {
                     $addFields: {
-                        id: '$_id'
-                    }
+                        id: '$_id',
+                    },
                 },
                 {
                     $project: {
                         _id: 0,
-                        nameInLowerCase: 0
-                    }
-                }
+                        nameInLowerCase: 0,
+                    },
+                },
             ])
                 .skip(parseInt(offset))
                 .limit(parseInt(limit));
             return {
                 totalCount: totalCount,
-                data: invoices
+                data: invoices,
             };
         }
         catch (err) {
@@ -136,7 +148,9 @@ let InvoicesService = class InvoicesService {
 InvoicesService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, mongoose_1.InjectModel)('Invoices')),
-    __metadata("design:paramtypes", [mongoose_2.Model])
+    __param(1, (0, mongoose_1.InjectModel)('Counter')),
+    __metadata("design:paramtypes", [mongoose_2.Model,
+        mongoose_2.Model])
 ], InvoicesService);
 exports.InvoicesService = InvoicesService;
 //# sourceMappingURL=invoices.service.js.map
