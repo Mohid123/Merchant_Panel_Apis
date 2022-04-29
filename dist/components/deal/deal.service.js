@@ -39,10 +39,14 @@ let DealService = class DealService {
             console.log(dealDto);
             var dealVouchers = 0;
             var delaSoldVocuhers = 0;
-            let category = await this.categorymodel.findOne({ categoryName: req.user.businessType });
+            let category = await this.categorymodel.findOne({
+                categoryName: req.user.businessType,
+            });
             dealDto.categoryName = req.user.businessType;
             dealDto.categoryID = category.id;
-            let subCategory = await this.subCategoryModel.findOne({ subCategoryName: dealDto.subCategory });
+            let subCategory = await this.subCategoryModel.findOne({
+                subCategoryName: dealDto.subCategory,
+            });
             dealDto.subCategoryID = subCategory.id;
             dealDto.dealID = await this.generateVoucherId('dealID');
             let stamp = new Date(dealDto.startDate).getTime();
@@ -160,18 +164,6 @@ let DealService = class DealService {
                     },
                 },
                 {
-                    $lookup: {
-                        from: 'reviews',
-                        localField: '_id',
-                        foreignField: 'dealId',
-                        as: 'Reviews',
-                        pipeline: [
-                            { $skip: parseInt(offset) },
-                            { $limit: parseInt(limit) },
-                        ],
-                    },
-                },
-                {
                     $project: {
                         title: 1,
                         ratingsAverage: 1,
@@ -179,6 +171,34 @@ let DealService = class DealService {
                         maxRating: 1,
                         minRating: 1,
                         Reviews: 1,
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'reviews',
+                        let: {
+                            dealID: id,
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$dealID', '$$dealID'],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                            {
+                                $skip: parseInt(offset),
+                            },
+                            {
+                                $limit: parseInt(limit),
+                            },
+                        ],
+                        as: 'Reviews',
                     },
                 },
             ]);
@@ -230,6 +250,9 @@ let DealService = class DealService {
                     },
                 },
             ]);
+            if (!totalMerchantReviews[0]) {
+                totalMerchantReviews[0] = 0;
+            }
             return {
                 totalDeals: totalCount,
                 totalMerchantReviews: totalMerchantReviews[0].nRating,
@@ -305,7 +328,7 @@ let DealService = class DealService {
                 .limit(parseInt(limit));
             return {
                 totalDeals: totalCount,
-                data: deals
+                data: deals,
             };
         }
         catch (err) {
