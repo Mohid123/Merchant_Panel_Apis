@@ -19,8 +19,8 @@ export class ReviewService {
       const reviewAlreadyGiven = await this.reviewModel
         .findOne()
         .and([
-          { dealId: reviewDto.dealId },
-          { customerId: reviewDto.customerId },
+          { dealID: reviewDto.dealID },
+          { customerID: reviewDto.customerID },
         ]);
 
       if (reviewAlreadyGiven) {
@@ -35,7 +35,7 @@ export class ReviewService {
       const reviewStats = await this.reviewModel.aggregate([
         {
           $match: {
-            dealId: reviewDto.dealId,
+            dealID: reviewDto.dealID,
           },
         },
         {
@@ -50,7 +50,7 @@ export class ReviewService {
       ]);
 
       if (reviewStats.length > 0) {
-        await this.dealModel.findByIdAndUpdate(reviewDto.dealId, {
+        await this.dealModel.findByIdAndUpdate(reviewDto.dealID, {
           ratingsAverage: reviewStats[0].avgRating,
           totalReviews: reviewStats[0].nRating,
           minRating: reviewStats[0].minRating,
@@ -61,12 +61,12 @@ export class ReviewService {
       const userStats = await this.reviewModel.aggregate([
         {
           $match: {
-            merchantId: reviewDto.merchantId,
+            merchantID: reviewDto.merchantID,
           },
         },
         {
           $group: {
-            _id: '$merchantId',
+            _id: '$merchantID',
             nRating: { $sum: 1 },
             avgRating: { $avg: '$rating' },
             minRating: { $min: '$rating' },
@@ -76,14 +76,14 @@ export class ReviewService {
       ]);
 
       if (userStats.length > 0) {
-        await this.userModel.findByIdAndUpdate(reviewDto.merchantId, {
+        await this.userModel.findByIdAndUpdate(reviewDto.merchantID, {
           ratingsAverage: userStats[0].avgRating,
           ratingsQuantity: userStats[0].nRating,
           minRating: userStats[0].minRating,
           maxRating: userStats[0].maxRating,
         });
       } else {
-        await this.userModel.findByIdAndUpdate(reviewDto.merchantId, {
+        await this.userModel.findByIdAndUpdate(reviewDto.merchantID, {
           ratingsAverage: 0,
           ratingsQuantity: 0,
         });
@@ -95,8 +95,8 @@ export class ReviewService {
     }
   }
 
-  async deleteReview (id) {
-    return this.reviewModel.findOneAndDelete({_id:id})
+  async deleteReview(id) {
+    return this.reviewModel.findOneAndDelete({ _id: id });
   }
 
   async getAllReviews(offset, limit) {
@@ -136,42 +136,45 @@ export class ReviewService {
     }
   }
 
-  async getReviewsByMerchant (merchantId, offset, limit) {
+  async getReviewsByMerchant(merchantId, offset, limit) {
     try {
       offset = parseInt(offset) < 0 ? 0 : offset;
       limit = parseInt(limit) < 1 ? 10 : limit;
 
-      const totalCount = await this.reviewModel.countDocuments({merchantID: merchantId});
+      const totalCount = await this.reviewModel.countDocuments({
+        merchantID: merchantId,
+      });
 
-      const reviews = await this.reviewModel.aggregate([
-        {
-          $match: {
-            merchantID: merchantId
-          }
-        },
-        {
-          $sort: {
-            createdAt: -1
-          }
-        },
-        {
-          $addFields: {
-            id: '$_id'
-          }
-        },
-        {
-          $project: {
-            _id: 0
-          }
-        }
-      ])
-      .skip(parseInt(offset))
-      .limit(parseInt(limit));
+      const reviews = await this.reviewModel
+        .aggregate([
+          {
+            $match: {
+              merchantID: merchantId,
+            },
+          },
+          {
+            $sort: {
+              createdAt: -1,
+            },
+          },
+          {
+            $addFields: {
+              id: '$_id',
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+            },
+          },
+        ])
+        .skip(parseInt(offset))
+        .limit(parseInt(limit));
 
       return {
         totalCount: totalCount,
-        data: reviews
-      }
+        data: reviews,
+      };
     } catch (err) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
     }
