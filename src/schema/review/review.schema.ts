@@ -6,7 +6,7 @@ const validator = require('validator');
 export const ReviewSchema = new mongoose.Schema(
   {
     _id: { type: String, default: generateStringId },
-    dealId: { type: String, default: '' },
+    dealID: { type: String, default: '' },
     customerID: { type: String, default: '' },
     merchantID: { type: String, default: '' },
     text: {
