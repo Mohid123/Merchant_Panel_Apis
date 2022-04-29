@@ -14,7 +14,7 @@ export declare class VouchersController {
         totalCount: number;
         data: any[];
     }>;
-    searchByVoucherId(voucherId: number): Promise<import("mongoose").Document<unknown, any, import("../../interface/deal/deal.interface").VoucherInterface> & import("../../interface/deal/deal.interface").VoucherInterface & {
+    searchByVoucherId(voucherId: number): Promise<(import("mongoose").Document<unknown, any, import("../../interface/deal/deal.interface").VoucherInterface> & import("../../interface/deal/deal.interface").VoucherInterface & {
         _id: import("mongoose").Types.ObjectId;
-    }>;
+    })[]>;
 }

@@ -44,7 +44,7 @@ let VouchersService = class VouchersService {
     }
     async searchByVoucherId(voucherId) {
         try {
-            const voucher = await this.voucherModel.findOne({ voucherID: voucherId });
+            const voucher = await this.voucherModel.find({ voucherID: voucherId });
             if (!voucher) {
                 throw new common_1.HttpException('No record Found', common_1.HttpStatus.NOT_FOUND);
             }

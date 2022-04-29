@@ -9,9 +9,9 @@ export declare class VouchersService {
     createVoucher(voucherDto: any): Promise<import("mongoose").Document<unknown, any, VoucherInterface> & VoucherInterface & {
         _id: import("mongoose").Types.ObjectId;
     }>;
-    searchByVoucherId(voucherId: any): Promise<import("mongoose").Document<unknown, any, VoucherInterface> & VoucherInterface & {
+    searchByVoucherId(voucherId: any): Promise<(import("mongoose").Document<unknown, any, VoucherInterface> & VoucherInterface & {
         _id: import("mongoose").Types.ObjectId;
-    }>;
+    })[]>;
     getAllVouchersByMerchantID(deal: any, amount: any, fee: any, net: any, status: any, paymentStatus: any, dateFrom: any, dateTo: any, merchantId: any, offset: any, limit: any): Promise<{
         totalCount: number;
         data: any[];
