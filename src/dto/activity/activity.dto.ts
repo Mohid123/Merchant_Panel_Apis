@@ -11,4 +11,6 @@ export class ActivityDto {
   customerID: string;
   @ApiProperty()
   dealID: string;
+  @ApiProperty()
+  deletedCheck: boolean;
 }

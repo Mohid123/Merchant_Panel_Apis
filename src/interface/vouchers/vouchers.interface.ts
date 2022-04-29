@@ -12,4 +12,5 @@ export interface VoucherInterface extends Document {
   status: string;
   paymentStatus: string;
   boughtDate: number;
+  deletedCheck: boolean;
 }

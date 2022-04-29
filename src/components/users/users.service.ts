@@ -121,7 +121,7 @@ export class UsersService {
                     __v: 0
                 }
             }
-        ]);
+        ]).then(items=>items[0]);
     }
 
     async getAllUsers (offset, limit) {
