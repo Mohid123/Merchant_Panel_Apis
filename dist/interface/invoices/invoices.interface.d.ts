@@ -4,4 +4,5 @@ export interface InvoiceInterface {
     invoiceAmount: number;
     status: string;
     invoiceURL: string;
+    merchantID: string;
 }

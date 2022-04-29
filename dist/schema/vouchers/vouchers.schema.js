@@ -8,7 +8,7 @@ exports.VoucherSchema = new mongoose.Schema({
     voucherID: { type: Number, unique: true },
     dealName: { type: String, default: '' },
     dealId: { type: String, default: '' },
-    merchantId: { type: String, default: '' },
+    merchantID: { type: String, default: '' },
     amount: { type: Number, default: 0 },
     fee: { type: Number, default: 0 },
     net: { type: Number, default: 0 },

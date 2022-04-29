@@ -29,8 +29,8 @@ let VouchersController = class VouchersController {
     createVoucher(voucherDto) {
         return this.voucherService.createVoucher(voucherDto);
     }
-    getAllVouchers(merchantId, deal, amount, fee, net, status, paymentStatus, dateFrom, dateTo, offset = 0, limit = 10) {
-        return this.voucherService.getAllVouchers(deal, amount, fee, net, status, paymentStatus, dateFrom, dateTo, merchantId, offset, limit);
+    getAllVouchers(merchantID, deal, amount, fee, net, status, paymentStatus, dateFrom, dateTo, offset = 0, limit = 10) {
+        return this.voucherService.getAllVouchersByMerchantID(deal, amount, fee, net, status, paymentStatus, dateFrom, dateTo, merchantID, offset, limit);
     }
     searchByVoucherId(voucherId) {
         return this.voucherService.searchByVoucherId(voucherId);
@@ -53,8 +53,8 @@ __decorate([
     (0, swagger_1.ApiQuery)({ name: 'paymentStatus', enum: billingStatus_enum_1.BILLINGSTATUS, required: false }),
     (0, swagger_1.ApiQuery)({ name: 'dateFrom', required: false }),
     (0, swagger_1.ApiQuery)({ name: 'dateTo', required: false }),
-    (0, common_1.Get)('getAllVouchers/:merchantId'),
-    __param(0, (0, common_1.Param)('merchantId')),
+    (0, common_1.Get)('getAllVouchersByMerchantID/:merchantID'),
+    __param(0, (0, common_1.Param)('merchantID')),
     __param(1, (0, common_1.Query)('deal')),
     __param(2, (0, common_1.Query)('amount')),
     __param(3, (0, common_1.Query)('fee')),

@@ -6,7 +6,7 @@ export declare class VoucherDto {
     net: number;
     status: string;
     paymentStatus: string;
-    merchantId: string;
+    merchantID: string;
     dealId: string;
     boughtDate: Date;
     deletedCheck: boolean;

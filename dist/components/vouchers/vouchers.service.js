@@ -54,7 +54,7 @@ let VouchersService = class VouchersService {
             throw new common_1.HttpException(err.message, common_1.HttpStatus.BAD_REQUEST);
         }
     }
-    async getAllVouchers(deal, amount, fee, net, status, paymentStatus, dateFrom, dateTo, merchantId, offset, limit) {
+    async getAllVouchersByMerchantID(deal, amount, fee, net, status, paymentStatus, dateFrom, dateTo, merchantId, offset, limit) {
         try {
             offset = parseInt(offset) < 0 ? 0 : offset;
             limit = parseInt(limit) < 1 ? 10 : limit;
@@ -113,11 +113,11 @@ let VouchersService = class VouchersService {
             }
             console.log(sort);
             console.log(matchFilter);
-            const totalCount = await this.voucherModel.countDocuments(Object.assign({ merchantId: merchantId }, matchFilter));
+            const totalCount = await this.voucherModel.countDocuments(Object.assign({ merchantID: merchantId }, matchFilter));
             let vouchers = await this.voucherModel
                 .aggregate([
                 {
-                    $match: Object.assign({ merchantId: merchantId }, matchFilter),
+                    $match: Object.assign({ merchantID: merchantId }, matchFilter),
                 },
                 {
                     $sort: sort,

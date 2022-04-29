@@ -44,7 +44,7 @@ __decorate([
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
-], VoucherDto.prototype, "merchantId", void 0);
+], VoucherDto.prototype, "merchantID", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)

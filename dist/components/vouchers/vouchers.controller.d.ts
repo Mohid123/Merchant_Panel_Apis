@@ -10,7 +10,7 @@ export declare class VouchersController {
     createVoucher(voucherDto: VoucherDto): Promise<import("mongoose").Document<unknown, any, import("../../interface/deal/deal.interface").VoucherInterface> & import("../../interface/deal/deal.interface").VoucherInterface & {
         _id: import("mongoose").Types.ObjectId;
     }>;
-    getAllVouchers(merchantId: string, deal: SORT, amount: SORT, fee: SORT, net: SORT, status: VOUCHERSTATUSENUM, paymentStatus: BILLINGSTATUS, dateFrom: number, dateTo: number, offset?: number, limit?: number): Promise<{
+    getAllVouchers(merchantID: string, deal: SORT, amount: SORT, fee: SORT, net: SORT, status: VOUCHERSTATUSENUM, paymentStatus: BILLINGSTATUS, dateFrom: number, dateTo: number, offset?: number, limit?: number): Promise<{
         totalCount: number;
         data: any[];
     }>;

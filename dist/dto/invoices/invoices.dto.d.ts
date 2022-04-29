@@ -4,4 +4,5 @@ export declare class InvoiceDTO {
     invoiceAmount: number;
     status: string;
     invoiceURL: string;
+    merchantID: string;
 }
