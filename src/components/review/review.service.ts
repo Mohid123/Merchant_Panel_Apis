@@ -20,7 +20,7 @@ export class ReviewService {
         .findOne()
         .and([
           { dealID: reviewDto.dealID },
-          { customerId: reviewDto.customerId },
+          { customerID: reviewDto.customerID },
         ]);
 
       if (reviewAlreadyGiven) {
