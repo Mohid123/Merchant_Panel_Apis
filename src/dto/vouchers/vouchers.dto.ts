@@ -23,7 +23,7 @@ export class VoucherDto {
   paymentStatus: string;
 
   @ApiProperty()
-  merchantId: string;
+  merchantID: string;
 
   @ApiProperty()
   dealId: string;

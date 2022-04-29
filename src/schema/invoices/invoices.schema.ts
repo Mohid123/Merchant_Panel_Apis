@@ -8,7 +8,8 @@ export const InvoiceSchema = new mongoose.Schema(
         invoiceDate: { type: Number, default: 0 },
         invoiceAmount: { type: Number, default: 0 },
         status: { type: String, default: '' },
-        invoiceURL: { type: String, default: '' }
+        invoiceURL: { type: String, default: '' },
+        merchantID: { type: String, default: '' }
     },
     {
         collection: 'invoices'
