@@ -53,7 +53,7 @@ export class VouchersService {
     }
   }
 
-  async getAllVouchers(
+  async getAllVouchersByMerchantID(
     deal,
     amount,
     fee,
@@ -167,7 +167,7 @@ export class VouchersService {
       console.log(matchFilter);
 
       const totalCount = await this.voucherModel.countDocuments({
-        merchantId: merchantId,
+        merchantID: merchantId,
         ...matchFilter,
       });
 
@@ -175,7 +175,7 @@ export class VouchersService {
         .aggregate([
           {
             $match: {
-              merchantId: merchantId,
+              merchantID: merchantId,
               ...matchFilter,
             },
           },

@@ -37,9 +37,9 @@ export class VouchersController {
   @ApiQuery({ name: 'paymentStatus', enum: BILLINGSTATUS, required: false })
   @ApiQuery({ name: 'dateFrom', required: false })
   @ApiQuery({ name: 'dateTo', required: false })
-  @Get('getAllVouchers/:merchantId')
+  @Get('getAllVouchersByMerchantID/:merchantID')
   getAllVouchers(
-    @Param('merchantId') merchantId: string,
+    @Param('merchantID') merchantID: string,
     @Query('deal') deal: SORT,
     @Query('amount') amount: SORT,
     @Query('fee') fee: SORT,
@@ -51,7 +51,7 @@ export class VouchersController {
     @Query('offset') offset: number = 0,
     @Query('limit') limit: number = 10,
   ) {
-    return this.voucherService.getAllVouchers(
+    return this.voucherService.getAllVouchersByMerchantID(
       deal,
       amount,
       fee,
@@ -60,7 +60,7 @@ export class VouchersController {
       paymentStatus,
       dateFrom,
       dateTo,
-      merchantId,
+      merchantID,
       offset,
       limit,
     );
