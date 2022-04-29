@@ -19,7 +19,7 @@ export class ReviewService {
       const reviewAlreadyGiven = await this.reviewModel
         .findOne()
         .and([
-          { dealId: reviewDto.dealId },
+          { dealID: reviewDto.dealID },
           { customerId: reviewDto.customerId },
         ]);
 
@@ -95,8 +95,8 @@ export class ReviewService {
     }
   }
 
-  async deleteReview (id) {
-    return this.reviewModel.findOneAndDelete({_id:id})
+  async deleteReview(id) {
+    return this.reviewModel.findOneAndDelete({ _id: id });
   }
 
   async getAllReviews(offset, limit) {
@@ -136,42 +136,45 @@ export class ReviewService {
     }
   }
 
-  async getReviewsByMerchant (merchantId, offset, limit) {
+  async getReviewsByMerchant(merchantId, offset, limit) {
     try {
       offset = parseInt(offset) < 0 ? 0 : offset;
       limit = parseInt(limit) < 1 ? 10 : limit;
 
-      const totalCount = await this.reviewModel.countDocuments({merchantID: merchantId});
+      const totalCount = await this.reviewModel.countDocuments({
+        merchantID: merchantId,
+      });
 
-      const reviews = await this.reviewModel.aggregate([
-        {
-          $match: {
-            merchantID: merchantId
-          }
-        },
-        {
-          $sort: {
-            createdAt: -1
-          }
-        },
-        {
-          $addFields: {
-            id: '$_id'
-          }
-        },
-        {
-          $project: {
-            _id: 0
-          }
-        }
-      ])
-      .skip(parseInt(offset))
-      .limit(parseInt(limit));
+      const reviews = await this.reviewModel
+        .aggregate([
+          {
+            $match: {
+              merchantID: merchantId,
+            },
+          },
+          {
+            $sort: {
+              createdAt: -1,
+            },
+          },
+          {
+            $addFields: {
+              id: '$_id',
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+            },
+          },
+        ])
+        .skip(parseInt(offset))
+        .limit(parseInt(limit));
 
       return {
         totalCount: totalCount,
-        data: reviews
-      }
+        data: reviews,
+      };
     } catch (err) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
     }
