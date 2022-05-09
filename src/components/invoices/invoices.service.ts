@@ -84,6 +84,7 @@ export class InvoicesService {
     dateTo,
     invoiceDate,
     invoiceAmount,
+    status,
     offset,
     limit,
   ) {
@@ -96,7 +97,7 @@ export class InvoicesService {
 
       let dateToFilters = {};
       let dateFromFilters = {};
-      let matchFilter: {};
+      let matchFilter = {};
 
       if (dateFrom) {
         dateFromFilters = {
@@ -112,10 +113,17 @@ export class InvoicesService {
         };
       }
 
+      if (status) {
+        matchFilter = {
+          ...matchFilter,
+          status: status,
+        };
+      }
+
       if (dateFrom || dateTo) {
         matchFilter = {
           ...matchFilter,
-          transactionDate: {
+          invoiceDate: {
             ...dateFromFilters,
             ...dateToFilters,
           },
@@ -134,7 +142,7 @@ export class InvoicesService {
         }
         sortFilters = {
           ...sortFilters,
-          transactionDate: sortInvoiceDate,
+          invoiceDate: sortInvoiceDate,
         };
       }
 
@@ -152,6 +160,17 @@ export class InvoicesService {
         };
       }
 
+      if (
+        Object.keys(sortFilters).length === 0 &&
+        sortFilters.constructor === Object
+      ) {
+        sortFilters = {
+          createdAt: -1,
+        };
+      }
+
+      console.log(sortFilters);
+
       const totalCount = await this._invoicesModel.countDocuments({
         merchantID: merchantID,
         ...matchFilter,
@@ -168,7 +187,6 @@ export class InvoicesService {
           {
             $sort: {
               ...sortFilters,
-              createdAt: -1,
             },
           },
           {
