@@ -16,7 +16,7 @@ export declare class InvoicesController {
         totalCount: number;
         data: any[];
     }>;
-    getAllInvoicesByMerchant(merchantID: string, dateFrom: number, dateTo: number, invoiceDate: INVOICEDATEENUM, invoiceAmount: INVOICEAMOUNTENUM, offset?: number, limit?: number): Promise<{
+    getAllInvoicesByMerchant(merchantID: string, dateFrom: number, dateTo: number, invoiceDate: INVOICEDATEENUM, invoiceAmount: INVOICEAMOUNTENUM, status: INVOICEAMOUNTENUM, offset?: number, limit?: number): Promise<{
         totalCount: number;
         data: any[];
     }>;

@@ -73,7 +73,7 @@ let InvoicesService = class InvoicesService {
             throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
         }
     }
-    async getAllInvoicesByMerchant(merchantID, dateFrom, dateTo, invoiceDate, invoiceAmount, offset, limit) {
+    async getAllInvoicesByMerchant(merchantID, dateFrom, dateTo, invoiceDate, invoiceAmount, status, offset, limit) {
         try {
             offset = parseInt(offset) < 0 ? 0 : offset;
             limit = parseInt(limit) < 1 ? 10 : limit;
@@ -81,15 +81,18 @@ let InvoicesService = class InvoicesService {
             dateTo = parseInt(dateTo);
             let dateToFilters = {};
             let dateFromFilters = {};
-            let matchFilter;
+            let matchFilter = {};
             if (dateFrom) {
                 dateFromFilters = Object.assign(Object.assign({}, dateFromFilters), { $gte: dateFrom });
             }
             if (dateTo) {
                 dateToFilters = Object.assign(Object.assign({}, dateToFilters), { $lte: dateTo });
             }
+            if (status) {
+                matchFilter = Object.assign(Object.assign({}, matchFilter), { status: status });
+            }
             if (dateFrom || dateTo) {
-                matchFilter = Object.assign(Object.assign({}, matchFilter), { transactionDate: Object.assign(Object.assign({}, dateFromFilters), dateToFilters) });
+                matchFilter = Object.assign(Object.assign({}, matchFilter), { invoiceDate: Object.assign(Object.assign({}, dateFromFilters), dateToFilters) });
             }
             let sortFilters = {};
             let sortInvoiceDate;
@@ -100,7 +103,7 @@ let InvoicesService = class InvoicesService {
                 else {
                     sortInvoiceDate = -1;
                 }
-                sortFilters = Object.assign(Object.assign({}, sortFilters), { transactionDate: sortInvoiceDate });
+                sortFilters = Object.assign(Object.assign({}, sortFilters), { invoiceDate: sortInvoiceDate });
             }
             let sortInvoiceAmount;
             if (invoiceAmount) {
@@ -112,6 +115,13 @@ let InvoicesService = class InvoicesService {
                 }
                 sortFilters = Object.assign(Object.assign({}, sortFilters), { amount: sortInvoiceAmount });
             }
+            if (Object.keys(sortFilters).length === 0 &&
+                sortFilters.constructor === Object) {
+                sortFilters = {
+                    createdAt: -1,
+                };
+            }
+            console.log(sortFilters);
             const totalCount = await this._invoicesModel.countDocuments(Object.assign({ merchantID: merchantID }, matchFilter));
             let invoices = await this._invoicesModel
                 .aggregate([
@@ -119,7 +129,7 @@ let InvoicesService = class InvoicesService {
                     $match: Object.assign({ merchantID: merchantID }, matchFilter),
                 },
                 {
-                    $sort: Object.assign(Object.assign({}, sortFilters), { createdAt: -1 }),
+                    $sort: Object.assign({}, sortFilters),
                 },
                 {
                     $addFields: {
