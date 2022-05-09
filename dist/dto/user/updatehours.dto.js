@@ -26,51 +26,58 @@ __decorate([
                 firstStartTime: '',
                 firstEndTime: '',
                 secondStartTime: '',
-                secondEndTime: ''
+                secondEndTime: '',
+                isWorkingDay: true,
             },
             {
                 day: 'TU',
                 firstStartTime: '',
                 firstEndTime: '',
                 secondStartTime: '',
-                secondEndTime: ''
+                secondEndTime: '',
+                isWorkingDay: true,
             },
             {
                 day: 'WD',
                 firstStartTime: '',
                 firstEndTime: '',
                 secondStartTime: '',
-                secondEndTime: ''
+                secondEndTime: '',
+                isWorkingDay: true,
             },
             {
                 day: 'TH',
                 firstStartTime: '',
                 firstEndTime: '',
                 secondStartTime: '',
-                secondEndTime: ''
+                secondEndTime: '',
+                isWorkingDay: true,
             },
             {
                 day: 'FR',
                 firstStartTime: '',
                 firstEndTime: '',
                 secondStartTime: '',
-                secondEndTime: ''
+                secondEndTime: '',
+                isWorkingDay: true,
             },
             {
                 day: 'SA',
                 firstStartTime: '',
                 firstEndTime: '',
                 secondStartTime: '',
-                secondEndTime: ''
+                secondEndTime: '',
+                isWorkingDay: true,
             },
             {
                 day: 'SU',
                 firstStartTime: '',
                 firstEndTime: '',
                 secondStartTime: '',
-                secondEndTime: ''
+                secondEndTime: '',
+                isWorkingDay: true,
             },
-        ]
+        ],
     }),
     __metadata("design:type", Array)
 ], UpdateHoursDto.prototype, "businessHours", void 0);
