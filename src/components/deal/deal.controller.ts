@@ -110,13 +110,15 @@ export class DealController {
     return this.dealService.getSalesStatistics(req);
   }
 
-  @Get('getDealReviews/:id')
+  @ApiQuery({ name: 'rating', required: false })
+  @Get('getDealReviews/:dealID')
   getDealReviews(
-    @Param('id') id: string,
+    @Param('dealID') dealID: string,
+    @Query('rating') rating: number,
     @Query('offset') offset: number = 0,
     @Query('limit') limit: number = 10,
   ) {
-    return this.dealService.getDealReviews(offset, limit, id);
+    return this.dealService.getDealReviews(offset, limit, rating, dealID);
   }
 
   @Get('getTopRatedDeals/:merchantID')

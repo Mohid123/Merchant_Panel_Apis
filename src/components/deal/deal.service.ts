@@ -216,57 +216,75 @@ export class DealService {
     }
   }
 
-  async getDealReviews(offset, limit, id) {
+  async getDealReviews(offset, limit, rating, id) {
     try {
       offset = parseInt(offset) < 0 ? 0 : offset;
       limit = parseInt(limit) < 1 ? 10 : limit;
 
-      const deal = await this.dealModel.aggregate([
-        {
-          $match: {
-            _id: id,
-          },
-        },
-        {
-          $project: {
-            title: 1,
-            ratingsAverage: 1,
-            totalReviews: 1,
-            maxRating: 1,
-            minRating: 1,
-            Reviews: 1,
-          },
-        },
-        {
-          $lookup: {
-            from: 'reviews',
-            let: {
-              dealID: id,
-            },
+      let ratingFilter = {};
 
-            pipeline: [
-              {
-                $match: {
-                  $expr: {
-                    $and: [
-                      {
-                        $eq: ['$dealID', '$$dealID'],
-                      },
-                    ],
+      if (rating) {
+        ratingFilter = {
+          eq: ['$rating', parseInt(rating)],
+        };
+      } else {
+        ratingFilter = {
+          ...ratingFilter,
+          eq: ['', ''],
+        };
+      }
+      console.log(ratingFilter['eq']);
+      const deal = await this.dealModel
+        .aggregate([
+          {
+            $match: {
+              _id: id,
+            },
+          },
+          {
+            $project: {
+              title: 1,
+              ratingsAverage: 1,
+              totalReviews: 1,
+              maxRating: 1,
+              minRating: 1,
+              Reviews: 1,
+            },
+          },
+          {
+            $lookup: {
+              from: 'reviews',
+              let: {
+                dealID: id,
+              },
+
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $and: [
+                        {
+                          $eq: ['$dealID', '$$dealID'],
+                        },
+                        {
+                          $eq: ratingFilter['eq'],
+                        },
+                      ],
+                    },
                   },
                 },
-              },
-              {
-                $skip: parseInt(offset),
-              },
-              {
-                $limit: parseInt(limit),
-              },
-            ],
-            as: 'Reviews',
+                {
+                  $skip: parseInt(offset),
+                },
+                {
+                  $limit: parseInt(limit),
+                },
+              ],
+              as: 'Reviews',
+            },
           },
-        },
-      ]).then(items=>items[0])
+        ])
+        .then((items) => items[0]);
 
       return deal;
     } catch (err) {
