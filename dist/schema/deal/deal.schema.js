@@ -19,7 +19,7 @@ exports.DealSchema = new mongoose.Schema({
     endDate: { type: Number },
     vouchers: { type: Array },
     numberOfVouchers: { type: Number },
-    soldVouchers: { type: Number },
+    soldVouchers: { type: Number, default: 0 },
     termsAndCondition: { type: String, default: '' },
     dealStatus: { type: String, default: '' },
     deletedCheck: { type: Boolean, default: false },

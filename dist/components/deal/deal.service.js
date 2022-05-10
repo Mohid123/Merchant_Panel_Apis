@@ -62,7 +62,7 @@ let DealService = class DealService {
                 let calculateDiscountPercentage = ((el.originalPrice - el.dealPrice) / el.originalPrice) * 100;
                 el.discountPercentage = calculateDiscountPercentage;
                 dealVouchers += el.numberOfVouchers;
-                delaSoldVocuhers += el.soldVouchers;
+                el.soldVouchers = 0;
                 if (el.voucherValidity > 0) {
                     startTime = 0;
                     endTime = 0;
@@ -84,6 +84,12 @@ let DealService = class DealService {
         catch (err) {
             throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
         }
+    }
+    async updateDeal(updateDealDto, dealID) {
+        let stamp = new Date(updateDealDto.endDate).getTime();
+        updateDealDto.endDate = stamp;
+        await this.dealModel.findByIdAndUpdate(dealID, updateDealDto);
+        return { message: 'Deal Updated Successfully' };
     }
     async approveRejectDeal(dealID, dealStatusDto) {
         let deal = await this.dealModel.findOne({

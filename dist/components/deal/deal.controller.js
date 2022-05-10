@@ -22,12 +22,16 @@ const jwt_admin_auth_guard_1 = require("../auth/jwt-admin-auth.guard");
 const jwt_merchant_auth_guard_1 = require("../auth/jwt-merchant-auth.guard");
 const updatedealstatus_dto_1 = require("../../dto/deal/updatedealstatus.dto");
 const sort_enum_1 = require("../../enum/sort/sort.enum");
+const updateDeal_dto_1 = require("../../dto/deal/updateDeal.dto");
 let DealController = class DealController {
     constructor(dealService) {
         this.dealService = dealService;
     }
     createDeal(dealDto, req) {
         return this.dealService.createDeal(dealDto, req);
+    }
+    updateDeal(dealID, updateDealDto) {
+        return this.dealService.updateDeal(updateDealDto, dealID);
     }
     approveRejectDeal(dealID, dealStatusDto) {
         return this.dealService.approveRejectDeal(dealID, dealStatusDto);
@@ -63,6 +67,15 @@ __decorate([
     __metadata("design:paramtypes", [deal_dto_1.DealDto, Object]),
     __metadata("design:returntype", void 0)
 ], DealController.prototype, "createDeal", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_merchant_auth_guard_1.JwtMerchantAuthGuard),
+    (0, common_1.Post)('updateDeal/:dealID'),
+    __param(0, (0, common_1.Param)('dealID')),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, updateDeal_dto_1.UpdateDealDto]),
+    __metadata("design:returntype", void 0)
+], DealController.prototype, "updateDeal", null);
 __decorate([
     (0, common_1.UseGuards)(jwt_admin_auth_guard_1.JwtAdminAuthGuard),
     (0, common_1.Post)('approveRejectDeal/:dealID'),

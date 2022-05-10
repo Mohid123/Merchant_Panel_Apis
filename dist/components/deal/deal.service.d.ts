@@ -13,6 +13,9 @@ export declare class DealService {
     createDeal(dealDto: any, req: any): Promise<DealInterface & {
         _id: any;
     }>;
+    updateDeal(updateDealDto: any, dealID: any): Promise<{
+        message: string;
+    }>;
     approveRejectDeal(dealID: any, dealStatusDto: any): Promise<import("mongodb").UpdateResult>;
     getAllDeals(req: any, offset: any, limit: any): Promise<{
         totalCount: number;
