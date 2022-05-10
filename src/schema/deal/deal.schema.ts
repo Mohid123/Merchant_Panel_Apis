@@ -19,6 +19,7 @@ export const DealSchema = new mongoose.Schema(
     endDate: { type: Number },
     vouchers: { type: Array },
     numberOfVouchers: { type: Number },
+    availableVouchers: { type: Number },
     soldVouchers: { type: Number },
     termsAndCondition: { type: String, default: '' },
     dealStatus: { type: String, default: '' },

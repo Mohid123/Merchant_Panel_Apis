@@ -105,6 +105,10 @@ export class DealService {
     let stamp = new Date(updateDealDto.endDate).getTime();
     updateDealDto.endDate = stamp;
 
+    // const deal = await this.dealModel.findById(dealID);
+    // updateDealDto.availableVouchers =
+    //   deal.availableVouchers + updateDealDto.numberOfVouchers;
+
     await this.dealModel.findByIdAndUpdate(dealID, updateDealDto);
 
     return { message: 'Deal Updated Successfully' };
