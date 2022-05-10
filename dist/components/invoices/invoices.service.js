@@ -113,7 +113,7 @@ let InvoicesService = class InvoicesService {
                 else {
                     sortInvoiceAmount = -1;
                 }
-                sortFilters = Object.assign(Object.assign({}, sortFilters), { amount: sortInvoiceAmount });
+                sortFilters = Object.assign(Object.assign({}, sortFilters), { invoiceAmount: sortInvoiceAmount });
             }
             if (Object.keys(sortFilters).length === 0 &&
                 sortFilters.constructor === Object) {
@@ -121,7 +121,6 @@ let InvoicesService = class InvoicesService {
                     createdAt: -1,
                 };
             }
-            console.log(sortFilters);
             const totalCount = await this._invoicesModel.countDocuments(Object.assign({ merchantID: merchantID }, matchFilter));
             let invoices = await this._invoicesModel
                 .aggregate([
