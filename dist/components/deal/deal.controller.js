@@ -47,8 +47,8 @@ let DealController = class DealController {
     getSalesStatistics(req) {
         return this.dealService.getSalesStatistics(req);
     }
-    getDealReviews(id, offset = 0, limit = 10) {
-        return this.dealService.getDealReviews(offset, limit, id);
+    getDealReviews(dealID, rating, offset = 0, limit = 10) {
+        return this.dealService.getDealReviews(offset, limit, rating, dealID);
     }
     getTopRatedDeals(merchantID) {
         return this.dealService.getTopRatedDeals(merchantID);
@@ -126,12 +126,14 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], DealController.prototype, "getSalesStatistics", null);
 __decorate([
-    (0, common_1.Get)('getDealReviews/:id'),
-    __param(0, (0, common_1.Param)('id')),
-    __param(1, (0, common_1.Query)('offset')),
-    __param(2, (0, common_1.Query)('limit')),
+    (0, swagger_1.ApiQuery)({ name: 'rating', required: false }),
+    (0, common_1.Get)('getDealReviews/:dealID'),
+    __param(0, (0, common_1.Param)('dealID')),
+    __param(1, (0, common_1.Query)('rating')),
+    __param(2, (0, common_1.Query)('offset')),
+    __param(3, (0, common_1.Query)('limit')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Number, Number]),
+    __metadata("design:paramtypes", [String, Number, Number, Number]),
     __metadata("design:returntype", void 0)
 ], DealController.prototype, "getDealReviews", null);
 __decorate([

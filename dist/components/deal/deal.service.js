@@ -153,11 +153,22 @@ let DealService = class DealService {
             throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
         }
     }
-    async getDealReviews(offset, limit, id) {
+    async getDealReviews(offset, limit, rating, id) {
         try {
             offset = parseInt(offset) < 0 ? 0 : offset;
             limit = parseInt(limit) < 1 ? 10 : limit;
-            const deal = await this.dealModel.aggregate([
+            let ratingFilter = {};
+            if (rating) {
+                ratingFilter = {
+                    eq: ['$rating', parseInt(rating)],
+                };
+            }
+            else {
+                ratingFilter = Object.assign(Object.assign({}, ratingFilter), { eq: ['', ''] });
+            }
+            console.log(ratingFilter['eq']);
+            const deal = await this.dealModel
+                .aggregate([
                 {
                     $match: {
                         _id: id,
@@ -187,6 +198,9 @@ let DealService = class DealService {
                                             {
                                                 $eq: ['$dealID', '$$dealID'],
                                             },
+                                            {
+                                                $eq: ratingFilter['eq'],
+                                            },
                                         ],
                                     },
                                 },
@@ -201,7 +215,8 @@ let DealService = class DealService {
                         as: 'Reviews',
                     },
                 },
-            ]).then(items => items[0]);
+            ])
+                .then((items) => items[0]);
             return deal;
         }
         catch (err) {
