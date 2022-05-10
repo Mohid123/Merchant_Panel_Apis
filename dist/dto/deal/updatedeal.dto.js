@@ -22,4 +22,4 @@ __decorate([
     __metadata("design:type", Number)
 ], UpdateDealDto.prototype, "numberOfVouchers", void 0);
 exports.UpdateDealDto = UpdateDealDto;
-//# sourceMappingURL=updateDeal.dto.js.map
+//# sourceMappingURL=updatedeal.dto.js.map

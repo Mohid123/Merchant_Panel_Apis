@@ -22,7 +22,7 @@ const jwt_admin_auth_guard_1 = require("../auth/jwt-admin-auth.guard");
 const jwt_merchant_auth_guard_1 = require("../auth/jwt-merchant-auth.guard");
 const updatedealstatus_dto_1 = require("../../dto/deal/updatedealstatus.dto");
 const sort_enum_1 = require("../../enum/sort/sort.enum");
-const updateDeal_dto_1 = require("../../dto/deal/updateDeal.dto");
+const updatedeal_dto_1 = require("../../dto/deal/updatedeal.dto");
 let DealController = class DealController {
     constructor(dealService) {
         this.dealService = dealService;
@@ -73,7 +73,7 @@ __decorate([
     __param(0, (0, common_1.Param)('dealID')),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, updateDeal_dto_1.UpdateDealDto]),
+    __metadata("design:paramtypes", [String, updatedeal_dto_1.UpdateDealDto]),
     __metadata("design:returntype", void 0)
 ], DealController.prototype, "updateDeal", null);
 __decorate([
