@@ -101,6 +101,15 @@ export class DealService {
     }
   }
 
+  async updateDeal(updateDealDto, dealID) {
+    let stamp = new Date(updateDealDto.endDate).getTime();
+    updateDealDto.endDate = stamp;
+
+    await this.dealModel.findByIdAndUpdate(dealID, updateDealDto);
+
+    return { message: 'Deal Updated Successfully' };
+  }
+
   async approveRejectDeal(dealID, dealStatusDto) {
     let deal = await this.dealModel.findOne({
       _id: dealID,

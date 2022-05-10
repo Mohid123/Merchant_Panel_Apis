@@ -16,6 +16,7 @@ import { JwtAdminAuthGuard } from '../auth/jwt-admin-auth.guard';
 import { JwtMerchantAuthGuard } from '../auth/jwt-merchant-auth.guard';
 import { DealStatusDto } from '../../dto/deal/updatedealstatus.dto';
 import { SORT } from 'src/enum/sort/sort.enum';
+import { UpdateDealDto } from 'src/dto/deal/updateDeal.dto';
 
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
@@ -28,6 +29,15 @@ export class DealController {
   @Post('createDeal')
   createDeal(@Body() dealDto: DealDto, @Req() req) {
     return this.dealService.createDeal(dealDto, req);
+  }
+
+  @UseGuards(JwtMerchantAuthGuard)
+  @Post('updateDeal/:dealID')
+  updateDeal(
+    @Param('dealID') dealID: string,
+    @Body() updateDealDto: UpdateDealDto,
+  ) {
+    return this.dealService.updateDeal(updateDealDto, dealID);
   }
 
   @UseGuards(JwtAdminAuthGuard)
