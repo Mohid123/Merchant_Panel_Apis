@@ -1,7 +1,7 @@
 /// <reference types="mongoose" />
 import { CategoryService } from './category.service';
 import { CategoryDto } from '../../dto/category/category.dto';
-import { SubCategoryDTO } from 'src/dto/category/subcategory.dto';
+import { SubCategoryDTO } from '../../dto/category/subcategory.dto';
 export declare class CategoryController {
     private readonly categoryService;
     constructor(categoryService: CategoryService);

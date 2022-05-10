@@ -1,4 +1,4 @@
-import { businessHour } from "src/interface/user/users.interface";
+import { businessHour } from "../../interface/user/users.interface";
 export declare class SignUpDTO {
     email: string;
     firstName: string;

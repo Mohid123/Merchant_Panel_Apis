@@ -1,7 +1,7 @@
 /// <reference types="mongoose" />
-import { InvoiceDTO } from 'src/dto/invoices/invoices.dto';
-import { INVOICEAMOUNTENUM } from 'src/enum/sorting/sortinvoiceamount.enum';
-import { INVOICEDATEENUM } from 'src/enum/sorting/sortinvoicedate.enum';
+import { InvoiceDTO } from '../../dto/invoices/invoices.dto';
+import { INVOICEAMOUNTENUM } from '../../enum/sorting/sortinvoiceamount.enum';
+import { INVOICEDATEENUM } from '../../enum/sorting/sortinvoicedate.enum';
 import { InvoicesService } from './invoices.service';
 export declare class InvoicesController {
     private readonly _invoiceService;

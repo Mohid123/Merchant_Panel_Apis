@@ -1,6 +1,6 @@
 import { Model } from 'mongoose';
-import { VoucherInterface } from 'src/interface/deal/deal.interface';
-import { VoucherCounterInterface } from 'src/interface/vouchers/vouchersCounter.interface';
+import { VoucherInterface } from '../../interface/deal/deal.interface';
+import { VoucherCounterInterface } from '../../interface/vouchers/vouchersCounter.interface';
 export declare class VouchersService {
     private readonly voucherModel;
     private readonly voucherCounterModel;

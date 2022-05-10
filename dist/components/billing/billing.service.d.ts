@@ -1,5 +1,5 @@
 import { Model } from 'mongoose';
-import { BillingInterface } from 'src/interface/billing/billing.interface';
+import { BillingInterface } from '../../interface/billing/billing.interface';
 export declare class BillingService {
     private readonly billingModel;
     constructor(billingModel: Model<BillingInterface>);

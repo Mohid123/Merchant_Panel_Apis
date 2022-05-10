@@ -1,5 +1,5 @@
 import { Model } from 'mongoose';
-import { UpdateHoursDto } from 'src/dto/user/updatehours.dto';
+import { UpdateHoursDto } from '../../dto/user/updatehours.dto';
 import { UsersInterface } from '../../interface/user/users.interface';
 export declare class UsersService {
     private readonly _userModel;

@@ -1,6 +1,6 @@
-import { BillingDto } from 'src/dto/billing/billing.dto';
-import { BILLINGSTATUS } from 'src/enum/billing/billingStatus.enum';
-import { SORT } from 'src/enum/sort/sort.enum';
+import { BillingDto } from '../../dto/billing/billing.dto';
+import { BILLINGSTATUS } from '../../enum/billing/billingStatus.enum';
+import { SORT } from '../../enum/sort/sort.enum';
 import { BillingService } from './billing.service';
 export declare class BillingController {
     private readonly billingService;

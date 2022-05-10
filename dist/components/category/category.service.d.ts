@@ -1,5 +1,5 @@
 import { Model } from 'mongoose';
-import { SubCategoryInterface } from 'src/interface/category/subcategory.interface';
+import { SubCategoryInterface } from '../../interface/category/subcategory.interface';
 import { CategoryInterface } from '../../interface/category/category.interface';
 export declare class CategoryService {
     private readonly categoryModel;

@@ -1,8 +1,8 @@
 import { Model } from 'mongoose';
 import { CategoryInterface } from '../../interface/category/category.interface';
 import { DealInterface } from '../../interface/deal/deal.interface';
-import { VoucherCounterInterface } from 'src/interface/vouchers/vouchersCounter.interface';
-import { SubCategoryInterface } from 'src/interface/category/subcategory.interface';
+import { VoucherCounterInterface } from '../../interface/vouchers/vouchersCounter.interface';
+import { SubCategoryInterface } from '../../interface/category/subcategory.interface';
 export declare class DealService {
     private readonly dealModel;
     private readonly categorymodel;

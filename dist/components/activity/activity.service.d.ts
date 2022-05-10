@@ -1,5 +1,5 @@
 import { Model } from 'mongoose';
-import { ActivityInterface } from 'src/interface/activity/activity.interface';
+import { ActivityInterface } from '../../interface/activity/activity.interface';
 export declare class ActivityService {
     private readonly activityModel;
     constructor(activityModel: Model<ActivityInterface>);

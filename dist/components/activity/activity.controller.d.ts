@@ -1,4 +1,4 @@
-import { ActivityDto } from 'src/dto/activity/activity.dto';
+import { ActivityDto } from '../../dto/activity/activity.dto';
 import { ActivityService } from './activity.service';
 export declare class ActivityController {
     private readonly activityService;

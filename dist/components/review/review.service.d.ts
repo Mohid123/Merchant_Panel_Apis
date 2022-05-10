@@ -1,6 +1,6 @@
 import { Model } from 'mongoose';
-import { DealInterface } from 'src/interface/deal/deal.interface';
-import { UsersInterface } from 'src/interface/user/users.interface';
+import { DealInterface } from '../../interface/deal/deal.interface';
+import { UsersInterface } from '../../interface/user/users.interface';
 import { ReviewInterface } from '../../interface/review/review.interface';
 export declare class ReviewService {
     private readonly reviewModel;

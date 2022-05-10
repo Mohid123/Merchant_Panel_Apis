@@ -77,7 +77,6 @@ let DealService = class DealService {
                 return el;
             });
             dealDto.numberOfVouchers = dealVouchers;
-            dealDto.soldVouchers = delaSoldVocuhers;
             const deal = await this.dealModel.create(dealDto);
             return deal;
         }

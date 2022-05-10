@@ -1,6 +1,6 @@
 import { Model } from 'mongoose';
-import { InvoiceInterface } from 'src/interface/invoices/invoices.interface';
-import { VoucherCounterInterface } from 'src/interface/vouchers/vouchersCounter.interface';
+import { InvoiceInterface } from '../../interface/invoices/invoices.interface';
+import { VoucherCounterInterface } from '../../interface/vouchers/vouchersCounter.interface';
 export declare class InvoicesService {
     private readonly _invoicesModel;
     private readonly voucherCounterModel;

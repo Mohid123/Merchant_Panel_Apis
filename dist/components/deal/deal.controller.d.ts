@@ -1,8 +1,8 @@
 import { DealService } from './deal.service';
 import { DealDto } from '../../dto/deal/deal.dto';
 import { DealStatusDto } from '../../dto/deal/updatedealstatus.dto';
-import { SORT } from 'src/enum/sort/sort.enum';
-import { UpdateDealDto } from 'src/dto/deal/updateDeal.dto';
+import { SORT } from '../../enum/sort/sort.enum';
+import { UpdateDealDto } from '../../dto/deal/updateDeal.dto';
 export declare class DealController {
     private readonly dealService;
     constructor(dealService: DealService);

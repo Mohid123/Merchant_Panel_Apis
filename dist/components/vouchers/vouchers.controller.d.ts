@@ -1,8 +1,8 @@
 /// <reference types="mongoose" />
-import { VoucherDto } from 'src/dto/vouchers/vouchers.dto';
-import { BILLINGSTATUS } from 'src/enum/billing/billingStatus.enum';
-import { SORT } from 'src/enum/sort/sort.enum';
-import { VOUCHERSTATUSENUM } from 'src/enum/voucher/voucherstatus.enum';
+import { VoucherDto } from '../../dto/vouchers/vouchers.dto';
+import { BILLINGSTATUS } from '../../enum/billing/billingStatus.enum';
+import { SORT } from '../../enum/sort/sort.enum';
+import { VOUCHERSTATUSENUM } from '../../enum/voucher/voucherstatus.enum';
 import { VouchersService } from './vouchers.service';
 export declare class VouchersController {
     private readonly voucherService;

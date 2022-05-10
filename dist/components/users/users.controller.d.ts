@@ -1,7 +1,7 @@
 /// <reference types="mongoose" />
-import { KycDto } from 'src/dto/user/kyc.dto';
-import { UpdateHoursDto } from 'src/dto/user/updatehours.dto';
-import { UpdateMerchantProfileDto } from 'src/dto/user/updatemerchantprofile.dto';
+import { KycDto } from '../../dto/user/kyc.dto';
+import { UpdateHoursDto } from '../../dto/user/updatehours.dto';
+import { UpdateMerchantProfileDto } from '../../dto/user/updatemerchantprofile.dto';
 import { UsersDto } from '../../dto/user/users.dto';
 import { UsersService } from './users.service';
 export declare class UsersController {
