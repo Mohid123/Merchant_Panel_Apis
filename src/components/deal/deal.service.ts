@@ -74,7 +74,8 @@ export class DealService {
         el.discountPercentage = calculateDiscountPercentage;
 
         dealVouchers += el.numberOfVouchers;
-        delaSoldVocuhers += el.soldVouchers;
+        el.soldVouchers = 0;
+        // delaSoldVocuhers += el?.soldVouchers;
 
         if (el.voucherValidity > 0) {
           startTime = 0;
@@ -101,42 +102,18 @@ export class DealService {
     }
   }
 
-  // async updateDeal (updateDealDto) {
+  async updateDeal(updateDealDto, dealID) {
+    let stamp = new Date(updateDealDto.endDate).getTime();
+    updateDealDto.endDate = stamp;
 
-  //   var dealVouchers = 0;
+    // const deal = await this.dealModel.findById(dealID);
+    // updateDealDto.availableVouchers =
+    //   deal.availableVouchers + updateDealDto.numberOfVouchers;
 
-  //   let deal = await this.dealModel.findOne({_id: updateDealDto.id})
+    await this.dealModel.findByIdAndUpdate(dealID, updateDealDto);
 
-  //   updateDealDto.endDate = new Date().getTime();
-
-  //   updateDealDto.vouchers = updateDealDto.vouchers.map((el) => {
-  //     // let startTime;
-  //     // let endTime;
-  //     // let calculateDiscountPercentage =
-  //     //   ((el.originalPrice - el.dealPrice) / el.originalPrice) * 100;
-  //     // el.discountPercentage = calculateDiscountPercentage;
-
-  //     dealVouchers += el.numberOfVouchers;
-  //     // delaSoldVocuhers += el.soldVouchers;
-
-  //     // if (el.voucherValidity > 0) {
-  //     //   startTime = 0;
-  //     //   endTime = 0;
-  //     // } else {
-  //     //   startTime = new Date(el.voucherStartDate).getTime();
-  //     //   endTime = new Date(el.voucherEndDate).getTime();
-  //     // }
-
-  //     // el._id = generateStringId();
-  //     // el.voucherStartDate = startTime;
-  //     // el.voucherEndDate = endTime;
-
-  //     return el;
-  //   });
-
-  //   return await this.dealModel.updateOne({_id: updateDealDto.id}, updateDealDto)
-
-  // }
+    return { message: 'Deal Updated Successfully' };
+  }
 
   async approveRejectDeal(dealID, dealStatusDto) {
     let deal = await this.dealModel.findOne({
