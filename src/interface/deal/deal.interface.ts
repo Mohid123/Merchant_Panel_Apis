@@ -29,7 +29,7 @@ export interface DealInterface extends Document {
   startDate: Date;
   endDate: Date;
   vouchers: VoucherInterface[];
-  numberOfVouchers: number;
+  availableVouchers: number;
   soldVouchers: number;
   termsAndCondition: string;
   dealStatus: string;
