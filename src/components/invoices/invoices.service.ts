@@ -156,7 +156,7 @@ export class InvoicesService {
         }
         sortFilters = {
           ...sortFilters,
-          amount: sortInvoiceAmount,
+          invoiceAmount: sortInvoiceAmount,
         };
       }
 
@@ -168,8 +168,6 @@ export class InvoicesService {
           createdAt: -1,
         };
       }
-
-      console.log(sortFilters);
 
       const totalCount = await this._invoicesModel.countDocuments({
         merchantID: merchantID,
