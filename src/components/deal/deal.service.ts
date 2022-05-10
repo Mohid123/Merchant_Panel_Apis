@@ -92,8 +92,8 @@ export class DealService {
         return el;
       });
 
-      dealDto.numberOfVouchers = dealVouchers;
-      dealDto.soldVouchers = delaSoldVocuhers;
+      dealDto.availableVouchers = dealVouchers;
+      // dealDto.soldVouchers = delaSoldVocuhers;
 
       const deal = await this.dealModel.create(dealDto);
       return deal;
@@ -106,9 +106,9 @@ export class DealService {
     let stamp = new Date(updateDealDto.endDate).getTime();
     updateDealDto.endDate = stamp;
 
-    // const deal = await this.dealModel.findById(dealID);
-    // updateDealDto.availableVouchers =
-    //   deal.availableVouchers + updateDealDto.numberOfVouchers;
+    const deal = await this.dealModel.findById(dealID);
+
+    console.log(deal.vouchers);
 
     await this.dealModel.findByIdAndUpdate(dealID, updateDealDto);
 

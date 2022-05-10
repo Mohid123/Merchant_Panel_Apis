@@ -63,7 +63,7 @@ export class DealDto {
   soldVouchers: number;
 
   @ApiProperty()
-  numberOfVouchers: number;
+  availableVouchers: number;
 
   @ApiProperty()
   dealStatus: string;
