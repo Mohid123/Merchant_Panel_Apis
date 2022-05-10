@@ -5,8 +5,8 @@ import { DealController } from './deal.controller';
 import { DealService } from './deal.service';
 import { DealSchema } from '../../schema/deal/deal.schema';
 import { CategorySchema } from '../../schema/category/category.schema';
-import { VoucherCounterSchema } from 'src/schema/vouchers/vouchersCounter.schema';
-import { SubCategorySchema } from 'src/schema/category/subcategory.schema';
+import { VoucherCounterSchema } from '../../schema/vouchers/vouchersCounter.schema';
+import { SubCategorySchema } from '../../schema/category/subcategory.schema';
 @Module({
   imports: [
     forwardRef(() => CategoryModule),

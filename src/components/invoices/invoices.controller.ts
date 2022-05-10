@@ -8,10 +8,10 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
-import { InvoiceDTO } from 'src/dto/invoices/invoices.dto';
-import { BILLINGSTATUS } from 'src/enum/billing/billingStatus.enum';
-import { INVOICEAMOUNTENUM } from 'src/enum/sorting/sortinvoiceamount.enum';
-import { INVOICEDATEENUM } from 'src/enum/sorting/sortinvoicedate.enum';
+import { InvoiceDTO } from '../../dto/invoices/invoices.dto';
+import { BILLINGSTATUS } from '../../enum/billing/billingStatus.enum';
+import { INVOICEAMOUNTENUM } from '../../enum/sorting/sortinvoiceamount.enum';
+import { INVOICEDATEENUM } from '../../enum/sorting/sortinvoicedate.enum';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { InvoicesService } from './invoices.service';
 

@@ -1,10 +1,9 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { AMOUNTENUM } from 'src/enum/sorting/sortamount.enum';
-import { NAMEENUM } from 'src/enum/sorting/sortcustomername.enum';
-import { TRANSACTIONDATEENUM } from 'src/enum/sorting/sorttransactiondate.enum';
-import { VOUCHERSTATUSENUM } from 'src/enum/voucher/voucherstatus.enum';
+import { AMOUNTENUM } from '../../enum/sorting/sortamount.enum';
+import { NAMEENUM } from '../../enum/sorting/sortcustomername.enum';
+import { TRANSACTIONDATEENUM } from '../../enum/sorting/sorttransactiondate.enum';
 import { OrderInterface } from '../../interface/orders/orders.interface';
 
 @Injectable()

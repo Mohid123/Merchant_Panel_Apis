@@ -8,10 +8,10 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
-import { VoucherDto } from 'src/dto/vouchers/vouchers.dto';
-import { BILLINGSTATUS } from 'src/enum/billing/billingStatus.enum';
-import { SORT } from 'src/enum/sort/sort.enum';
-import { VOUCHERSTATUSENUM } from 'src/enum/voucher/voucherstatus.enum';
+import { VoucherDto } from '../../dto/vouchers/vouchers.dto';
+import { BILLINGSTATUS } from '../../enum/billing/billingStatus.enum';
+import { SORT } from '../../enum/sort/sort.enum';
+import { VOUCHERSTATUSENUM } from '../../enum/voucher/voucherstatus.enum';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { JwtMerchantAuthGuard } from '../auth/jwt-merchant-auth.guard';
 import { VouchersService } from './vouchers.service';

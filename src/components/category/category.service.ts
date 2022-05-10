@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { SubCategoryInterface } from 'src/interface/category/subcategory.interface';
+import { SubCategoryInterface } from '../../interface/category/subcategory.interface';
 import { CategoryInterface } from '../../interface/category/category.interface';
 
 @Injectable()

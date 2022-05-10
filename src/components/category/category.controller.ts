@@ -3,7 +3,7 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CategoryService } from './category.service';
 import { CategoryDto } from '../../dto/category/category.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { SubCategoryDTO } from 'src/dto/category/subcategory.dto';
+import { SubCategoryDTO } from '../../dto/category/subcategory.dto';
 
 @ApiTags('Category')
 @Controller('category')

@@ -1,6 +1,6 @@
 import * as mongoose from 'mongoose';
-import { generateStringId } from 'src/components/file-management/utils/utils';
-import { VoucherInterface } from 'src/interface/deal/deal.interface';
+import { generateStringId } from '../../components/file-management/utils/utils';
+import { VoucherInterface } from '../../interface/deal/deal.interface';
 
 export const VoucherSchema = new mongoose.Schema(
   {

@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { UpdateHoursDto } from 'src/dto/user/updatehours.dto';
-import { USERSTATUS } from 'src/enum/user/userstatus.enum';
+import { UpdateHoursDto } from '../../dto/user/updatehours.dto';
+import { USERSTATUS } from '../../enum/user/userstatus.enum';
 import { UsersInterface } from '../../interface/user/users.interface';
 import { encodeImageToBlurhash } from '../file-management/utils/utils';
 

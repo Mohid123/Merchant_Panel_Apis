@@ -1,8 +1,8 @@
 import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { KycDto } from 'src/dto/user/kyc.dto';
-import { UpdateHoursDto } from 'src/dto/user/updatehours.dto';
-import { UpdateMerchantProfileDto } from 'src/dto/user/updatemerchantprofile.dto';
+import { KycDto } from '../../dto/user/kyc.dto';
+import { UpdateHoursDto } from '../../dto/user/updatehours.dto';
+import { UpdateMerchantProfileDto } from '../../dto/user/updatemerchantprofile.dto';
 import { UsersDto } from '../../dto/user/users.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { UsersService } from './users.service';

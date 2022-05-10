@@ -2,8 +2,8 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { stat } from 'fs';
 import { Model } from 'mongoose';
-import { SORT } from 'src/enum/sort/sort.enum';
-import { BillingInterface } from 'src/interface/billing/billing.interface';
+import { SORT } from '../../enum/sort/sort.enum';
+import { BillingInterface } from '../../interface/billing/billing.interface';
 
 @Injectable()
 export class BillingService {

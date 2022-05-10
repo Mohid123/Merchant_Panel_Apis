@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { businessHour } from 'src/interface/user/users.interface';
+import { businessHour } from '../../interface/user/users.interface';
 
 export class UpdateHoursDto {
   @ApiProperty()

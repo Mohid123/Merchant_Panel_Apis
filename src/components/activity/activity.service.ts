@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { ActivityInterface } from 'src/interface/activity/activity.interface';
+import { ActivityInterface } from '../../interface/activity/activity.interface';
 
 @Injectable()
 export class ActivityService {
