@@ -74,7 +74,10 @@ export class DealService {
         el.discountPercentage = calculateDiscountPercentage;
 
         dealVouchers += el.numberOfVouchers;
-        delaSoldVocuhers += el.soldVouchers;
+        el.soldVouchers = 0;
+        // delaSoldVocuhers += el?.soldVouchers;
+
+        dealDto.vouchers 
 
         if (el.voucherValidity > 0) {
           startTime = 0;
