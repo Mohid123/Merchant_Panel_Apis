@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { ActivitySchema } from 'src/schema/activity/activity.schema';
+import { ActivitySchema } from '../../schema/activity/activity.schema';
 import { ActivityController } from './activity.controller';
 import { ActivityService } from './activity.service';
 

@@ -1,6 +1,6 @@
 import * as mongoose from 'mongoose';
-import { generateStringId } from 'src/components/file-management/utils/utils';
-import { ActivityInterface } from 'src/interface/activity/activity.interface';
+import { generateStringId } from '../../components/file-management/utils/utils';
+import { ActivityInterface } from '../../interface/activity/activity.interface';
 export const ActivitySchema = new mongoose.Schema(
   {
     _id: { type: String, default: generateStringId },

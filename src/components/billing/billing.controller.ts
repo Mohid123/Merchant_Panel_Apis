@@ -9,9 +9,9 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
-import { BillingDto } from 'src/dto/billing/billing.dto';
-import { BILLINGSTATUS } from 'src/enum/billing/billingStatus.enum';
-import { SORT } from 'src/enum/sort/sort.enum';
+import { BillingDto } from '../../dto/billing/billing.dto';
+import { BILLINGSTATUS } from '../../enum/billing/billingStatus.enum';
+import { SORT } from '../../enum/sort/sort.enum';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { BillingService } from './billing.service';
 

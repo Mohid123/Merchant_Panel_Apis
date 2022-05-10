@@ -8,7 +8,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { ActivityDto } from 'src/dto/activity/activity.dto';
+import { ActivityDto } from '../../dto/activity/activity.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { ActivityService } from './activity.service';
 

@@ -1,5 +1,5 @@
 import * as mongoose from 'mongoose';
-import { VoucherCounterInterface } from 'src/interface/vouchers/vouchersCounter.interface';
+import { VoucherCounterInterface } from '../../interface/vouchers/vouchersCounter.interface';
 
 export const VoucherCounterSchema = new mongoose.Schema({
   _id: { type: String },

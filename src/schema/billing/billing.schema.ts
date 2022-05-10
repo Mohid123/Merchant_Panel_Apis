@@ -1,6 +1,6 @@
 import * as mongoose from 'mongoose';
-import { generateStringId } from 'src/components/file-management/utils/utils';
-import { BillingInterface } from 'src/interface/billing/billing.interface';
+import { generateStringId } from '../../components/file-management/utils/utils';
+import { BillingInterface } from '../../interface/billing/billing.interface';
 
 export const BillingSchema = new mongoose.Schema(
   {

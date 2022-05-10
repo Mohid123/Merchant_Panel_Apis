@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsNotEmpty } from 'class-validator';
-import { businessHour } from "src/interface/user/users.interface";
+import { businessHour } from "../../interface/user/users.interface";
 
 export class SignUpDTO {
 

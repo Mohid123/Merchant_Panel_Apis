@@ -6,9 +6,8 @@ import { CategoryInterface } from '../../interface/category/category.interface';
 import { DealInterface } from '../../interface/deal/deal.interface';
 import { generateStringId } from '../file-management/utils/utils';
 import { SORT } from '../../enum/sort/sort.enum';
-import { VoucherCounterInterface } from 'src/interface/vouchers/vouchersCounter.interface';
-import { SubCategoryInterface } from 'src/interface/category/subcategory.interface';
-import { parse } from 'path';
+import { VoucherCounterInterface } from '../../interface/vouchers/vouchersCounter.interface';
+import { SubCategoryInterface } from '../../interface/category/subcategory.interface';
 
 @Injectable()
 export class DealService {
@@ -93,7 +92,7 @@ export class DealService {
       });
 
       dealDto.numberOfVouchers = dealVouchers;
-      dealDto.soldVouchers = delaSoldVocuhers;
+      // dealDto.soldVouchers = delaSoldVocuhers;
 
       const deal = await this.dealModel.create(dealDto);
       return deal;

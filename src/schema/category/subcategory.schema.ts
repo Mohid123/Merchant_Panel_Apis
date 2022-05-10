@@ -1,5 +1,5 @@
 import * as mongoose from 'mongoose';
-import { generateStringId } from 'src/components/file-management/utils/utils';
+import { generateStringId } from '../../components/file-management/utils/utils';
 
 export const SubCategorySchema = new mongoose.Schema(
     {

@@ -1,8 +1,8 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { DealInterface } from 'src/interface/deal/deal.interface';
-import { UsersInterface } from 'src/interface/user/users.interface';
+import { DealInterface } from '../../interface/deal/deal.interface';
+import { UsersInterface } from '../../interface/user/users.interface';
 import { ReviewInterface } from '../../interface/review/review.interface';
 
 @Injectable()
