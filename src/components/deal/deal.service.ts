@@ -103,14 +103,27 @@ export class DealService {
   }
 
   async updateDeal(updateDealDto, dealID) {
+    let dealVouchers = 0;
     let stamp = new Date(updateDealDto.endDate).getTime();
     updateDealDto.endDate = stamp;
 
     const deal = await this.dealModel.findById(dealID);
 
-    console.log(deal.vouchers);
+    deal.vouchers = deal.vouchers.map((element) => {
+      updateDealDto.vouchers.forEach((el) => {
+        if (el['voucherID'] === element['_id']) {
+          element.numberOfVouchers += el.numberOfVouchers;
+        }
+      });
 
-    await this.dealModel.findByIdAndUpdate(dealID, updateDealDto);
+      dealVouchers += element.numberOfVouchers;
+
+      return element;
+    });
+
+    deal.availableVouchers = dealVouchers;
+
+    await this.dealModel.findByIdAndUpdate(dealID, deal);
 
     return { message: 'Deal Updated Successfully' };
   }
