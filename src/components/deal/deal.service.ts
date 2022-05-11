@@ -370,6 +370,13 @@ export class DealService {
       let dateFromFilters = {};
       let matchFilter = {};
 
+      if (status) {
+        matchFilter = {
+          ...matchFilter,
+          dealStatus: status,
+        };
+      }
+
       if (dateFrom) {
         dateFromFilters = {
           ...dateFromFilters,
