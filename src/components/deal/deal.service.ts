@@ -340,6 +340,9 @@ export class DealService {
     price,
     startDate,
     endDate,
+    availableVoucher,
+    soldVoucher,
+    status,
     dateFrom,
     dateTo,
     offset,
@@ -396,6 +399,7 @@ export class DealService {
           title: sortTitle,
         };
       }
+
       if (price) {
         let sortPrice = price == SORT.ASC ? 1 : -1;
         console.log('price');
@@ -404,6 +408,7 @@ export class DealService {
           price: sortPrice,
         };
       }
+
       if (startDate) {
         let sortStartDate = startDate == SORT.ASC ? 1 : -1;
         console.log('startDate');
@@ -412,12 +417,31 @@ export class DealService {
           startDate: sortStartDate,
         };
       }
+
       if (endDate) {
         let sortEndDate = endDate == SORT.ASC ? 1 : -1;
         console.log('endDate');
         sort = {
           ...sort,
           endDate: sortEndDate,
+        };
+      }
+
+      if (availableVoucher) {
+        let sortAvailableVoucher = availableVoucher == SORT.ASC ? 1 : -1;
+        console.log('availbleVoucher');
+        sort = {
+          ...sort,
+          availableVoucher: sortAvailableVoucher,
+        };
+      }
+
+      if (soldVoucher) {
+        let sortSoldVoucher = soldVoucher == SORT.ASC ? 1 : -1;
+        console.log('soldVoucher');
+        sort = {
+          ...sort,
+          soldVoucher: sortSoldVoucher,
         };
       }
 
