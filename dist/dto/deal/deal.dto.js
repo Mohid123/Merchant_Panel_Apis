@@ -91,7 +91,7 @@ __decorate([
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", Number)
-], DealDto.prototype, "numberOfVouchers", void 0);
+], DealDto.prototype, "availableVouchers", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)

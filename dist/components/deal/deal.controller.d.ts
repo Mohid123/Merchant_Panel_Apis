@@ -2,6 +2,7 @@ import { DealService } from './deal.service';
 import { DealDto } from '../../dto/deal/deal.dto';
 import { DealStatusDto } from '../../dto/deal/updatedealstatus.dto';
 import { SORT } from '../../enum/sort/sort.enum';
+import { DEALSTATUS } from '../../enum/deal/dealstatus.enum';
 import { UpdateDealDto } from '../../dto/deal/updatedeal.dto';
 export declare class DealController {
     private readonly dealService;
@@ -25,7 +26,7 @@ export declare class DealController {
         totalCount: number;
         data: any[];
     }>;
-    getDealsByMerchantID(merchantID: string, title: SORT, price: SORT, startDate: SORT, endDate: SORT, dateFrom: number, dateTo: number, offset?: number, limit?: number): Promise<{
+    getDealsByMerchantID(merchantID: string, title: SORT, price: SORT, startDate: SORT, endDate: SORT, availableVoucher: SORT, soldVoucher: SORT, status: DEALSTATUS, dateFrom: number, dateTo: number, offset?: number, limit?: number): Promise<{
         totalDeals: number;
         data: any[];
     }>;

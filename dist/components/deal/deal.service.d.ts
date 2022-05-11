@@ -30,7 +30,7 @@ export declare class DealService {
         totalMerchantReviews: any;
         data: any[];
     }>;
-    getDealsByMerchantID(merchantID: any, title: any, price: any, startDate: any, endDate: any, dateFrom: any, dateTo: any, offset: any, limit: any): Promise<{
+    getDealsByMerchantID(merchantID: any, title: any, price: any, startDate: any, endDate: any, availableVoucher: any, soldVoucher: any, status: any, dateFrom: any, dateTo: any, offset: any, limit: any): Promise<{
         totalDeals: number;
         data: any[];
     }>;

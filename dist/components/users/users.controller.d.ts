@@ -10,7 +10,7 @@ export declare class UsersController {
     addUser(usersDto: UsersDto): Promise<import("mongoose").Document<unknown, any, import("../../interface/user/users.interface").UsersInterface> & import("../../interface/user/users.interface").UsersInterface & {
         _id: string;
     }>;
-    completeKYC(kycDto: KycDto): Promise<import("mongodb").UpdateResult>;
+    completeKYC(merchantID: string, kycDto: KycDto): Promise<import("mongodb").UpdateResult>;
     updateMerchantprofile(usersDto: UpdateMerchantProfileDto): Promise<import("mongodb").UpdateResult>;
     updateBusinessHours(updateHoursDTO: UpdateHoursDto): Promise<import("mongodb").UpdateResult>;
     deleteUser(id: string): Promise<import("mongodb").UpdateResult>;

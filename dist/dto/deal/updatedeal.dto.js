@@ -18,8 +18,16 @@ __decorate([
     __metadata("design:type", Date)
 ], UpdateDealDto.prototype, "endDate", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)(),
-    __metadata("design:type", Number)
-], UpdateDealDto.prototype, "numberOfVouchers", void 0);
+    (0, swagger_1.ApiProperty)({
+        example: [
+            {
+                voucherID: '',
+                soldVouchers: 0,
+                numberOfVouchers: 0,
+            },
+        ],
+    }),
+    __metadata("design:type", Array)
+], UpdateDealDto.prototype, "vouchers", void 0);
 exports.UpdateDealDto = UpdateDealDto;
 //# sourceMappingURL=updatedeal.dto.js.map

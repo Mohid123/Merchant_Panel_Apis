@@ -15,7 +15,7 @@ export declare class DealDto {
     vouchers: VoucherInterface[];
     termsAndCondition: string;
     soldVouchers: number;
-    numberOfVouchers: number;
+    availableVouchers: number;
     dealStatus: string;
     deletedCheck: boolean;
 }

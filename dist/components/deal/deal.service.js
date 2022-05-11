@@ -76,7 +76,7 @@ let DealService = class DealService {
                 el.voucherEndDate = endTime;
                 return el;
             });
-            dealDto.numberOfVouchers = dealVouchers;
+            dealDto.availableVouchers = dealVouchers;
             const deal = await this.dealModel.create(dealDto);
             return deal;
         }
@@ -85,9 +85,21 @@ let DealService = class DealService {
         }
     }
     async updateDeal(updateDealDto, dealID) {
+        let dealVouchers = 0;
         let stamp = new Date(updateDealDto.endDate).getTime();
         updateDealDto.endDate = stamp;
-        await this.dealModel.findByIdAndUpdate(dealID, updateDealDto);
+        const deal = await this.dealModel.findById(dealID);
+        deal.vouchers = deal.vouchers.map((element) => {
+            updateDealDto.vouchers.forEach((el) => {
+                if (el['voucherID'] === element['_id']) {
+                    element.numberOfVouchers += el.numberOfVouchers;
+                }
+            });
+            dealVouchers += element.numberOfVouchers;
+            return element;
+        });
+        deal.availableVouchers = dealVouchers;
+        await this.dealModel.findByIdAndUpdate(dealID, deal);
         return { message: 'Deal Updated Successfully' };
     }
     async approveRejectDeal(dealID, dealStatusDto) {
@@ -283,7 +295,7 @@ let DealService = class DealService {
             throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
         }
     }
-    async getDealsByMerchantID(merchantID, title, price, startDate, endDate, dateFrom, dateTo, offset, limit) {
+    async getDealsByMerchantID(merchantID, title, price, startDate, endDate, availableVoucher, soldVoucher, status, dateFrom, dateTo, offset, limit) {
         try {
             dateFrom = parseInt(dateFrom);
             dateTo = parseInt(dateTo);
@@ -326,6 +338,16 @@ let DealService = class DealService {
                 let sortEndDate = endDate == sort_enum_1.SORT.ASC ? 1 : -1;
                 console.log('endDate');
                 sort = Object.assign(Object.assign({}, sort), { endDate: sortEndDate });
+            }
+            if (availableVoucher) {
+                let sortAvailableVoucher = availableVoucher == sort_enum_1.SORT.ASC ? 1 : -1;
+                console.log('availbleVoucher');
+                sort = Object.assign(Object.assign({}, sort), { availableVoucher: sortAvailableVoucher });
+            }
+            if (soldVoucher) {
+                let sortSoldVoucher = soldVoucher == sort_enum_1.SORT.ASC ? 1 : -1;
+                console.log('soldVoucher');
+                sort = Object.assign(Object.assign({}, sort), { soldVoucher: sortSoldVoucher });
             }
             if (Object.keys(sort).length === 0 && sort.constructor === Object) {
                 sort = {
