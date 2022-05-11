@@ -302,6 +302,9 @@ let DealService = class DealService {
             let dateToFilters = {};
             let dateFromFilters = {};
             let matchFilter = {};
+            if (status) {
+                matchFilter = Object.assign(Object.assign({}, matchFilter), { dealStatus: status });
+            }
             if (dateFrom) {
                 dateFromFilters = Object.assign(Object.assign({}, dateFromFilters), { $gte: dateFrom });
             }
