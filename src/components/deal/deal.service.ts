@@ -91,7 +91,7 @@ export class DealService {
         return el;
       });
 
-      dealDto.numberOfVouchers = dealVouchers;
+      dealDto.availableVouchers = dealVouchers;
       // dealDto.soldVouchers = delaSoldVocuhers;
 
       const deal = await this.dealModel.create(dealDto);
@@ -102,14 +102,27 @@ export class DealService {
   }
 
   async updateDeal(updateDealDto, dealID) {
+    let dealVouchers = 0;
     let stamp = new Date(updateDealDto.endDate).getTime();
     updateDealDto.endDate = stamp;
 
-    // const deal = await this.dealModel.findById(dealID);
-    // updateDealDto.availableVouchers =
-    //   deal.availableVouchers + updateDealDto.numberOfVouchers;
+    const deal = await this.dealModel.findById(dealID);
 
-    await this.dealModel.findByIdAndUpdate(dealID, updateDealDto);
+    deal.vouchers = deal.vouchers.map((element) => {
+      updateDealDto.vouchers.forEach((el) => {
+        if (el['voucherID'] === element['_id']) {
+          element.numberOfVouchers += el.numberOfVouchers;
+        }
+      });
+
+      dealVouchers += element.numberOfVouchers;
+
+      return element;
+    });
+
+    deal.availableVouchers = dealVouchers;
+
+    await this.dealModel.findByIdAndUpdate(dealID, deal);
 
     return { message: 'Deal Updated Successfully' };
   }
@@ -340,6 +353,9 @@ export class DealService {
     price,
     startDate,
     endDate,
+    availableVoucher,
+    soldVoucher,
+    status,
     dateFrom,
     dateTo,
     offset,
@@ -396,6 +412,7 @@ export class DealService {
           title: sortTitle,
         };
       }
+
       if (price) {
         let sortPrice = price == SORT.ASC ? 1 : -1;
         console.log('price');
@@ -404,6 +421,7 @@ export class DealService {
           price: sortPrice,
         };
       }
+
       if (startDate) {
         let sortStartDate = startDate == SORT.ASC ? 1 : -1;
         console.log('startDate');
@@ -412,12 +430,31 @@ export class DealService {
           startDate: sortStartDate,
         };
       }
+
       if (endDate) {
         let sortEndDate = endDate == SORT.ASC ? 1 : -1;
         console.log('endDate');
         sort = {
           ...sort,
           endDate: sortEndDate,
+        };
+      }
+
+      if (availableVoucher) {
+        let sortAvailableVoucher = availableVoucher == SORT.ASC ? 1 : -1;
+        console.log('availbleVoucher');
+        sort = {
+          ...sort,
+          availableVoucher: sortAvailableVoucher,
+        };
+      }
+
+      if (soldVoucher) {
+        let sortSoldVoucher = soldVoucher == SORT.ASC ? 1 : -1;
+        console.log('soldVoucher');
+        sort = {
+          ...sort,
+          soldVoucher: sortSoldVoucher,
         };
       }
 

@@ -16,6 +16,7 @@ import { JwtAdminAuthGuard } from '../auth/jwt-admin-auth.guard';
 import { JwtMerchantAuthGuard } from '../auth/jwt-merchant-auth.guard';
 import { DealStatusDto } from '../../dto/deal/updatedealstatus.dto';
 import { SORT } from '../../enum/sort/sort.enum';
+import { DEALSTATUS } from '../../enum/deal/dealstatus.enum';
 import { UpdateDealDto } from '../../dto/deal/updatedeal.dto';
 
 @ApiBearerAuth()
@@ -80,6 +81,9 @@ export class DealController {
   @ApiQuery({ name: 'price', enum: SORT, required: false })
   @ApiQuery({ name: 'startDate', enum: SORT, required: false })
   @ApiQuery({ name: 'endDate', enum: SORT, required: false })
+  @ApiQuery({ name: 'availableVoucher', enum: SORT, required: false })
+  @ApiQuery({ name: 'soldVoucher', enum: SORT, required: false })
+  @ApiQuery({ name: 'status', enum: DEALSTATUS, required: false })
   @ApiQuery({ name: 'dateFrom', required: false })
   @ApiQuery({ name: 'dateTo', required: false })
   @Get('getDealsByMerchantID/:merchantID')
@@ -89,6 +93,9 @@ export class DealController {
     @Query('price') price: SORT,
     @Query('startDate') startDate: SORT,
     @Query('endDate') endDate: SORT,
+    @Query('availableVoucher') availableVoucher: SORT,
+    @Query('soldVoucher') soldVoucher: SORT,
+    @Query('status') status: DEALSTATUS,
     @Query('dateFrom') dateFrom: number,
     @Query('dateTo') dateTo: number,
     @Query('offset') offset: number = 0,
@@ -101,6 +108,9 @@ export class DealController {
       price,
       startDate,
       endDate,
+      availableVoucher,
+      soldVoucher,
+      status,
       dateFrom,
       dateTo,
       offset,
