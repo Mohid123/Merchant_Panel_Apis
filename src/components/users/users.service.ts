@@ -20,8 +20,8 @@ export class UsersService {
         return user;
     }
 
-    async completeKYC (kycDto) {
-        return await this._userModel.updateOne({_id: kycDto.id}, kycDto)
+    async completeKYC (merchantID, kycDto) {
+        return await this._userModel.updateOne({_id: merchantID}, kycDto)
     }
 
     async updateMerchantprofile (usersDto) {

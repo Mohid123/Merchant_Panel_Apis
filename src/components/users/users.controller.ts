@@ -19,9 +19,11 @@ export class UsersController {
         return this._usersService.addUser(usersDto)
      }
 
-     @Post('completeKYC')
-     completeKYC (@Body() kycDto:KycDto) {
-         return this._usersService.completeKYC(kycDto)
+     @Post('completeKYC/:merchantID')
+     completeKYC (
+        @Param('merchantID') merchantID: string,
+        @Body() kycDto:KycDto) {
+         return this._usersService.completeKYC(merchantID, kycDto)
       }
 
      @Post('updateMerchantprofile')
