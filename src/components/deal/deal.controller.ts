@@ -16,8 +16,8 @@ import { JwtAdminAuthGuard } from '../auth/jwt-admin-auth.guard';
 import { JwtMerchantAuthGuard } from '../auth/jwt-merchant-auth.guard';
 import { DealStatusDto } from '../../dto/deal/updatedealstatus.dto';
 import { SORT } from '../../enum/sort/sort.enum';
+import { DEALSTATUS } from '../../enum/deal/dealstatus.enum';
 import { UpdateDealDto } from '../../dto/deal/updatedeal.dto';
-import { DEALSTATUS } from 'src/enum/deal/dealstatus.enum';
 
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
