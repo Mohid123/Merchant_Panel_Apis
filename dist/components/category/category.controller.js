@@ -35,6 +35,9 @@ let CategoryController = class CategoryController {
     getAllSubCategories(offset = 0, limit = 10) {
         return this.categoryService.getAllSubCategories(offset, limit);
     }
+    getAllSubCategoriesByCategories(offset = 0, limit = 10, req) {
+        return this.categoryService.getAllSubCategoriesByMerchant(offset, limit, req);
+    }
 };
 __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
@@ -72,6 +75,17 @@ __decorate([
     __metadata("design:paramtypes", [Number, Number]),
     __metadata("design:returntype", void 0)
 ], CategoryController.prototype, "getAllSubCategories", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.Get)('getAllSubCategoriesByMerchant'),
+    __param(0, (0, common_1.Query)('offset')),
+    __param(1, (0, common_1.Query)('limit')),
+    __param(2, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, Number, Object]),
+    __metadata("design:returntype", void 0)
+], CategoryController.prototype, "getAllSubCategoriesByCategories", null);
 CategoryController = __decorate([
     (0, swagger_1.ApiTags)('Category'),
     (0, common_1.Controller)('category'),

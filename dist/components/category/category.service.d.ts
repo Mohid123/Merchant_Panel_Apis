@@ -19,4 +19,8 @@ export declare class CategoryService {
         totalCount: number;
         data: any[];
     }>;
+    getAllSubCategoriesByMerchant(offset: any, limit: any, req: any): Promise<{
+        totalCount: number;
+        data: any[];
+    }>;
 }

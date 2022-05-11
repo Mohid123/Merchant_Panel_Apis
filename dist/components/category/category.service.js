@@ -105,6 +105,44 @@ let CategoryService = class CategoryService {
             throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
         }
     }
+    async getAllSubCategoriesByMerchant(offset, limit, req) {
+        try {
+            offset = parseInt(offset) < 0 ? 0 : offset;
+            limit = parseInt(limit) < 1 ? 10 : limit;
+            const totalCount = await this.subCategoryModel.countDocuments({ categoryName: req.user.businessType });
+            let subCategories = await this.subCategoryModel.aggregate([
+                {
+                    $match: {
+                        categoryName: req.user.businessType
+                    }
+                },
+                {
+                    $sort: {
+                        createdAt: -1
+                    }
+                },
+                {
+                    $addFields: {
+                        id: '$_id'
+                    }
+                },
+                {
+                    $project: {
+                        _id: 0
+                    }
+                }
+            ])
+                .skip(parseInt(offset))
+                .limit(parseInt(limit));
+            return {
+                totalCount: totalCount,
+                data: subCategories
+            };
+        }
+        catch (err) {
+            throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
+        }
+    }
 };
 CategoryService = __decorate([
     (0, common_1.Injectable)(),
