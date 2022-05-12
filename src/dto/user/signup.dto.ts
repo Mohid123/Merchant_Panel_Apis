@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsString, MaxLength, MinLength } from 'class-validator';
 import { businessHour } from "../../interface/user/users.interface";
 
 export class SignUpDTO {
@@ -9,6 +9,13 @@ export class SignUpDTO {
     @ApiProperty()
     @IsNotEmpty()
     email: string;
+
+    @ApiProperty()
+    @IsNotEmpty()
+    @IsString()
+    @MinLength(5)
+    @MaxLength(1024)
+    password: string;
 
     // Personal Details
 
