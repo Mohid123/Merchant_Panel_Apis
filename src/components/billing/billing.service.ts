@@ -67,7 +67,6 @@ export class BillingService {
         totalBilling,
         data: billings,
       };
-      
     } catch (err) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
     }
@@ -178,13 +177,13 @@ export class BillingService {
           },
           {
             $addFields: {
-              id: '$_id'
-            }
+              id: '$_id',
+            },
           },
           {
             $project: {
-              _id: 0
-            }
+              _id: 0,
+            },
           },
           {
             $sort: sort,
