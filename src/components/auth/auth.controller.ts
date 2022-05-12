@@ -1,5 +1,6 @@
 import { Body, Controller, Get, HttpException, HttpStatus, Param, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { EmailDTO } from 'src/dto/email/email.dto';
 import { LoginDto } from '../../dto/user/login.dto';
 import { SignUpDTO } from '../../dto/user/signup.dto';
 import { AuthService } from './auth.service';
@@ -31,4 +32,8 @@ export class AuthController {
         return this._authService.signup(signupDto)
     }
     
+    @Post('sendEmail')
+      sendEmail(@Body() emailDto:EmailDTO){
+        return this._authService.sendMail(emailDto)
+    }
 }

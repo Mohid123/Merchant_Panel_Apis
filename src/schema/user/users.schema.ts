@@ -7,7 +7,7 @@ export const UsersSchema = new mongoose.Schema(
   {
     _id: { type: String, default: generateStringId },
     email: { type: String, default: '' },
-    password: { type: String, default: 'qwertyuiop' },
+    password: { type: String, default: '' },
     firstName: { type: String, default: '' },
     lastName: { type: String, default: '' },
     phoneNumber: { type: String, default: '' },
