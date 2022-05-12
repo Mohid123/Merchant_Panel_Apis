@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CategoryService } from './category.service';
 import { CategoryDto } from '../../dto/category/category.dto';
@@ -40,5 +40,16 @@ export class CategoryController {
     @Query('limit') limit: number = 10,
   ) {
     return this.categoryService.getAllSubCategories(offset, limit)
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Get('getAllSubCategoriesByMerchant')
+  getAllSubCategoriesByCategories (
+    @Query('offset') offset: number = 0,
+    @Query('limit') limit: number = 10,
+    @Req() req
+  ) {
+    return this.categoryService.getAllSubCategoriesByMerchant(offset, limit, req)
   }
 }
