@@ -354,7 +354,7 @@ let DealService = class DealService {
             }
             if (Object.keys(sort).length === 0 && sort.constructor === Object) {
                 sort = {
-                    createdAt: 1,
+                    createdAt: -1,
                 };
             }
             console.log(sort);

@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthController = void 0;
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
+const email_dto_1 = require("../../dto/email/email.dto");
 const login_dto_1 = require("../../dto/user/login.dto");
 const signup_dto_1 = require("../../dto/user/signup.dto");
 const auth_service_1 = require("./auth.service");
@@ -35,6 +36,9 @@ let AuthController = class AuthController {
     }
     signup(signupDto) {
         return this._authService.signup(signupDto);
+    }
+    sendEmail(emailDto) {
+        return this._authService.sendMail(emailDto);
     }
 };
 __decorate([
@@ -59,6 +63,13 @@ __decorate([
     __metadata("design:paramtypes", [signup_dto_1.SignUpDTO]),
     __metadata("design:returntype", void 0)
 ], AuthController.prototype, "signup", null);
+__decorate([
+    (0, common_1.Post)('sendEmail'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [email_dto_1.EmailDTO]),
+    __metadata("design:returntype", void 0)
+], AuthController.prototype, "sendEmail", null);
 AuthController = __decorate([
     (0, swagger_1.ApiTags)('Auth'),
     (0, common_1.Controller)('auth'),

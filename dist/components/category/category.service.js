@@ -44,28 +44,29 @@ let CategoryService = class CategoryService {
             offset = parseInt(offset) < 0 ? 0 : offset;
             limit = parseInt(limit) < 1 ? 10 : limit;
             const totalCount = await this.categoryModel.countDocuments();
-            let categories = await this.categoryModel.aggregate([
+            let categories = await this.categoryModel
+                .aggregate([
                 {
                     $sort: {
-                        createdAt: -1
-                    }
+                        createdAt: -1,
+                    },
                 },
                 {
                     $addFields: {
-                        id: '$_id'
-                    }
+                        id: '$_id',
+                    },
                 },
                 {
                     $project: {
-                        _id: 0
-                    }
-                }
+                        _id: 0,
+                    },
+                },
             ])
                 .skip(parseInt(offset))
                 .limit(parseInt(limit));
             return {
                 totalCount: totalCount,
-                data: categories
+                data: categories,
             };
         }
         catch (err) {
@@ -77,28 +78,29 @@ let CategoryService = class CategoryService {
             offset = parseInt(offset) < 0 ? 0 : offset;
             limit = parseInt(limit) < 1 ? 10 : limit;
             const totalCount = await this.subCategoryModel.countDocuments();
-            let subCategories = await this.subCategoryModel.aggregate([
+            let subCategories = await this.subCategoryModel
+                .aggregate([
                 {
                     $sort: {
-                        createdAt: -1
-                    }
+                        createdAt: -1,
+                    },
                 },
                 {
                     $addFields: {
-                        id: '$_id'
-                    }
+                        id: '$_id',
+                    },
                 },
                 {
                     $project: {
-                        _id: 0
-                    }
-                }
+                        _id: 0,
+                    },
+                },
             ])
                 .skip(parseInt(offset))
                 .limit(parseInt(limit));
             return {
                 totalCount: totalCount,
-                data: subCategories
+                data: subCategories,
             };
         }
         catch (err) {
@@ -109,34 +111,37 @@ let CategoryService = class CategoryService {
         try {
             offset = parseInt(offset) < 0 ? 0 : offset;
             limit = parseInt(limit) < 1 ? 10 : limit;
-            const totalCount = await this.subCategoryModel.countDocuments({ categoryName: req.user.businessType });
-            let subCategories = await this.subCategoryModel.aggregate([
+            const totalCount = await this.subCategoryModel.countDocuments({
+                categoryName: req.user.businessType,
+            });
+            let subCategories = await this.subCategoryModel
+                .aggregate([
                 {
                     $match: {
-                        categoryName: req.user.businessType
-                    }
+                        categoryName: req.user.businessType,
+                    },
                 },
                 {
                     $sort: {
-                        createdAt: -1
-                    }
+                        subCategoryName: 1,
+                    },
                 },
                 {
                     $addFields: {
-                        id: '$_id'
-                    }
+                        id: '$_id',
+                    },
                 },
                 {
                     $project: {
-                        _id: 0
-                    }
-                }
+                        _id: 0,
+                    },
+                },
             ])
                 .skip(parseInt(offset))
                 .limit(parseInt(limit));
             return {
                 totalCount: totalCount,
-                data: subCategories
+                data: subCategories,
             };
         }
         catch (err) {

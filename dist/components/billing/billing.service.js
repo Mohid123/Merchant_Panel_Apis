@@ -127,13 +127,13 @@ let BillingService = class BillingService {
                 },
                 {
                     $addFields: {
-                        id: '$_id'
-                    }
+                        id: '$_id',
+                    },
                 },
                 {
                     $project: {
-                        _id: 0
-                    }
+                        _id: 0,
+                    },
                 },
                 {
                     $sort: sort,
