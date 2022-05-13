@@ -53,7 +53,7 @@ export class AuthService {
   }
 
   async login(loginDto) {
-    let user = await this._usersService.findOne({ email: loginDto.email });
+    let user = await this._usersService.findOne({ email: loginDto.email.toLowerCase() });
 
     if (!user) {
       throw new UnauthorizedException('Incorrect email!');
@@ -91,7 +91,7 @@ export class AuthService {
   }
 
   async signup(loginDto) {
-    let user = await this._usersService.findOne({ email: loginDto.email });
+    let user = await this._usersService.findOne({ email: loginDto.email.toLowerCase() });
     if (user) {
       throw new ForbiddenException('Email already exists');
       return;
@@ -106,7 +106,7 @@ export class AuthService {
       ID: new Types.ObjectId().toHexString(),
       firstName: loginDto.firstName,
       lastName: loginDto.lastName,
-      email: loginDto.email,
+      email: loginDto.email.toLowerCase(),
       password: loginDto.password,
       companyName: loginDto.companyName,
       vatNumber: loginDto.vatNumber,
