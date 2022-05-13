@@ -33,6 +33,7 @@ export interface UsersInterface {
     profilePicBlurHash: string;
     deletedCheck: boolean;
     status: string;
+    newUser: boolean;
     totalVoucherSales: number;
     redeemedVouchers: number;
     purchasedVouchers: number;

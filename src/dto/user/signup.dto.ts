@@ -57,6 +57,9 @@ export class SignUpDTO {
     @ApiProperty()
     website_socialAppLink: string;
 
+    @ApiProperty()
+    newUser: boolean;
+
     //Business Hours
 
     @ApiProperty({
