@@ -35,7 +35,7 @@ export class UsersService {
         if (!comaprePasswords) {
           throw new UnauthorizedException('Incorrect password!');
         } else {
-          return await this._userModel.updateOne({_id: id}, {password: hashedPassword});
+          return await this._userModel.updateOne({_id: id}, {password: hashedPassword, newUser: false});
         }
       }
 
