@@ -14,5 +14,6 @@ export declare class SignUpDTO {
     city: string;
     province: string;
     website_socialAppLink: string;
+    newUser: boolean;
     businessHours: businessHour[];
 }

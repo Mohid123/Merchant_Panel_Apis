@@ -76,6 +76,10 @@ __decorate([
     __metadata("design:type", String)
 ], SignUpDTO.prototype, "website_socialAppLink", void 0);
 __decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", Boolean)
+], SignUpDTO.prototype, "newUser", void 0);
+__decorate([
     (0, swagger_1.ApiProperty)({
         example: [
             {

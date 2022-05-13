@@ -31,6 +31,7 @@ exports.UsersSchema = new mongoose.Schema({
     profilePicBlurHash: { type: String, default: '' },
     deletedCheck: { type: Boolean, default: false },
     status: { type: String, default: '' },
+    newUser: { type: Boolean, default: true },
     totalVoucherSales: { type: Number, default: 0 },
     redeemedVouchers: { type: Number, default: 0 },
     purchasedVouchers: { type: Number, default: 0 },
