@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { UpdatePasswordDto } from 'src/dto/user/updatepassword.dto';
 import { KycDto } from '../../dto/user/kyc.dto';
 import { UpdateHoursDto } from '../../dto/user/updatehours.dto';
 import { UpdateMerchantProfileDto } from '../../dto/user/updatemerchantprofile.dto';
@@ -18,6 +19,13 @@ export class UsersController {
      addUser (@Body() usersDto:UsersDto) {
         return this._usersService.addUser(usersDto)
      }
+
+     @Post('changePassword/:id')
+      changePassword(
+        @Param('id') id:string,
+        @Body() updatepasswordDto:UpdatePasswordDto) {
+        return this._usersService.changePassword(id, updatepasswordDto)
+      }
 
      @Post('completeKYC/:merchantID')
      completeKYC (
