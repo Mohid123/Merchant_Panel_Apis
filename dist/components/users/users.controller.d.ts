@@ -1,4 +1,5 @@
 /// <reference types="mongoose" />
+import { UpdatePasswordDto } from 'src/dto/user/updatepassword.dto';
 import { KycDto } from '../../dto/user/kyc.dto';
 import { UpdateHoursDto } from '../../dto/user/updatehours.dto';
 import { UpdateMerchantProfileDto } from '../../dto/user/updatemerchantprofile.dto';
@@ -10,6 +11,7 @@ export declare class UsersController {
     addUser(usersDto: UsersDto): Promise<import("mongoose").Document<unknown, any, import("../../interface/user/users.interface").UsersInterface> & import("../../interface/user/users.interface").UsersInterface & {
         _id: string;
     }>;
+    changePassword(id: string, updatepasswordDto: UpdatePasswordDto): Promise<import("mongodb").UpdateResult>;
     completeKYC(merchantID: string, kycDto: KycDto): Promise<import("mongodb").UpdateResult>;
     updateMerchantprofile(usersDto: UpdateMerchantProfileDto): Promise<import("mongodb").UpdateResult>;
     updateBusinessHours(updateHoursDTO: UpdateHoursDto): Promise<import("mongodb").UpdateResult>;

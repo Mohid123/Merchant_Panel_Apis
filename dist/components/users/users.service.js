@@ -16,6 +16,7 @@ exports.UsersService = void 0;
 const common_1 = require("@nestjs/common");
 const mongoose_1 = require("@nestjs/mongoose");
 const mongoose_2 = require("mongoose");
+const bcrypt = require("bcrypt");
 const userstatus_enum_1 = require("../../enum/user/userstatus.enum");
 const utils_1 = require("../file-management/utils/utils");
 let UsersService = class UsersService {
@@ -26,6 +27,22 @@ let UsersService = class UsersService {
         usersDto.profilePicBlurHash = await (0, utils_1.encodeImageToBlurhash)(usersDto.profilePicURL);
         const user = new this._userModel(usersDto).save();
         return user;
+    }
+    async changePassword(id, updatepasswordDto) {
+        let user = await this._userModel.findOne({ _id: id });
+        if (!user) {
+            throw new common_1.HttpException('Unauthorized', common_1.HttpStatus.UNAUTHORIZED);
+        }
+        ;
+        const comaprePasswords = bcrypt.compare(updatepasswordDto.password, user.password);
+        const salt = await bcrypt.genSalt();
+        let hashedPassword = await bcrypt.hash(updatepasswordDto.newPassword, salt);
+        if (!comaprePasswords) {
+            throw new common_1.UnauthorizedException('Incorrect password!');
+        }
+        else {
+            return await this._userModel.updateOne({ _id: id }, { password: hashedPassword });
+        }
     }
     async completeKYC(merchantID, kycDto) {
         return await this._userModel.updateOne({ _id: merchantID }, kycDto);

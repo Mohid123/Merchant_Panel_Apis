@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.UsersController = void 0;
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
+const updatepassword_dto_1 = require("../../dto/user/updatepassword.dto");
 const kyc_dto_1 = require("../../dto/user/kyc.dto");
 const updatehours_dto_1 = require("../../dto/user/updatehours.dto");
 const updatemerchantprofile_dto_1 = require("../../dto/user/updatemerchantprofile.dto");
@@ -27,6 +28,9 @@ let UsersController = class UsersController {
     }
     addUser(usersDto) {
         return this._usersService.addUser(usersDto);
+    }
+    changePassword(id, updatepasswordDto) {
+        return this._usersService.changePassword(id, updatepasswordDto);
     }
     completeKYC(merchantID, kycDto) {
         return this._usersService.completeKYC(merchantID, kycDto);
@@ -57,6 +61,14 @@ __decorate([
     __metadata("design:paramtypes", [users_dto_1.UsersDto]),
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "addUser", null);
+__decorate([
+    (0, common_1.Post)('changePassword/:id'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, updatepassword_dto_1.UpdatePasswordDto]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "changePassword", null);
 __decorate([
     (0, common_1.Post)('completeKYC/:merchantID'),
     __param(0, (0, common_1.Param)('merchantID')),

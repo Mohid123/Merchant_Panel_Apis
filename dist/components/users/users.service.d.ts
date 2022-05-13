@@ -7,6 +7,7 @@ export declare class UsersService {
     addUser(usersDto: any): Promise<import("mongoose").Document<unknown, any, UsersInterface> & UsersInterface & {
         _id: string;
     }>;
+    changePassword(id: any, updatepasswordDto: any): Promise<import("mongodb").UpdateResult>;
     completeKYC(merchantID: any, kycDto: any): Promise<import("mongodb").UpdateResult>;
     updateMerchantprofile(usersDto: any): Promise<import("mongodb").UpdateResult>;
     updateBusinessHours(updateHoursDTO: UpdateHoursDto): Promise<import("mongodb").UpdateResult>;
