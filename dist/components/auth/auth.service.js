@@ -50,7 +50,7 @@ let AuthService = class AuthService {
         };
     }
     async login(loginDto) {
-        let user = await this._usersService.findOne({ email: loginDto.email });
+        let user = await this._usersService.findOne({ email: loginDto.email.toLowerCase() });
         if (!user) {
             throw new common_1.UnauthorizedException('Incorrect email!');
         }
@@ -76,7 +76,7 @@ let AuthService = class AuthService {
         return password;
     }
     async signup(loginDto) {
-        let user = await this._usersService.findOne({ email: loginDto.email });
+        let user = await this._usersService.findOne({ email: loginDto.email.toLowerCase() });
         if (user) {
             throw new common_1.ForbiddenException('Email already exists');
             return;
@@ -88,7 +88,7 @@ let AuthService = class AuthService {
             ID: new mongoose_2.Types.ObjectId().toHexString(),
             firstName: loginDto.firstName,
             lastName: loginDto.lastName,
-            email: loginDto.email,
+            email: loginDto.email.toLowerCase(),
             password: loginDto.password,
             companyName: loginDto.companyName,
             vatNumber: loginDto.vatNumber,
