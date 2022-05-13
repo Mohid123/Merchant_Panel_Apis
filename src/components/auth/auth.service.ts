@@ -1,4 +1,9 @@
-import { ForbiddenException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
@@ -14,105 +19,110 @@ let transporter;
 
 @Injectable()
 export class AuthService {
-    constructor(@InjectModel('User') private readonly _usersService: Model<UsersInterface>,
-    private jwtService:JwtService) {}
+  constructor(
+    @InjectModel('User') private readonly _usersService: Model<UsersInterface>,
+    private jwtService: JwtService,
+  ) {}
 
-    onModuleInit() {
-        transporter = nodemailer.createTransport({
-          // host: 'boostingthemovement.com',
-          // port: 465,
-          // secure: true,
-          service:"Gmail",
-          auth: {
-            user: 'noreplydivideals@gmail.com',
-            pass: 'qwerty!@#456',
-          },
-        });
-      }
-    
-    async loginToken() {
-        const userData = {
-            id: '6130c471434e4e306484e31c',
-            email: "haider@gmail.com",
-            admin: true
-        }
-        return this.generateToken(userData)
+  onModuleInit() {
+    transporter = nodemailer.createTransport({
+      // host: 'boostingthemovement.com',
+      // port: 465,
+      // secure: true,
+      service: 'Gmail',
+      auth: {
+        user: 'noreplydivideals@gmail.com',
+        pass: 'qwerty!@#456',
+      },
+    });
+  }
+
+  async loginToken() {
+    const userData = {
+      id: '6130c471434e4e306484e31c',
+      email: 'haider@gmail.com',
+      admin: true,
+    };
+    return this.generateToken(userData);
+  }
+
+  private generateToken(payload) {
+    return {
+      access_token: `Bearer ${this.jwtService.sign(payload)}`,
+    };
+  }
+
+  async login(loginDto) {
+    let user = await this._usersService.findOne({ email: loginDto.email });
+
+    if (!user) {
+      throw new UnauthorizedException('Incorrect email!');
     }
 
-    private generateToken(payload) {
-        return {
-            access_token: `Bearer ${this.jwtService.sign(payload)}`
-        }
+    const isValidCredentials = await bcrypt.compare(
+      loginDto.password,
+      user.password,
+    );
+
+    if (!isValidCredentials) {
+      throw new UnauthorizedException('Incorrect password!');
     }
+    user = JSON.parse(JSON.stringify(user));
 
-    async login(loginDto) {
-        let user = await this._usersService.findOne({ email: loginDto.email });
+    delete user.password;
 
-        if (!user) {
-            throw new UnauthorizedException('Incorrect email!');
-        }
+    const token = this.generateToken(user);
 
-        const isValidCredentials = await bcrypt.compare(loginDto.password,user.password);
+    return { user, token: token.access_token };
+  }
 
-        if(!isValidCredentials){
-            throw new UnauthorizedException('Incorrect password!');
-        }
-        user = JSON.parse(JSON.stringify(user));
+  async generatePassword() {
+    let password = generator.generate({
+      length: 12,
+      numbers: true,
+      symbols: true,
+      lowercase: true,
+      uppercase: true,
+      // strict: true
+    });
+    console.log(password);
+    debugger;
+    return password;
+  }
 
-        delete user.password;
-
-        const token = this.generateToken(user);
-
-        return { user, token: token.access_token };
+  async signup(loginDto) {
+    let user = await this._usersService.findOne({ email: loginDto.email });
+    if (user) {
+      throw new ForbiddenException('Email already exists');
+      return;
     }
+    loginDto._id = new Types.ObjectId().toString();
 
-    async generatePassword () {
-      let password = generator.generate({
-        length: 12,
-        numbers: true,
-        symbols: true,
-        lowercase: true,
-        uppercase: true,
-        // strict: true
-      });
-      console.log(password);
-      debugger
-      return password;
-    }
+    let generatedPassword = await this.generatePassword();
 
-    async signup(loginDto) {
-        let user = await this._usersService.findOne({ email: loginDto.email });
-        if (user) {
-            throw new ForbiddenException("Email already exists");
-            return;
-        }
-        loginDto._id = new Types.ObjectId().toString();
+    loginDto.password = generatedPassword;
 
-        let generatedPassword = await this.generatePassword();
+    const userObj = {
+      ID: new Types.ObjectId().toHexString(),
+      firstName: loginDto.firstName,
+      lastName: loginDto.lastName,
+      email: loginDto.email,
+      password: loginDto.password,
+      companyName: loginDto.companyName,
+      vatNumber: loginDto.vatNumber,
+      phoneNumber: loginDto.phoneNumber,
+      city: loginDto.city,
+      streetAddress: loginDto.streetAddress,
+      province: loginDto.province,
+      zipCode: loginDto.zipCode,
+    };
 
-        loginDto.password = generatedPassword;
-
-        const userObj = {
-          ID: new Types.ObjectId().toHexString(),
-          firstName: loginDto.firstName,
-          lastName: loginDto.lastName,
-          email: loginDto.email,
-          password: loginDto.password,
-          companyName: loginDto.companyName,
-          vatNumber: loginDto.vatNumber,
-          phoneNumber: loginDto.phoneNumber,
-          city: loginDto.city,
-          streetAddress: loginDto.streetAddress,
-          province: loginDto.province,
-          zipCode: loginDto.zipCode
-        }
-
-        const emailDto: EmailDTO = {
-          from: `"Divideals" <${process.env.EMAIL}>`,
-          to: userObj.email,
-          subject: 'Your password is generated',
-          text: '',
-          html: `
+    const emailDto: EmailDTO = {
+      from: `"Divideals" <${process.env.EMAIL}>`,
+      to: userObj.email,
+      subject: 'Your password is generated',
+      text: '',
+      html: `
           <html>
             <head>
             <title></title>
@@ -194,7 +204,9 @@ export class AuthService {
                             <tr>
                                 <td bgcolor="#FFFFFF" align="center" valign="top" style="padding: 40px 20px 20px 20px; border-radius: 4px 4px 0px 0px; color: #111111; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 48px; font-weight: 400; letter-spacing: 4px; line-height: 48px;">
                                   <h6 style="margin:0px"> Dear</h6>
-                                  <h1 style="font-size: 32px; font-weight: 400; margin: 0;">${userObj.firstName} ${userObj.lastName}</h1>
+                                  <h1 style="font-size: 32px; font-weight: 400; margin: 0;">${
+                                    userObj.firstName
+                                  } ${userObj.lastName}</h1>
                                 </td>
                             </tr>
                         </table>
@@ -218,7 +230,9 @@ export class AuthService {
                                   <td bgcolor="#FFFFFF" align="center" style="padding: 20px 30px 60px 30px;">
                                     <table border="0" cellspacing="0" cellpadding="0">
                                       <tr>
-                                          <td align="center" style="border-radius: 3px;" ><a style="font-size: 20px; font-family: Helvetica, Arial, sans-serif; color: #FFFFFF; text-decoration: none; color: black; text-decoration: none; padding: 15px 25px; border-radius: 2px; border: 1px solid #0081E9; display: inline-block;"><b>${htmlencode.htmlEncode(userObj.password)}</b></a></td>
+                                          <td align="center" style="border-radius: 3px;" ><a style="font-size: 20px; font-family: Helvetica, Arial, sans-serif; color: #FFFFFF; text-decoration: none; color: black; text-decoration: none; padding: 15px 25px; border-radius: 2px; border: 1px solid #0081E9; display: inline-block;"><b>${htmlencode.htmlEncode(
+                                            userObj.password,
+                                          )}</b></a></td>
                                       </tr>
                                     </table>
                                   </td>
@@ -267,31 +281,31 @@ export class AuthService {
             </body>
             </html>
           `,
-        };
-  
-        this.sendMail(emailDto);
+    };
 
-        return await new this._usersService(loginDto).save()
-    }
+    this.sendMail(emailDto);
 
-    async sendMail(emailDto: EmailDTO) {
-        // create reusable transporter object using the default SMTP transport
-    
-        // send mail with defined transport object
-        var mailOptions = {
-          from: emailDto.from,
-          to: emailDto.to,
-          subject: emailDto.subject,
-          text: emailDto.text,
-          html: emailDto.html,
-        };
-        transporter.sendMail(mailOptions, function (error, response) {
-          if (error) {
-            console.log(error);
-          } else {
-            // res.redirect('/');
-            console.log(response);
-          }
-        });
+    return await new this._usersService(loginDto).save();
+  }
+
+  async sendMail(emailDto: EmailDTO) {
+    // create reusable transporter object using the default SMTP transport
+
+    // send mail with defined transport object
+    var mailOptions = {
+      from: emailDto.from,
+      to: emailDto.to,
+      subject: emailDto.subject,
+      text: emailDto.text,
+      html: emailDto.html,
+    };
+    transporter.sendMail(mailOptions, function (error, response) {
+      if (error) {
+        console.log(error);
+      } else {
+        // res.redirect('/');
+        console.log(response);
       }
+    });
+  }
 }
