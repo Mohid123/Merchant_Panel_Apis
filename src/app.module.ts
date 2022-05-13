@@ -14,6 +14,7 @@ import { OrdersModule } from './components/orders/orders.module';
 import { ActivityModule } from './components/activity/activity.module';
 import { VouchersModule } from './components/vouchers/vouchers.module';
 import { InvoicesModule } from './components/invoices/invoices.module';
+import { UtilModule } from './components/utils/utils.module';
 
 @Module({
   imports: [
@@ -32,7 +33,8 @@ import { InvoicesModule } from './components/invoices/invoices.module';
     ActivityModule,
     MediaUploadModule,
     VouchersModule,
-    InvoicesModule
+    InvoicesModule,
+    UtilModule,
   ],
   controllers: [AppController],
   providers: [AppService],
