@@ -41,7 +41,7 @@ let UsersService = class UsersService {
             throw new common_1.UnauthorizedException('Incorrect password!');
         }
         else {
-            return await this._userModel.updateOne({ _id: id }, { password: hashedPassword });
+            return await this._userModel.updateOne({ _id: id }, { password: hashedPassword, newUser: false });
         }
     }
     async completeKYC(merchantID, kycDto) {
