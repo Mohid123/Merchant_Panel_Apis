@@ -9,13 +9,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.UtilService = void 0;
 const common_1 = require("@nestjs/common");
 const fs = require('fs');
+const city_1 = require("./city");
 let UtilService = class UtilService {
     async getCity(zipCode) {
         let obj = [];
         let city = '';
-        const data = await fs.promises.readFile('../DIVIDEALS_API/src/components/utils/city.json', 'utf8');
-        obj = JSON.parse(data);
-        const cityData = obj.find((element) => element.zip == zipCode);
+        const data = city_1.cityDataset;
+        const cityData = data.find((element) => element.zip == zipCode);
         return cityData;
     }
 };
