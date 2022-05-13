@@ -1,6 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import * as bcrypt from 'bcrypt';
 import { UpdateHoursDto } from '../../dto/user/updatehours.dto';
 import { USERSTATUS } from '../../enum/user/userstatus.enum';
 import { UsersInterface } from '../../interface/user/users.interface';
@@ -19,6 +20,24 @@ export class UsersService {
 
         return user;
     }
+
+    async changePassword(id, updatepasswordDto){
+        let user = await this._userModel.findOne({_id:id});
+        if (!user) {
+          throw new HttpException('Unauthorized',HttpStatus.UNAUTHORIZED)
+        };
+  
+        const comaprePasswords = bcrypt.compare(updatepasswordDto.password,user.password);
+
+        const salt = await bcrypt.genSalt();
+        let hashedPassword = await bcrypt.hash(updatepasswordDto.newPassword, salt);
+  
+        if (!comaprePasswords) {
+          throw new UnauthorizedException('Incorrect password!');
+        } else {
+          return await this._userModel.updateOne({_id: id}, {password: hashedPassword});
+        }
+      }
 
     async completeKYC (merchantID, kycDto) {
         return await this._userModel.updateOne({_id: merchantID}, kycDto)
