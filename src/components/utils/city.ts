@@ -1,4 +1,4 @@
-[
+export const cityDataset = [
     {
       "zip": "1000",
       "city": "Bruxelles",
