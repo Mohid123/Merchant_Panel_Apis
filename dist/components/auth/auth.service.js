@@ -29,7 +29,7 @@ let AuthService = class AuthService {
     }
     onModuleInit() {
         transporter = nodemailer.createTransport({
-            service: "Gmail",
+            service: 'Gmail',
             auth: {
                 user: 'noreplydivideals@gmail.com',
                 pass: 'qwerty!@#456',
@@ -39,14 +39,14 @@ let AuthService = class AuthService {
     async loginToken() {
         const userData = {
             id: '6130c471434e4e306484e31c',
-            email: "haider@gmail.com",
-            admin: true
+            email: 'haider@gmail.com',
+            admin: true,
         };
         return this.generateToken(userData);
     }
     generateToken(payload) {
         return {
-            access_token: `Bearer ${this.jwtService.sign(payload)}`
+            access_token: `Bearer ${this.jwtService.sign(payload)}`,
         };
     }
     async login(loginDto) {
@@ -78,7 +78,7 @@ let AuthService = class AuthService {
     async signup(loginDto) {
         let user = await this._usersService.findOne({ email: loginDto.email });
         if (user) {
-            throw new common_1.ForbiddenException("Email already exists");
+            throw new common_1.ForbiddenException('Email already exists');
             return;
         }
         loginDto._id = new mongoose_2.Types.ObjectId().toString();
@@ -96,7 +96,7 @@ let AuthService = class AuthService {
             city: loginDto.city,
             streetAddress: loginDto.streetAddress,
             province: loginDto.province,
-            zipCode: loginDto.zipCode
+            zipCode: loginDto.zipCode,
         };
         const emailDto = {
             from: `"Divideals" <${process.env.EMAIL}>`,

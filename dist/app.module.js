@@ -23,6 +23,7 @@ const orders_module_1 = require("./components/orders/orders.module");
 const activity_module_1 = require("./components/activity/activity.module");
 const vouchers_module_1 = require("./components/vouchers/vouchers.module");
 const invoices_module_1 = require("./components/invoices/invoices.module");
+const utils_module_1 = require("./components/utils/utils.module");
 let AppModule = class AppModule {
 };
 AppModule = __decorate([
@@ -43,7 +44,8 @@ AppModule = __decorate([
             activity_module_1.ActivityModule,
             media_upload_module_1.MediaUploadModule,
             vouchers_module_1.VouchersModule,
-            invoices_module_1.InvoicesModule
+            invoices_module_1.InvoicesModule,
+            utils_module_1.UtilModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],
