@@ -22,4 +22,5 @@ export declare class AuthService {
         _id: string;
     }>;
     sendMail(emailDto: EmailDTO): Promise<void>;
+    isEmailExists(email: any): Promise<boolean>;
 }

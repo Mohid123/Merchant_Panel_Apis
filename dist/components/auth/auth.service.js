@@ -279,6 +279,10 @@ let AuthService = class AuthService {
             }
         });
     }
+    async isEmailExists(email) {
+        const user = await this._usersService.findOne({ email: email });
+        return user ? true : false;
+    }
 };
 AuthService = __decorate([
     (0, common_1.Injectable)(),

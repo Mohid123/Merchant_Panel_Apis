@@ -16,6 +16,7 @@ exports.AuthController = void 0;
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const email_dto_1 = require("../../dto/email/email.dto");
+const is_email_exists_dto_1 = require("../../dto/user/is-email-exists.dto");
 const login_dto_1 = require("../../dto/user/login.dto");
 const signup_dto_1 = require("../../dto/user/signup.dto");
 const auth_service_1 = require("./auth.service");
@@ -39,6 +40,9 @@ let AuthController = class AuthController {
     }
     sendEmail(emailDto) {
         return this._authService.sendMail(emailDto);
+    }
+    isEmailExists(isEmailExistsDto) {
+        return this._authService.isEmailExists(isEmailExistsDto.email);
     }
 };
 __decorate([
@@ -70,6 +74,13 @@ __decorate([
     __metadata("design:paramtypes", [email_dto_1.EmailDTO]),
     __metadata("design:returntype", void 0)
 ], AuthController.prototype, "sendEmail", null);
+__decorate([
+    (0, common_1.Post)('isEmailExists'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [is_email_exists_dto_1.IsEmailExistsDTO]),
+    __metadata("design:returntype", void 0)
+], AuthController.prototype, "isEmailExists", null);
 AuthController = __decorate([
     (0, swagger_1.ApiTags)('Auth'),
     (0, common_1.Controller)('auth'),
