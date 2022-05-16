@@ -308,4 +308,11 @@ export class AuthService {
       }
     });
   }
+
+  async isEmailExists (email) {
+    const user = await this._usersService.findOne({email: email});
+
+    return user ? true : false;
+  }
+
 }
