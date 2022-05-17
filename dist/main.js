@@ -5,7 +5,7 @@ const swagger_1 = require("@nestjs/swagger");
 const app_module_1 = require("./app.module");
 const logging_interceptor_1 = require("./interceptors/logging.interceptor");
 async function bootstrap() {
-    const app = await core_1.NestFactory.create(app_module_1.AppModule);
+    const app = await core_1.NestFactory.create(app_module_1.AppModule, { cors: true });
     app.useGlobalInterceptors(new logging_interceptor_1.LoggingInterceptor());
     app.enableCors({
         origin: '*',

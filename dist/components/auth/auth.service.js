@@ -21,6 +21,7 @@ const bcrypt = require("bcrypt");
 const nodemailer = require("nodemailer");
 var htmlencode = require('htmlencode');
 var generator = require('generate-password');
+var otpGenerator = require('otp-generator');
 let transporter;
 let AuthService = class AuthService {
     constructor(_usersService, jwtService) {

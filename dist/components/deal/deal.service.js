@@ -44,10 +44,12 @@ let DealService = class DealService {
             });
             dealDto.categoryName = req.user.businessType;
             dealDto.categoryID = category.id;
-            let subCategory = await this.subCategoryModel.findOne({
-                subCategoryName: dealDto.subCategory,
-            });
-            dealDto.subCategoryID = subCategory.id;
+            if (dealDto.subCategory) {
+                let subCategory = await this.subCategoryModel.findOne({
+                    subCategoryName: dealDto.subCategory,
+                });
+                dealDto.subCategoryID = subCategory.id;
+            }
             dealDto.dealID = await this.generateVoucherId('dealID');
             let stamp = new Date(dealDto.startDate).getTime();
             dealDto.startDate = stamp;
