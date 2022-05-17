@@ -14,6 +14,7 @@ import * as nodemailer from 'nodemailer';
 
 var htmlencode = require('htmlencode');
 var generator = require('generate-password');
+var otpGenerator = require('otp-generator');
 
 let transporter;
 
