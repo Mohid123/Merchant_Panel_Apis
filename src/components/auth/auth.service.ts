@@ -341,6 +341,8 @@ export class AuthService {
 
     let expiryTime = new Date(Date.now()).getTime() + 10 * 60 * 1000;
 
+    console.log(expiryTime);
+
     const otpObject = {
       otp,
       expiryTime,
@@ -355,10 +357,12 @@ export class AuthService {
 
     let currentTime = new Date(Date.now()).getTime();
 
-    if (currentTime > expiredOtp[0].expiryTime) {
-      await this._otpService.findByIdAndUpdate(expiredOtp[0]._id, {
-        isUsed: true,
-      });
+    if (expiredOtp[0]) {
+      if (currentTime > expiredOtp[0].expiryTime) {
+        await this._otpService.findByIdAndUpdate(expiredOtp[0]._id, {
+          isUsed: true,
+        });
+      }
     }
 
     const otpAlreadyPresent = await this._otpService.find({
@@ -605,6 +609,9 @@ export class AuthService {
       delete user.scheduledDeals;
       delete user.pendingDeals;
       delete user.soldDeals;
+      delete user.totalReviews;
+      delete user.maxRating;
+      delete user.minRating;
 
       user['isResetPassword'] = true;
 
