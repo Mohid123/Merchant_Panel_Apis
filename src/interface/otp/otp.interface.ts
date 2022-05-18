@@ -1,6 +1,6 @@
 export interface OTP {
   otp: string;
-  expiryTime: string;
+  expiryTime: number;
   isUsed: boolean;
   userEmail: string;
   userID: string;

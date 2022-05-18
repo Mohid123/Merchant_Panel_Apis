@@ -339,8 +339,6 @@ export class AuthService {
       specialChars: false,
     });
 
-    console.log(otp);
-
     let expiryTime = new Date(Date.now()).getTime() + 10 * 60 * 1000;
 
     const otpObject = {
@@ -349,6 +347,19 @@ export class AuthService {
       userEmail,
       userID: user.id,
     };
+
+    const expiredOtp = await this._otpService.find({
+      userEmail: userEmail,
+      expiryTime: { $lt: new Date(Date.now()).getTime() },
+    });
+
+    let currentTime = new Date(Date.now()).getTime();
+
+    if (currentTime > expiredOtp[0].expiryTime) {
+      await this._otpService.findByIdAndUpdate(expiredOtp[0]._id, {
+        isUsed: true,
+      });
+    }
 
     const otpAlreadyPresent = await this._otpService.find({
       userEmail: userEmail,
@@ -546,7 +557,7 @@ export class AuthService {
       }
 
       let currentTime = new Date(Date.now()).getTime();
-      let expiryTime = parseInt(otp.expiryTime);
+      let expiryTime = otp.expiryTime;
 
       if (currentTime > expiryTime) {
         await this._otpService.findByIdAndUpdate(otp._id, { isUsed: true });
@@ -559,6 +570,42 @@ export class AuthService {
 
       user = JSON.parse(JSON.stringify(user));
       delete user.password;
+      delete user.businessProfile;
+      delete user.newUser;
+      delete user.expiredVouchers;
+      delete user.firstName;
+      delete user.lastName;
+      delete user.phoneNumber;
+      delete user.role;
+      delete user.businessType;
+      delete user.companyName;
+      delete user.streetAddress;
+      delete user.zipCode;
+      delete user.city;
+      delete user.vatNumber;
+      delete user.iban;
+      delete user.bankName;
+      delete user.kycStatus;
+      delete user.province;
+      delete user.website_socialAppLink;
+      delete user.googleMapPin;
+      delete user.businessHours;
+      delete user.generalTermsAgreements;
+      delete user.profilePicURL;
+      delete user.profilePicBlurHash;
+      delete user.deletedCheck;
+      delete user.status;
+      delete user.totalVoucherSales;
+      delete user.redeemedVouchers;
+      delete user.purchasedVouchers;
+      delete user.totalEarnings;
+      delete user.paidEarnings;
+      delete user.pendingEarnings;
+      delete user.totalDeals;
+      delete user.scheduledDeals;
+      delete user.pendingDeals;
+      delete user.soldDeals;
+
       user['isResetPassword'] = true;
 
       const token = this.generateToken(user);
