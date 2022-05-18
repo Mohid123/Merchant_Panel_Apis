@@ -12,10 +12,13 @@ export declare class UsersService {
     updateMerchantprofile(usersDto: any): Promise<import("mongodb").UpdateResult>;
     updateBusinessHours(updateHoursDTO: UpdateHoursDto): Promise<import("mongodb").UpdateResult>;
     deleteUser(id: any): Promise<import("mongodb").UpdateResult>;
-    getUserById(id: any): Promise<any[]>;
+    getUserById(id: any): Promise<any>;
     getMerchantStats(id: any): Promise<any>;
     getAllUsers(offset: any, limit: any): Promise<{
         totalCount: number;
         data: any[];
+    }>;
+    resetPassword(resetPasswordDto: any, req: any): Promise<{
+        message: string;
     }>;
 }

@@ -16,7 +16,7 @@ exports.AuthController = void 0;
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const email_dto_1 = require("../../dto/email/email.dto");
-const is_email_exists_dto_1 = require("../../dto/user/is-email-exists.dto");
+const otpEmail_dto_1 = require("../../dto/otp/otpEmail.dto");
 const login_dto_1 = require("../../dto/user/login.dto");
 const signup_dto_1 = require("../../dto/user/signup.dto");
 const auth_service_1 = require("./auth.service");
@@ -41,8 +41,14 @@ let AuthController = class AuthController {
     sendEmail(emailDto) {
         return this._authService.sendMail(emailDto);
     }
-    isEmailExists(isEmailExistsDto) {
-        return this._authService.isEmailExists(isEmailExistsDto.email);
+    isEmailExists(email) {
+        return this._authService.isEmailExists(email);
+    }
+    sendOtp(emailDto) {
+        return this._authService.sendOtp(emailDto);
+    }
+    verifyOtp(otp) {
+        return this._authService.verifyOtp(otp);
     }
 };
 __decorate([
@@ -75,12 +81,26 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], AuthController.prototype, "sendEmail", null);
 __decorate([
-    (0, common_1.Post)('isEmailExists'),
-    __param(0, (0, common_1.Body)()),
+    (0, common_1.Get)('/:isEmailExists'),
+    __param(0, (0, common_1.Param)('isEmailExists')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [is_email_exists_dto_1.IsEmailExistsDTO]),
+    __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], AuthController.prototype, "isEmailExists", null);
+__decorate([
+    (0, common_1.Post)('/sendOtp'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [otpEmail_dto_1.OtpEmailDto]),
+    __metadata("design:returntype", void 0)
+], AuthController.prototype, "sendOtp", null);
+__decorate([
+    (0, common_1.Post)('/verifyOtp/:otp'),
+    __param(0, (0, common_1.Param)('otp')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number]),
+    __metadata("design:returntype", void 0)
+], AuthController.prototype, "verifyOtp", null);
 AuthController = __decorate([
     (0, swagger_1.ApiTags)('Auth'),
     (0, common_1.Controller)('auth'),

@@ -44,4 +44,8 @@ export interface UsersInterface {
     scheduledDeals: number;
     pendingDeals: number;
     soldDeals: number;
+    ratingsAverage: number;
+    totalReviews: number;
+    maxRating: number;
+    minRating: number;
 }

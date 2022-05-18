@@ -11,6 +11,7 @@ exports.AuthModule = void 0;
 const common_1 = require("@nestjs/common");
 const jwt_1 = require("@nestjs/jwt");
 const mongoose_1 = require("@nestjs/mongoose");
+const otp_schema_1 = require("../../schema/otp/otp.schema");
 const users_schema_1 = require("../../schema/user/users.schema");
 const auth_controller_1 = require("./auth.controller");
 const auth_service_1 = require("./auth.service");
@@ -21,13 +22,16 @@ let AuthModule = AuthModule_1 = class AuthModule {
             imports: [
                 jwt_1.JwtModule.register({
                     secret: process.env.JWT_SECRET,
-                    signOptions: { expiresIn: '9999999999s' }
+                    signOptions: { expiresIn: '9999999999s' },
                 }),
-                mongoose_1.MongooseModule.forFeature([{ name: 'User', schema: users_schema_1.UsersSchema }])
+                mongoose_1.MongooseModule.forFeature([
+                    { name: 'User', schema: users_schema_1.UsersSchema },
+                    { name: 'OTP', schema: otp_schema_1.OtpSchema },
+                ]),
             ],
             controllers: [auth_controller_1.AuthController],
             providers: [auth_service_1.AuthService, jwt_strategy_1.JwtStrategy],
-            module: AuthModule_1
+            module: AuthModule_1,
         };
     }
 };

@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.UsersController = void 0;
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
+const resetPassword_dto_1 = require("../../dto/resetPasswordDto/resetPassword.dto");
 const updatepassword_dto_1 = require("../../dto/user/updatepassword.dto");
 const kyc_dto_1 = require("../../dto/user/kyc.dto");
 const updatehours_dto_1 = require("../../dto/user/updatehours.dto");
@@ -52,6 +53,9 @@ let UsersController = class UsersController {
     }
     getAllUsers(offset = 0, limit = 10) {
         return this._usersService.getAllUsers(offset, limit);
+    }
+    resetPassword(resetPasswordDto, req) {
+        return this._usersService.resetPassword(resetPasswordDto, req);
     }
 };
 __decorate([
@@ -120,6 +124,14 @@ __decorate([
     __metadata("design:paramtypes", [Number, Number]),
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "getAllUsers", null);
+__decorate([
+    (0, common_1.Post)('/resetPassword'),
+    __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [resetPassword_dto_1.ResetPasswordDto, Object]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "resetPassword", null);
 UsersController = __decorate([
     (0, swagger_1.ApiTags)('Users'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),

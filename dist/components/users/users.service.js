@@ -33,7 +33,6 @@ let UsersService = class UsersService {
         if (!user) {
             throw new common_1.HttpException('Unauthorized', common_1.HttpStatus.UNAUTHORIZED);
         }
-        ;
         const comaprePasswords = bcrypt.compare(updatepasswordDto.password, user.password);
         const salt = await bcrypt.genSalt();
         let hashedPassword = await bcrypt.hash(updatepasswordDto.newPassword, salt);
@@ -54,8 +53,8 @@ let UsersService = class UsersService {
         let user = await this._userModel.findOne({ _id: updateHoursDTO.id });
         const newBusinessHours = user.businessHours.map((hour) => {
             var _a, _b;
-            if (((_a = updateHoursDTO === null || updateHoursDTO === void 0 ? void 0 : updateHoursDTO.businessHours) === null || _a === void 0 ? void 0 : _a.findIndex(data => data.day == hour.day)) >= 0) {
-                return updateHoursDTO === null || updateHoursDTO === void 0 ? void 0 : updateHoursDTO.businessHours[(_b = updateHoursDTO === null || updateHoursDTO === void 0 ? void 0 : updateHoursDTO.businessHours) === null || _b === void 0 ? void 0 : _b.findIndex(data => data.day == hour.day)];
+            if (((_a = updateHoursDTO === null || updateHoursDTO === void 0 ? void 0 : updateHoursDTO.businessHours) === null || _a === void 0 ? void 0 : _a.findIndex((data) => data.day == hour.day)) >= 0) {
+                return updateHoursDTO === null || updateHoursDTO === void 0 ? void 0 : updateHoursDTO.businessHours[(_b = updateHoursDTO === null || updateHoursDTO === void 0 ? void 0 : updateHoursDTO.businessHours) === null || _b === void 0 ? void 0 : _b.findIndex((data) => data.day == hour.day)];
             }
             else {
                 return hour;
@@ -67,39 +66,42 @@ let UsersService = class UsersService {
         return this._userModel.updateOne({ _id: id }, { deletedCheck: true });
     }
     async getUserById(id) {
-        return await this._userModel.aggregate([
+        return await this._userModel
+            .aggregate([
             {
                 $match: {
                     _id: id,
                     deletedCheck: false,
-                    status: userstatus_enum_1.USERSTATUS.approved
-                }
+                    status: userstatus_enum_1.USERSTATUS.approved,
+                },
             },
             {
                 $addFields: {
-                    id: '$_id'
-                }
+                    id: '$_id',
+                },
             },
             {
                 $project: {
-                    _id: 0
-                }
-            }
-        ]);
+                    _id: 0,
+                },
+            },
+        ])
+            .then((items) => items[0]);
     }
     async getMerchantStats(id) {
-        return await this._userModel.aggregate([
+        return await this._userModel
+            .aggregate([
             {
                 $match: {
                     _id: id,
                     deletedCheck: false,
-                    status: userstatus_enum_1.USERSTATUS.approved
-                }
+                    status: userstatus_enum_1.USERSTATUS.approved,
+                },
             },
             {
                 $addFields: {
-                    id: '$_id'
-                }
+                    id: '$_id',
+                },
             },
             {
                 $project: {
@@ -131,43 +133,64 @@ let UsersService = class UsersService {
                     status: 0,
                     createdAt: 0,
                     updatedAt: 0,
-                    __v: 0
-                }
-            }
-        ]).then(items => items[0]);
+                    __v: 0,
+                },
+            },
+        ])
+            .then((items) => items[0]);
     }
     async getAllUsers(offset, limit) {
         offset = parseInt(offset) < 0 ? 0 : offset;
         limit = parseInt(limit) < 1 ? 10 : limit;
-        const totalCount = await this._userModel.countDocuments({ deletedCheck: false });
-        const users = await this._userModel.aggregate([
+        const totalCount = await this._userModel.countDocuments({
+            deletedCheck: false,
+        });
+        const users = await this._userModel
+            .aggregate([
             {
                 $match: {
-                    deletedCheck: false
-                }
+                    deletedCheck: false,
+                },
             },
             {
                 $sort: {
-                    createdAt: -1
-                }
+                    createdAt: -1,
+                },
             },
             {
                 $addFields: {
-                    id: '$_id'
-                }
+                    id: '$_id',
+                },
             },
             {
                 $project: {
-                    _id: 0
-                }
-            }
+                    _id: 0,
+                },
+            },
         ])
             .skip(parseInt(offset))
             .limit(parseInt(limit));
         return {
             totalCount: totalCount,
-            data: users
+            data: users,
         };
+    }
+    async resetPassword(resetPasswordDto, req) {
+        try {
+            if (req.user.isResetPassword) {
+                let encryptedPassword = await bcrypt.hash(resetPasswordDto.password, 12);
+                await this._userModel.findByIdAndUpdate(req.user.id, {
+                    password: encryptedPassword,
+                });
+                return { message: 'Password reset successfully!' };
+            }
+            else {
+                return { message: 'Token is not valid for password reset!' };
+            }
+        }
+        catch (err) {
+            throw new common_1.HttpException(err.message, common_1.HttpStatus.BAD_REQUEST);
+        }
     }
 };
 UsersService = __decorate([
