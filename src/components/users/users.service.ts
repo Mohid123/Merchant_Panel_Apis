@@ -228,4 +228,45 @@ export class UsersService {
       throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
+
+  async getPendingUsers(offset, limit) {
+    try {
+      offset = parseInt(offset) < 0 ? 0 : offset;
+      limit = parseInt(limit) < 1 ? 10 : limit;
+
+      const totalCount = await this._userModel.countDocuments({
+        status: 'Pending',
+        role: 'Merchant',
+      });
+
+      const users = await this._userModel
+        .aggregate([
+          { $match: { status: 'Pending', role: 'Merchant' } },
+          {
+            $sort: { createdAt: -1 },
+          },
+        ])
+        .skip(parseInt(offset))
+        .limit(parseInt(limit));
+
+      return { totalPendingUsers: totalCount, pendingUsers: users };
+    } catch (err) {
+      throw new HttpException(err, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async approvePendingUsers(status, userID) {
+    try {
+      const updatedUser = await this._userModel.updateOne(
+        { _id: userID },
+        {
+          status: status,
+        },
+      );
+
+      return { message: 'Merchant Approved Successfully!' };
+    } catch (err) {
+      throw new HttpException(err, HttpStatus.BAD_REQUEST);
+    }
+  }
 }

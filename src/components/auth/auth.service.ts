@@ -67,6 +67,10 @@ export class AuthService {
       throw new UnauthorizedException('Incorrect email!');
     }
 
+    if (!(user.status == 'Approved')) {
+      throw new NotFoundException('Merchant Not Found!');
+    }
+
     const isValidCredentials = await bcrypt.compare(
       loginDto.password,
       user.password,
