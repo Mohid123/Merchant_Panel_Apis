@@ -9,7 +9,8 @@ import {
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { EmailDTO } from 'src/dto/email/email.dto';
-import { IsEmailExistsDTO } from 'src/dto/user/is-email-exists.dto';
+import { OtpEmailDto } from 'src/dto/otp/otpEmail.dto';
+
 import { LoginDto } from '../../dto/user/login.dto';
 import { SignUpDTO } from '../../dto/user/signup.dto';
 import { AuthService } from './auth.service';
@@ -49,5 +50,15 @@ export class AuthController {
   @Get('/:isEmailExists')
   isEmailExists(@Param('isEmailExists') email: string) {
     return this._authService.isEmailExists(email);
+  }
+
+  @Post('/sendOtp')
+  sendOtp(@Body() emailDto: OtpEmailDto) {
+    return this._authService.sendOtp(emailDto);
+  }
+
+  @Post('/verifyOtp/:otp')
+  verifyOtp(@Param('otp') otp: number) {
+    return this._authService.verifyOtp(otp);
   }
 }
