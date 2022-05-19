@@ -30,7 +30,7 @@ export const UsersSchema = new mongoose.Schema(
     profilePicURL: { type: String, default: '' },
     profilePicBlurHash: { type: String, default: '' },
     deletedCheck: { type: Boolean, default: false },
-    status: { type: String, default: '' },
+    status: { type: String, default: 'Pending' },
     newUser: { type: Boolean, default: true },
     totalVoucherSales: { type: Number, default: 0 },
     redeemedVouchers: { type: Number, default: 0 },
@@ -80,11 +80,11 @@ UsersSchema.set('toJSON', {
   },
 });
 
-UsersSchema.pre<UsersInterface>('save', async function (next) {
-  const salt = await bcrypt.genSalt();
-  this.password = await bcrypt.hash(this.password, salt);
+// UsersSchema.pre<UsersInterface>('save', async function (next) {
+//   const salt = await bcrypt.genSalt();
+//   this.password = await bcrypt.hash(this.password, salt);
 
-  this.email = this.email.toLowerCase();
+//   this.email = this.email.toLowerCase();
 
-  next();
-});
+//   next();
+// });

@@ -8,13 +8,15 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags, ApiQuery } from '@nestjs/swagger';
 import { ResetPasswordDto } from 'src/dto/resetPasswordDto/resetPassword.dto';
 import { UpdatePasswordDto } from 'src/dto/user/updatepassword.dto';
+import { USERSTATUS } from 'src/enum/user/userstatus.enum';
 import { KycDto } from '../../dto/user/kyc.dto';
 import { UpdateHoursDto } from '../../dto/user/updatehours.dto';
 import { UpdateMerchantProfileDto } from '../../dto/user/updatemerchantprofile.dto';
 import { UsersDto } from '../../dto/user/users.dto';
+import { JwtAdminAuthGuard } from '../auth/jwt-admin-auth.guard';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { UsersService } from './users.service';
 
@@ -79,5 +81,24 @@ export class UsersController {
   @Post('/resetPassword')
   resetPassword(@Body() resetPasswordDto: ResetPasswordDto, @Req() req) {
     return this._usersService.resetPassword(resetPasswordDto, req);
+  }
+
+  @UseGuards(JwtAdminAuthGuard)
+  @Get('getPendingUsers')
+  getPendingUsers(
+    @Query('offset') offset: number = 0,
+    @Query('limit') limit: number = 10,
+  ) {
+    return this._usersService.getPendingUsers(offset, limit);
+  }
+
+  @UseGuards(JwtAdminAuthGuard)
+  @ApiQuery({ name: 'status', enum: USERSTATUS, required: false })
+  @Get('approvePendingUsers/:userID')
+  approvePendingUsers(
+    @Query('status') status: USERSTATUS,
+    @Param('userID') userID: string
+  ) {
+    return this._usersService.approvePendingUsers(status, userID);
   }
 }
