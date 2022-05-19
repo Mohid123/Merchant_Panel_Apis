@@ -97,7 +97,7 @@ export class UsersController {
   @Get('approvePendingUsers/:userID')
   approvePendingUsers(
     @Query('status') status: USERSTATUS,
-    @Param('userID') userID: string,
+    @Param('userID') userID: string
   ) {
     return this._usersService.approvePendingUsers(status, userID);
   }

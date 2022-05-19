@@ -80,11 +80,11 @@ UsersSchema.set('toJSON', {
   },
 });
 
-UsersSchema.pre<UsersInterface>('save', async function (next) {
-  const salt = await bcrypt.genSalt();
-  this.password = await bcrypt.hash(this.password, salt);
+// UsersSchema.pre<UsersInterface>('save', async function (next) {
+//   const salt = await bcrypt.genSalt();
+//   this.password = await bcrypt.hash(this.password, salt);
 
-  this.email = this.email.toLowerCase();
+//   this.email = this.email.toLowerCase();
 
-  next();
-});
+//   next();
+// });

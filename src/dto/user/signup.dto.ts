@@ -10,12 +10,12 @@ export class SignUpDTO {
     @IsNotEmpty()
     email: string;
 
-    @ApiProperty()
-    @IsNotEmpty()
-    @IsString()
-    @MinLength(5)
-    @MaxLength(1024)
-    password: string;
+    // @ApiProperty()
+    // @IsNotEmpty()
+    // @IsString()
+    // @MinLength(5)
+    // @MaxLength(1024)
+    // password: string;
 
     // Personal Details
 
