@@ -2,6 +2,7 @@
 import { HttpException } from '@nestjs/common';
 import { EmailDTO } from 'src/dto/email/email.dto';
 import { OtpEmailDto } from 'src/dto/otp/otpEmail.dto';
+import { IsEmailExistsDTO } from 'src/dto/user/is-email-exists.dto';
 import { LoginDto } from '../../dto/user/login.dto';
 import { SignUpDTO } from '../../dto/user/signup.dto';
 import { AuthService } from './auth.service';
@@ -21,7 +22,7 @@ export declare class AuthController {
         _id: string;
     }>;
     sendEmail(emailDto: EmailDTO): Promise<void>;
-    isEmailExists(email: string): Promise<boolean>;
+    isEmailExists(isEmailExistsDto: IsEmailExistsDTO): Promise<boolean>;
     sendOtp(emailDto: OtpEmailDto): Promise<{
         message: string;
     }>;

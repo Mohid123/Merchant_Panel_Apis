@@ -17,10 +17,12 @@ const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const resetPassword_dto_1 = require("../../dto/resetPasswordDto/resetPassword.dto");
 const updatepassword_dto_1 = require("../../dto/user/updatepassword.dto");
+const userstatus_enum_1 = require("../../enum/user/userstatus.enum");
 const kyc_dto_1 = require("../../dto/user/kyc.dto");
 const updatehours_dto_1 = require("../../dto/user/updatehours.dto");
 const updatemerchantprofile_dto_1 = require("../../dto/user/updatemerchantprofile.dto");
 const users_dto_1 = require("../../dto/user/users.dto");
+const jwt_admin_auth_guard_1 = require("../auth/jwt-admin-auth.guard");
 const jwt_auth_guard_1 = require("../auth/jwt-auth.guard");
 const users_service_1 = require("./users.service");
 let UsersController = class UsersController {
@@ -56,6 +58,12 @@ let UsersController = class UsersController {
     }
     resetPassword(resetPasswordDto, req) {
         return this._usersService.resetPassword(resetPasswordDto, req);
+    }
+    getPendingUsers(offset = 0, limit = 10) {
+        return this._usersService.getPendingUsers(offset, limit);
+    }
+    approvePendingUsers(status, userID) {
+        return this._usersService.approvePendingUsers(status, userID);
     }
 };
 __decorate([
@@ -132,6 +140,25 @@ __decorate([
     __metadata("design:paramtypes", [resetPassword_dto_1.ResetPasswordDto, Object]),
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "resetPassword", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_admin_auth_guard_1.JwtAdminAuthGuard),
+    (0, common_1.Get)('getPendingUsers'),
+    __param(0, (0, common_1.Query)('offset')),
+    __param(1, (0, common_1.Query)('limit')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, Number]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "getPendingUsers", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_admin_auth_guard_1.JwtAdminAuthGuard),
+    (0, swagger_1.ApiQuery)({ name: 'status', enum: userstatus_enum_1.USERSTATUS, required: false }),
+    (0, common_1.Get)('approvePendingUsers/:userID'),
+    __param(0, (0, common_1.Query)('status')),
+    __param(1, (0, common_1.Param)('userID')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "approvePendingUsers", null);
 UsersController = __decorate([
     (0, swagger_1.ApiTags)('Users'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),

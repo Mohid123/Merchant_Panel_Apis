@@ -1,6 +1,7 @@
 /// <reference types="mongoose" />
 import { ResetPasswordDto } from 'src/dto/resetPasswordDto/resetPassword.dto';
 import { UpdatePasswordDto } from 'src/dto/user/updatepassword.dto';
+import { USERSTATUS } from 'src/enum/user/userstatus.enum';
 import { KycDto } from '../../dto/user/kyc.dto';
 import { UpdateHoursDto } from '../../dto/user/updatehours.dto';
 import { UpdateMerchantProfileDto } from '../../dto/user/updatemerchantprofile.dto';
@@ -24,6 +25,13 @@ export declare class UsersController {
         data: any[];
     }>;
     resetPassword(resetPasswordDto: ResetPasswordDto, req: any): Promise<{
+        message: string;
+    }>;
+    getPendingUsers(offset?: number, limit?: number): Promise<{
+        totalPendingUsers: number;
+        pendingUsers: any[];
+    }>;
+    approvePendingUsers(status: USERSTATUS, userID: string): Promise<{
         message: string;
     }>;
 }

@@ -3,7 +3,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.UsersSchema = void 0;
 const mongoose = require("mongoose");
 const utils_1 = require("../../components/file-management/utils/utils");
-const bcrypt = require("bcrypt");
 exports.UsersSchema = new mongoose.Schema({
     _id: { type: String, default: utils_1.generateStringId },
     email: { type: String, default: '' },
@@ -30,7 +29,7 @@ exports.UsersSchema = new mongoose.Schema({
     profilePicURL: { type: String, default: '' },
     profilePicBlurHash: { type: String, default: '' },
     deletedCheck: { type: Boolean, default: false },
-    status: { type: String, default: '' },
+    status: { type: String, default: 'Pending' },
     newUser: { type: Boolean, default: true },
     totalVoucherSales: { type: Number, default: 0 },
     redeemedVouchers: { type: Number, default: 0 },
@@ -70,11 +69,5 @@ exports.UsersSchema.set('toJSON', {
     transform: function (doc, ret) {
         delete ret._id;
     },
-});
-exports.UsersSchema.pre('save', async function (next) {
-    const salt = await bcrypt.genSalt();
-    this.password = await bcrypt.hash(this.password, salt);
-    this.email = this.email.toLowerCase();
-    next();
 });
 //# sourceMappingURL=users.schema.js.map
