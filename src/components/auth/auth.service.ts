@@ -67,6 +67,10 @@ export class AuthService {
       throw new UnauthorizedException('Incorrect email!');
     }
 
+    if (!(user.status == 'Approved')) {
+      throw new NotFoundException('Merchant Not Found!');
+    }
+
     const isValidCredentials = await bcrypt.compare(
       loginDto.password,
       user.password,
@@ -612,6 +616,7 @@ export class AuthService {
       delete user.totalReviews;
       delete user.maxRating;
       delete user.minRating;
+      delete user.ratingsAverage;
 
       user['isResetPassword'] = true;
 
