@@ -616,6 +616,7 @@ export class AuthService {
       delete user.totalReviews;
       delete user.maxRating;
       delete user.minRating;
+      delete user.ratingsAverage;
 
       user['isResetPassword'] = true;
 
