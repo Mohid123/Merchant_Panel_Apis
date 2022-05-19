@@ -68,6 +68,9 @@ let AuthService = class AuthService {
         }
         user = JSON.parse(JSON.stringify(user));
         delete user.password;
+        delete user.generalTermsAgreements;
+        delete user.businessProfile;
+        delete user.businessHours;
         const token = this.generateToken(user);
         return { user, token: token.access_token };
     }
