@@ -7,7 +7,7 @@ export class UpdateDealDto {
     example: [
       {
         voucherID: '',
-        soldVouchers: 0,
+        // soldVouchers: 0,
         numberOfVouchers: 0,
       },
     ],

@@ -104,11 +104,14 @@ export class DealService {
   }
 
   async updateDeal(updateDealDto, dealID) {
+
+    const deal = await this.dealModel.findById(dealID);
+
     let dealVouchers = 0;
     let stamp = new Date(updateDealDto.endDate).getTime();
     updateDealDto.endDate = stamp;
 
-    const deal = await this.dealModel.findById(dealID);
+    deal.endDate = updateDealDto.endDate;
 
     deal.vouchers = deal.vouchers.map((element) => {
       updateDealDto.vouchers.forEach((el) => {
