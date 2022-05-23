@@ -22,7 +22,6 @@ __decorate([
         example: [
             {
                 voucherID: '',
-                soldVouchers: 0,
                 numberOfVouchers: 0,
             },
         ],
