@@ -66,52 +66,59 @@ export class SignUpDTO {
         example: [
             {
                 day: 'MN',
-                firstStartTime: '',
-                firstEndTime: '',
-                secondStartTime: '',
-                secondEndTime: ''
+                firstStartTime: '10:00',
+                firstEndTime: '13:00',
+                secondStartTime: '14:00',
+                secondEndTime: '18:00',
+                isWorkingDay: false,
             },
             {
                 day: 'TU',
-                firstStartTime: '',
-                firstEndTime: '',
-                secondStartTime: '',
-                secondEndTime: ''
+                firstStartTime: '10:00',
+                firstEndTime: '13:00',
+                secondStartTime: '14:00',
+                secondEndTime: '18:00',
+                isWorkingDay: false,
             },
             {
                 day: 'WD',
-                firstStartTime: '',
-                firstEndTime: '',
-                secondStartTime: '',
-                secondEndTime: ''
+                firstStartTime: '10:00',
+                firstEndTime: '13:00',
+                secondStartTime: '14:00',
+                secondEndTime: '18:00',
+                isWorkingDay: false,
             },
             {
                 day: 'TH',
-                firstStartTime: '',
-                firstEndTime: '',
-                secondStartTime: '',
-                secondEndTime: ''
+                firstStartTime: '10:00',
+                firstEndTime: '13:00',
+                secondStartTime: '14:00',
+                secondEndTime: '18:00',
+                isWorkingDay: false,
             },
             {
                 day: 'FR',
-                firstStartTime: '',
-                firstEndTime: '',
-                secondStartTime: '',
-                secondEndTime: ''
+                firstStartTime: '10:00',
+                firstEndTime: '13:00',
+                secondStartTime: '14:00',
+                secondEndTime: '18:00',
+                isWorkingDay: false,
             },
             {
                 day: 'SA',
-                firstStartTime: '',
-                firstEndTime: '',
-                secondStartTime: '',
-                secondEndTime: ''
+                firstStartTime: '10:00',
+                firstEndTime: '13:00',
+                secondStartTime: '14:00',
+                secondEndTime: '18:00',
+                isWorkingDay: false,
             },
             {
                 day: 'SU',
-                firstStartTime: '',
-                firstEndTime: '',
-                secondStartTime: '',
-                secondEndTime: ''
+                firstStartTime: '10:00',
+                firstEndTime: '13:00',
+                secondStartTime: '14:00',
+                secondEndTime: '18:00',
+                isWorkingDay: false,
             },
         ]
     })
