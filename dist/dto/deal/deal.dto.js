@@ -76,7 +76,6 @@ __decorate([
                 originalPrice: 0,
                 dealPrice: 0,
                 discountPercentage: 0,
-                details: '',
                 soldVouchers: 0,
                 numberOfVouchers: 0,
                 voucherValidity: 0,

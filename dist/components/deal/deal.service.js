@@ -196,7 +196,7 @@ let DealService = class DealService {
                 },
                 {
                     $project: {
-                        title: 1,
+                        dealHeader: 1,
                         ratingsAverage: 1,
                         totalReviews: 1,
                         maxRating: 1,
@@ -261,7 +261,7 @@ let DealService = class DealService {
                 },
                 {
                     $project: {
-                        title: 1,
+                        dealHeader: 1,
                         ratingsAverage: 1,
                         totalReviews: 1,
                         maxRating: 1,
@@ -298,7 +298,7 @@ let DealService = class DealService {
             throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
         }
     }
-    async getDealsByMerchantID(merchantID, title, price, startDate, endDate, availableVoucher, soldVoucher, status, dateFrom, dateTo, offset, limit) {
+    async getDealsByMerchantID(merchantID, dealHeader, price, startDate, endDate, availableVoucher, soldVoucher, status, dateFrom, dateTo, offset, limit) {
         try {
             dateFrom = parseInt(dateFrom);
             dateTo = parseInt(dateTo);
@@ -325,10 +325,10 @@ let DealService = class DealService {
                     ] });
             }
             let sort = {};
-            if (title) {
-                let sortTitle = title == sort_enum_1.SORT.ASC ? 1 : -1;
-                console.log('title');
-                sort = Object.assign(Object.assign({}, sort), { title: sortTitle });
+            if (dealHeader) {
+                let sortDealHeader = dealHeader == sort_enum_1.SORT.ASC ? 1 : -1;
+                console.log('dealHeader');
+                sort = Object.assign(Object.assign({}, sort), { dealHeader: sortDealHeader });
             }
             if (price) {
                 let sortPrice = price == sort_enum_1.SORT.ASC ? 1 : -1;

@@ -22,6 +22,7 @@ const utils_1 = require("../file-management/utils/utils");
 const nodemailer = require("nodemailer");
 var htmlencode = require('htmlencode');
 var generator = require('generate-password');
+var otpGenerator = require('otp-generator');
 let transporter;
 let UsersService = class UsersService {
     constructor(_userModel) {
@@ -246,8 +247,6 @@ let UsersService = class UsersService {
             lowercase: true,
             uppercase: true,
         });
-        console.log(password);
-        debugger;
         return password;
     }
     async sendMail(emailDto) {
@@ -268,13 +267,18 @@ let UsersService = class UsersService {
     }
     async approvePendingUsers(status, userID) {
         try {
-            let user = await this._userModel.findOne({ _id: userID });
+            let user = await this._userModel.findOne({ _id: userID, status: userstatus_enum_1.USERSTATUS.pending });
             if (!user) {
                 throw new common_1.HttpException('User not found', common_1.HttpStatus.NOT_FOUND);
             }
             let generatedPassword = await this.generatePassword();
             const salt = await bcrypt.genSalt();
             let hashedPassword = await bcrypt.hash(generatedPassword, salt);
+            const pinCode = otpGenerator.generate(6, {
+                upperCaseAlphabets: false,
+                lowerCaseAlphabets: false,
+                specialChars: false,
+            });
             const userObj = {
                 ID: new mongoose_2.Types.ObjectId().toHexString(),
                 firstName: user.firstName,
@@ -453,7 +457,8 @@ let UsersService = class UsersService {
             this.sendMail(emailDto);
             const updatedUser = await this._userModel.updateOne({ _id: userID }, {
                 status: status,
-                password: hashedPassword
+                password: hashedPassword,
+                voucherPinCode: pinCode
             });
             return { message: 'Merchant Approved Successfully!' };
         }

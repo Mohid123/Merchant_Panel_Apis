@@ -5,7 +5,6 @@ export interface VoucherInterface {
     originalPrice: number;
     dealPrice: number;
     discountPercentage: number;
-    details: string;
     soldVouchers: number;
     numberOfVouchers: number;
     voucherValidity: number;

@@ -46,8 +46,8 @@ let DealController = class DealController {
     getAllDeals(offset = 0, limit = 10, req) {
         return this.dealService.getAllDeals(req, offset, limit);
     }
-    getDealsByMerchantID(merchantID, title, price, startDate, endDate, availableVoucher, soldVoucher, status, dateFrom, dateTo, offset = 0, limit = 10) {
-        return this.dealService.getDealsByMerchantID(merchantID, title, price, startDate, endDate, availableVoucher, soldVoucher, status, dateFrom, dateTo, offset, limit);
+    getDealsByMerchantID(merchantID, dealHeader, price, startDate, endDate, availableVoucher, soldVoucher, status, dateFrom, dateTo, offset = 0, limit = 10) {
+        return this.dealService.getDealsByMerchantID(merchantID, dealHeader, price, startDate, endDate, availableVoucher, soldVoucher, status, dateFrom, dateTo, offset, limit);
     }
     getSalesStatistics(req) {
         return this.dealService.getSalesStatistics(req);
@@ -112,7 +112,7 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], DealController.prototype, "getAllDeals", null);
 __decorate([
-    (0, swagger_1.ApiQuery)({ name: 'title', enum: sort_enum_1.SORT, required: false }),
+    (0, swagger_1.ApiQuery)({ name: 'dealHeader', enum: sort_enum_1.SORT, required: false }),
     (0, swagger_1.ApiQuery)({ name: 'price', enum: sort_enum_1.SORT, required: false }),
     (0, swagger_1.ApiQuery)({ name: 'startDate', enum: sort_enum_1.SORT, required: false }),
     (0, swagger_1.ApiQuery)({ name: 'endDate', enum: sort_enum_1.SORT, required: false }),
@@ -123,7 +123,7 @@ __decorate([
     (0, swagger_1.ApiQuery)({ name: 'dateTo', required: false }),
     (0, common_1.Get)('getDealsByMerchantID/:merchantID'),
     __param(0, (0, common_1.Param)('merchantID')),
-    __param(1, (0, common_1.Query)('title')),
+    __param(1, (0, common_1.Query)('dealHeader')),
     __param(2, (0, common_1.Query)('price')),
     __param(3, (0, common_1.Query)('startDate')),
     __param(4, (0, common_1.Query)('endDate')),

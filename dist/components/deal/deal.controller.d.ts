@@ -26,7 +26,7 @@ export declare class DealController {
         totalCount: number;
         data: any[];
     }>;
-    getDealsByMerchantID(merchantID: string, title: SORT, price: SORT, startDate: SORT, endDate: SORT, availableVoucher: SORT, soldVoucher: SORT, status: DEALSTATUS, dateFrom: number, dateTo: number, offset?: number, limit?: number): Promise<{
+    getDealsByMerchantID(merchantID: string, dealHeader: SORT, price: SORT, startDate: SORT, endDate: SORT, availableVoucher: SORT, soldVoucher: SORT, status: DEALSTATUS, dateFrom: number, dateTo: number, offset?: number, limit?: number): Promise<{
         totalDeals: number;
         data: any[];
     }>;
