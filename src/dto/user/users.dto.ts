@@ -27,7 +27,7 @@ export class UsersDto {
     businessType: string;
 
     @ApiProperty()
-    companyName: string;
+    legalName: string;
     
     @ApiProperty()
     streetAddress: string;
@@ -115,10 +115,10 @@ export class UsersDto {
     businessHours: businessHour[];
 
     @ApiProperty()
-    businessProfile: string;
+    finePrint: string;
 
     @ApiProperty()
-    generalTermsAgreements: string;
+    aboutUs: string;
 
     @ApiProperty()
     profilePicURL: string;

@@ -6,5 +6,8 @@ export class KycDto {
     iban: string;
 
     @ApiProperty()
+    vatNumber: string;
+
+    @ApiProperty()
     bankName: string;
 }
