@@ -30,7 +30,7 @@ export const UsersSchema = new mongoose.Schema(
     aboutUs: { type: String, default: '' },
     profilePicURL: { type: String, default: '' },
     profilePicBlurHash: { type: String, default: '' },
-    gallery: { type: Array },
+    gallery: { type: [String] },
     deletedCheck: { type: Boolean, default: false },
     status: { type: String, default: 'Pending' },
     newUser: { type: Boolean, default: true },
