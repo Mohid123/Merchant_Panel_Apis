@@ -1,10 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { Gallery } from "src/interface/user/users.interface";
 
 export class UpdateMerchantProfileDto {
-    // @ApiProperty()
-    // id: string;
-
     @ApiProperty()
     firstName: string;
 
@@ -44,15 +40,8 @@ export class UpdateMerchantProfileDto {
     @ApiProperty()
     website_socialAppLink: string;
 
-    @ApiProperty({
-        example: [
-            {
-                pictureUrl: '',
-                pictureBlurHash: ''
-            }
-        ]
-    })
-    gallery: Gallery[];
+    @ApiProperty()
+    gallery: [string];
 
     @ApiProperty()
     aboutUs: string;

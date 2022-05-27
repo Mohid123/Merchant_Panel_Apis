@@ -61,7 +61,7 @@ export class DealService {
       stamp = new Date(dealDto.endDate).getTime();
       dealDto.endDate = stamp;
 
-      dealDto.title = dealDto.title.toUpperCase();
+      dealDto.dealHeader = dealDto.dealHeader.toUpperCase();
 
       dealDto.merchantID = req.user.id;
 
