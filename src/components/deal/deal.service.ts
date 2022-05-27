@@ -234,7 +234,7 @@ export class DealService {
           },
           {
             $project: {
-              title: 1,
+              dealHeader: 1,
               ratingsAverage: 1,
               totalReviews: 1,
               maxRating: 1,
@@ -310,7 +310,7 @@ export class DealService {
           },
           {
             $project: {
-              title: 1,
+              dealHeader: 1,
               ratingsAverage: 1,
               totalReviews: 1,
               maxRating: 1,
@@ -351,7 +351,7 @@ export class DealService {
 
   async getDealsByMerchantID(
     merchantID,
-    title,
+    dealHeader,
     price,
     startDate,
     endDate,
@@ -413,12 +413,12 @@ export class DealService {
 
       let sort = {};
 
-      if (title) {
-        let sortTitle = title == SORT.ASC ? 1 : -1;
-        console.log('title');
+      if (dealHeader) {
+        let sortDealHeader = dealHeader == SORT.ASC ? 1 : -1;
+        console.log('dealHeader');
         sort = {
           ...sort,
-          title: sortTitle,
+          dealHeader: sortDealHeader,
         };
       }
 
