@@ -55,7 +55,7 @@ export class DealDto {
         originalPrice: 0,
         dealPrice: 0,
         discountPercentage: 0,
-        details: '',
+        // details: '',
         soldVouchers: 0,
         numberOfVouchers: 0,
         voucherValidity: 0,
