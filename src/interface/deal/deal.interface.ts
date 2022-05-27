@@ -14,24 +14,29 @@ export interface VoucherInterface {
   voucherEndDate: Date;
 }
 
+export interface MedialUrl {
+  merdiaUrl: string;
+  type: string;
+}
+
 export interface DealInterface extends Document {
   id: string;
   dealID: number;
   merchantID: string;
-  title: string;
-  subTitle: string;
-  description: string;
+  dealHeader: string;
+  dealSubHeader: string;
+  highlights: string;
   categoryID: string;
   categoryName: string;
   subCategoryID: string;
   subCategory: string;
-  mediaUrl: [string];
+  mediaUrl: MedialUrl[];
   startDate: Date;
   endDate: Date;
   vouchers: VoucherInterface[];
   availableVouchers: number;
   soldVouchers: number;
-  termsAndCondition: string;
+  aboutThisDeal: string;
   dealStatus: string;
   deletedCheck: boolean;
 }

@@ -1,5 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { VoucherInterface } from '../../interface/deal/deal.interface';
+import {
+  MedialUrl,
+  VoucherInterface,
+} from '../../interface/deal/deal.interface';
 
 export class DealDto {
   @ApiProperty()
@@ -9,13 +12,13 @@ export class DealDto {
   merchantID: string;
 
   @ApiProperty()
-  title: string;
+  dealHeader: string;
 
   @ApiProperty()
-  subTitle: string;
+  dealSubHeader: string;
 
   @ApiProperty()
-  description: string;
+  highlights: string;
 
   @ApiProperty()
   categoryID: string;
@@ -29,8 +32,15 @@ export class DealDto {
   @ApiProperty()
   subCategory: string;
 
-  @ApiProperty()
-  mediaUrl: [string];
+  @ApiProperty({
+    example: [
+      {
+        mediaUrl: '',
+        type: '',
+      },
+    ],
+  })
+  mediaUrl: MedialUrl[];
 
   @ApiProperty()
   startDate: Date;
@@ -57,7 +67,7 @@ export class DealDto {
   vouchers: VoucherInterface[];
 
   @ApiProperty()
-  termsAndCondition: string;
+  aboutThisDeal: string;
 
   @ApiProperty()
   soldVouchers: number;
