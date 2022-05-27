@@ -77,7 +77,7 @@ export class DealController {
     return this.dealService.getAllDeals(req, offset, limit);
   }
 
-  @ApiQuery({ name: 'title', enum: SORT, required: false })
+  @ApiQuery({ name: 'dealHeader', enum: SORT, required: false })
   @ApiQuery({ name: 'price', enum: SORT, required: false })
   @ApiQuery({ name: 'startDate', enum: SORT, required: false })
   @ApiQuery({ name: 'endDate', enum: SORT, required: false })
@@ -89,7 +89,7 @@ export class DealController {
   @Get('getDealsByMerchantID/:merchantID')
   getDealsByMerchantID(
     @Param('merchantID') merchantID: string,
-    @Query('title') title: SORT,
+    @Query('dealHeader') dealHeader: SORT,
     @Query('price') price: SORT,
     @Query('startDate') startDate: SORT,
     @Query('endDate') endDate: SORT,
@@ -104,7 +104,7 @@ export class DealController {
   ) {
     return this.dealService.getDealsByMerchantID(
       merchantID,
-      title,
+      dealHeader,
       price,
       startDate,
       endDate,
