@@ -68,8 +68,8 @@ let AuthService = class AuthService {
         }
         user = JSON.parse(JSON.stringify(user));
         delete user.password;
-        delete user.generalTermsAgreements;
-        delete user.businessProfile;
+        delete user.aboutUs;
+        delete user.finePrint;
         delete user.businessHours;
         const token = this.generateToken(user);
         return { user, token: token.access_token };
@@ -341,7 +341,7 @@ let AuthService = class AuthService {
             let user = await this._usersService.findById(otp.userID);
             user = JSON.parse(JSON.stringify(user));
             delete user.password;
-            delete user.businessProfile;
+            delete user.finePrint;
             delete user.newUser;
             delete user.expiredVouchers;
             delete user.firstName;
@@ -349,7 +349,7 @@ let AuthService = class AuthService {
             delete user.phoneNumber;
             delete user.role;
             delete user.businessType;
-            delete user.companyName;
+            delete user.legalName;
             delete user.streetAddress;
             delete user.zipCode;
             delete user.city;
@@ -361,7 +361,7 @@ let AuthService = class AuthService {
             delete user.website_socialAppLink;
             delete user.googleMapPin;
             delete user.businessHours;
-            delete user.generalTermsAgreements;
+            delete user.aboutUs;
             delete user.profilePicURL;
             delete user.profilePicBlurHash;
             delete user.deletedCheck;

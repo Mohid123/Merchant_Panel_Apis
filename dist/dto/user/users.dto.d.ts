@@ -8,7 +8,7 @@ export declare class UsersDto {
     phoneNumber: string;
     role: string;
     businessType: string;
-    companyName: string;
+    legalName: string;
     streetAddress: string;
     zipCode: number;
     city: string;
@@ -17,8 +17,8 @@ export declare class UsersDto {
     website_socialAppLink: string;
     googleMapPin: string;
     businessHours: businessHour[];
-    businessProfile: string;
-    generalTermsAgreements: string;
+    finePrint: string;
+    aboutUs: string;
     profilePicURL: string;
     profilePicBlurHash: string;
     deletedCheck: boolean;

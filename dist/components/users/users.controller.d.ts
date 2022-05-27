@@ -15,7 +15,9 @@ export declare class UsersController {
     }>;
     changePassword(id: string, updatepasswordDto: UpdatePasswordDto): Promise<import("mongodb").UpdateResult>;
     completeKYC(merchantID: string, kycDto: KycDto): Promise<import("mongodb").UpdateResult>;
-    updateMerchantprofile(usersDto: UpdateMerchantProfileDto): Promise<import("mongodb").UpdateResult>;
+    updateMerchantprofile(merchantID: string, usersDto: UpdateMerchantProfileDto): Promise<{
+        message: string;
+    }>;
     updateBusinessHours(updateHoursDTO: UpdateHoursDto): Promise<import("mongodb").UpdateResult>;
     deleteUser(id: string): Promise<import("mongodb").UpdateResult>;
     geUserById(id: string): Promise<any>;

@@ -48,7 +48,7 @@ __decorate([
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
-], UsersDto.prototype, "companyName", void 0);
+], UsersDto.prototype, "legalName", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
@@ -136,11 +136,11 @@ __decorate([
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
-], UsersDto.prototype, "businessProfile", void 0);
+], UsersDto.prototype, "finePrint", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
-], UsersDto.prototype, "generalTermsAgreements", void 0);
+], UsersDto.prototype, "aboutUs", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)

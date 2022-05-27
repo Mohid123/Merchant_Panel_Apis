@@ -7,7 +7,7 @@ export declare class SignUpDTO {
     role: string;
     status: string;
     businessType: string;
-    companyName: string;
+    legalName: string;
     streetAddress: string;
     zipCode: number;
     city: string;

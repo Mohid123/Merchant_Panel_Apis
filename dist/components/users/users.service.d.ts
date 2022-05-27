@@ -11,7 +11,9 @@ export declare class UsersService {
     }>;
     changePassword(id: any, updatepasswordDto: any): Promise<import("mongodb").UpdateResult>;
     completeKYC(merchantID: any, kycDto: any): Promise<import("mongodb").UpdateResult>;
-    updateMerchantprofile(usersDto: any): Promise<import("mongodb").UpdateResult>;
+    updateMerchantprofile(merchantID: any, usersDto: any): Promise<{
+        message: string;
+    }>;
     updateBusinessHours(updateHoursDTO: UpdateHoursDto): Promise<import("mongodb").UpdateResult>;
     deleteUser(id: any): Promise<import("mongodb").UpdateResult>;
     getUserById(id: any): Promise<any>;

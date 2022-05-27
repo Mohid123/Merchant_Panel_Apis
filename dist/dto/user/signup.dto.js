@@ -46,7 +46,7 @@ __decorate([
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
-], SignUpDTO.prototype, "companyName", void 0);
+], SignUpDTO.prototype, "legalName", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)

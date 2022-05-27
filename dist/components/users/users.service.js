@@ -59,8 +59,17 @@ let UsersService = class UsersService {
     async completeKYC(merchantID, kycDto) {
         return await this._userModel.updateOne({ _id: merchantID }, kycDto);
     }
-    async updateMerchantprofile(usersDto) {
-        return this._userModel.updateOne({ _id: usersDto.id }, usersDto);
+    async updateMerchantprofile(merchantID, usersDto) {
+        let user = await this._userModel.findOne({ _id: merchantID });
+        if (!user) {
+            throw new common_1.HttpException('User not found', common_1.HttpStatus.NOT_FOUND);
+        }
+        usersDto.profilePicBlurHash = await (0, utils_1.encodeImageToBlurhash)(usersDto.profilePicURL);
+        usersDto.gallery;
+        await this._userModel.updateOne({ _id: merchantID }, usersDto);
+        return {
+            message: 'User has been updated succesfully'
+        };
     }
     async updateBusinessHours(updateHoursDTO) {
         let user = await this._userModel.findOne({ _id: updateHoursDTO.id });
@@ -73,6 +82,7 @@ let UsersService = class UsersService {
                 return hour;
             }
         });
+        debugger;
         return await this._userModel.updateOne({ _id: updateHoursDTO.id }, { businessHours: newBusinessHours });
     }
     async deleteUser(id) {
@@ -126,7 +136,7 @@ let UsersService = class UsersService {
                     phoneNumber: 0,
                     role: 0,
                     businessType: 0,
-                    companyName: 0,
+                    legalName: 0,
                     streetAddress: 0,
                     zipCode: 0,
                     city: 0,
@@ -138,8 +148,8 @@ let UsersService = class UsersService {
                     website_socialAppLink: 0,
                     googleMapPin: 0,
                     businessHours: 0,
-                    businessProfile: 0,
-                    generalTermsAgreements: 0,
+                    finePrint: 0,
+                    aboutUs: 0,
                     profilePicURL: 0,
                     profilePicBlurHash: 0,
                     deletedCheck: 0,
@@ -271,7 +281,7 @@ let UsersService = class UsersService {
                 lastName: user.lastName,
                 email: user.email.toLowerCase(),
                 password: generatedPassword,
-                companyName: user.companyName,
+                legalName: user.legalName,
                 vatNumber: user.vatNumber,
                 phoneNumber: user.phoneNumber,
                 city: user.city,

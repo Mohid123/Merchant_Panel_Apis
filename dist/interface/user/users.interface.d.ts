@@ -5,6 +5,10 @@ export interface businessHour {
     secondStartTime: string;
     secondEndTime: string;
 }
+export interface Gallery {
+    pictureUrl: string;
+    pictureBlurHash: string;
+}
 export interface UsersInterface {
     _id: string;
     email: string;
@@ -14,7 +18,8 @@ export interface UsersInterface {
     phoneNumber: string;
     role: string;
     businessType: string;
-    companyName: string;
+    legalName: string;
+    tradeName: string;
     streetAddress: string;
     zipCode: number;
     city: string;
@@ -26,10 +31,11 @@ export interface UsersInterface {
     website_socialAppLink: string;
     googleMapPin: string;
     businessHours: businessHour[];
-    businessProfile: string;
-    generalTermsAgreements: string;
+    finePrint: string;
+    aboutUs: string;
     profilePicURL: string;
     profilePicBlurHash: string;
+    gallery: Gallery[];
     deletedCheck: boolean;
     status: string;
     newUser: boolean;

@@ -38,8 +38,8 @@ let UsersController = class UsersController {
     completeKYC(merchantID, kycDto) {
         return this._usersService.completeKYC(merchantID, kycDto);
     }
-    updateMerchantprofile(usersDto) {
-        return this._usersService.updateMerchantprofile(usersDto);
+    updateMerchantprofile(merchantID, usersDto) {
+        return this._usersService.updateMerchantprofile(merchantID, usersDto);
     }
     updateBusinessHours(updateHoursDTO) {
         return this._usersService.updateBusinessHours(updateHoursDTO);
@@ -90,10 +90,11 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "completeKYC", null);
 __decorate([
-    (0, common_1.Post)('updateMerchantprofile'),
-    __param(0, (0, common_1.Body)()),
+    (0, common_1.Post)('updateMerchantprofile/:merchantID'),
+    __param(0, (0, common_1.Param)('merchantID')),
+    __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [updatemerchantprofile_dto_1.UpdateMerchantProfileDto]),
+    __metadata("design:paramtypes", [String, updatemerchantprofile_dto_1.UpdateMerchantProfileDto]),
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "updateMerchantprofile", null);
 __decorate([

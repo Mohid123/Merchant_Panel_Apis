@@ -16,14 +16,73 @@ class UpdateMerchantProfileDto {
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
-], UpdateMerchantProfileDto.prototype, "id", void 0);
+], UpdateMerchantProfileDto.prototype, "firstName", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
-], UpdateMerchantProfileDto.prototype, "generalTermsAgreements", void 0);
+], UpdateMerchantProfileDto.prototype, "lastName", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
-], UpdateMerchantProfileDto.prototype, "businessProfile", void 0);
+], UpdateMerchantProfileDto.prototype, "phoneNumber", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
+], UpdateMerchantProfileDto.prototype, "legalName", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
+], UpdateMerchantProfileDto.prototype, "streetAddress", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", Number)
+], UpdateMerchantProfileDto.prototype, "zipCode", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
+], UpdateMerchantProfileDto.prototype, "city", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", Number)
+], UpdateMerchantProfileDto.prototype, "vatNumber", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
+], UpdateMerchantProfileDto.prototype, "tradeName", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
+], UpdateMerchantProfileDto.prototype, "googleMapPin", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
+], UpdateMerchantProfileDto.prototype, "profilePicURL", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
+], UpdateMerchantProfileDto.prototype, "profilePicBlurHash", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
+], UpdateMerchantProfileDto.prototype, "website_socialAppLink", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        example: [
+            {
+                pictureUrl: '',
+                pictureBlurHash: ''
+            }
+        ]
+    }),
+    __metadata("design:type", Array)
+], UpdateMerchantProfileDto.prototype, "gallery", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
+], UpdateMerchantProfileDto.prototype, "aboutUs", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
+], UpdateMerchantProfileDto.prototype, "finePrint", void 0);
 exports.UpdateMerchantProfileDto = UpdateMerchantProfileDto;
 //# sourceMappingURL=updatemerchantprofile.dto.js.map
