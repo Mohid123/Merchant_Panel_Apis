@@ -297,8 +297,7 @@ export class UsersService {
       uppercase: true,
       // strict: true
     });
-    console.log(password);
-    debugger;
+
     return password;
   }
 
