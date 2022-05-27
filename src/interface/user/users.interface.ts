@@ -38,6 +38,7 @@ export interface UsersInterface {
   profilePicURL: string;
   profilePicBlurHash: string;
   gallery: [string];
+  voucherPinCode: number;
   deletedCheck: boolean;
   status: string;
   newUser: boolean;
