@@ -40,7 +40,7 @@ export class SignUpDTO {
     businessType: string;
 
     @ApiProperty()
-    companyName: string;
+    legalName: string;
 
     @ApiProperty()
     streetAddress: string;

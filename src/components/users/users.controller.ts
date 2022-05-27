@@ -45,9 +45,11 @@ export class UsersController {
     return this._usersService.completeKYC(merchantID, kycDto);
   }
 
-  @Post('updateMerchantprofile')
-  updateMerchantprofile(@Body() usersDto: UpdateMerchantProfileDto) {
-    return this._usersService.updateMerchantprofile(usersDto);
+  @Post('updateMerchantprofile/:merchantID')
+  updateMerchantprofile(
+    @Param('merchantID') merchantID: string,
+    @Body() usersDto: UpdateMerchantProfileDto) {
+    return this._usersService.updateMerchantprofile(merchantID, usersDto);
   }
 
   @Post('updateBusinessHours')

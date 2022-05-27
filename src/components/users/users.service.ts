@@ -76,12 +76,24 @@ export class UsersService {
     return await this._userModel.updateOne({ _id: merchantID }, kycDto);
   }
 
-  async updateMerchantprofile(usersDto) {
-    // usersDto.profilePicBlurHash = await encodeImageToBlurhash(
-    //     usersDto.profilePicURL
-    //   );
+  async updateMerchantprofile(merchantID, usersDto) {
 
-    return this._userModel.updateOne({ _id: usersDto.id }, usersDto);
+    let user = await this._userModel.findOne({ _id: merchantID });
+    if (!user) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+
+    usersDto.profilePicBlurHash = await encodeImageToBlurhash(
+        usersDto.profilePicURL
+      );
+    
+    usersDto.gallery
+
+    await this._userModel.updateOne({ _id: merchantID }, usersDto);
+
+    return {
+      message: 'User has been updated succesfully'
+    }
   }
 
   async updateBusinessHours(updateHoursDTO: UpdateHoursDto) {
@@ -102,7 +114,7 @@ export class UsersService {
         return hour;
       }
     });
-
+    debugger
     return await this._userModel.updateOne(
       { _id: updateHoursDTO.id },
       { businessHours: newBusinessHours },
@@ -162,7 +174,7 @@ export class UsersService {
             phoneNumber: 0,
             role: 0,
             businessType: 0,
-            companyName: 0,
+            legalName: 0,
             streetAddress: 0,
             zipCode: 0,
             city: 0,
@@ -174,8 +186,8 @@ export class UsersService {
             website_socialAppLink: 0,
             googleMapPin: 0,
             businessHours: 0,
-            businessProfile: 0,
-            generalTermsAgreements: 0,
+            finePrint: 0,
+            aboutUs: 0,
             profilePicURL: 0,
             profilePicBlurHash: 0,
             deletedCheck: 0,
@@ -330,7 +342,7 @@ export class UsersService {
         lastName: user.lastName,
         email: user.email.toLowerCase(),
         password: generatedPassword,
-        companyName: user.companyName,
+        legalName: user.legalName,
         vatNumber: user.vatNumber,
         phoneNumber: user.phoneNumber,
         city: user.city,
