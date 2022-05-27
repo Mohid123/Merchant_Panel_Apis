@@ -4,6 +4,7 @@ import { Model } from 'mongoose';
 import { SubCategoryInterface } from '../../interface/category/subcategory.interface';
 import { CategoryInterface } from '../../interface/category/category.interface';
 import { UsersInterface } from 'src/interface/user/users.interface';
+import { pipeline } from 'stream';
 
 @Injectable()
 export class CategoryService {
@@ -69,33 +70,51 @@ export class CategoryService {
     }
   }
 
-  async getAllSubCategories(offset, limit) {
+  async getAllSubCategoriesByCategories(offset, limit) {
     try {
       offset = parseInt(offset) < 0 ? 0 : offset;
       limit = parseInt(limit) < 1 ? 10 : limit;
 
       const totalCount = await this.subCategoryModel.countDocuments();
 
-      let subCategories = await this.subCategoryModel
-        .aggregate([
-          {
-            $sort: {
-              createdAt: -1,
-            },
+      let subCategories = await this.categoryModel.aggregate([
+        {
+          $project: {
+            _id: 0,
+            createdAt: 0,
+            updatedAt: 0,
+            __v: 0,
           },
-          {
-            $addFields: {
-              id: '$_id',
+        },
+
+        {
+          $lookup: {
+            from: 'subCategories',
+            let: {
+              categoryName: '$categoryName',
+              index: 1,
             },
+
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $eq: ['$categoryName', '$$categoryName'],
+                  },
+                },
+              },
+              {
+                $project: {
+                  _id: 1,
+                  subCategoryName: 1,
+                },
+              },
+            ],
+
+            as: 'subCategories',
           },
-          {
-            $project: {
-              _id: 0,
-            },
-          },
-        ])
-        .skip(parseInt(offset))
-        .limit(parseInt(limit));
+        },
+      ]);
 
       return {
         totalCount: totalCount,

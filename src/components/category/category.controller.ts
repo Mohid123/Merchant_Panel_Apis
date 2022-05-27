@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CategoryService } from './category.service';
 import { CategoryDto } from '../../dto/category/category.dto';
@@ -20,36 +29,40 @@ export class CategoryController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @Post('createSubCategory')
-  createSubCategory (@Body() subCategoryDto: SubCategoryDTO) {
-    return this.categoryService.createSubCategory(subCategoryDto)
+  createSubCategory(@Body() subCategoryDto: SubCategoryDTO) {
+    return this.categoryService.createSubCategory(subCategoryDto);
   }
 
   @Get('getAllCategories')
-  getAllCategories (
+  getAllCategories(
     @Query('offset') offset: number = 0,
     @Query('limit') limit: number = 10,
   ) {
-    return this.categoryService.getAllCategories(offset, limit)
+    return this.categoryService.getAllCategories(offset, limit);
   }
 
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @Get('getAllSubCategories')
-  getAllSubCategories (
+  @Get('getAllSubCategoriesByCategories')
+  getAllSubCategories(
     @Query('offset') offset: number = 0,
     @Query('limit') limit: number = 10,
   ) {
-    return this.categoryService.getAllSubCategories(offset, limit)
+    return this.categoryService.getAllSubCategoriesByCategories(offset, limit);
   }
 
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @Get('getAllSubCategoriesByMerchant')
-  getAllSubCategoriesByCategories (
+  getAllSubCategoriesByCategories(
     @Query('offset') offset: number = 0,
     @Query('limit') limit: number = 10,
-    @Req() req
+    @Req() req,
   ) {
-    return this.categoryService.getAllSubCategoriesByMerchant(offset, limit, req)
+    return this.categoryService.getAllSubCategoriesByMerchant(
+      offset,
+      limit,
+      req,
+    );
   }
 }
