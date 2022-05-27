@@ -73,31 +73,46 @@ let CategoryService = class CategoryService {
             throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
         }
     }
-    async getAllSubCategories(offset, limit) {
+    async getAllSubCategoriesByCategories(offset, limit) {
         try {
             offset = parseInt(offset) < 0 ? 0 : offset;
             limit = parseInt(limit) < 1 ? 10 : limit;
             const totalCount = await this.subCategoryModel.countDocuments();
-            let subCategories = await this.subCategoryModel
-                .aggregate([
-                {
-                    $sort: {
-                        createdAt: -1,
-                    },
-                },
-                {
-                    $addFields: {
-                        id: '$_id',
-                    },
-                },
+            let subCategories = await this.categoryModel.aggregate([
                 {
                     $project: {
                         _id: 0,
+                        createdAt: 0,
+                        updatedAt: 0,
+                        __v: 0,
                     },
                 },
-            ])
-                .skip(parseInt(offset))
-                .limit(parseInt(limit));
+                {
+                    $lookup: {
+                        from: 'subCategories',
+                        let: {
+                            categoryName: '$categoryName',
+                            index: 1,
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $eq: ['$categoryName', '$$categoryName'],
+                                    },
+                                },
+                            },
+                            {
+                                $project: {
+                                    _id: 1,
+                                    subCategoryName: 1,
+                                },
+                            },
+                        ],
+                        as: 'subCategories',
+                    },
+                },
+            ]);
             return {
                 totalCount: totalCount,
                 data: subCategories,

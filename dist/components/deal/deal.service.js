@@ -55,7 +55,7 @@ let DealService = class DealService {
             dealDto.startDate = stamp;
             stamp = new Date(dealDto.endDate).getTime();
             dealDto.endDate = stamp;
-            dealDto.title = dealDto.title.toUpperCase();
+            dealDto.dealHeader = dealDto.dealHeader.toUpperCase();
             dealDto.merchantID = req.user.id;
             dealDto.dealStatus = dealstatus_enum_1.DEALSTATUS.inReview;
             dealDto.vouchers = dealDto.vouchers.map((el) => {

@@ -35,7 +35,7 @@ export interface UsersInterface {
     aboutUs: string;
     profilePicURL: string;
     profilePicBlurHash: string;
-    gallery: Gallery[];
+    gallery: [string];
     deletedCheck: boolean;
     status: string;
     newUser: boolean;

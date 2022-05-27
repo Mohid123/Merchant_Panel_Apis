@@ -15,7 +15,7 @@ export declare class CategoryService {
         totalCount: number;
         data: any[];
     }>;
-    getAllSubCategories(offset: any, limit: any): Promise<{
+    getAllSubCategoriesByCategories(offset: any, limit: any): Promise<{
         totalCount: number;
         data: any[];
     }>;

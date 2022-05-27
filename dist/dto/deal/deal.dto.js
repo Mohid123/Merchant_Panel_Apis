@@ -24,15 +24,15 @@ __decorate([
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
-], DealDto.prototype, "title", void 0);
+], DealDto.prototype, "dealHeader", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
-], DealDto.prototype, "subTitle", void 0);
+], DealDto.prototype, "dealSubHeader", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
-], DealDto.prototype, "description", void 0);
+], DealDto.prototype, "highlights", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
@@ -50,7 +50,14 @@ __decorate([
     __metadata("design:type", String)
 ], DealDto.prototype, "subCategory", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)(),
+    (0, swagger_1.ApiProperty)({
+        example: [
+            {
+                mediaUrl: '',
+                type: '',
+            },
+        ],
+    }),
     __metadata("design:type", Array)
 ], DealDto.prototype, "mediaUrl", void 0);
 __decorate([
@@ -83,7 +90,7 @@ __decorate([
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
-], DealDto.prototype, "termsAndCondition", void 0);
+], DealDto.prototype, "aboutThisDeal", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", Number)

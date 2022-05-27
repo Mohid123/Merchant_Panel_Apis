@@ -33,7 +33,7 @@ let CategoryController = class CategoryController {
         return this.categoryService.getAllCategories(offset, limit);
     }
     getAllSubCategories(offset = 0, limit = 10) {
-        return this.categoryService.getAllSubCategories(offset, limit);
+        return this.categoryService.getAllSubCategoriesByCategories(offset, limit);
     }
     getAllSubCategoriesByCategories(offset = 0, limit = 10, req) {
         return this.categoryService.getAllSubCategoriesByMerchant(offset, limit, req);
@@ -68,7 +68,7 @@ __decorate([
 __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, swagger_1.ApiBearerAuth)(),
-    (0, common_1.Get)('getAllSubCategories'),
+    (0, common_1.Get)('getAllSubCategoriesByCategories'),
     __param(0, (0, common_1.Query)('offset')),
     __param(1, (0, common_1.Query)('limit')),
     __metadata("design:type", Function),

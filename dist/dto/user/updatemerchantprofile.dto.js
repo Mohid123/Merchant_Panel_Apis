@@ -66,14 +66,7 @@ __decorate([
     __metadata("design:type", String)
 ], UpdateMerchantProfileDto.prototype, "website_socialAppLink", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({
-        example: [
-            {
-                pictureUrl: '',
-                pictureBlurHash: ''
-            }
-        ]
-    }),
+    (0, swagger_1.ApiProperty)(),
     __metadata("design:type", Array)
 ], UpdateMerchantProfileDto.prototype, "gallery", void 0);
 __decorate([
