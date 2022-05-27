@@ -16,6 +16,7 @@ import * as nodemailer from 'nodemailer';
 
 var htmlencode = require('htmlencode');
 var generator = require('generate-password');
+var otpGenerator = require('otp-generator');
 
 let transporter;
 
@@ -324,7 +325,7 @@ export class UsersService {
   async approvePendingUsers(status, userID) {
     try {
 
-      let user = await this._userModel.findOne({_id: userID});
+      let user = await this._userModel.findOne({_id: userID, status: USERSTATUS.pending });
 
       if (!user) {
         throw new HttpException('User not found', HttpStatus.NOT_FOUND);
@@ -334,7 +335,11 @@ export class UsersService {
       const salt = await bcrypt.genSalt();
       let hashedPassword = await bcrypt.hash(generatedPassword, salt);
 
-      // user.password = hashedPassword;
+      const pinCode = otpGenerator.generate(6, {
+        upperCaseAlphabets: false,
+        lowerCaseAlphabets: false,
+        specialChars: false,
+      });
 
       const userObj = {
         ID: new Types.ObjectId().toHexString(),
@@ -525,7 +530,8 @@ export class UsersService {
         { _id: userID },
         {
           status: status,
-          password: hashedPassword
+          password: hashedPassword,
+          voucherPinCode: pinCode
         },
       );
 
