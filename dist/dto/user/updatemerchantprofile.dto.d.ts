@@ -6,7 +6,7 @@ export declare class UpdateMerchantProfileDto {
     streetAddress: string;
     zipCode: number;
     city: string;
-    vatNumber: number;
+    vatNumber: string;
     tradeName: string;
     googleMapPin: string;
     profilePicURL: string;

@@ -12,7 +12,7 @@ export declare class UsersDto {
     streetAddress: string;
     zipCode: number;
     city: string;
-    vatNumber: number;
+    vatNumber: string;
     province: string;
     website_socialAppLink: string;
     googleMapPin: string;

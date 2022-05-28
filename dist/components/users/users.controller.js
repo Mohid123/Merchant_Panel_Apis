@@ -65,6 +65,9 @@ let UsersController = class UsersController {
     approvePendingUsers(status, userID) {
         return this._usersService.approvePendingUsers(status, userID);
     }
+    validateVatNumber(vatNumber) {
+        return this._usersService.validateVatNumber(vatNumber);
+    }
 };
 __decorate([
     (0, common_1.Post)('addUser'),
@@ -160,6 +163,13 @@ __decorate([
     __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "approvePendingUsers", null);
+__decorate([
+    (0, common_1.Post)('validateVatNumber/:vatNumber'),
+    __param(0, (0, common_1.Param)('vatNumber')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "validateVatNumber", null);
 UsersController = __decorate([
     (0, swagger_1.ApiTags)('Users'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),

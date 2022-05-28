@@ -14,7 +14,9 @@ export declare class UsersController {
         _id: string;
     }>;
     changePassword(id: string, updatepasswordDto: UpdatePasswordDto): Promise<import("mongodb").UpdateResult>;
-    completeKYC(merchantID: string, kycDto: KycDto): Promise<import("mongodb").UpdateResult>;
+    completeKYC(merchantID: string, kycDto: KycDto): Promise<{
+        message: string;
+    }>;
     updateMerchantprofile(merchantID: string, usersDto: UpdateMerchantProfileDto): Promise<{
         message: string;
     }>;
@@ -36,4 +38,5 @@ export declare class UsersController {
     approvePendingUsers(status: USERSTATUS, userID: string): Promise<{
         message: string;
     }>;
+    validateVatNumber(vatNumber: string): Promise<any>;
 }

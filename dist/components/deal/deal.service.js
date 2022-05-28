@@ -36,7 +36,6 @@ let DealService = class DealService {
     }
     async createDeal(dealDto, req) {
         try {
-            console.log(dealDto);
             var dealVouchers = 0;
             var delaSoldVocuhers = 0;
             let category = await this.categorymodel.findOne({
@@ -79,6 +78,14 @@ let DealService = class DealService {
                 return el;
             });
             dealDto.availableVouchers = dealVouchers;
+            for (let i = 0; i < dealDto.mediaUrl.length; i++) {
+                if (dealDto.mediaUrl[i].type == 'video') {
+                    console.log('Inside if');
+                    var item = dealDto.mediaUrl.splice(i, 1);
+                    dealDto.mediaUrl.splice(0, 0, item[0]);
+                }
+            }
+            dealDto.soldVouchers = delaSoldVocuhers;
             const deal = await this.dealModel.create(dealDto);
             return deal;
         }

@@ -43,7 +43,7 @@ __decorate([
 ], UpdateMerchantProfileDto.prototype, "city", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
-    __metadata("design:type", Number)
+    __metadata("design:type", String)
 ], UpdateMerchantProfileDto.prototype, "vatNumber", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),

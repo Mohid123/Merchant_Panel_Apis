@@ -20,6 +20,7 @@ const bcrypt = require("bcrypt");
 const userstatus_enum_1 = require("../../enum/user/userstatus.enum");
 const utils_1 = require("../file-management/utils/utils");
 const nodemailer = require("nodemailer");
+const axios_1 = require("axios");
 var htmlencode = require('htmlencode');
 var generator = require('generate-password');
 var otpGenerator = require('otp-generator');
@@ -57,8 +58,25 @@ let UsersService = class UsersService {
             return await this._userModel.updateOne({ _id: id }, { password: hashedPassword, newUser: false });
         }
     }
+    async validateVatNumber(vatNumber) {
+        const res = await axios_1.default.get(`https://vatcheckapi.com/api/validate/${vatNumber}?apikey=${process.env.VATCHECKAPIKEY}`, {
+            headers: {
+                "apikey": process.env.VATCHECKAPIKEY
+            }
+        });
+        console.log(res.data);
+        return res.data;
+    }
     async completeKYC(merchantID, kycDto) {
-        return await this._userModel.updateOne({ _id: merchantID }, kycDto);
+        let validation = await this.validateVatNumber(kycDto.vatNumber);
+        if (validation.success == 0) {
+            throw new common_1.UnauthorizedException('Wrong Vatnumber!');
+        }
+        await this._userModel.updateOne({ _id: merchantID }, kycDto);
+        await this._userModel.updateOne({ _id: merchantID }, { kycStatus: true });
+        return {
+            message: 'KYC has been updated successfully!'
+        };
     }
     async updateMerchantprofile(merchantID, usersDto) {
         let user = await this._userModel.findOne({ _id: merchantID });

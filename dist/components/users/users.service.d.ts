@@ -10,7 +10,10 @@ export declare class UsersService {
         _id: string;
     }>;
     changePassword(id: any, updatepasswordDto: any): Promise<import("mongodb").UpdateResult>;
-    completeKYC(merchantID: any, kycDto: any): Promise<import("mongodb").UpdateResult>;
+    validateVatNumber(vatNumber: any): Promise<any>;
+    completeKYC(merchantID: any, kycDto: any): Promise<{
+        message: string;
+    }>;
     updateMerchantprofile(merchantID: any, usersDto: any): Promise<{
         message: string;
     }>;
