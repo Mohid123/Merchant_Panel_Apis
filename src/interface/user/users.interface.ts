@@ -25,7 +25,7 @@ export interface UsersInterface {
   streetAddress: string;
   zipCode: number;
   city: string;
-  vatNumber: number;
+  vatNumber: string;
   iban: string;
   bankName: string;
   kycStatus: boolean;

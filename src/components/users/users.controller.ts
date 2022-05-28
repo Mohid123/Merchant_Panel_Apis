@@ -103,4 +103,11 @@ export class UsersController {
   ) {
     return this._usersService.approvePendingUsers(status, userID);
   }
+
+  @Post('validateVatNumber/:vatNumber')
+  validateVatNumber (
+    // @Param('countryCode') countryCode: string,
+    @Param('vatNumber') vatNumber: string) {
+    return this._usersService.validateVatNumber(vatNumber)
+  }
 }

@@ -13,6 +13,7 @@ import { UsersInterface } from '../../interface/user/users.interface';
 import { encodeImageToBlurhash } from '../file-management/utils/utils';
 import { EmailDTO } from 'src/dto/email/email.dto';
 import * as nodemailer from 'nodemailer';
+import axios from 'axios';
 
 var htmlencode = require('htmlencode');
 var generator = require('generate-password');
@@ -73,8 +74,29 @@ export class UsersService {
     }
   }
 
+  async validateVatNumber (vatNumber) {
+    const res = await axios.get(`https://vatcheckapi.com/api/validate/${vatNumber}?apikey=${process.env.VATCHECKAPIKEY}`,{
+      headers:{
+        "apikey": process.env.VATCHECKAPIKEY
+      }
+    });
+
+    console.log(res.data);
+    return res.data;
+  }
+
   async completeKYC(merchantID, kycDto) {
-    return await this._userModel.updateOne({ _id: merchantID }, kycDto);
+    let validation:any = await this.validateVatNumber(kycDto.vatNumber);
+    if (validation.success == 0) {
+      throw new UnauthorizedException('Wrong Vatnumber!');
+    }
+
+    await this._userModel.updateOne({ _id: merchantID }, kycDto);
+    await this._userModel.updateOne({ _id: merchantID }, { kycStatus: true});
+
+    return {
+      message: 'KYC has been updated successfully!'
+    }
   }
 
   async updateMerchantprofile(merchantID, usersDto) {

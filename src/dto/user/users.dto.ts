@@ -39,7 +39,7 @@ export class UsersDto {
     city: string;
 
     @ApiProperty()
-    vatNumber: number;
+    vatNumber: string;
 
     // @ApiProperty()
     // iban: string;
@@ -48,7 +48,7 @@ export class UsersDto {
     // bankName: string;
 
     // @ApiProperty()
-    // kycStatus: string;
+    // kycStatus: boolean;
 
     @ApiProperty()
     province: string;
