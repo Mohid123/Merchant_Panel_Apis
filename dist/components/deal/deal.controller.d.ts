@@ -13,6 +13,10 @@ export declare class DealController {
     updateDeal(dealID: string, updateDealDto: UpdateDealDto): Promise<{
         message: string;
     }>;
+    deleteDeal(dealID: string): Promise<{
+        status: string;
+        message: string;
+    }>;
     approveRejectDeal(dealID: string, dealStatusDto: DealStatusDto): Promise<import("mongodb").UpdateResult>;
     getDeal(id: string): Promise<import("../../interface/deal/deal.interface").DealInterface & {
         _id: any;

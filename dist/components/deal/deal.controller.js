@@ -34,6 +34,9 @@ let DealController = class DealController {
     updateDeal(dealID, updateDealDto) {
         return this.dealService.updateDeal(updateDealDto, dealID);
     }
+    deleteDeal(dealID) {
+        return this.dealService.deleteDeal(dealID);
+    }
     approveRejectDeal(dealID, dealStatusDto) {
         return this.dealService.approveRejectDeal(dealID, dealStatusDto);
     }
@@ -77,6 +80,14 @@ __decorate([
     __metadata("design:paramtypes", [String, updatedeal_dto_1.UpdateDealDto]),
     __metadata("design:returntype", void 0)
 ], DealController.prototype, "updateDeal", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_merchant_auth_guard_1.JwtMerchantAuthGuard),
+    (0, common_1.Post)('deleteDeal/:dealID'),
+    __param(0, (0, common_1.Param)('dealID')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], DealController.prototype, "deleteDeal", null);
 __decorate([
     (0, common_1.UseGuards)(jwt_admin_auth_guard_1.JwtAdminAuthGuard),
     (0, common_1.Post)('approveRejectDeal/:dealID'),

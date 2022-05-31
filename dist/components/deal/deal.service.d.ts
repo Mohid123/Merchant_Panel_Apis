@@ -25,6 +25,10 @@ export declare class DealService {
         _id: any;
     }>;
     getDealReviews(offset: any, limit: any, rating: any, id: any): Promise<any>;
+    deleteDeal(dealID: any): Promise<{
+        status: string;
+        message: string;
+    }>;
     getDealsReviewStatsByMerchant(id: any, offset: any, limit: any): Promise<{
         totalDeals: number;
         totalMerchantReviews: any;
