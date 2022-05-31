@@ -8,6 +8,7 @@ import { generateStringId } from '../file-management/utils/utils';
 import { SORT } from '../../enum/sort/sort.enum';
 import { VoucherCounterInterface } from '../../interface/vouchers/vouchersCounter.interface';
 import { SubCategoryInterface } from '../../interface/category/subcategory.interface';
+import { arrayBuffer } from 'stream/consumers';
 
 @Injectable()
 export class DealService {
@@ -37,7 +38,7 @@ export class DealService {
 
   async createDeal(dealDto, req) {
     try {
-      console.log(dealDto);
+      // console.log(dealDto);
       var dealVouchers = 0;
       var delaSoldVocuhers = 0;
 
@@ -94,7 +95,16 @@ export class DealService {
       });
 
       dealDto.availableVouchers = dealVouchers;
-      // dealDto.soldVouchers = delaSoldVocuhers;
+
+      for (let i = 0; i < dealDto.mediaUrl.length; i++) {
+        if (dealDto.mediaUrl[i].type == 'video') {
+          console.log('Inside if');
+          var item = dealDto.mediaUrl.splice(i, 1);
+          dealDto.mediaUrl.splice(0, 0, item[0]);
+        }
+      }
+
+      dealDto.soldVouchers = delaSoldVocuhers;
 
       const deal = await this.dealModel.create(dealDto);
       return deal;

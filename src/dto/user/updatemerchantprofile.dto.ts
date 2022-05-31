@@ -23,7 +23,7 @@ export class UpdateMerchantProfileDto {
     city: string;
 
     @ApiProperty()
-    vatNumber: number;
+    vatNumber: string;
 
     @ApiProperty()
     tradeName: string;
