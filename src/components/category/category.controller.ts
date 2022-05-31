@@ -41,8 +41,6 @@ export class CategoryController {
     return this.categoryService.getAllCategories(offset, limit);
   }
 
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
   @Get('getAllSubCategoriesByCategories')
   getAllSubCategories(
     @Query('offset') offset: number = 0,
