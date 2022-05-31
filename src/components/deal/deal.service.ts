@@ -295,6 +295,22 @@ export class DealService {
     }
   }
 
+  async deleteDeal(dealID) {
+    try {
+      const deal = await this.dealModel.findByIdAndUpdate(dealID, {
+        deletedCheck: true,
+      });
+
+      if (!deal) {
+        throw new HttpException('SOmething went wrong', HttpStatus.BAD_REQUEST);
+      }
+
+      return { status: 'success', message: 'Deal deleted successfully!' };
+    } catch (err) {
+      throw new HttpException(err, HttpStatus.BAD_REQUEST);
+    }
+  }
+
   async getDealsReviewStatsByMerchant(id, offset, limit) {
     offset = parseInt(offset) < 0 ? 0 : offset;
     limit = parseInt(limit) < 1 ? 10 : limit;

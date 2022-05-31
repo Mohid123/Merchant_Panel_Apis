@@ -41,6 +41,12 @@ export class DealController {
     return this.dealService.updateDeal(updateDealDto, dealID);
   }
 
+  @UseGuards(JwtMerchantAuthGuard)
+  @Post('deleteDeal/:dealID')
+  deleteDeal(@Param('dealID') dealID: string) {
+    return this.dealService.deleteDeal(dealID);
+  }
+
   @UseGuards(JwtAdminAuthGuard)
   @Post('approveRejectDeal/:dealID')
   approveRejectDeal(
