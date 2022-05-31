@@ -104,7 +104,6 @@ export class DealService {
   }
 
   async updateDeal(updateDealDto, dealID) {
-
     const deal = await this.dealModel.findById(dealID);
 
     let dealVouchers = 0;
@@ -281,6 +280,22 @@ export class DealService {
         .then((items) => items[0]);
 
       return deal;
+    } catch (err) {
+      throw new HttpException(err, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async deleteDeal(dealID) {
+    try {
+      const deal = await this.dealModel.findByIdAndUpdate(dealID, {
+        deletedCheck: true,
+      });
+
+      if (!deal) {
+        throw new HttpException('SOmething went wrong', HttpStatus.BAD_REQUEST);
+      }
+
+      return { status: 'success', message: 'Deal deleted successfully!' };
     } catch (err) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
     }
