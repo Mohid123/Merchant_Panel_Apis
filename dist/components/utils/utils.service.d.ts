@@ -5,4 +5,5 @@ export declare class UtilService {
         lng: number;
         lat: number;
     }>;
+    validateVatNumber(vatNumber: any): Promise<any>;
 }

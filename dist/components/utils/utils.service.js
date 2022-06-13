@@ -8,6 +8,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UtilService = void 0;
 const common_1 = require("@nestjs/common");
+const axios_1 = require("axios");
 const fs = require('fs');
 const city_1 = require("./city");
 let UtilService = class UtilService {
@@ -17,6 +18,16 @@ let UtilService = class UtilService {
         const data = city_1.cityDataset;
         const cityData = data.find((element) => element.zip == zipCode);
         return cityData;
+    }
+    async validateVatNumber(vatNumber) {
+        const res = await axios_1.default.get(`https://vatcheckapi.com/api/validate/${vatNumber}?apikey=${process.env.VATCHECKAPIKEY}`, {
+            headers: {
+                "apikey": process.env.VATCHECKAPIKEY
+            }
+        });
+        debugger;
+        console.log(res.data);
+        return res.data;
     }
 };
 UtilService = __decorate([

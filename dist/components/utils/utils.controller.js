@@ -23,6 +23,9 @@ let UtilController = class UtilController {
     getCity(zipCode) {
         return this.UtilService.getCity(zipCode);
     }
+    validateVatNumber(vatNumber) {
+        return this.UtilService.validateVatNumber(vatNumber);
+    }
 };
 __decorate([
     (0, common_1.Get)('getCity/:zipCode'),
@@ -31,6 +34,13 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], UtilController.prototype, "getCity", null);
+__decorate([
+    (0, common_1.Post)('validateVatNumber/:vatNumber'),
+    __param(0, (0, common_1.Param)('vatNumber')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], UtilController.prototype, "validateVatNumber", null);
 UtilController = __decorate([
     (0, swagger_1.ApiTags)('Utils'),
     (0, common_1.Controller)('utils'),

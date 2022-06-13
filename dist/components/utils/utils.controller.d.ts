@@ -8,4 +8,5 @@ export declare class UtilController {
         lng: number;
         lat: number;
     }>;
+    validateVatNumber(vatNumber: string): Promise<any>;
 }
