@@ -21,6 +21,11 @@ __decorate([
 ], SignUpDTO.prototype, "email", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
+    (0, class_validator_1.IsNotEmpty)(),
+    __metadata("design:type", String)
+], SignUpDTO.prototype, "password", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
 ], SignUpDTO.prototype, "firstName", void 0);
 __decorate([
@@ -41,19 +46,19 @@ __decorate([
 ], SignUpDTO.prototype, "status", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
-    __metadata("design:type", String)
+    __metadata("design:type", Array)
 ], SignUpDTO.prototype, "businessType", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
-], SignUpDTO.prototype, "legalName", void 0);
+], SignUpDTO.prototype, "companyName", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
 ], SignUpDTO.prototype, "streetAddress", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
-    __metadata("design:type", Number)
+    __metadata("design:type", String)
 ], SignUpDTO.prototype, "zipCode", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
@@ -67,72 +72,5 @@ __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
 ], SignUpDTO.prototype, "website_socialAppLink", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)(),
-    __metadata("design:type", Boolean)
-], SignUpDTO.prototype, "newUser", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({
-        example: [
-            {
-                day: 'MN',
-                firstStartTime: '10:00',
-                firstEndTime: '13:00',
-                secondStartTime: '14:00',
-                secondEndTime: '18:00',
-                isWorkingDay: false,
-            },
-            {
-                day: 'TU',
-                firstStartTime: '10:00',
-                firstEndTime: '13:00',
-                secondStartTime: '14:00',
-                secondEndTime: '18:00',
-                isWorkingDay: false,
-            },
-            {
-                day: 'WD',
-                firstStartTime: '10:00',
-                firstEndTime: '13:00',
-                secondStartTime: '14:00',
-                secondEndTime: '18:00',
-                isWorkingDay: false,
-            },
-            {
-                day: 'TH',
-                firstStartTime: '10:00',
-                firstEndTime: '13:00',
-                secondStartTime: '14:00',
-                secondEndTime: '18:00',
-                isWorkingDay: false,
-            },
-            {
-                day: 'FR',
-                firstStartTime: '10:00',
-                firstEndTime: '13:00',
-                secondStartTime: '14:00',
-                secondEndTime: '18:00',
-                isWorkingDay: false,
-            },
-            {
-                day: 'SA',
-                firstStartTime: '10:00',
-                firstEndTime: '13:00',
-                secondStartTime: '14:00',
-                secondEndTime: '18:00',
-                isWorkingDay: false,
-            },
-            {
-                day: 'SU',
-                firstStartTime: '10:00',
-                firstEndTime: '13:00',
-                secondStartTime: '14:00',
-                secondEndTime: '18:00',
-                isWorkingDay: false,
-            },
-        ]
-    }),
-    __metadata("design:type", Array)
-], SignUpDTO.prototype, "businessHours", void 0);
 exports.SignUpDTO = SignUpDTO;
 //# sourceMappingURL=signup.dto.js.map

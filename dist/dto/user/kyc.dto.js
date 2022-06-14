@@ -20,10 +20,6 @@ __decorate([
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
-], KycDto.prototype, "vatNumber", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)(),
-    __metadata("design:type", String)
 ], KycDto.prototype, "bankName", void 0);
 exports.KycDto = KycDto;
 //# sourceMappingURL=kyc.dto.js.map

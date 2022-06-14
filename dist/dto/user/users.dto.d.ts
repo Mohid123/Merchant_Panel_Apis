@@ -7,7 +7,7 @@ export declare class UsersDto {
     lastName: string;
     phoneNumber: string;
     role: string;
-    businessType: string;
+    businessType: string[];
     legalName: string;
     streetAddress: string;
     zipCode: number;

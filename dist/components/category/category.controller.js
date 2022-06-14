@@ -66,8 +66,6 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], CategoryController.prototype, "getAllCategories", null);
 __decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
-    (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.Get)('getAllSubCategoriesByCategories'),
     __param(0, (0, common_1.Query)('offset')),
     __param(1, (0, common_1.Query)('limit')),

@@ -11,7 +11,7 @@ exports.UsersSchema = new mongoose.Schema({
     lastName: { type: String, default: '' },
     phoneNumber: { type: String, default: '' },
     role: { type: String, default: '' },
-    businessType: { type: String, default: '' },
+    businessType: { type: Array, default: [] },
     legalName: { type: String, default: '' },
     tradeName: { type: String, default: '' },
     streetAddress: { type: String, default: '' },
