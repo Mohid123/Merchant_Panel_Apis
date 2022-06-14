@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import * as mongoose from 'mongoose';
 import { UsersInterface } from 'src/interface/user/users.interface';
 import { generateStringId } from '../../components/file-management/utils/utils';
@@ -13,7 +14,7 @@ export const UsersSchema = new mongoose.Schema(
       lastName: { type: String, default: '' },
       phoneNumber: { type: String, default: '' },
       role: { type: String, default: '' },
-      businessType: { type: String, default: '' },
+      businessType: { type: Array, default: [] },
       companyName: { type: String, default: '' },
       streetAddress: { type: String, default: '' },
       zipCode: { type: Number, default: 0 },

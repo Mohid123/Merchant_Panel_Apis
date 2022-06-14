@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { ApiProperty } from "@nestjs/swagger";
 import { IsNotEmpty } from 'class-validator';
 
@@ -31,7 +32,7 @@ export class SignUpDTO {
     // Business Details
 
     @ApiProperty()
-    businessType: string;
+    businessType: string[];
 
     @ApiProperty()
     companyName: string;

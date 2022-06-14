@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { ApiProperty } from "@nestjs/swagger";
 import { businessHour } from "src/interface/user/users.interface";
 
@@ -24,7 +25,7 @@ export class UsersDto {
     role: string;
 
     @ApiProperty()
-    businessType: string;
+    businessType: string[];
 
     @ApiProperty()
     companyName: string;

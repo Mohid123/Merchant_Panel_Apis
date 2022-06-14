@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 export interface businessHour {
     id: string,
     day: string,
@@ -15,7 +16,7 @@ export interface UsersInterface {
     lastName: string;
     phoneNumber: string;
     role: string;
-    businessType: string;
+    businessType: string[];
     companyName: string;
     streetAddress: string;
     zipCode: number;
