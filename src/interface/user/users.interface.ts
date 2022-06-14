@@ -1,11 +1,15 @@
 /* eslint-disable prettier/prettier */
 export interface businessHour {
-    id: string,
-    day: string,
-    firstStartTime: string,
-    firstEndTime: string,
-    secondStartTime: string,
-    secondEndTime: string
+  day: string;
+  firstStartTime: string;
+  firstEndTime: string;
+  secondStartTime: string;
+  secondEndTime: string;
+}
+
+export interface Gallery {
+  pictureUrl: string;
+  pictureBlurHash: string;
 }
 
 export interface UsersInterface {

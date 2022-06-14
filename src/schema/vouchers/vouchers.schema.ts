@@ -1,0 +1,38 @@
+import * as mongoose from 'mongoose';
+import { generateStringId } from '../../components/file-management/utils/utils';
+import { VoucherInterface } from '../../interface/deal/deal.interface';
+
+export const VoucherSchema = new mongoose.Schema(
+  {
+    _id: { type: String, default: generateStringId },
+    voucherID: { type: Number, unique: true },
+    dealName: { type: String, default: '' },
+    dealId: { type: String, default: '' },
+    merchantID: { type: String, default: '' },
+    amount: { type: Number, default: 0 },
+    fee: { type: Number, default: 0 },
+    net: { type: Number, default: 0 },
+    status: { type: String, default: '' },
+    paymentStatus: { type: String, default: 'Pending' },
+    boughtDate: { type: Number },
+    deletedCheck: { type: Boolean, default: false }
+  },
+  {
+    collection: 'vouchers',
+  },
+);
+
+VoucherSchema.set('timestamps', true);
+VoucherSchema.set('toJSON', {
+  virtuals: true,
+  versionKey: false,
+  transform: function (doc, ret) {
+    delete ret._id;
+  },
+});
+
+mongoose.model('Voucher', VoucherSchema);
+
+VoucherSchema.pre<VoucherInterface>('save', async function (next) {
+  next();
+});

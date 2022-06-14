@@ -1,9 +1,8 @@
 /* eslint-disable prettier/prettier */
 import * as mongoose from 'mongoose';
-import { UsersInterface } from 'src/interface/user/users.interface';
+import { UsersInterface } from '../../interface/user/users.interface';
 import { generateStringId } from '../../components/file-management/utils/utils';
 import * as bcrypt from 'bcrypt';
-import { USERSTATUS } from 'src/enum/user/userstatus.enum';
 
 export const UsersSchema = new mongoose.Schema(
     {
@@ -41,9 +40,22 @@ export const UsersSchema = new mongoose.Schema(
       pendingDeals: { type: Number, default: 0 },
       soldDeals: { type: Number, default: 0 },
     },
-    {
-        collection: 'users'
-    }
+    totalReviews: {
+      type: Number,
+      default: 0,
+    },
+    maxRating: {
+      type: Number,
+      default: 0,
+    },
+    minRating: {
+      type: Number,
+      default: 0,
+    },
+  },
+  {
+    collection: 'users',
+  },
 );
 
 mongoose.model('User', UsersSchema);
@@ -53,16 +65,16 @@ UsersSchema.set('timestamps', true);
 UsersSchema.set('toJSON', {
   virtuals: true,
   versionKey: false,
-  transform: function(doc, ret) {
+  transform: function (doc, ret) {
     delete ret._id;
   },
 });
 
-UsersSchema.pre<UsersInterface>('save',async function(next){
-  const salt=await bcrypt.genSalt();
-  this.password = await bcrypt.hash(this.password, salt);
+// UsersSchema.pre<UsersInterface>('save', async function (next) {
+//   const salt = await bcrypt.genSalt();
+//   this.password = await bcrypt.hash(this.password, salt);
 
-  this.email = this.email.toLowerCase();
+//   this.email = this.email.toLowerCase();
 
-  next();
-});
+//   next();
+// });
