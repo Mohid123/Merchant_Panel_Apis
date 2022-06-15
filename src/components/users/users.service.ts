@@ -86,10 +86,10 @@ export class UsersService {
   }
 
   async completeKYC(merchantID, kycDto) {
-    let validation:any = await this.validateVatNumber(kycDto.vatNumber);
-    if (validation.success == 0) {
-      throw new UnauthorizedException('Wrong Vatnumber!');
-    }
+    // let validation:any = await this.validateVatNumber(kycDto.vatNumber);
+    // if (validation.success == 0) {
+    //   throw new UnauthorizedException('Wrong Vatnumber!');
+    // }
 
     await this._userModel.updateOne({ _id: merchantID }, kycDto);
     await this._userModel.updateOne({ _id: merchantID }, { kycStatus: true});
