@@ -68,10 +68,6 @@ let UsersService = class UsersService {
         return res.data;
     }
     async completeKYC(merchantID, kycDto) {
-        let validation = await this.validateVatNumber(kycDto.vatNumber);
-        if (validation.success == 0) {
-            throw new common_1.UnauthorizedException('Wrong Vatnumber!');
-        }
         await this._userModel.updateOne({ _id: merchantID }, kycDto);
         await this._userModel.updateOne({ _id: merchantID }, { kycStatus: true });
         return {
