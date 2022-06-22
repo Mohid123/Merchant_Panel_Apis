@@ -6,6 +6,9 @@ import {
 
 export class DealDto {
   @ApiProperty()
+  id: string;
+
+  @ApiProperty()
   dealID: number;
 
   @ApiProperty()

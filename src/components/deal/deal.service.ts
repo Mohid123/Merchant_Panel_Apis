@@ -38,76 +38,95 @@ export class DealService {
 
   async createDeal(dealDto, req) {
     try {
-      // console.log(dealDto);
       var dealVouchers = 0;
       var delaSoldVocuhers = 0;
+      let savedDeal = null;
 
-      let category = await this.categorymodel.findOne({
-        categoryName: req.user.businessType,
-      });
-      dealDto.categoryName = req.user.businessType;
-      dealDto.categoryID = category.id;
+      if (dealDto.id) {
+        savedDeal = await this.dealModel.findById(dealDto.id);
+      }
+
+      // let category = await this.categorymodel.findOne({
+      //   categoryName: req.user.businessType,
+      // });
+      // dealDto.categoryName = req.user.businessType;
+      // dealDto.categoryID = category.id;
 
       if (dealDto.subCategory) {
         let subCategory = await this.subCategoryModel.findOne({
           subCategoryName: dealDto.subCategory,
         });
         dealDto.subCategoryID = subCategory.id;
+        dealDto.categoryName = subCategory.categoryName;
       }
 
-      dealDto.dealID = await this.generateVoucherId('dealID');
+      if (!savedDeal) {
+        dealDto.dealID = await this.generateVoucherId('dealID');
+      }
 
-      let stamp = new Date(dealDto.startDate).getTime();
-      dealDto.startDate = stamp;
-      stamp = new Date(dealDto.endDate).getTime();
-      dealDto.endDate = stamp;
+      if (dealDto.startDate && dealDto.endDate) {
+        let stamp = new Date(dealDto.startDate).getTime();
+        dealDto.startDate = stamp;
+        stamp = new Date(dealDto.endDate).getTime();
+        dealDto.endDate = stamp;
+      }
+      if (!savedDeal) {
+        dealDto.dealHeader = dealDto.dealHeader.toUpperCase();
 
-      dealDto.dealHeader = dealDto.dealHeader.toUpperCase();
+        dealDto.merchantID = req.user.id;
 
-      dealDto.merchantID = req.user.id;
+        dealDto.dealStatus = DEALSTATUS.inReview;
+      }
 
-      dealDto.dealStatus = DEALSTATUS.inReview;
+      if (dealDto.vouchers) {
+        dealDto.vouchers = dealDto.vouchers.map((el) => {
+          let startTime;
+          let endTime;
+          let calculateDiscountPercentage =
+            ((el.originalPrice - el.dealPrice) / el.originalPrice) * 100;
+          el.discountPercentage = calculateDiscountPercentage;
 
-      dealDto.vouchers = dealDto.vouchers.map((el) => {
-        let startTime;
-        let endTime;
-        let calculateDiscountPercentage =
-          ((el.originalPrice - el.dealPrice) / el.originalPrice) * 100;
-        el.discountPercentage = calculateDiscountPercentage;
+          dealVouchers += el.numberOfVouchers;
+          el.soldVouchers = 0;
+          // delaSoldVocuhers += el?.soldVouchers;
 
-        dealVouchers += el.numberOfVouchers;
-        el.soldVouchers = 0;
-        // delaSoldVocuhers += el?.soldVouchers;
+          if (el.voucherValidity > 0) {
+            startTime = 0;
+            endTime = 0;
+          } else {
+            startTime = new Date(el.voucherStartDate).getTime();
+            endTime = new Date(el.voucherEndDate).getTime();
+          }
 
-        if (el.voucherValidity > 0) {
-          startTime = 0;
-          endTime = 0;
-        } else {
-          startTime = new Date(el.voucherStartDate).getTime();
-          endTime = new Date(el.voucherEndDate).getTime();
+          el._id = generateStringId();
+          el.voucherStartDate = startTime;
+          el.voucherEndDate = endTime;
+
+          return el;
+        });
+      }
+
+      if (dealDto.mediaUrl) {
+        for (let i = 0; i < dealDto.mediaUrl.length; i++) {
+          if (dealDto.mediaUrl[i].type == 'video') {
+            console.log('Inside if');
+            var item = dealDto.mediaUrl.splice(i, 1);
+            dealDto.mediaUrl.splice(0, 0, item[0]);
+          }
         }
-
-        el._id = generateStringId();
-        el.voucherStartDate = startTime;
-        el.voucherEndDate = endTime;
-
-        return el;
-      });
+      }
 
       dealDto.availableVouchers = dealVouchers;
-
-      for (let i = 0; i < dealDto.mediaUrl.length; i++) {
-        if (dealDto.mediaUrl[i].type == 'video') {
-          console.log('Inside if');
-          var item = dealDto.mediaUrl.splice(i, 1);
-          dealDto.mediaUrl.splice(0, 0, item[0]);
-        }
-      }
-
       dealDto.soldVouchers = delaSoldVocuhers;
 
-      const deal = await this.dealModel.create(dealDto);
-      return deal;
+      if (!savedDeal) {
+        const deal = await this.dealModel.create(dealDto);
+        return deal;
+      }
+
+      await this.dealModel.updateOne({ _id: dealDto.id }, dealDto);
+
+      return this.dealModel.findOne({ _id: dealDto.id });
     } catch (err) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
     }
