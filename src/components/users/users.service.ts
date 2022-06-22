@@ -74,12 +74,15 @@ export class UsersService {
     }
   }
 
-  async validateVatNumber (vatNumber) {
-    const res = await axios.get(`https://vatcheckapi.com/api/validate/${vatNumber}?apikey=${process.env.VATCHECKAPIKEY}`,{
-      headers:{
-        "apikey": process.env.VATCHECKAPIKEY
-      }
-    });
+  async validateVatNumber(vatNumber) {
+    const res = await axios.get(
+      `https://vatcheckapi.com/api/validate/${vatNumber}?apikey=${process.env.VATCHECKAPIKEY}`,
+      {
+        headers: {
+          apikey: process.env.VATCHECKAPIKEY,
+        },
+      },
+    );
 
     console.log(res.data);
     return res.data;
@@ -92,31 +95,30 @@ export class UsersService {
     // }
 
     await this._userModel.updateOne({ _id: merchantID }, kycDto);
-    await this._userModel.updateOne({ _id: merchantID }, { kycStatus: true});
+    await this._userModel.updateOne({ _id: merchantID }, { kycStatus: true });
 
     return {
-      message: 'KYC has been updated successfully!'
-    }
+      message: 'KYC has been updated successfully!',
+    };
   }
 
   async updateMerchantprofile(merchantID, usersDto) {
-
     let user = await this._userModel.findOne({ _id: merchantID });
     if (!user) {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
 
     usersDto.profilePicBlurHash = await encodeImageToBlurhash(
-        usersDto.profilePicURL
-      );
-    
-    usersDto.gallery
+      usersDto.profilePicURL,
+    );
+
+    usersDto.gallery;
 
     await this._userModel.updateOne({ _id: merchantID }, usersDto);
 
     return {
-      message: 'User has been updated succesfully'
-    }
+      message: 'User has been updated succesfully',
+    };
   }
 
   async updateBusinessHours(updateHoursDTO: UpdateHoursDto) {
@@ -137,7 +139,7 @@ export class UsersService {
         return hour;
       }
     });
-    debugger
+    debugger;
     return await this._userModel.updateOne(
       { _id: updateHoursDTO.id },
       { businessHours: newBusinessHours },
@@ -345,8 +347,10 @@ export class UsersService {
 
   async approvePendingUsers(status, userID) {
     try {
-
-      let user = await this._userModel.findOne({_id: userID, status: USERSTATUS.pending });
+      let user = await this._userModel.findOne({
+        _id: userID,
+        status: USERSTATUS.pending,
+      });
 
       if (!user) {
         throw new HttpException('User not found', HttpStatus.NOT_FOUND);
@@ -552,7 +556,7 @@ export class UsersService {
         {
           status: status,
           password: hashedPassword,
-          voucherPinCode: pinCode
+          voucherPinCode: pinCode,
         },
       );
 
