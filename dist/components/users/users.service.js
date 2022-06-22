@@ -61,8 +61,8 @@ let UsersService = class UsersService {
     async validateVatNumber(vatNumber) {
         const res = await axios_1.default.get(`https://vatcheckapi.com/api/validate/${vatNumber}?apikey=${process.env.VATCHECKAPIKEY}`, {
             headers: {
-                "apikey": process.env.VATCHECKAPIKEY
-            }
+                apikey: process.env.VATCHECKAPIKEY,
+            },
         });
         console.log(res.data);
         return res.data;
@@ -71,7 +71,7 @@ let UsersService = class UsersService {
         await this._userModel.updateOne({ _id: merchantID }, kycDto);
         await this._userModel.updateOne({ _id: merchantID }, { kycStatus: true });
         return {
-            message: 'KYC has been updated successfully!'
+            message: 'KYC has been updated successfully!',
         };
     }
     async updateMerchantprofile(merchantID, usersDto) {
@@ -83,7 +83,7 @@ let UsersService = class UsersService {
         usersDto.gallery;
         await this._userModel.updateOne({ _id: merchantID }, usersDto);
         return {
-            message: 'User has been updated succesfully'
+            message: 'User has been updated succesfully',
         };
     }
     async updateBusinessHours(updateHoursDTO) {
@@ -281,7 +281,10 @@ let UsersService = class UsersService {
     }
     async approvePendingUsers(status, userID) {
         try {
-            let user = await this._userModel.findOne({ _id: userID, status: userstatus_enum_1.USERSTATUS.pending });
+            let user = await this._userModel.findOne({
+                _id: userID,
+                status: userstatus_enum_1.USERSTATUS.pending,
+            });
             if (!user) {
                 throw new common_1.HttpException('User not found', common_1.HttpStatus.NOT_FOUND);
             }
@@ -472,7 +475,7 @@ let UsersService = class UsersService {
             const updatedUser = await this._userModel.updateOne({ _id: userID }, {
                 status: status,
                 password: hashedPassword,
-                voucherPinCode: pinCode
+                voucherPinCode: pinCode,
             });
             return { message: 'Merchant Approved Successfully!' };
         }

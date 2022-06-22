@@ -38,56 +38,70 @@ let DealService = class DealService {
         try {
             var dealVouchers = 0;
             var delaSoldVocuhers = 0;
-            let category = await this.categorymodel.findOne({
-                categoryName: req.user.businessType,
-            });
-            dealDto.categoryName = req.user.businessType;
-            dealDto.categoryID = category.id;
+            let savedDeal = null;
+            if (dealDto.id) {
+                savedDeal = await this.dealModel.findById(dealDto.id);
+            }
             if (dealDto.subCategory) {
                 let subCategory = await this.subCategoryModel.findOne({
                     subCategoryName: dealDto.subCategory,
                 });
                 dealDto.subCategoryID = subCategory.id;
+                dealDto.categoryName = subCategory.categoryName;
             }
-            dealDto.dealID = await this.generateVoucherId('dealID');
-            let stamp = new Date(dealDto.startDate).getTime();
-            dealDto.startDate = stamp;
-            stamp = new Date(dealDto.endDate).getTime();
-            dealDto.endDate = stamp;
-            dealDto.dealHeader = dealDto.dealHeader.toUpperCase();
-            dealDto.merchantID = req.user.id;
-            dealDto.dealStatus = dealstatus_enum_1.DEALSTATUS.inReview;
-            dealDto.vouchers = dealDto.vouchers.map((el) => {
-                let startTime;
-                let endTime;
-                let calculateDiscountPercentage = ((el.originalPrice - el.dealPrice) / el.originalPrice) * 100;
-                el.discountPercentage = calculateDiscountPercentage;
-                dealVouchers += el.numberOfVouchers;
-                el.soldVouchers = 0;
-                if (el.voucherValidity > 0) {
-                    startTime = 0;
-                    endTime = 0;
+            if (!savedDeal) {
+                dealDto.dealID = await this.generateVoucherId('dealID');
+            }
+            if (dealDto.startDate && dealDto.endDate) {
+                let stamp = new Date(dealDto.startDate).getTime();
+                dealDto.startDate = stamp;
+                stamp = new Date(dealDto.endDate).getTime();
+                dealDto.endDate = stamp;
+            }
+            if (!savedDeal) {
+                dealDto.dealHeader = dealDto.dealHeader.toUpperCase();
+                dealDto.merchantID = req.user.id;
+                dealDto.dealStatus = dealstatus_enum_1.DEALSTATUS.inReview;
+            }
+            if (dealDto.vouchers) {
+                dealDto.vouchers = dealDto.vouchers.map((el) => {
+                    let startTime;
+                    let endTime;
+                    let calculateDiscountPercentage = ((el.originalPrice - el.dealPrice) / el.originalPrice) * 100;
+                    el.discountPercentage = calculateDiscountPercentage;
+                    dealVouchers += el.numberOfVouchers;
+                    el.soldVouchers = 0;
+                    if (el.voucherValidity > 0) {
+                        startTime = 0;
+                        endTime = 0;
+                    }
+                    else {
+                        startTime = new Date(el.voucherStartDate).getTime();
+                        endTime = new Date(el.voucherEndDate).getTime();
+                    }
+                    el._id = (0, utils_1.generateStringId)();
+                    el.voucherStartDate = startTime;
+                    el.voucherEndDate = endTime;
+                    return el;
+                });
+            }
+            if (dealDto.mediaUrl) {
+                for (let i = 0; i < dealDto.mediaUrl.length; i++) {
+                    if (dealDto.mediaUrl[i].type == 'video') {
+                        console.log('Inside if');
+                        var item = dealDto.mediaUrl.splice(i, 1);
+                        dealDto.mediaUrl.splice(0, 0, item[0]);
+                    }
                 }
-                else {
-                    startTime = new Date(el.voucherStartDate).getTime();
-                    endTime = new Date(el.voucherEndDate).getTime();
-                }
-                el._id = (0, utils_1.generateStringId)();
-                el.voucherStartDate = startTime;
-                el.voucherEndDate = endTime;
-                return el;
-            });
+            }
             dealDto.availableVouchers = dealVouchers;
-            for (let i = 0; i < dealDto.mediaUrl.length; i++) {
-                if (dealDto.mediaUrl[i].type == 'video') {
-                    console.log('Inside if');
-                    var item = dealDto.mediaUrl.splice(i, 1);
-                    dealDto.mediaUrl.splice(0, 0, item[0]);
-                }
-            }
             dealDto.soldVouchers = delaSoldVocuhers;
-            const deal = await this.dealModel.create(dealDto);
-            return deal;
+            if (!savedDeal) {
+                const deal = await this.dealModel.create(dealDto);
+                return deal;
+            }
+            await this.dealModel.updateOne({ _id: dealDto.id }, dealDto);
+            return this.dealModel.findOne({ _id: dealDto.id });
         }
         catch (err) {
             throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);

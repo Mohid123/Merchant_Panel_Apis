@@ -1,5 +1,6 @@
 import { MedialUrl, VoucherInterface } from '../../interface/deal/deal.interface';
 export declare class DealDto {
+    id: string;
     dealID: number;
     merchantID: string;
     dealHeader: string;
