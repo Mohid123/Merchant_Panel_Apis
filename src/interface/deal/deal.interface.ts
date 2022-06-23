@@ -41,4 +41,5 @@ export interface DealInterface extends Document {
   finePrints: string;
   dealStatus: string;
   deletedCheck: boolean;
+  pageNumber: number;
 }
