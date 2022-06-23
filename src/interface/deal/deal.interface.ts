@@ -24,7 +24,7 @@ export interface DealInterface extends Document {
   dealID: number;
   merchantID: string;
   dealHeader: string;
-  dealSubHeader: string;
+  subTitle: string;
   highlights: string;
   categoryID: string;
   categoryName: string;
@@ -37,6 +37,8 @@ export interface DealInterface extends Document {
   availableVouchers: number;
   soldVouchers: number;
   aboutThisDeal: string;
+  readMore: string;
+  finePrints: string;
   dealStatus: string;
   deletedCheck: boolean;
 }

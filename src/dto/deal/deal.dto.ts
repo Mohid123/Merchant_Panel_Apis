@@ -18,7 +18,7 @@ export class DealDto {
   dealHeader: string;
 
   @ApiProperty()
-  dealSubHeader: string;
+  subTitle: string;
 
   @ApiProperty()
   highlights: string;
@@ -83,4 +83,10 @@ export class DealDto {
 
   @ApiProperty()
   deletedCheck: boolean;
+
+  @ApiProperty()
+  readMore: string;
+
+  @ApiProperty()
+  finePrints: string;
 }
