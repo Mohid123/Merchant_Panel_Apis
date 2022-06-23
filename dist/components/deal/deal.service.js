@@ -61,7 +61,9 @@ let DealService = class DealService {
             if (!savedDeal) {
                 dealDto.dealHeader = dealDto.dealHeader.toUpperCase();
                 dealDto.merchantID = req.user.id;
-                dealDto.dealStatus = dealstatus_enum_1.DEALSTATUS.inReview;
+                if (dealDto.dealStatus) {
+                    dealDto.dealStatus = dealstatus_enum_1.DEALSTATUS.inReview;
+                }
             }
             if (dealDto.vouchers) {
                 dealDto.vouchers = dealDto.vouchers.map((el) => {

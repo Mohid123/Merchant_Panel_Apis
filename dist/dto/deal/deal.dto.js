@@ -32,7 +32,7 @@ __decorate([
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
-], DealDto.prototype, "dealSubHeader", void 0);
+], DealDto.prototype, "subTitle", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
@@ -110,5 +110,13 @@ __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", Boolean)
 ], DealDto.prototype, "deletedCheck", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
+], DealDto.prototype, "readMore", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
+], DealDto.prototype, "finePrints", void 0);
 exports.DealDto = DealDto;
 //# sourceMappingURL=deal.dto.js.map

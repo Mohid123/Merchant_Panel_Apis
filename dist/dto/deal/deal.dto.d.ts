@@ -4,7 +4,7 @@ export declare class DealDto {
     dealID: number;
     merchantID: string;
     dealHeader: string;
-    dealSubHeader: string;
+    subTitle: string;
     highlights: string;
     categoryID: string;
     categoryName: string;
@@ -19,4 +19,6 @@ export declare class DealDto {
     availableVouchers: number;
     dealStatus: string;
     deletedCheck: boolean;
+    readMore: string;
+    finePrints: string;
 }
