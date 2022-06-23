@@ -21,4 +21,5 @@ export declare class DealDto {
     deletedCheck: boolean;
     readMore: string;
     finePrints: string;
+    pageNumber: string;
 }
