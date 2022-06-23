@@ -89,4 +89,7 @@ export class DealDto {
 
   @ApiProperty()
   finePrints: string;
+
+  @ApiProperty()
+  pageNumber: string;
 }

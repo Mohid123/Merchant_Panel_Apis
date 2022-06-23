@@ -44,6 +44,7 @@ export const DealSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    pageNumber: { type: Number, default: 1 },
   },
   {
     collection: 'deals',
