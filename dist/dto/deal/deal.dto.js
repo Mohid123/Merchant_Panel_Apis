@@ -122,5 +122,9 @@ __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
 ], DealDto.prototype, "pageNumber", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", Boolean)
+], DealDto.prototype, "isCollapsed", void 0);
 exports.DealDto = DealDto;
 //# sourceMappingURL=deal.dto.js.map

@@ -22,4 +22,5 @@ export declare class DealDto {
     readMore: string;
     finePrints: string;
     pageNumber: string;
+    isCollapsed: boolean;
 }

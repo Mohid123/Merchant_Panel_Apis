@@ -38,4 +38,5 @@ export interface DealInterface extends Document {
     dealStatus: string;
     deletedCheck: boolean;
     pageNumber: number;
+    isCollapsed: boolean;
 }
