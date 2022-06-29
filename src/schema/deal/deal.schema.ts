@@ -25,6 +25,7 @@ export const DealSchema = new mongoose.Schema(
     finePrints: { type: String, default: '' },
     dealStatus: { type: String, default: 'InComplete' },
     deletedCheck: { type: Boolean, default: false },
+    isCollapsed: { type: Boolean, default: true },
     ratingsAverage: {
       type: Number,
       default: 0,

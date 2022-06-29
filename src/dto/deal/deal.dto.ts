@@ -92,4 +92,7 @@ export class DealDto {
 
   @ApiProperty()
   pageNumber: string;
+
+  @ApiProperty()
+  isCollapsed: boolean;
 }
