@@ -2,7 +2,7 @@ import { Document } from 'mongoose';
 
 export interface VoucherInterface extends Document {
   id: string;
-  voucherID: number;
+  voucherID: string;
   dealName: string;
   dealId: string;
   merchantID: string;

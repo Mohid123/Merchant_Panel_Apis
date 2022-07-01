@@ -33,7 +33,7 @@ export class DealService {
       { new: true },
     );
 
-    return sequenceDocument.sequenceValue;
+    return 'D' + sequenceDocument.sequenceValue;
   }
 
   async createDeal(dealDto, req) {

@@ -25,7 +25,7 @@ export class VouchersService {
       { new: true },
     );
 
-    return sequenceDocument.sequenceValue;
+    return 'V' + sequenceDocument.sequenceValue;
   }
 
   async createVoucher(voucherDto) {

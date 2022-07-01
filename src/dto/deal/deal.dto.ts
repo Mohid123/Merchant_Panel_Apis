@@ -9,7 +9,7 @@ export class DealDto {
   id: string;
 
   @ApiProperty()
-  dealID: number;
+  dealID: string;
 
   @ApiProperty()
   merchantID: string;

@@ -26,7 +26,7 @@ export class InvoicesService {
       { new: true },
     );
 
-    return sequenceDocument.sequenceValue;
+    return 'I' + sequenceDocument.sequenceValue;
   }
 
   async createInvoice(invoiceDto) {

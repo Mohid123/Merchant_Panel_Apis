@@ -5,7 +5,7 @@ import { DealInterface } from '../../interface/deal/deal.interface';
 export const DealSchema = new mongoose.Schema(
   {
     _id: { type: String, default: generateStringId },
-    dealID: { type: Number },
+    dealID: { type: String, default: '' },
     merchantID: { type: String },
     dealHeader: { type: String, default: '' },
     subTitle: { type: String, default: '' },
