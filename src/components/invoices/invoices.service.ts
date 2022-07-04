@@ -30,7 +30,7 @@ export class InvoicesService {
   }
 
   async createInvoice(invoiceDto) {
-    invoiceDto.invoiceNo = await this.generateVoucherId('invoiceID');
+    invoiceDto.invoiceID = await this.generateVoucherId('invoiceID');
 
     invoiceDto.invoiceDate = new Date().getTime();
 
@@ -85,8 +85,10 @@ export class InvoicesService {
     invoiceDate,
     invoiceAmount,
     status,
+    invoiceID,
     offset,
     limit,
+    multipleInvoicesDto
   ) {
     try {
       offset = parseInt(offset) < 0 ? 0 : offset;
@@ -160,6 +162,25 @@ export class InvoicesService {
         };
       }
 
+      invoiceID = invoiceID.trim();
+
+      let filters = {};
+
+      if (invoiceID.trim().length) {
+        var query = new RegExp(`${invoiceID}`, 'i');
+        filters = {
+          ...filters,
+          invoiceID: query,
+        };
+      }
+
+      if( multipleInvoicesDto?.invoiceIDsArray?.length){
+        filters = {
+          ...filters,
+          invoiceID: { $in: multipleInvoicesDto.invoiceIDsArray },
+        };
+      }
+
       if (
         Object.keys(sortFilters).length === 0 &&
         sortFilters.constructor === Object
@@ -172,6 +193,7 @@ export class InvoicesService {
       const totalCount = await this._invoicesModel.countDocuments({
         merchantID: merchantID,
         ...matchFilter,
+        ...filters
       });
 
       let invoices = await this._invoicesModel
@@ -180,6 +202,7 @@ export class InvoicesService {
             $match: {
               merchantID: merchantID,
               ...matchFilter,
+              ...filters
             },
           },
           {
