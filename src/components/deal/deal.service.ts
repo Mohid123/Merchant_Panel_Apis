@@ -9,6 +9,7 @@ import { SORT } from '../../enum/sort/sort.enum';
 import { VoucherCounterInterface } from '../../interface/vouchers/vouchersCounter.interface';
 import { SubCategoryInterface } from '../../interface/category/subcategory.interface';
 import { arrayBuffer } from 'stream/consumers';
+import { RATINGENUM } from 'src/enum/review/ratingValue.enum';
 
 @Injectable()
 export class DealService {
@@ -331,7 +332,13 @@ export class DealService {
     }
   }
 
-  async getDealsReviewStatsByMerchant(id, offset, limit) {
+  async getDealsReviewStatsByMerchant(
+    id,
+    averageRating,
+    dealID,
+    offset,
+    limit,
+  ) {
     offset = parseInt(offset) < 0 ? 0 : offset;
     limit = parseInt(limit) < 1 ? 10 : limit;
     try {
@@ -348,12 +355,58 @@ export class DealService {
       //   .skip(parseInt(offset))
       //   .limit(parseInt(limit));
 
+      let matchFilter = {};
+      if (dealID) {
+        let pattern = `/${dealID}/`;
+        matchFilter = {
+          ...matchFilter,
+          dealID: { $regex: pattern },
+        };
+      }
+      let minValue;
+      if (averageRating) {
+        switch (averageRating) {
+          case RATINGENUM.range1:
+            minValue = 1;
+            break;
+
+          case RATINGENUM.range2:
+            minValue = 2;
+            break;
+
+          case RATINGENUM.range3:
+            minValue = 3;
+            break;
+
+          case RATINGENUM.range4:
+            minValue = 4;
+            break;
+
+          case RATINGENUM.range5:
+            minValue = 5;
+            break;
+
+          default:
+            break;
+        }
+      }
+
+      if (averageRating !== RATINGENUM.all) {
+        matchFilter = {
+          ...matchFilter,
+          ratingsAverage: {
+            $gte: minValue,
+          },
+        };
+      }
+
       const deals = await this.dealModel
         .aggregate([
           {
             $match: {
               merchantID: id,
               deletedCheck: false,
+              ...matchFilter,
             },
           },
           {
