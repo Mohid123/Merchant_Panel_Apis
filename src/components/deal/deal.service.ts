@@ -363,6 +363,7 @@ export class DealService {
           dealID: { $regex: pattern },
         };
       }
+      
       let minValue;
       if (averageRating) {
         switch (averageRating) {

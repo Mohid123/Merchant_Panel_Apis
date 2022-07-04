@@ -1,6 +1,6 @@
 export enum BILLINGSTATUS {
   paid = 'Paid',
-  unpaid = 'UnPaid',
-  pending = 'Pending',
-  cancelled = 'Cancelled',
+  coolingOff = 'Cooling off',
+  credited = 'Credited',
+  inProcess = 'In process',
 }
