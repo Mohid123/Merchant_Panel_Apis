@@ -18,6 +18,7 @@ import { DealStatusDto } from '../../dto/deal/updatedealstatus.dto';
 import { SORT } from '../../enum/sort/sort.enum';
 import { DEALSTATUS } from '../../enum/deal/dealstatus.enum';
 import { UpdateDealDto } from '../../dto/deal/updatedeal.dto';
+import { MultipleDealsDto } from 'src/dto/deal/multipledeals.dto';
 
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
@@ -92,7 +93,7 @@ export class DealController {
   @ApiQuery({ name: 'status', enum: DEALSTATUS, required: false })
   @ApiQuery({ name: 'dateFrom', required: false })
   @ApiQuery({ name: 'dateTo', required: false })
-  @Get('getDealsByMerchantID/:merchantID')
+  @Post('getDealsByMerchantID/:merchantID')
   getDealsByMerchantID(
     @Param('merchantID') merchantID: string,
     @Query('dealHeader') dealHeader: SORT,
@@ -104,8 +105,12 @@ export class DealController {
     @Query('status') status: DEALSTATUS,
     @Query('dateFrom') dateFrom: number,
     @Query('dateTo') dateTo: number,
+    @Query("dealID") dealID: string = "",
+    @Query("header") header: string = "",
+    @Query("dealStatus") dealStatus: string = "",
     @Query('offset') offset: number = 0,
     @Query('limit') limit: number = 10,
+    @Body() multipleDealsDto: MultipleDealsDto
     // @Req() req,
   ) {
     return this.dealService.getDealsByMerchantID(
@@ -119,8 +124,12 @@ export class DealController {
       status,
       dateFrom,
       dateTo,
+      dealID,
+      header,
+      dealStatus,
       offset,
       limit,
+      multipleDealsDto
       // req,
     );
   }

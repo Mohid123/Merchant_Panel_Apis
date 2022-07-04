@@ -322,7 +322,7 @@ export class DealService {
       });
 
       if (!deal) {
-        throw new HttpException('SOmething went wrong', HttpStatus.BAD_REQUEST);
+        throw new HttpException('Something went wrong', HttpStatus.BAD_REQUEST);
       }
 
       return { status: 'success', message: 'Deal deleted successfully!' };
@@ -408,8 +408,12 @@ export class DealService {
     status,
     dateFrom,
     dateTo,
+    dealID,
+    header,
+    dealStatus,
     offset,
     limit,
+    multipleDealsDto
     // req,
   ) {
     try {
@@ -515,6 +519,57 @@ export class DealService {
         };
       }
 
+      dealID = dealID.trim();
+      header = header.trim();
+      dealStatus = dealStatus.trim();
+
+      let filters = {};
+
+      if (dealID.trim().length) {
+        var query = new RegExp(`${dealID}`, 'i');
+        filters = {
+          ...filters,
+          dealID: query,
+        };
+      }
+
+      if (header.trim().length) {
+        var query = new RegExp(`${header}`, 'i');
+        filters = {
+          ...filters,
+          dealHeader: query,
+        };
+      }
+
+      if (dealStatus.trim().length) {
+        var query = new RegExp(`${dealStatus}`, 'i');
+        filters = {
+          ...filters,
+          dealStatus: query,
+        };
+      }
+
+      if( multipleDealsDto?.dealIDsArray?.length){
+        filters = {
+          ...filters,
+          dealID: { $in: multipleDealsDto.dealIDsArray },
+        };
+      }
+
+      if( multipleDealsDto?.dealHeaderArray?.length){
+        filters = {
+          ...filters,
+          dealHeader: { $in: multipleDealsDto.dealHeaderArray },
+        };
+      }
+
+      if( multipleDealsDto?.dealStatusArray?.length){
+        filters = {
+          ...filters,
+          dealStatus: { $in: multipleDealsDto.dealStatusArray },
+        };
+      }
+
       if (Object.keys(sort).length === 0 && sort.constructor === Object) {
         sort = {
           createdAt: -1,
@@ -528,6 +583,7 @@ export class DealService {
         merchantID: merchantID,
         deletedCheck: false,
         ...matchFilter,
+        ...filters
       });
 
       const deals = await this.dealModel
@@ -537,11 +593,22 @@ export class DealService {
               merchantID: merchantID,
               deletedCheck: false,
               ...matchFilter,
+              ...filters
             },
           },
           {
             $sort: sort,
           },
+          {
+            $addFields: {
+              id: '$_id'
+            }
+          },
+          {
+            $project: {
+              _id: 0
+            }
+          }
         ])
         .skip(parseInt(offset))
         .limit(parseInt(limit));
