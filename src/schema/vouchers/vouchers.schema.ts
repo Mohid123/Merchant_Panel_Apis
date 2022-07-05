@@ -5,9 +5,10 @@ import { VoucherInterface } from '../../interface/deal/deal.interface';
 export const VoucherSchema = new mongoose.Schema(
   {
     _id: { type: String, default: generateStringId },
-    voucherID: { type: Number, unique: true },
-    dealName: { type: String, default: '' },
-    dealId: { type: String, default: '' },
+    voucherID: { type: String, unique: true },
+    voucherHeader: { type: String, default: '' },
+    dealHeader: { type: String, default: '' },
+    dealID: { type: String, default: '' },
     merchantID: { type: String, default: '' },
     amount: { type: Number, default: 0 },
     fee: { type: Number, default: 0 },

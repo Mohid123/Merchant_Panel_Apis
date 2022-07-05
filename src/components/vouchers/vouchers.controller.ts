@@ -8,6 +8,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { MultipleVouchersDto } from 'src/dto/vouchers/multiplevouchers.dto';
 import { VoucherDto } from '../../dto/vouchers/vouchers.dto';
 import { BILLINGSTATUS } from '../../enum/billing/billingStatus.enum';
 import { SORT } from '../../enum/sort/sort.enum';
@@ -37,7 +38,7 @@ export class VouchersController {
   @ApiQuery({ name: 'paymentStatus', enum: BILLINGSTATUS, required: false })
   @ApiQuery({ name: 'dateFrom', required: false })
   @ApiQuery({ name: 'dateTo', required: false })
-  @Get('getAllVouchersByMerchantID/:merchantID')
+  @Post('getAllVouchersByMerchantID/:merchantID')
   getAllVouchers(
     @Param('merchantID') merchantID: string,
     @Query('deal') deal: SORT,
@@ -48,8 +49,14 @@ export class VouchersController {
     @Query('paymentStatus') paymentStatus: BILLINGSTATUS,
     @Query('dateFrom') dateFrom: number,
     @Query('dateTo') dateTo: number,
+    @Query("voucherID") voucherID: string = "",
+    @Query("dealHeader") dealHeader: string = "",
+    @Query("voucherHeader") voucherHeader: string = "",
+    @Query("voucherStatus") voucherStatus: string = "",
+    @Query("invoiceStatus") invoiceStatus: string = "",
     @Query('offset') offset: number = 0,
     @Query('limit') limit: number = 10,
+    @Body() multipleVouchersDto: MultipleVouchersDto
   ) {
     return this.voucherService.getAllVouchersByMerchantID(
       deal,
@@ -61,8 +68,14 @@ export class VouchersController {
       dateFrom,
       dateTo,
       merchantID,
+      voucherID,
+      dealHeader,
+      voucherHeader,
+      voucherStatus,
+      invoiceStatus,
       offset,
       limit,
+      multipleVouchersDto
     );
   }
 

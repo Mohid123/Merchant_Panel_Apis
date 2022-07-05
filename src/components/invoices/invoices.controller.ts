@@ -8,6 +8,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { MultipleInvoicesDto } from 'src/dto/invoices/multipleinvoices.dto';
 import { InvoiceDTO } from '../../dto/invoices/invoices.dto';
 import { BILLINGSTATUS } from '../../enum/billing/billingStatus.enum';
 import { INVOICEAMOUNTENUM } from '../../enum/sorting/sortinvoiceamount.enum';
@@ -53,8 +54,10 @@ export class InvoicesController {
     @Query('invoiceDate') invoiceDate: INVOICEDATEENUM,
     @Query('invoiceAmount') invoiceAmount: INVOICEAMOUNTENUM,
     @Query('status') status: INVOICEAMOUNTENUM,
+    @Query("invoiceID") invoiceID: string = "",
     @Query('offset') offset: number = 0,
     @Query('limit') limit: number = 10,
+    @Body() multipleInvoicesDto: MultipleInvoicesDto
   ) {
     return this._invoiceService.getAllInvoicesByMerchant(
       merchantID,
@@ -63,8 +66,10 @@ export class InvoicesController {
       invoiceDate,
       invoiceAmount,
       status,
+      invoiceID,
       offset,
       limit,
+      multipleInvoicesDto
     );
   }
 }

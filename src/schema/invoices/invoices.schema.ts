@@ -4,7 +4,7 @@ import { generateStringId } from '../../components/file-management/utils/utils';
 export const InvoiceSchema = new mongoose.Schema(
     {
         _id: { type: String, default: generateStringId },
-        invoiceNo: { type: Number, default: 0 },
+        invoiceID: { type: String, unique: true },
         invoiceDate: { type: Number, default: 0 },
         invoiceAmount: { type: Number, default: 0 },
         status: { type: String, default: '' },

@@ -9,6 +9,7 @@ import { SORT } from '../../enum/sort/sort.enum';
 import { VoucherCounterInterface } from '../../interface/vouchers/vouchersCounter.interface';
 import { SubCategoryInterface } from '../../interface/category/subcategory.interface';
 import { arrayBuffer } from 'stream/consumers';
+import { RATINGENUM } from 'src/enum/review/ratingValue.enum';
 
 @Injectable()
 export class DealService {
@@ -33,7 +34,7 @@ export class DealService {
       { new: true },
     );
 
-    return sequenceDocument.sequenceValue;
+    return 'D' + sequenceDocument.sequenceValue;
   }
 
   async createDeal(dealDto, req) {
@@ -322,7 +323,7 @@ export class DealService {
       });
 
       if (!deal) {
-        throw new HttpException('SOmething went wrong', HttpStatus.BAD_REQUEST);
+        throw new HttpException('Something went wrong', HttpStatus.BAD_REQUEST);
       }
 
       return { status: 'success', message: 'Deal deleted successfully!' };
@@ -331,7 +332,13 @@ export class DealService {
     }
   }
 
-  async getDealsReviewStatsByMerchant(id, offset, limit) {
+  async getDealsReviewStatsByMerchant(
+    id,
+    averageRating,
+    dealID,
+    offset,
+    limit,
+  ) {
     offset = parseInt(offset) < 0 ? 0 : offset;
     limit = parseInt(limit) < 1 ? 10 : limit;
     try {
@@ -348,12 +355,59 @@ export class DealService {
       //   .skip(parseInt(offset))
       //   .limit(parseInt(limit));
 
+      let matchFilter = {};
+      if (dealID) {
+        let pattern = `/${dealID}/`;
+        matchFilter = {
+          ...matchFilter,
+          dealID: { $regex: pattern },
+        };
+      }
+      
+      let minValue;
+      if (averageRating) {
+        switch (averageRating) {
+          case RATINGENUM.range1:
+            minValue = 1;
+            break;
+
+          case RATINGENUM.range2:
+            minValue = 2;
+            break;
+
+          case RATINGENUM.range3:
+            minValue = 3;
+            break;
+
+          case RATINGENUM.range4:
+            minValue = 4;
+            break;
+
+          case RATINGENUM.range5:
+            minValue = 5;
+            break;
+
+          default:
+            break;
+        }
+      }
+
+      if (averageRating !== RATINGENUM.all) {
+        matchFilter = {
+          ...matchFilter,
+          ratingsAverage: {
+            $gte: minValue,
+          },
+        };
+      }
+
       const deals = await this.dealModel
         .aggregate([
           {
             $match: {
               merchantID: id,
               deletedCheck: false,
+              ...matchFilter,
             },
           },
           {
@@ -408,8 +462,12 @@ export class DealService {
     status,
     dateFrom,
     dateTo,
+    dealID,
+    header,
+    dealStatus,
     offset,
     limit,
+    multipleDealsDto
     // req,
   ) {
     try {
@@ -515,6 +573,57 @@ export class DealService {
         };
       }
 
+      dealID = dealID.trim();
+      header = header.trim();
+      dealStatus = dealStatus.trim();
+
+      let filters = {};
+
+      if (dealID.trim().length) {
+        var query = new RegExp(`${dealID}`, 'i');
+        filters = {
+          ...filters,
+          dealID: query,
+        };
+      }
+
+      if (header.trim().length) {
+        var query = new RegExp(`${header}`, 'i');
+        filters = {
+          ...filters,
+          dealHeader: query,
+        };
+      }
+
+      if (dealStatus.trim().length) {
+        var query = new RegExp(`${dealStatus}`, 'i');
+        filters = {
+          ...filters,
+          dealStatus: query,
+        };
+      }
+
+      if( multipleDealsDto?.dealIDsArray?.length){
+        filters = {
+          ...filters,
+          dealID: { $in: multipleDealsDto.dealIDsArray },
+        };
+      }
+
+      if( multipleDealsDto?.dealHeaderArray?.length){
+        filters = {
+          ...filters,
+          dealHeader: { $in: multipleDealsDto.dealHeaderArray },
+        };
+      }
+
+      if( multipleDealsDto?.dealStatusArray?.length){
+        filters = {
+          ...filters,
+          dealStatus: { $in: multipleDealsDto.dealStatusArray },
+        };
+      }
+
       if (Object.keys(sort).length === 0 && sort.constructor === Object) {
         sort = {
           createdAt: -1,
@@ -528,6 +637,7 @@ export class DealService {
         merchantID: merchantID,
         deletedCheck: false,
         ...matchFilter,
+        ...filters
       });
 
       const deals = await this.dealModel
@@ -537,11 +647,22 @@ export class DealService {
               merchantID: merchantID,
               deletedCheck: false,
               ...matchFilter,
+              ...filters
             },
           },
           {
             $sort: sort,
           },
+          {
+            $addFields: {
+              id: '$_id'
+            }
+          },
+          {
+            $project: {
+              _id: 0
+            }
+          }
         ])
         .skip(parseInt(offset))
         .limit(parseInt(limit));

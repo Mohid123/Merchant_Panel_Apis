@@ -21,7 +21,7 @@ export interface MedialUrl {
 
 export interface DealInterface extends Document {
   id: string;
-  dealID: number;
+  dealID: string;
   merchantID: string;
   dealHeader: string;
   subTitle: string;
