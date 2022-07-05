@@ -64,12 +64,12 @@ export class DealController {
   }
 
   @ApiQuery({ name: 'averageRating', enum: RATINGENUM, required: false })
-  @ApiQuery({ name: 'dealID', required: false })
+  // @ApiQuery({ name: 'dealID', required: false })
   @Get('getDealsReviewStatsByMerchant/:merchantID')
   getDealsReviewStatsByMerchant(
     @Param('merchantID') merchantID: string,
     @Query('averageRating') averageRating: RATINGENUM = RATINGENUM.all,
-    @Query('dealID') dealID: string,
+    @Query('dealID') dealID: string = "",
     @Query('offset') offset: number = 0,
     @Query('limit') limit: number = 10,
   ) {

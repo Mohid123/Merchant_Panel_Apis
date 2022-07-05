@@ -342,25 +342,14 @@ export class DealService {
     offset = parseInt(offset) < 0 ? 0 : offset;
     limit = parseInt(limit) < 1 ? 10 : limit;
     try {
-      const totalCount = await this.dealModel.countDocuments({
-        merchantID: id,
-        deletedCheck: false,
-      });
-
-      // const deals = await this.dealModel
-      //   .find({
-      //     merchantId: id,
-      //     deletedCheck: false,
-      //   })
-      //   .skip(parseInt(offset))
-      //   .limit(parseInt(limit));
 
       let matchFilter = {};
-      if (dealID) {
-        let pattern = `/${dealID}/`;
+
+      if (dealID.trim().length) {
+        var query = new RegExp(`${dealID}`, 'i');
         matchFilter = {
           ...matchFilter,
-          dealID: { $regex: pattern },
+          dealID: query,
         };
       }
       
@@ -400,6 +389,12 @@ export class DealService {
           },
         };
       }
+
+      const totalCount = await this.dealModel.countDocuments({
+        merchantID: id,
+        deletedCheck: false,
+        ...matchFilter
+      });
 
       const deals = await this.dealModel
         .aggregate([
