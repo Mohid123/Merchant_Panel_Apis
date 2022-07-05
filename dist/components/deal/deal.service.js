@@ -19,6 +19,7 @@ const mongoose_2 = require("mongoose");
 const dealstatus_enum_1 = require("../../enum/deal/dealstatus.enum");
 const utils_1 = require("../file-management/utils/utils");
 const sort_enum_1 = require("../../enum/sort/sort.enum");
+const ratingValue_enum_1 = require("../../enum/review/ratingValue.enum");
 let DealService = class DealService {
     constructor(dealModel, categorymodel, voucherCounterModel, subCategoryModel) {
         this.dealModel = dealModel;
@@ -32,7 +33,7 @@ let DealService = class DealService {
                 sequenceValue: 1,
             },
         }, { new: true });
-        return sequenceDocument.sequenceValue;
+        return 'D' + sequenceDocument.sequenceValue;
     }
     async createDeal(dealDto, req) {
         try {
@@ -272,7 +273,7 @@ let DealService = class DealService {
                 deletedCheck: true,
             });
             if (!deal) {
-                throw new common_1.HttpException('SOmething went wrong', common_1.HttpStatus.BAD_REQUEST);
+                throw new common_1.HttpException('Something went wrong', common_1.HttpStatus.BAD_REQUEST);
             }
             return { status: 'success', message: 'Deal deleted successfully!' };
         }
@@ -280,7 +281,7 @@ let DealService = class DealService {
             throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
         }
     }
-    async getDealsReviewStatsByMerchant(id, offset, limit) {
+    async getDealsReviewStatsByMerchant(id, averageRating, dealID, offset, limit) {
         offset = parseInt(offset) < 0 ? 0 : offset;
         limit = parseInt(limit) < 1 ? 10 : limit;
         try {
@@ -288,13 +289,42 @@ let DealService = class DealService {
                 merchantID: id,
                 deletedCheck: false,
             });
+            let matchFilter = {};
+            if (dealID) {
+                let pattern = `/${dealID}/`;
+                matchFilter = Object.assign(Object.assign({}, matchFilter), { dealID: { $regex: pattern } });
+            }
+            let minValue;
+            if (averageRating) {
+                switch (averageRating) {
+                    case ratingValue_enum_1.RATINGENUM.range1:
+                        minValue = 1;
+                        break;
+                    case ratingValue_enum_1.RATINGENUM.range2:
+                        minValue = 2;
+                        break;
+                    case ratingValue_enum_1.RATINGENUM.range3:
+                        minValue = 3;
+                        break;
+                    case ratingValue_enum_1.RATINGENUM.range4:
+                        minValue = 4;
+                        break;
+                    case ratingValue_enum_1.RATINGENUM.range5:
+                        minValue = 5;
+                        break;
+                    default:
+                        break;
+                }
+            }
+            if (averageRating !== ratingValue_enum_1.RATINGENUM.all) {
+                matchFilter = Object.assign(Object.assign({}, matchFilter), { ratingsAverage: {
+                        $gte: minValue,
+                    } });
+            }
             const deals = await this.dealModel
                 .aggregate([
                 {
-                    $match: {
-                        merchantID: id,
-                        deletedCheck: false,
-                    },
+                    $match: Object.assign({ merchantID: id, deletedCheck: false }, matchFilter),
                 },
                 {
                     $project: {
@@ -335,7 +365,8 @@ let DealService = class DealService {
             throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
         }
     }
-    async getDealsByMerchantID(merchantID, dealHeader, price, startDate, endDate, availableVoucher, soldVoucher, status, dateFrom, dateTo, offset, limit) {
+    async getDealsByMerchantID(merchantID, dealHeader, price, startDate, endDate, availableVoucher, soldVoucher, status, dateFrom, dateTo, dealID, header, dealStatus, offset, limit, multipleDealsDto) {
+        var _a, _b, _c;
         try {
             dateFrom = parseInt(dateFrom);
             dateTo = parseInt(dateTo);
@@ -392,6 +423,31 @@ let DealService = class DealService {
                 console.log('soldVoucher');
                 sort = Object.assign(Object.assign({}, sort), { soldVoucher: sortSoldVoucher });
             }
+            dealID = dealID.trim();
+            header = header.trim();
+            dealStatus = dealStatus.trim();
+            let filters = {};
+            if (dealID.trim().length) {
+                var query = new RegExp(`${dealID}`, 'i');
+                filters = Object.assign(Object.assign({}, filters), { dealID: query });
+            }
+            if (header.trim().length) {
+                var query = new RegExp(`${header}`, 'i');
+                filters = Object.assign(Object.assign({}, filters), { dealHeader: query });
+            }
+            if (dealStatus.trim().length) {
+                var query = new RegExp(`${dealStatus}`, 'i');
+                filters = Object.assign(Object.assign({}, filters), { dealStatus: query });
+            }
+            if ((_a = multipleDealsDto === null || multipleDealsDto === void 0 ? void 0 : multipleDealsDto.dealIDsArray) === null || _a === void 0 ? void 0 : _a.length) {
+                filters = Object.assign(Object.assign({}, filters), { dealID: { $in: multipleDealsDto.dealIDsArray } });
+            }
+            if ((_b = multipleDealsDto === null || multipleDealsDto === void 0 ? void 0 : multipleDealsDto.dealHeaderArray) === null || _b === void 0 ? void 0 : _b.length) {
+                filters = Object.assign(Object.assign({}, filters), { dealHeader: { $in: multipleDealsDto.dealHeaderArray } });
+            }
+            if ((_c = multipleDealsDto === null || multipleDealsDto === void 0 ? void 0 : multipleDealsDto.dealStatusArray) === null || _c === void 0 ? void 0 : _c.length) {
+                filters = Object.assign(Object.assign({}, filters), { dealStatus: { $in: multipleDealsDto.dealStatusArray } });
+            }
             if (Object.keys(sort).length === 0 && sort.constructor === Object) {
                 sort = {
                     createdAt: -1,
@@ -399,15 +455,25 @@ let DealService = class DealService {
             }
             console.log(sort);
             console.log(matchFilter);
-            const totalCount = await this.dealModel.countDocuments(Object.assign({ merchantID: merchantID, deletedCheck: false }, matchFilter));
+            const totalCount = await this.dealModel.countDocuments(Object.assign(Object.assign({ merchantID: merchantID, deletedCheck: false }, matchFilter), filters));
             const deals = await this.dealModel
                 .aggregate([
                 {
-                    $match: Object.assign({ merchantID: merchantID, deletedCheck: false }, matchFilter),
+                    $match: Object.assign(Object.assign({ merchantID: merchantID, deletedCheck: false }, matchFilter), filters),
                 },
                 {
                     $sort: sort,
                 },
+                {
+                    $addFields: {
+                        id: '$_id'
+                    }
+                },
+                {
+                    $project: {
+                        _id: 0
+                    }
+                }
             ])
                 .skip(parseInt(offset))
                 .limit(parseInt(limit));

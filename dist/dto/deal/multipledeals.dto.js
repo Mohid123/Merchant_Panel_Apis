@@ -9,33 +9,21 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.InvoiceDTO = void 0;
+exports.MultipleDealsDto = void 0;
 const swagger_1 = require("@nestjs/swagger");
-class InvoiceDTO {
+class MultipleDealsDto {
 }
 __decorate([
     (0, swagger_1.ApiProperty)(),
-    __metadata("design:type", String)
-], InvoiceDTO.prototype, "invoiceID", void 0);
+    __metadata("design:type", Array)
+], MultipleDealsDto.prototype, "dealIDsArray", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
-    __metadata("design:type", Number)
-], InvoiceDTO.prototype, "invoiceDate", void 0);
+    __metadata("design:type", Array)
+], MultipleDealsDto.prototype, "dealHeaderArray", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
-    __metadata("design:type", Number)
-], InvoiceDTO.prototype, "invoiceAmount", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)(),
-    __metadata("design:type", String)
-], InvoiceDTO.prototype, "status", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)(),
-    __metadata("design:type", String)
-], InvoiceDTO.prototype, "invoiceURL", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)(),
-    __metadata("design:type", String)
-], InvoiceDTO.prototype, "merchantID", void 0);
-exports.InvoiceDTO = InvoiceDTO;
-//# sourceMappingURL=invoices.dto.js.map
+    __metadata("design:type", Array)
+], MultipleDealsDto.prototype, "dealStatusArray", void 0);
+exports.MultipleDealsDto = MultipleDealsDto;
+//# sourceMappingURL=multipledeals.dto.js.map

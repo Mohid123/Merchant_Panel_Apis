@@ -29,10 +29,10 @@ let InvoicesService = class InvoicesService {
                 sequenceValue: 1,
             },
         }, { new: true });
-        return sequenceDocument.sequenceValue;
+        return 'I' + sequenceDocument.sequenceValue;
     }
     async createInvoice(invoiceDto) {
-        invoiceDto.invoiceNo = await this.generateVoucherId('invoiceID');
+        invoiceDto.invoiceID = await this.generateVoucherId('invoiceID');
         invoiceDto.invoiceDate = new Date().getTime();
         return await new this._invoicesModel(invoiceDto).save();
     }
@@ -73,7 +73,8 @@ let InvoicesService = class InvoicesService {
             throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
         }
     }
-    async getAllInvoicesByMerchant(merchantID, dateFrom, dateTo, invoiceDate, invoiceAmount, status, offset, limit) {
+    async getAllInvoicesByMerchant(merchantID, dateFrom, dateTo, invoiceDate, invoiceAmount, status, invoiceID, offset, limit, multipleInvoicesDto) {
+        var _a;
         try {
             offset = parseInt(offset) < 0 ? 0 : offset;
             limit = parseInt(limit) < 1 ? 10 : limit;
@@ -115,17 +116,26 @@ let InvoicesService = class InvoicesService {
                 }
                 sortFilters = Object.assign(Object.assign({}, sortFilters), { invoiceAmount: sortInvoiceAmount });
             }
+            invoiceID = invoiceID.trim();
+            let filters = {};
+            if (invoiceID.trim().length) {
+                var query = new RegExp(`${invoiceID}`, 'i');
+                filters = Object.assign(Object.assign({}, filters), { invoiceID: query });
+            }
+            if ((_a = multipleInvoicesDto === null || multipleInvoicesDto === void 0 ? void 0 : multipleInvoicesDto.invoiceIDsArray) === null || _a === void 0 ? void 0 : _a.length) {
+                filters = Object.assign(Object.assign({}, filters), { invoiceID: { $in: multipleInvoicesDto.invoiceIDsArray } });
+            }
             if (Object.keys(sortFilters).length === 0 &&
                 sortFilters.constructor === Object) {
                 sortFilters = {
                     createdAt: -1,
                 };
             }
-            const totalCount = await this._invoicesModel.countDocuments(Object.assign({ merchantID: merchantID }, matchFilter));
+            const totalCount = await this._invoicesModel.countDocuments(Object.assign(Object.assign({ merchantID: merchantID }, matchFilter), filters));
             let invoices = await this._invoicesModel
                 .aggregate([
                 {
-                    $match: Object.assign({ merchantID: merchantID }, matchFilter),
+                    $match: Object.assign(Object.assign({ merchantID: merchantID }, matchFilter), filters),
                 },
                 {
                     $sort: Object.assign({}, sortFilters),

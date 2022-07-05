@@ -5,7 +5,7 @@ const mongoose = require("mongoose");
 const utils_1 = require("../../components/file-management/utils/utils");
 exports.InvoiceSchema = new mongoose.Schema({
     _id: { type: String, default: utils_1.generateStringId },
-    invoiceNo: { type: Number, default: 0 },
+    invoiceID: { type: String, unique: true },
     invoiceDate: { type: Number, default: 0 },
     invoiceAmount: { type: Number, default: 0 },
     status: { type: String, default: '' },

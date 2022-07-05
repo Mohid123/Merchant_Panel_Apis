@@ -28,7 +28,7 @@ let VouchersService = class VouchersService {
                 sequenceValue: 1,
             },
         }, { new: true });
-        return sequenceDocument.sequenceValue;
+        return 'V' + sequenceDocument.sequenceValue;
     }
     async createVoucher(voucherDto) {
         try {
@@ -54,7 +54,8 @@ let VouchersService = class VouchersService {
             throw new common_1.HttpException(err.message, common_1.HttpStatus.BAD_REQUEST);
         }
     }
-    async getAllVouchersByMerchantID(deal, amount, fee, net, status, paymentStatus, dateFrom, dateTo, merchantId, offset, limit) {
+    async getAllVouchersByMerchantID(deal, amount, fee, net, status, paymentStatus, dateFrom, dateTo, merchantId, voucherID, dealHeader, voucherHeader, voucherStatus, invoiceStatus, offset, limit, multipleVouchersDto) {
+        var _a, _b, _c, _d, _e;
         try {
             offset = parseInt(offset) < 0 ? 0 : offset;
             limit = parseInt(limit) < 1 ? 10 : limit;
@@ -89,7 +90,7 @@ let VouchersService = class VouchersService {
             if (deal) {
                 let sortDeal = deal == sort_enum_1.SORT.ASC ? 1 : -1;
                 console.log('deal');
-                sort = Object.assign(Object.assign({}, sort), { dealName: sortDeal });
+                sort = Object.assign(Object.assign({}, sort), { dealHeader: sortDeal });
             }
             if (amount) {
                 let sortAmount = amount == sort_enum_1.SORT.ASC ? 1 : -1;
@@ -106,6 +107,57 @@ let VouchersService = class VouchersService {
                 console.log('net');
                 sort = Object.assign(Object.assign({}, sort), { net: sortNet });
             }
+            voucherID = voucherID.trim();
+            dealHeader = dealHeader.trim();
+            voucherHeader = voucherHeader.trim();
+            voucherStatus = voucherStatus.trim();
+            invoiceStatus = invoiceStatus.trim();
+            let filters = {};
+            if (voucherID.trim().length) {
+                var query = new RegExp(`${voucherID}`, 'i');
+                filters = Object.assign(Object.assign({}, filters), { voucherID: query });
+            }
+            ;
+            if (dealHeader.trim().length) {
+                var query = new RegExp(`${dealHeader}`, 'i');
+                filters = Object.assign(Object.assign({}, filters), { dealHeader: query });
+            }
+            ;
+            if (voucherHeader.trim().length) {
+                var query = new RegExp(`${voucherHeader}`, 'i');
+                filters = Object.assign(Object.assign({}, filters), { voucherHeader: query });
+            }
+            ;
+            if (voucherStatus.trim().length) {
+                var query = new RegExp(`${voucherStatus}`, 'i');
+                filters = Object.assign(Object.assign({}, filters), { status: query });
+            }
+            ;
+            if (invoiceStatus.trim().length) {
+                var query = new RegExp(`${invoiceStatus}`, 'i');
+                filters = Object.assign(Object.assign({}, filters), { paymentStatus: query });
+            }
+            ;
+            if ((_a = multipleVouchersDto === null || multipleVouchersDto === void 0 ? void 0 : multipleVouchersDto.voucherIDsArray) === null || _a === void 0 ? void 0 : _a.length) {
+                filters = Object.assign(Object.assign({}, filters), { voucherID: { $in: multipleVouchersDto.voucherIDsArray } });
+            }
+            ;
+            if ((_b = multipleVouchersDto === null || multipleVouchersDto === void 0 ? void 0 : multipleVouchersDto.dealHeaderArray) === null || _b === void 0 ? void 0 : _b.length) {
+                filters = Object.assign(Object.assign({}, filters), { dealHeader: { $in: multipleVouchersDto.dealHeaderArray } });
+            }
+            ;
+            if ((_c = multipleVouchersDto === null || multipleVouchersDto === void 0 ? void 0 : multipleVouchersDto.voucherHeaderArray) === null || _c === void 0 ? void 0 : _c.length) {
+                filters = Object.assign(Object.assign({}, filters), { voucherHeader: { $in: multipleVouchersDto.voucherHeaderArray } });
+            }
+            ;
+            if ((_d = multipleVouchersDto === null || multipleVouchersDto === void 0 ? void 0 : multipleVouchersDto.voucherStatusArray) === null || _d === void 0 ? void 0 : _d.length) {
+                filters = Object.assign(Object.assign({}, filters), { status: { $in: multipleVouchersDto.voucherStatusArray } });
+            }
+            ;
+            if ((_e = multipleVouchersDto === null || multipleVouchersDto === void 0 ? void 0 : multipleVouchersDto.invoiceStatusArray) === null || _e === void 0 ? void 0 : _e.length) {
+                filters = Object.assign(Object.assign({}, filters), { paymentStatus: { $in: multipleVouchersDto.invoiceStatusArray } });
+            }
+            ;
             if (Object.keys(sort).length === 0 && sort.constructor === Object) {
                 sort = {
                     createdAt: 1,
@@ -113,11 +165,11 @@ let VouchersService = class VouchersService {
             }
             console.log(sort);
             console.log(matchFilter);
-            const totalCount = await this.voucherModel.countDocuments(Object.assign({ merchantID: merchantId }, matchFilter));
+            const totalCount = await this.voucherModel.countDocuments(Object.assign(Object.assign({ merchantID: merchantId }, matchFilter), filters));
             let vouchers = await this.voucherModel
                 .aggregate([
                 {
-                    $match: Object.assign({ merchantID: merchantId }, matchFilter),
+                    $match: Object.assign(Object.assign({ merchantID: merchantId }, matchFilter), filters),
                 },
                 {
                     $sort: sort,
