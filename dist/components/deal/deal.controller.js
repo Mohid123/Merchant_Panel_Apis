@@ -45,7 +45,7 @@ let DealController = class DealController {
     getDeal(id) {
         return this.dealService.getDeal(id);
     }
-    getDealsReviewStatsByMerchant(merchantID, averageRating = ratingValue_enum_1.RATINGENUM.all, dealID, offset = 0, limit = 10) {
+    getDealsReviewStatsByMerchant(merchantID, averageRating = ratingValue_enum_1.RATINGENUM.all, dealID = "", offset = 0, limit = 10) {
         return this.dealService.getDealsReviewStatsByMerchant(merchantID, averageRating, dealID, offset, limit);
     }
     getAllDeals(offset = 0, limit = 10, req) {
@@ -108,7 +108,6 @@ __decorate([
 ], DealController.prototype, "getDeal", null);
 __decorate([
     (0, swagger_1.ApiQuery)({ name: 'averageRating', enum: ratingValue_enum_1.RATINGENUM, required: false }),
-    (0, swagger_1.ApiQuery)({ name: 'dealID', required: false }),
     (0, common_1.Get)('getDealsReviewStatsByMerchant/:merchantID'),
     __param(0, (0, common_1.Param)('merchantID')),
     __param(1, (0, common_1.Query)('averageRating')),

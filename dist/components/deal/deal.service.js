@@ -285,14 +285,10 @@ let DealService = class DealService {
         offset = parseInt(offset) < 0 ? 0 : offset;
         limit = parseInt(limit) < 1 ? 10 : limit;
         try {
-            const totalCount = await this.dealModel.countDocuments({
-                merchantID: id,
-                deletedCheck: false,
-            });
             let matchFilter = {};
-            if (dealID) {
-                let pattern = `/${dealID}/`;
-                matchFilter = Object.assign(Object.assign({}, matchFilter), { dealID: { $regex: pattern } });
+            if (dealID.trim().length) {
+                var query = new RegExp(`${dealID}`, 'i');
+                matchFilter = Object.assign(Object.assign({}, matchFilter), { dealID: query });
             }
             let minValue;
             if (averageRating) {
@@ -321,6 +317,7 @@ let DealService = class DealService {
                         $gte: minValue,
                     } });
             }
+            const totalCount = await this.dealModel.countDocuments(Object.assign({ merchantID: id, deletedCheck: false }, matchFilter));
             const deals = await this.dealModel
                 .aggregate([
                 {

@@ -23,7 +23,7 @@ export declare class DealController {
     getDeal(id: string): Promise<import("../../interface/deal/deal.interface").DealInterface & {
         _id: any;
     }>;
-    getDealsReviewStatsByMerchant(merchantID: string, averageRating: RATINGENUM, dealID: string, offset?: number, limit?: number): Promise<{
+    getDealsReviewStatsByMerchant(merchantID: string, averageRating?: RATINGENUM, dealID?: string, offset?: number, limit?: number): Promise<{
         totalDeals: number;
         totalMerchantReviews: any;
         data: any[];
