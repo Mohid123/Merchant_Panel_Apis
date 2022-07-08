@@ -8,7 +8,7 @@ export class UtilService {
     let obj = [];
     let city = '';
     const data = cityDataset;
-    const cityData = data.find((element) => element.zip == zipCode);
+    const cityData = data.filter((element) => element.zip == zipCode);
 
     return cityData;
   }
@@ -19,8 +19,6 @@ export class UtilService {
         "apikey": process.env.VATCHECKAPIKEY
       }
     });
-
-    debugger
 
     console.log(res.data);
     return res.data;
