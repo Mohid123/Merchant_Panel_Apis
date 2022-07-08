@@ -174,10 +174,10 @@ export class DealService {
         { _id: deal.id },
         { dealStatus: DEALSTATUS.scheduled },
       );
-    } else if (dealStatusDto.dealStatus == DEALSTATUS.bounced) {
+    } else if (dealStatusDto.dealStatus == DEALSTATUS.expired) {
       return await this.dealModel.updateOne(
         { _id: deal.id },
-        { dealStatus: DEALSTATUS.bounced },
+        { dealStatus: DEALSTATUS.expired },
       );
     }
   }

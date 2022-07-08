@@ -113,6 +113,8 @@ export class AuthService {
     }
     loginDto._id = new Types.ObjectId().toString();
 
+    loginDto.tradeName = loginDto.companyName;
+
     return await new this._usersService(loginDto).save();
   }
 

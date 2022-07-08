@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import axios from 'axios';
+import { categoriesDataSet } from './categories';
 const fs = require('fs');
-import {cityDataset} from './city'
+import {cityDataset} from './city';
+
 @Injectable()
 export class UtilService {
   async getCity(zipCode) {
@@ -11,6 +13,11 @@ export class UtilService {
     const cityData = data.filter((element) => element.zip == zipCode);
 
     return cityData;
+  }
+
+  async getAllCategoriesAndSubCategories () {
+    const data = categoriesDataSet;
+    return data;
   }
 
   async validateVatNumber (vatNumber) {

@@ -9,6 +9,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.UtilService = void 0;
 const common_1 = require("@nestjs/common");
 const axios_1 = require("axios");
+const categories_1 = require("./categories");
 const fs = require('fs');
 const city_1 = require("./city");
 let UtilService = class UtilService {
@@ -16,8 +17,12 @@ let UtilService = class UtilService {
         let obj = [];
         let city = '';
         const data = city_1.cityDataset;
-        const cityData = data.find((element) => element.zip == zipCode);
+        const cityData = data.filter((element) => element.zip == zipCode);
         return cityData;
+    }
+    async getAllCategoriesAndSubCategories() {
+        const data = categories_1.categoriesDataSet;
+        return data;
     }
     async validateVatNumber(vatNumber) {
         const res = await axios_1.default.get(`https://vatcheckapi.com/api/validate/${vatNumber}?apikey=${process.env.VATCHECKAPIKEY}`, {
@@ -25,7 +30,6 @@ let UtilService = class UtilService {
                 "apikey": process.env.VATCHECKAPIKEY
             }
         });
-        debugger;
         console.log(res.data);
         return res.data;
     }
