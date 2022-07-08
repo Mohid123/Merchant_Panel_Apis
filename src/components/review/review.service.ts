@@ -4,14 +4,15 @@ import { Model } from 'mongoose';
 import { DealInterface } from '../../interface/deal/deal.interface';
 import { UsersInterface } from '../../interface/user/users.interface';
 import { ReviewInterface } from '../../interface/review/review.interface';
+import { ReviewTextInterface } from 'src/interface/review/merchantreviewreply.interface';
 
 @Injectable()
 export class ReviewService {
   constructor(
-    @InjectModel('Review')
-    private readonly reviewModel: Model<ReviewInterface>,
+    @InjectModel('Review') private readonly reviewModel: Model<ReviewInterface>,
+    @InjectModel('reviewText') private readonly reviewTextModel: Model<ReviewTextInterface>,
     @InjectModel('Deal') private readonly dealModel: Model<DealInterface>,
-    @InjectModel('User') private readonly userModel: Model<UsersInterface>,
+    @InjectModel('User') private readonly userModel: Model<UsersInterface>
   ) {}
 
   async createReview(reviewDto) {
@@ -19,7 +20,9 @@ export class ReviewService {
       const reviewAlreadyGiven = await this.reviewModel
         .findOne()
         .and([
-          { dealID: reviewDto.dealID },
+          // { dealID: reviewDto.dealID },
+          { dealMongoID: reviewDto.dealMongoID },
+          { voucherMongoID: reviewDto.voucherMongoID },
           { customerID: reviewDto.customerID },
         ]);
 
@@ -30,27 +33,31 @@ export class ReviewService {
         );
       }
 
+      reviewDto.totalRating = reviewDto.multipleRating.reduce((a, b) => {
+        return a + b?.ratingScore
+      }, 0) /  reviewDto.multipleRating?.length;
+
       const review = await this.reviewModel.create(reviewDto);
 
       const reviewStats = await this.reviewModel.aggregate([
         {
           $match: {
-            dealID: reviewDto.dealID,
+            dealMongoID: reviewDto.dealMongoID,
           },
         },
         {
           $group: {
-            _id: '$dealId',
+            _id: '$dealID',
             nRating: { $sum: 1 },
-            avgRating: { $avg: '$rating' },
-            minRating: { $min: '$rating' },
-            maxRating: { $max: '$rating' },
+            avgRating: { $avg: '$totalRating' },
+            minRating: { $min: '$totalRating' },
+            maxRating: { $max: '$totalRating' },
           },
         },
       ]);
 
       if (reviewStats.length > 0) {
-        await this.dealModel.findByIdAndUpdate(reviewDto.dealID, {
+        await this.dealModel.findByIdAndUpdate(reviewDto.dealMongoID, {
           ratingsAverage: reviewStats[0].avgRating,
           totalReviews: reviewStats[0].nRating,
           minRating: reviewStats[0].minRating,
@@ -68,9 +75,9 @@ export class ReviewService {
           $group: {
             _id: '$merchantID',
             nRating: { $sum: 1 },
-            avgRating: { $avg: '$rating' },
-            minRating: { $min: '$rating' },
-            maxRating: { $max: '$rating' },
+            avgRating: { $avg: '$totalRating' },
+            minRating: { $min: '$totalRating' },
+            maxRating: { $max: '$totalRating' },
           },
         },
       ]);
@@ -90,6 +97,41 @@ export class ReviewService {
       }
 
       return review;
+    } catch (err) {
+      throw new HttpException(err, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async createReviewReply (reviewTextDto) {
+    return await new this.reviewTextModel(reviewTextDto).save(); 
+  }
+
+  async getMerchantReply (merchantID, reviewID) {
+    try {
+      
+       let merchantReply = await this.reviewTextModel
+        .aggregate([
+          {
+            $match: {
+              merchantID: merchantID,
+              reviewID: reviewID,
+              deletedCheck: false,
+            }
+          },
+          {
+            $addFields: {
+              id: '$_id'
+            }
+          },
+          {
+            $project: {
+              _id: 0
+            }
+          }
+        ]);
+
+        return merchantReply;
+
     } catch (err) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
     }
