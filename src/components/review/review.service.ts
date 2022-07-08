@@ -195,6 +195,17 @@ export class ReviewService {
             },
           },
           {
+            $lookup: {
+              from: 'reviewText',
+              as: 'merchantReplyText',
+              localField: '_id',
+              foreignField: 'reviewID'
+            }
+          },
+          {
+            $unwind: '$merchantReplyText',
+          },
+          {
             $sort: {
               createdAt: -1,
             },
