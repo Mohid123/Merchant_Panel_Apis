@@ -61,12 +61,12 @@ export class UsersService {
       user.password,
     );
 
-    const salt = await bcrypt.genSalt();
-    let hashedPassword = await bcrypt.hash(updatepasswordDto.newPassword, salt);
 
     if (!comaprePasswords) {
       throw new UnauthorizedException('Incorrect password!');
     } else {
+      const salt = await bcrypt.genSalt();
+      const hashedPassword = await bcrypt.hash(updatepasswordDto.newPassword, salt);
       return await this._userModel.updateOne(
         { _id: id },
         { password: hashedPassword, newUser: false },
@@ -108,11 +108,11 @@ export class UsersService {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
 
-    usersDto.profilePicBlurHash = await encodeImageToBlurhash(
-      usersDto.profilePicURL,
-    );
-
-    usersDto.gallery;
+    if(usersDto?.profilePicURL){
+      usersDto.profilePicBlurHash = await encodeImageToBlurhash(
+        usersDto.profilePicURL,
+      );
+    }
 
     await this._userModel.updateOne({ _id: merchantID }, usersDto);
 
@@ -139,7 +139,7 @@ export class UsersService {
         return hour;
       }
     });
-    debugger;
+
     return await this._userModel.updateOne(
       { _id: updateHoursDTO.id },
       { businessHours: newBusinessHours },

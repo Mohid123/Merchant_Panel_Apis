@@ -57,10 +57,10 @@ export class UsersController {
     return this._usersService.updateBusinessHours(updateHoursDTO);
   }
 
-  @Post('deleteUser/:id')
-  deleteUser(@Param('id') id: string) {
-    return this._usersService.deleteUser(id);
-  }
+  // @Post('deleteUser/:id')
+  // deleteUser(@Param('id') id: string) {
+  //   return this._usersService.deleteUser(id);
+  // }
 
   @Get('getUserById/:id')
   geUserById(@Param('id') id: string) {

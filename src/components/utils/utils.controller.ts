@@ -12,6 +12,11 @@ export class UtilController {
     return this.UtilService.getCity(zipCode);
   }
 
+  @Get('getAllCategoriesAndSubCategories')
+  getAllCategoriesAndSubCategories() {
+    return this.UtilService.getAllCategoriesAndSubCategories();
+  }
+
   @Post('validateVatNumber/:vatNumber')
   validateVatNumber (
     // @Param('countryCode') countryCode: string,

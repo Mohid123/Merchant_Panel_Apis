@@ -174,10 +174,10 @@ export class DealService {
         { _id: deal.id },
         { dealStatus: DEALSTATUS.scheduled },
       );
-    } else if (dealStatusDto.dealStatus == DEALSTATUS.bounced) {
+    } else if (dealStatusDto.dealStatus == DEALSTATUS.expired) {
       return await this.dealModel.updateOne(
         { _id: deal.id },
-        { dealStatus: DEALSTATUS.bounced },
+        { dealStatus: DEALSTATUS.expired },
       );
     }
   }
@@ -279,7 +279,7 @@ export class DealService {
             $lookup: {
               from: 'reviews',
               let: {
-                dealID: id,
+                dealMongoID: id,
               },
 
               pipeline: [
@@ -288,7 +288,7 @@ export class DealService {
                     $expr: {
                       $and: [
                         {
-                          $eq: ['$dealID', '$$dealID'],
+                          $eq: ['$dealMongoID', '$$dealMongoID'],
                         },
                         {
                           $eq: ratingFilter['eq'],
@@ -296,6 +296,17 @@ export class DealService {
                       ],
                     },
                   },
+                },
+                {
+                  $lookup: {
+                    from: 'reviewText',
+                    as: 'merchantReplyText',
+                    localField: '_id',
+                    foreignField: 'reviewID'
+                  }
+                },
+                {
+                  $unwind: '$merchantReplyText',
                 },
                 {
                   $skip: parseInt(offset),
@@ -422,6 +433,7 @@ export class DealService {
           $match: {
             merchantID: id,
             deletedCheck: false,
+            ...matchFilter
           },
         },
         {

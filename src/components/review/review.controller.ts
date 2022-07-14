@@ -1,5 +1,6 @@
 import { Body, Controller, Param, Get, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ReviewTextDto } from 'src/dto/review/merchantreviewreply.dto';
 import { ReviewDto } from '../../dto/review/review.dto';
 import { UpdateReviewDto } from '../../dto/review/updateReview.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -15,6 +16,18 @@ export class ReviewController {
   @Post('createReview')
   createReview(@Body() revieDto: ReviewDto) {
     return this.reviewService.createReview(revieDto);
+  }
+
+  @Post('createReviewReply')
+  createReviewReply (@Body() reviewTextDto:ReviewTextDto) {
+    return this.reviewService.createReviewReply(reviewTextDto)
+  }
+
+  @Get('getMerchantReply/:merchantID/:reviewID')
+  getMerchantReply (
+    @Param('merchantID') merchantID: string,
+    @Param('reviewID') reviewID: string) {
+    return this.reviewService.getMerchantReply(merchantID, reviewID)
   }
 
   @Post('deleteReview/:reviewID')
