@@ -32,6 +32,9 @@ export class VoucherDto {
   merchantID: string;
 
   @ApiProperty()
+  customerID: string;
+
+  @ApiProperty()
   boughtDate: Date;
 
   @ApiProperty()
