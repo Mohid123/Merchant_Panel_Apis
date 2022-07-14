@@ -14,14 +14,13 @@ const swagger_1 = require("@nestjs/swagger");
 class UpdateDealDto {
 }
 __decorate([
-    (0, swagger_1.ApiProperty)(),
-    __metadata("design:type", Date)
-], UpdateDealDto.prototype, "endDate", void 0);
-__decorate([
     (0, swagger_1.ApiProperty)({
         example: [
             {
                 voucherID: '',
+                subTitle: '',
+                originalPrice: 0,
+                dealPrice: 0,
                 numberOfVouchers: 0,
             },
         ],
