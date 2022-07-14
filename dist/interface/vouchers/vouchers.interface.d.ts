@@ -6,6 +6,7 @@ export interface VoucherInterface extends Document {
     dealHeader: string;
     dealID: string;
     merchantID: string;
+    customerID: string;
     amount: number;
     fee: number;
     net: number;

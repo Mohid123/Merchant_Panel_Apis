@@ -10,11 +10,12 @@ exports.VoucherSchema = new mongoose.Schema({
     dealHeader: { type: String, default: '' },
     dealID: { type: String, default: '' },
     merchantID: { type: String, default: '' },
+    customerID: { type: String, default: '' },
     amount: { type: Number, default: 0 },
     fee: { type: Number, default: 0 },
     net: { type: Number, default: 0 },
     status: { type: String, default: '' },
-    paymentStatus: { type: String, default: 'Pending' },
+    paymentStatus: { type: String, default: 'In process' },
     boughtDate: { type: Number },
     deletedCheck: { type: Boolean, default: false }
 }, {
