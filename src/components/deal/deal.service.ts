@@ -138,15 +138,20 @@ export class DealService {
     const deal = await this.dealModel.findById(dealID);
 
     let dealVouchers = 0;
-    let stamp = new Date(updateDealDto.endDate).getTime();
-    updateDealDto.endDate = stamp;
-
-    deal.endDate = updateDealDto.endDate;
 
     deal.vouchers = deal.vouchers.map((element) => {
       updateDealDto.vouchers.forEach((el) => {
+
+        let calculateDiscountPercentage =
+            ((el.originalPrice - el.dealPrice) / el.originalPrice) * 100;
+          el.discountPercentage = calculateDiscountPercentage;
+
         if (el['voucherID'] === element['_id']) {
           element.numberOfVouchers += el.numberOfVouchers;
+          element.subTitle = el.subTitle;
+          element.originalPrice = el.originalPrice;
+          element.dealPrice = el.dealPrice;
+          element.discountPercentage = calculateDiscountPercentage;
         }
       });
 
