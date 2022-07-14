@@ -3,9 +3,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.DEALSTATUS = void 0;
 var DEALSTATUS;
 (function (DEALSTATUS) {
-    DEALSTATUS["published"] = "Published";
-    DEALSTATUS["scheduled"] = "Scheduled";
+    DEALSTATUS["draft"] = "Draft";
     DEALSTATUS["inReview"] = "In Review";
-    DEALSTATUS["bounced"] = "Bounced";
+    DEALSTATUS["scheduled"] = "Scheduled";
+    DEALSTATUS["needsAttention"] = "Needs Attention";
+    DEALSTATUS["published"] = "Published";
+    DEALSTATUS["expired"] = "Expired";
 })(DEALSTATUS = exports.DEALSTATUS || (exports.DEALSTATUS = {}));
 //# sourceMappingURL=dealstatus.enum.js.map

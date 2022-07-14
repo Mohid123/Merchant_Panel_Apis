@@ -44,9 +44,6 @@ let UsersController = class UsersController {
     updateBusinessHours(updateHoursDTO) {
         return this._usersService.updateBusinessHours(updateHoursDTO);
     }
-    deleteUser(id) {
-        return this._usersService.deleteUser(id);
-    }
     geUserById(id) {
         return this._usersService.getUserById(id);
     }
@@ -107,13 +104,6 @@ __decorate([
     __metadata("design:paramtypes", [updatehours_dto_1.UpdateHoursDto]),
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "updateBusinessHours", null);
-__decorate([
-    (0, common_1.Post)('deleteUser/:id'),
-    __param(0, (0, common_1.Param)('id')),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
-    __metadata("design:returntype", void 0)
-], UsersController.prototype, "deleteUser", null);
 __decorate([
     (0, common_1.Get)('getUserById/:id'),
     __param(0, (0, common_1.Param)('id')),

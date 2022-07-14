@@ -49,12 +49,12 @@ let UsersService = class UsersService {
             throw new common_1.HttpException('Unauthorized', common_1.HttpStatus.UNAUTHORIZED);
         }
         const comaprePasswords = bcrypt.compare(updatepasswordDto.password, user.password);
-        const salt = await bcrypt.genSalt();
-        let hashedPassword = await bcrypt.hash(updatepasswordDto.newPassword, salt);
         if (!comaprePasswords) {
             throw new common_1.UnauthorizedException('Incorrect password!');
         }
         else {
+            const salt = await bcrypt.genSalt();
+            const hashedPassword = await bcrypt.hash(updatepasswordDto.newPassword, salt);
             return await this._userModel.updateOne({ _id: id }, { password: hashedPassword, newUser: false });
         }
     }
@@ -79,8 +79,9 @@ let UsersService = class UsersService {
         if (!user) {
             throw new common_1.HttpException('User not found', common_1.HttpStatus.NOT_FOUND);
         }
-        usersDto.profilePicBlurHash = await (0, utils_1.encodeImageToBlurhash)(usersDto.profilePicURL);
-        usersDto.gallery;
+        if (usersDto === null || usersDto === void 0 ? void 0 : usersDto.profilePicURL) {
+            usersDto.profilePicBlurHash = await (0, utils_1.encodeImageToBlurhash)(usersDto.profilePicURL);
+        }
         await this._userModel.updateOne({ _id: merchantID }, usersDto);
         return {
             message: 'User has been updated succesfully',
@@ -97,7 +98,6 @@ let UsersService = class UsersService {
                 return hour;
             }
         });
-        debugger;
         return await this._userModel.updateOne({ _id: updateHoursDTO.id }, { businessHours: newBusinessHours });
     }
     async deleteUser(id) {

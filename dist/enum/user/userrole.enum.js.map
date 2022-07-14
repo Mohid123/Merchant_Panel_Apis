@@ -1,1 +1,1 @@
-{"version":3,"file":"userrole.enum.js","sourceRoot":"","sources":["../../../src/enum/user/userrole.enum.ts"],"names":[],"mappings":";;;AAAA,IAAY,QAIX;AAJD,WAAY,QAAQ;IAChB,2BAAe,CAAA;IACf,iCAAqB,CAAA;IACrB,iCAAqB,CAAA;AACzB,CAAC,EAJW,QAAQ,GAAR,gBAAQ,KAAR,gBAAQ,QAInB"}
+{"version":3,"file":"userrole.enum.js","sourceRoot":"","sources":["../../../src/enum/user/userrole.enum.ts"],"names":[],"mappings":";;;AAAA,IAAY,QAKX;AALD,WAAY,QAAQ;IAChB,2BAAe,CAAA;IACf,iCAAqB,CAAA;IACrB,iCAAqB,CAAA;IACrB,mCAAuB,CAAA;AAC3B,CAAC,EALW,QAAQ,GAAR,gBAAQ,KAAR,gBAAQ,QAKnB"}

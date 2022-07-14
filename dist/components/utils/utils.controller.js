@@ -23,6 +23,9 @@ let UtilController = class UtilController {
     getCity(zipCode) {
         return this.UtilService.getCity(zipCode);
     }
+    getAllCategoriesAndSubCategories() {
+        return this.UtilService.getAllCategoriesAndSubCategories();
+    }
     validateVatNumber(vatNumber) {
         return this.UtilService.validateVatNumber(vatNumber);
     }
@@ -34,6 +37,12 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], UtilController.prototype, "getCity", null);
+__decorate([
+    (0, common_1.Get)('getAllCategoriesAndSubCategories'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], UtilController.prototype, "getAllCategoriesAndSubCategories", null);
 __decorate([
     (0, common_1.Post)('validateVatNumber/:vatNumber'),
     __param(0, (0, common_1.Param)('vatNumber')),

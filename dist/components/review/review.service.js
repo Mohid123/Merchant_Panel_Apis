@@ -17,41 +17,47 @@ const common_1 = require("@nestjs/common");
 const mongoose_1 = require("@nestjs/mongoose");
 const mongoose_2 = require("mongoose");
 let ReviewService = class ReviewService {
-    constructor(reviewModel, dealModel, userModel) {
+    constructor(reviewModel, reviewTextModel, dealModel, userModel) {
         this.reviewModel = reviewModel;
+        this.reviewTextModel = reviewTextModel;
         this.dealModel = dealModel;
         this.userModel = userModel;
     }
     async createReview(reviewDto) {
+        var _a;
         try {
             const reviewAlreadyGiven = await this.reviewModel
                 .findOne()
                 .and([
-                { dealID: reviewDto.dealID },
+                { dealMongoID: reviewDto.dealMongoID },
+                { voucherMongoID: reviewDto.voucherMongoID },
                 { customerID: reviewDto.customerID },
             ]);
             if (reviewAlreadyGiven) {
                 throw new common_1.HttpException('Customer has already reviewed this deal.', common_1.HttpStatus.CONFLICT);
             }
+            reviewDto.totalRating = reviewDto.multipleRating.reduce((a, b) => {
+                return a + (b === null || b === void 0 ? void 0 : b.ratingScore);
+            }, 0) / ((_a = reviewDto.multipleRating) === null || _a === void 0 ? void 0 : _a.length);
             const review = await this.reviewModel.create(reviewDto);
             const reviewStats = await this.reviewModel.aggregate([
                 {
                     $match: {
-                        dealID: reviewDto.dealID,
+                        dealMongoID: reviewDto.dealMongoID,
                     },
                 },
                 {
                     $group: {
-                        _id: '$dealId',
+                        _id: '$dealID',
                         nRating: { $sum: 1 },
-                        avgRating: { $avg: '$rating' },
-                        minRating: { $min: '$rating' },
-                        maxRating: { $max: '$rating' },
+                        avgRating: { $avg: '$totalRating' },
+                        minRating: { $min: '$totalRating' },
+                        maxRating: { $max: '$totalRating' },
                     },
                 },
             ]);
             if (reviewStats.length > 0) {
-                await this.dealModel.findByIdAndUpdate(reviewDto.dealID, {
+                await this.dealModel.findByIdAndUpdate(reviewDto.dealMongoID, {
                     ratingsAverage: reviewStats[0].avgRating,
                     totalReviews: reviewStats[0].nRating,
                     minRating: reviewStats[0].minRating,
@@ -68,9 +74,9 @@ let ReviewService = class ReviewService {
                     $group: {
                         _id: '$merchantID',
                         nRating: { $sum: 1 },
-                        avgRating: { $avg: '$rating' },
-                        minRating: { $min: '$rating' },
-                        maxRating: { $max: '$rating' },
+                        avgRating: { $avg: '$totalRating' },
+                        minRating: { $min: '$totalRating' },
+                        maxRating: { $max: '$totalRating' },
                     },
                 },
             ]);
@@ -89,6 +95,37 @@ let ReviewService = class ReviewService {
                 });
             }
             return review;
+        }
+        catch (err) {
+            throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
+        }
+    }
+    async createReviewReply(reviewTextDto) {
+        return await new this.reviewTextModel(reviewTextDto).save();
+    }
+    async getMerchantReply(merchantID, reviewID) {
+        try {
+            let merchantReply = await this.reviewTextModel
+                .aggregate([
+                {
+                    $match: {
+                        merchantID: merchantID,
+                        reviewID: reviewID,
+                        deletedCheck: false,
+                    }
+                },
+                {
+                    $addFields: {
+                        id: '$_id'
+                    }
+                },
+                {
+                    $project: {
+                        _id: 0
+                    }
+                }
+            ]);
+            return merchantReply;
         }
         catch (err) {
             throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
@@ -146,6 +183,17 @@ let ReviewService = class ReviewService {
                     },
                 },
                 {
+                    $lookup: {
+                        from: 'reviewText',
+                        as: 'merchantReplyText',
+                        localField: '_id',
+                        foreignField: 'reviewID'
+                    }
+                },
+                {
+                    $unwind: '$merchantReplyText',
+                },
+                {
                     $sort: {
                         createdAt: -1,
                     },
@@ -176,9 +224,11 @@ let ReviewService = class ReviewService {
 ReviewService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, mongoose_1.InjectModel)('Review')),
-    __param(1, (0, mongoose_1.InjectModel)('Deal')),
-    __param(2, (0, mongoose_1.InjectModel)('User')),
+    __param(1, (0, mongoose_1.InjectModel)('reviewText')),
+    __param(2, (0, mongoose_1.InjectModel)('Deal')),
+    __param(3, (0, mongoose_1.InjectModel)('User')),
     __metadata("design:paramtypes", [mongoose_2.Model,
+        mongoose_2.Model,
         mongoose_2.Model,
         mongoose_2.Model])
 ], ReviewService);

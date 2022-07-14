@@ -138,8 +138,8 @@ let DealService = class DealService {
         if (dealStatusDto.dealStatus == dealstatus_enum_1.DEALSTATUS.scheduled) {
             return await this.dealModel.updateOne({ _id: deal.id }, { dealStatus: dealstatus_enum_1.DEALSTATUS.scheduled });
         }
-        else if (dealStatusDto.dealStatus == dealstatus_enum_1.DEALSTATUS.bounced) {
-            return await this.dealModel.updateOne({ _id: deal.id }, { dealStatus: dealstatus_enum_1.DEALSTATUS.bounced });
+        else if (dealStatusDto.dealStatus == dealstatus_enum_1.DEALSTATUS.expired) {
+            return await this.dealModel.updateOne({ _id: deal.id }, { dealStatus: dealstatus_enum_1.DEALSTATUS.expired });
         }
     }
     async getAllDeals(req, offset, limit) {
@@ -232,7 +232,7 @@ let DealService = class DealService {
                     $lookup: {
                         from: 'reviews',
                         let: {
-                            dealID: id,
+                            dealMongoID: id,
                         },
                         pipeline: [
                             {
@@ -240,7 +240,7 @@ let DealService = class DealService {
                                     $expr: {
                                         $and: [
                                             {
-                                                $eq: ['$dealID', '$$dealID'],
+                                                $eq: ['$dealMongoID', '$$dealMongoID'],
                                             },
                                             {
                                                 $eq: ratingFilter['eq'],
@@ -248,6 +248,17 @@ let DealService = class DealService {
                                         ],
                                     },
                                 },
+                            },
+                            {
+                                $lookup: {
+                                    from: 'reviewText',
+                                    as: 'merchantReplyText',
+                                    localField: '_id',
+                                    foreignField: 'reviewID'
+                                }
+                            },
+                            {
+                                $unwind: '$merchantReplyText',
                             },
                             {
                                 $skip: parseInt(offset),
@@ -337,10 +348,7 @@ let DealService = class DealService {
                 .limit(parseInt(limit));
             const totalMerchantReviews = await this.dealModel.aggregate([
                 {
-                    $match: {
-                        merchantID: id,
-                        deletedCheck: false,
-                    },
+                    $match: Object.assign({ merchantID: id, deletedCheck: false }, matchFilter),
                 },
                 {
                     $group: {

@@ -14,18 +14,17 @@ const review_service_1 = require("./review.service");
 const review_schema_1 = require("../../schema/review/review.schema");
 const deal_schema_1 = require("../../schema/deal/deal.schema");
 const users_schema_1 = require("../../schema/user/users.schema");
+const merchantreviewreply_schema_1 = require("../../schema/review/merchantreviewreply.schema");
 let ReviewModule = class ReviewModule {
 };
 ReviewModule = __decorate([
     (0, common_1.Module)({
         imports: [
             mongoose_1.MongooseModule.forFeature([
-                {
-                    name: 'Review',
-                    schema: review_schema_1.ReviewSchema,
-                },
+                { name: 'Review', schema: review_schema_1.ReviewSchema },
                 { name: 'Deal', schema: deal_schema_1.DealSchema },
                 { name: 'User', schema: users_schema_1.UsersSchema },
+                { name: 'reviewText', schema: merchantreviewreply_schema_1.ReviewTextSchema }
             ]),
         ],
         controllers: [review_controller_1.ReviewController],
