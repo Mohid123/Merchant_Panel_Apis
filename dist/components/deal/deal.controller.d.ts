@@ -25,7 +25,7 @@ export declare class DealController {
         _id: any;
     }>;
     getDealsReviewStatsByMerchant(merchantID: string, averageRating: RATINGENUM, dealID: string, offset: number, limit: number, multipleReviewsDto: MultipleReviewsDto): Promise<{
-        totalDeals: number;
+        overallRating: number;
         totalMerchantReviews: any;
         data: any[];
     }>;

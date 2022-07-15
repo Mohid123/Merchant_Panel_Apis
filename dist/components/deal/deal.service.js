@@ -21,11 +21,12 @@ const utils_1 = require("../file-management/utils/utils");
 const sort_enum_1 = require("../../enum/sort/sort.enum");
 const ratingValue_enum_1 = require("../../enum/review/ratingValue.enum");
 let DealService = class DealService {
-    constructor(dealModel, categorymodel, voucherCounterModel, subCategoryModel) {
+    constructor(dealModel, categorymodel, voucherCounterModel, subCategoryModel, _userModel) {
         this.dealModel = dealModel;
         this.categorymodel = categorymodel;
         this.voucherCounterModel = voucherCounterModel;
         this.subCategoryModel = subCategoryModel;
+        this._userModel = _userModel;
     }
     async generateVoucherId(sequenceName) {
         const sequenceDocument = await this.voucherCounterModel.findByIdAndUpdate(sequenceName, {
@@ -342,11 +343,12 @@ let DealService = class DealService {
             const deals = await this.dealModel
                 .aggregate([
                 {
-                    $match: Object.assign(Object.assign({ merchantID: id, deletedCheck: false }, matchFilter), filters),
+                    $match: Object.assign(Object.assign(Object.assign({ merchantID: id, deletedCheck: false }, matchFilter), filters), { totalReviews: { $gt: 0 } }),
                 },
                 {
                     $project: {
                         dealHeader: 1,
+                        dealID: 1,
                         ratingsAverage: 1,
                         totalReviews: 1,
                         maxRating: 1,
@@ -370,8 +372,9 @@ let DealService = class DealService {
             if (!totalMerchantReviews[0]) {
                 totalMerchantReviews[0] = 0;
             }
+            const merchant = await this._userModel.findOne({ _id: id });
             return {
-                totalDeals: totalCount,
+                overallRating: merchant.ratingsAverage,
                 totalMerchantReviews: totalMerchantReviews[0].nRating,
                 data: deals,
             };
@@ -694,7 +697,9 @@ DealService = __decorate([
     __param(1, (0, mongoose_1.InjectModel)('Category')),
     __param(2, (0, mongoose_1.InjectModel)('Counter')),
     __param(3, (0, mongoose_1.InjectModel)('SubCategory')),
+    __param(4, (0, mongoose_1.InjectModel)('User')),
     __metadata("design:paramtypes", [mongoose_2.Model,
+        mongoose_2.Model,
         mongoose_2.Model,
         mongoose_2.Model,
         mongoose_2.Model])

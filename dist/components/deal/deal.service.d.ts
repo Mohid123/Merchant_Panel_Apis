@@ -3,12 +3,14 @@ import { CategoryInterface } from '../../interface/category/category.interface';
 import { DealInterface } from '../../interface/deal/deal.interface';
 import { VoucherCounterInterface } from '../../interface/vouchers/vouchersCounter.interface';
 import { SubCategoryInterface } from '../../interface/category/subcategory.interface';
+import { UsersInterface } from 'src/interface/user/users.interface';
 export declare class DealService {
     private readonly dealModel;
     private readonly categorymodel;
     private readonly voucherCounterModel;
     private readonly subCategoryModel;
-    constructor(dealModel: Model<DealInterface>, categorymodel: Model<CategoryInterface>, voucherCounterModel: Model<VoucherCounterInterface>, subCategoryModel: Model<SubCategoryInterface>);
+    private readonly _userModel;
+    constructor(dealModel: Model<DealInterface>, categorymodel: Model<CategoryInterface>, voucherCounterModel: Model<VoucherCounterInterface>, subCategoryModel: Model<SubCategoryInterface>, _userModel: Model<UsersInterface>);
     generateVoucherId(sequenceName: any): Promise<string>;
     createDeal(dealDto: any, req: any): Promise<DealInterface & {
         _id: any;
@@ -30,7 +32,7 @@ export declare class DealService {
         message: string;
     }>;
     getDealsReviewStatsByMerchant(id: any, averageRating: any, dealID: any, offset: any, limit: any, multipleReviewsDto: any): Promise<{
-        totalDeals: number;
+        overallRating: number;
         totalMerchantReviews: any;
         data: any[];
     }>;

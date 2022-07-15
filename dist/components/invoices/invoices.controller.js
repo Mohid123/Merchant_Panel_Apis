@@ -67,7 +67,7 @@ __decorate([
     (0, swagger_1.ApiQuery)({ name: 'invoiceDate', enum: sortinvoicedate_enum_1.INVOICEDATEENUM, required: false }),
     (0, swagger_1.ApiQuery)({ name: 'invoiceAmount', enum: sortinvoiceamount_enum_1.INVOICEAMOUNTENUM, required: false }),
     (0, swagger_1.ApiQuery)({ name: 'status', enum: billingStatus_enum_1.BILLINGSTATUS, required: false }),
-    (0, common_1.Get)('getAllInvoicesByMerchant/:merchantID'),
+    (0, common_1.Post)('getAllInvoicesByMerchant/:merchantID'),
     __param(0, (0, common_1.Param)('merchantID')),
     __param(1, (0, common_1.Query)('dateFrom')),
     __param(2, (0, common_1.Query)('dateTo')),

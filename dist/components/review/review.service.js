@@ -83,7 +83,7 @@ let ReviewService = class ReviewService {
             if (userStats.length > 0) {
                 await this.userModel.findByIdAndUpdate(reviewDto.merchantID, {
                     ratingsAverage: userStats[0].avgRating,
-                    ratingsQuantity: userStats[0].nRating,
+                    totalReviews: userStats[0].nRating,
                     minRating: userStats[0].minRating,
                     maxRating: userStats[0].maxRating,
                 });
