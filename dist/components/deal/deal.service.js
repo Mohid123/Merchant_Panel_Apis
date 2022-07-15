@@ -295,7 +295,8 @@ let DealService = class DealService {
             throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
         }
     }
-    async getDealsReviewStatsByMerchant(id, averageRating, dealID, offset, limit) {
+    async getDealsReviewStatsByMerchant(id, averageRating, dealID, offset, limit, multipleReviewsDto) {
+        var _a;
         offset = parseInt(offset) < 0 ? 0 : offset;
         limit = parseInt(limit) < 1 ? 10 : limit;
         try {
@@ -304,6 +305,7 @@ let DealService = class DealService {
                 var query = new RegExp(`${dealID}`, 'i');
                 matchFilter = Object.assign(Object.assign({}, matchFilter), { dealID: query });
             }
+            let filters = {};
             let minValue;
             if (averageRating) {
                 switch (averageRating) {
@@ -331,11 +333,15 @@ let DealService = class DealService {
                         $gte: minValue,
                     } });
             }
-            const totalCount = await this.dealModel.countDocuments(Object.assign({ merchantID: id, deletedCheck: false }, matchFilter));
+            if ((_a = multipleReviewsDto === null || multipleReviewsDto === void 0 ? void 0 : multipleReviewsDto.dealIDsArray) === null || _a === void 0 ? void 0 : _a.length) {
+                filters = Object.assign(Object.assign({}, filters), { dealID: { $in: multipleReviewsDto.dealIDsArray } });
+            }
+            ;
+            const totalCount = await this.dealModel.countDocuments(Object.assign(Object.assign({ merchantID: id, deletedCheck: false }, matchFilter), filters));
             const deals = await this.dealModel
                 .aggregate([
                 {
-                    $match: Object.assign({ merchantID: id, deletedCheck: false }, matchFilter),
+                    $match: Object.assign(Object.assign({ merchantID: id, deletedCheck: false }, matchFilter), filters),
                 },
                 {
                     $project: {

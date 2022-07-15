@@ -26,6 +26,7 @@ const dealstatus_enum_1 = require("../../enum/deal/dealstatus.enum");
 const updatedeal_dto_1 = require("../../dto/deal/updatedeal.dto");
 const ratingValue_enum_1 = require("../../enum/review/ratingValue.enum");
 const multipledeals_dto_1 = require("../../dto/deal/multipledeals.dto");
+const multiplereviews_dto_1 = require("../../dto/review/multiplereviews.dto");
 let DealController = class DealController {
     constructor(dealService) {
         this.dealService = dealService;
@@ -45,8 +46,8 @@ let DealController = class DealController {
     getDeal(id) {
         return this.dealService.getDeal(id);
     }
-    getDealsReviewStatsByMerchant(merchantID, averageRating = ratingValue_enum_1.RATINGENUM.all, dealID = "", offset = 0, limit = 10) {
-        return this.dealService.getDealsReviewStatsByMerchant(merchantID, averageRating, dealID, offset, limit);
+    getDealsReviewStatsByMerchant(merchantID, averageRating = ratingValue_enum_1.RATINGENUM.all, dealID = "", offset = 0, limit = 10, multipleReviewsDto) {
+        return this.dealService.getDealsReviewStatsByMerchant(merchantID, averageRating, dealID, offset, limit, multipleReviewsDto);
     }
     getAllDeals(offset = 0, limit = 10, req) {
         return this.dealService.getAllDeals(req, offset, limit);
@@ -108,14 +109,15 @@ __decorate([
 ], DealController.prototype, "getDeal", null);
 __decorate([
     (0, swagger_1.ApiQuery)({ name: 'averageRating', enum: ratingValue_enum_1.RATINGENUM, required: false }),
-    (0, common_1.Get)('getDealsReviewStatsByMerchant/:merchantID'),
+    (0, common_1.Post)('getDealsReviewStatsByMerchant/:merchantID'),
     __param(0, (0, common_1.Param)('merchantID')),
     __param(1, (0, common_1.Query)('averageRating')),
     __param(2, (0, common_1.Query)('dealID')),
     __param(3, (0, common_1.Query)('offset')),
     __param(4, (0, common_1.Query)('limit')),
+    __param(5, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, String, Number, Number]),
+    __metadata("design:paramtypes", [String, String, String, Number, Number, multiplereviews_dto_1.MultipleReviewsDto]),
     __metadata("design:returntype", void 0)
 ], DealController.prototype, "getDealsReviewStatsByMerchant", null);
 __decorate([

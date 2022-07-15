@@ -29,7 +29,7 @@ export declare class DealService {
         status: string;
         message: string;
     }>;
-    getDealsReviewStatsByMerchant(id: any, averageRating: any, dealID: any, offset: any, limit: any): Promise<{
+    getDealsReviewStatsByMerchant(id: any, averageRating: any, dealID: any, offset: any, limit: any, multipleReviewsDto: any): Promise<{
         totalDeals: number;
         totalMerchantReviews: any;
         data: any[];
