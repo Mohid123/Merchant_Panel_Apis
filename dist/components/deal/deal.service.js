@@ -111,6 +111,7 @@ let DealService = class DealService {
         }
     }
     async updateDeal(updateDealDto, dealID) {
+        updateDealDto.vouchers = [updateDealDto.vouchers];
         const deal = await this.dealModel.findById(dealID);
         let dealVouchers = 0;
         deal.vouchers = deal.vouchers.map((element) => {

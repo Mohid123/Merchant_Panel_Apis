@@ -1,3 +1,3 @@
 export declare class UpdateDealDto {
-    vouchers: [];
+    vouchers: any;
 }
