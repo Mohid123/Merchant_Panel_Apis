@@ -20,6 +20,7 @@ import { DEALSTATUS } from '../../enum/deal/dealstatus.enum';
 import { UpdateDealDto } from '../../dto/deal/updatedeal.dto';
 import { RATINGENUM } from 'src/enum/review/ratingValue.enum';
 import { MultipleDealsDto } from 'src/dto/deal/multipledeals.dto';
+import { MultipleReviewsDto } from 'src/dto/review/multiplereviews.dto';
 
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
@@ -64,14 +65,14 @@ export class DealController {
   }
 
   @ApiQuery({ name: 'averageRating', enum: RATINGENUM, required: false })
-  // @ApiQuery({ name: 'dealID', required: false })
-  @Get('getDealsReviewStatsByMerchant/:merchantID')
+  @Post('getDealsReviewStatsByMerchant/:merchantID')
   getDealsReviewStatsByMerchant(
     @Param('merchantID') merchantID: string,
     @Query('averageRating') averageRating: RATINGENUM = RATINGENUM.all,
     @Query('dealID') dealID: string = "",
     @Query('offset') offset: number = 0,
     @Query('limit') limit: number = 10,
+    @Body() multipleReviewsDto: MultipleReviewsDto
   ) {
     return this.dealService.getDealsReviewStatsByMerchant(
       merchantID,
@@ -79,6 +80,7 @@ export class DealController {
       dealID,
       offset,
       limit,
+      multipleReviewsDto
     );
   }
 
