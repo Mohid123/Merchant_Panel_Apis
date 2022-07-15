@@ -3,7 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 export class UpdateDealDto {
 
   @ApiProperty({
-    example: [
+    example:
       {
         voucherID: '',
         subTitle: '',
@@ -11,7 +11,6 @@ export class UpdateDealDto {
         dealPrice: 0,
         numberOfVouchers: 0,
       },
-    ],
   })
-  vouchers: [];
+  vouchers: any;
 }
