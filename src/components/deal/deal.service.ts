@@ -354,6 +354,7 @@ export class DealService {
     dealID,
     offset,
     limit,
+    multipleReviewsDto
   ) {
     offset = parseInt(offset) < 0 ? 0 : offset;
     limit = parseInt(limit) < 1 ? 10 : limit;
@@ -368,6 +369,8 @@ export class DealService {
           dealID: query,
         };
       }
+
+      let filters = {};
       
       let minValue;
       if (averageRating) {
@@ -406,10 +409,18 @@ export class DealService {
         };
       }
 
+      if( multipleReviewsDto?.dealIDsArray?.length){
+        filters = {
+          ...filters,
+          dealID: { $in: multipleReviewsDto.dealIDsArray },
+        };
+      };
+
       const totalCount = await this.dealModel.countDocuments({
         merchantID: id,
         deletedCheck: false,
-        ...matchFilter
+        ...matchFilter,
+        ...filters
       });
 
       const deals = await this.dealModel
@@ -419,6 +430,7 @@ export class DealService {
               merchantID: id,
               deletedCheck: false,
               ...matchFilter,
+              ...filters
             },
           },
           {
