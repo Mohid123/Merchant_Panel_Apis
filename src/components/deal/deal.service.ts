@@ -10,6 +10,7 @@ import { VoucherCounterInterface } from '../../interface/vouchers/vouchersCounte
 import { SubCategoryInterface } from '../../interface/category/subcategory.interface';
 import { arrayBuffer } from 'stream/consumers';
 import { RATINGENUM } from 'src/enum/review/ratingValue.enum';
+import { UsersInterface } from 'src/interface/user/users.interface';
 
 @Injectable()
 export class DealService {
@@ -21,6 +22,8 @@ export class DealService {
     private readonly voucherCounterModel: Model<VoucherCounterInterface>,
     @InjectModel('SubCategory')
     private readonly subCategoryModel: Model<SubCategoryInterface>,
+    @InjectModel('User')
+    private readonly _userModel: Model<UsersInterface>,
   ) {}
 
   async generateVoucherId(sequenceName) {
@@ -431,12 +434,14 @@ export class DealService {
               merchantID: id,
               deletedCheck: false,
               ...matchFilter,
-              ...filters
+              ...filters,
+              totalReviews: {$gt: 0}
             },
           },
           {
             $project: {
               dealHeader: 1,
+              dealID: 1,
               ratingsAverage: 1,
               totalReviews: 1,
               maxRating: 1,
@@ -446,6 +451,7 @@ export class DealService {
         ])
         .skip(parseInt(offset))
         .limit(parseInt(limit));
+
       const totalMerchantReviews = await this.dealModel.aggregate([
         {
           $match: {
@@ -466,8 +472,11 @@ export class DealService {
         totalMerchantReviews[0] = 0;
       }
 
+      const merchant = await this._userModel.findOne({ _id: id });
+
       return {
-        totalDeals: totalCount,
+        // totalDeals: totalCount,
+        overallRating: merchant.ratingsAverage,
         totalMerchantReviews: totalMerchantReviews[0].nRating,
         data: deals,
       };
