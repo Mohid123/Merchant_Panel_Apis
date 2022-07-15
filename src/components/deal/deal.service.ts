@@ -138,6 +138,7 @@ export class DealService {
   }
 
   async updateDeal(updateDealDto, dealID) {
+    updateDealDto.vouchers = [updateDealDto.vouchers]
     const deal = await this.dealModel.findById(dealID);
 
     let dealVouchers = 0;
