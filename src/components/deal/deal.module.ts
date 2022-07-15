@@ -7,6 +7,7 @@ import { DealSchema } from '../../schema/deal/deal.schema';
 import { CategorySchema } from '../../schema/category/category.schema';
 import { VoucherCounterSchema } from '../../schema/vouchers/vouchersCounter.schema';
 import { SubCategorySchema } from '../../schema/category/subcategory.schema';
+import { UsersSchema } from 'src/schema/user/users.schema';
 @Module({
   imports: [
     forwardRef(() => CategoryModule),
@@ -14,7 +15,8 @@ import { SubCategorySchema } from '../../schema/category/subcategory.schema';
       { name: 'Deal', schema: DealSchema },
       { name: 'Category', schema: CategorySchema },
       { name: 'Counter', schema: VoucherCounterSchema },
-      { name: 'SubCategory', schema: SubCategorySchema }
+      { name: 'SubCategory', schema: SubCategorySchema },
+       { name: 'User', schema: UsersSchema }
     ]),
   ],
   controllers: [DealController],

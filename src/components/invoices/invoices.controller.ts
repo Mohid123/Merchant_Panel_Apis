@@ -46,7 +46,7 @@ export class InvoicesController {
   @ApiQuery({ name: 'invoiceDate', enum: INVOICEDATEENUM, required: false })
   @ApiQuery({ name: 'invoiceAmount', enum: INVOICEAMOUNTENUM, required: false })
   @ApiQuery({ name: 'status', enum: BILLINGSTATUS, required: false })
-  @Get('getAllInvoicesByMerchant/:merchantID')
+  @Post('getAllInvoicesByMerchant/:merchantID')
   getAllInvoicesByMerchant(
     @Param('merchantID') merchantID: string,
     @Query('dateFrom') dateFrom: number = 0,
