@@ -9,6 +9,9 @@ export class ReviewTextDto {
     merchantID: string;
 
     @ApiProperty()
+    voucherID: string;
+
+    @ApiProperty()
     merchantName: string;
 
     @ApiProperty()

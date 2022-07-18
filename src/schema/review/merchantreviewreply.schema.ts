@@ -7,6 +7,7 @@ export const ReviewTextSchema = new mongoose.Schema(
         _id: { type: String, default: generateStringId },
         reviewID: { type: String, default: '' },
         merchantID: { type: String, default: '' },
+        voucherID: {type:String,default:""},
         merchantName: { type: String, default: '' },
         legalName: { type: String, default: '' },
         profilePicURL: { type: String, default: '' },
