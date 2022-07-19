@@ -276,6 +276,7 @@ export class DealService {
           {
             $project: {
               dealHeader: 1,
+              dealID: 1,
               ratingsAverage: 1,
               totalReviews: 1,
               maxRating: 1,
