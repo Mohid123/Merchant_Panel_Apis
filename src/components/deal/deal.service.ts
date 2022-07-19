@@ -138,17 +138,16 @@ export class DealService {
   }
 
   async updateDeal(updateDealDto, dealID) {
-    updateDealDto.vouchers = [updateDealDto.vouchers]
+    updateDealDto.vouchers = [updateDealDto.vouchers];
     const deal = await this.dealModel.findById(dealID);
 
     let dealVouchers = 0;
 
     deal.vouchers = deal.vouchers.map((element) => {
       updateDealDto.vouchers.forEach((el) => {
-
         let calculateDiscountPercentage =
-            ((el.originalPrice - el.dealPrice) / el.originalPrice) * 100;
-          el.discountPercentage = calculateDiscountPercentage;
+          ((el.originalPrice - el.dealPrice) / el.originalPrice) * 100;
+        el.discountPercentage = calculateDiscountPercentage;
 
         if (el['voucherID'] === element['_id']) {
           element.numberOfVouchers += el.numberOfVouchers;
@@ -311,8 +310,8 @@ export class DealService {
                     from: 'reviewText',
                     as: 'merchantReplyText',
                     localField: '_id',
-                    foreignField: 'reviewID'
-                  }
+                    foreignField: 'reviewID',
+                  },
                 },
                 {
                   $unwind: '$merchantReplyText',
@@ -354,16 +353,15 @@ export class DealService {
 
   async getDealsReviewStatsByMerchant(
     id,
-    averageRating,
+    // averageRating,
     dealID,
     offset,
     limit,
-    multipleReviewsDto
+    multipleReviewsDto,
   ) {
     offset = parseInt(offset) < 0 ? 0 : offset;
     limit = parseInt(limit) < 1 ? 10 : limit;
     try {
-
       let matchFilter = {};
 
       if (dealID.trim().length) {
@@ -375,8 +373,13 @@ export class DealService {
       }
 
       let filters = {};
-      
-      let minValue;
+
+      let averageRating = 'All';
+      if (multipleReviewsDto?.ratingsArray.length) {
+        averageRating = multipleReviewsDto?.ratingsArray[0];
+      }
+
+      let minValue = 1;
       if (averageRating) {
         switch (averageRating) {
           case RATINGENUM.range1:
@@ -400,9 +403,13 @@ export class DealService {
             break;
 
           default:
+            minValue = 1;
             break;
         }
       }
+
+      console.log(minValue);
+      console.log(averageRating);
 
       if (averageRating !== RATINGENUM.all) {
         matchFilter = {
@@ -413,18 +420,18 @@ export class DealService {
         };
       }
 
-      if( multipleReviewsDto?.dealIDsArray?.length){
+      if (multipleReviewsDto?.dealIDsArray?.length) {
         filters = {
           ...filters,
           dealID: { $in: multipleReviewsDto.dealIDsArray },
         };
-      };
+      }
 
       const totalCount = await this.dealModel.countDocuments({
         merchantID: id,
         deletedCheck: false,
         ...matchFilter,
-        ...filters
+        ...filters,
       });
 
       const deals = await this.dealModel
@@ -435,7 +442,7 @@ export class DealService {
               deletedCheck: false,
               ...matchFilter,
               ...filters,
-              totalReviews: {$gt: 0}
+              totalReviews: { $gt: 0 },
             },
           },
           {
@@ -457,7 +464,7 @@ export class DealService {
           $match: {
             merchantID: id,
             deletedCheck: false,
-            ...matchFilter
+            ...matchFilter,
           },
         },
         {
@@ -501,7 +508,7 @@ export class DealService {
     dealStatus,
     offset,
     limit,
-    multipleDealsDto
+    multipleDealsDto,
     // req,
   ) {
     try {
@@ -637,21 +644,21 @@ export class DealService {
         };
       }
 
-      if( multipleDealsDto?.dealIDsArray?.length){
+      if (multipleDealsDto?.dealIDsArray?.length) {
         filters = {
           ...filters,
           dealID: { $in: multipleDealsDto.dealIDsArray },
         };
       }
 
-      if( multipleDealsDto?.dealHeaderArray?.length){
+      if (multipleDealsDto?.dealHeaderArray?.length) {
         filters = {
           ...filters,
           dealHeader: { $in: multipleDealsDto.dealHeaderArray },
         };
       }
 
-      if( multipleDealsDto?.dealStatusArray?.length){
+      if (multipleDealsDto?.dealStatusArray?.length) {
         filters = {
           ...filters,
           dealStatus: { $in: multipleDealsDto.dealStatusArray },
@@ -671,7 +678,7 @@ export class DealService {
         merchantID: merchantID,
         deletedCheck: false,
         ...matchFilter,
-        ...filters
+        ...filters,
       });
 
       const deals = await this.dealModel
@@ -681,7 +688,7 @@ export class DealService {
               merchantID: merchantID,
               deletedCheck: false,
               ...matchFilter,
-              ...filters
+              ...filters,
             },
           },
           {
@@ -689,14 +696,14 @@ export class DealService {
           },
           {
             $addFields: {
-              id: '$_id'
-            }
+              id: '$_id',
+            },
           },
           {
             $project: {
-              _id: 0
-            }
-          }
+              _id: 0,
+            },
+          },
         ])
         .skip(parseInt(offset))
         .limit(parseInt(limit));
