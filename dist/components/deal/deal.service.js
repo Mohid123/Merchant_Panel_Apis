@@ -259,8 +259,8 @@ let DealService = class DealService {
                                     from: 'reviewText',
                                     as: 'merchantReplyText',
                                     localField: '_id',
-                                    foreignField: 'reviewID'
-                                }
+                                    foreignField: 'reviewID',
+                                },
                             },
                             {
                                 $unwind: '$merchantReplyText',
@@ -297,7 +297,7 @@ let DealService = class DealService {
             throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
         }
     }
-    async getDealsReviewStatsByMerchant(id, averageRating, dealID, offset, limit, multipleReviewsDto) {
+    async getDealsReviewStatsByMerchant(id, dealID, offset, limit, multipleReviewsDto) {
         var _a;
         offset = parseInt(offset) < 0 ? 0 : offset;
         limit = parseInt(limit) < 1 ? 10 : limit;
@@ -308,7 +308,11 @@ let DealService = class DealService {
                 matchFilter = Object.assign(Object.assign({}, matchFilter), { dealID: query });
             }
             let filters = {};
-            let minValue;
+            let averageRating = 'All';
+            if (multipleReviewsDto === null || multipleReviewsDto === void 0 ? void 0 : multipleReviewsDto.ratingsArray.length) {
+                averageRating = multipleReviewsDto === null || multipleReviewsDto === void 0 ? void 0 : multipleReviewsDto.ratingsArray[0];
+            }
+            let minValue = 1;
             if (averageRating) {
                 switch (averageRating) {
                     case ratingValue_enum_1.RATINGENUM.range1:
@@ -327,9 +331,12 @@ let DealService = class DealService {
                         minValue = 5;
                         break;
                     default:
+                        minValue = 1;
                         break;
                 }
             }
+            console.log(minValue);
+            console.log(averageRating);
             if (averageRating !== ratingValue_enum_1.RATINGENUM.all) {
                 matchFilter = Object.assign(Object.assign({}, matchFilter), { ratingsAverage: {
                         $gte: minValue,
@@ -338,7 +345,6 @@ let DealService = class DealService {
             if ((_a = multipleReviewsDto === null || multipleReviewsDto === void 0 ? void 0 : multipleReviewsDto.dealIDsArray) === null || _a === void 0 ? void 0 : _a.length) {
                 filters = Object.assign(Object.assign({}, filters), { dealID: { $in: multipleReviewsDto.dealIDsArray } });
             }
-            ;
             const totalCount = await this.dealModel.countDocuments(Object.assign(Object.assign({ merchantID: id, deletedCheck: false }, matchFilter), filters));
             const deals = await this.dealModel
                 .aggregate([
@@ -484,14 +490,14 @@ let DealService = class DealService {
                 },
                 {
                     $addFields: {
-                        id: '$_id'
-                    }
+                        id: '$_id',
+                    },
                 },
                 {
                     $project: {
-                        _id: 0
-                    }
-                }
+                        _id: 0,
+                    },
+                },
             ])
                 .skip(parseInt(offset))
                 .limit(parseInt(limit));

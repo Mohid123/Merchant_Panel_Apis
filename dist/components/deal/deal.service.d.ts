@@ -31,7 +31,7 @@ export declare class DealService {
         status: string;
         message: string;
     }>;
-    getDealsReviewStatsByMerchant(id: any, averageRating: any, dealID: any, offset: any, limit: any, multipleReviewsDto: any): Promise<{
+    getDealsReviewStatsByMerchant(id: any, dealID: any, offset: any, limit: any, multipleReviewsDto: any): Promise<{
         overallRating: number;
         totalMerchantReviews: any;
         data: any[];

@@ -17,5 +17,9 @@ __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", Array)
 ], MultipleReviewsDto.prototype, "dealIDsArray", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", Array)
+], MultipleReviewsDto.prototype, "ratingsArray", void 0);
 exports.MultipleReviewsDto = MultipleReviewsDto;
 //# sourceMappingURL=multiplereviews.dto.js.map

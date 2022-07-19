@@ -4,7 +4,6 @@ import { DealStatusDto } from '../../dto/deal/updatedealstatus.dto';
 import { SORT } from '../../enum/sort/sort.enum';
 import { DEALSTATUS } from '../../enum/deal/dealstatus.enum';
 import { UpdateDealDto } from '../../dto/deal/updatedeal.dto';
-import { RATINGENUM } from 'src/enum/review/ratingValue.enum';
 import { MultipleDealsDto } from 'src/dto/deal/multipledeals.dto';
 import { MultipleReviewsDto } from 'src/dto/review/multiplereviews.dto';
 export declare class DealController {
@@ -24,7 +23,7 @@ export declare class DealController {
     getDeal(id: string): Promise<import("../../interface/deal/deal.interface").DealInterface & {
         _id: any;
     }>;
-    getDealsReviewStatsByMerchant(merchantID: string, averageRating: RATINGENUM, dealID: string, offset: number, limit: number, multipleReviewsDto: MultipleReviewsDto): Promise<{
+    getDealsReviewStatsByMerchant(merchantID: string, dealID: string, offset: number, limit: number, multipleReviewsDto: MultipleReviewsDto): Promise<{
         overallRating: number;
         totalMerchantReviews: any;
         data: any[];
