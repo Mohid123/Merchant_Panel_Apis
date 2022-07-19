@@ -64,23 +64,23 @@ export class DealController {
     return this.dealService.getDeal(id);
   }
 
-  @ApiQuery({ name: 'averageRating', enum: RATINGENUM, required: false })
+  // @ApiQuery({ name: 'averageRating', enum: RATINGENUM, required: false })
   @Post('getDealsReviewStatsByMerchant/:merchantID')
   getDealsReviewStatsByMerchant(
     @Param('merchantID') merchantID: string,
-    @Query('averageRating') averageRating: RATINGENUM = RATINGENUM.all,
-    @Query('dealID') dealID: string = "",
+    // @Query('averageRating') averageRating: RATINGENUM = RATINGENUM.all,
+    @Query('dealID') dealID: string = '',
     @Query('offset') offset: number = 0,
     @Query('limit') limit: number = 10,
-    @Body() multipleReviewsDto: MultipleReviewsDto
+    @Body() multipleReviewsDto: MultipleReviewsDto,
   ) {
     return this.dealService.getDealsReviewStatsByMerchant(
       merchantID,
-      averageRating,
+      // averageRating,
       dealID,
       offset,
       limit,
-      multipleReviewsDto
+      multipleReviewsDto,
     );
   }
 
@@ -114,12 +114,12 @@ export class DealController {
     @Query('status') status: DEALSTATUS,
     @Query('dateFrom') dateFrom: number,
     @Query('dateTo') dateTo: number,
-    @Query("dealID") dealID: string = "",
-    @Query("header") header: string = "",
-    @Query("dealStatus") dealStatus: string = "",
+    @Query('dealID') dealID: string = '',
+    @Query('header') header: string = '',
+    @Query('dealStatus') dealStatus: string = '',
     @Query('offset') offset: number = 0,
     @Query('limit') limit: number = 10,
-    @Body() multipleDealsDto: MultipleDealsDto
+    @Body() multipleDealsDto: MultipleDealsDto,
     // @Req() req,
   ) {
     return this.dealService.getDealsByMerchantID(
@@ -138,7 +138,7 @@ export class DealController {
       dealStatus,
       offset,
       limit,
-      multipleDealsDto
+      multipleDealsDto,
       // req,
     );
   }
