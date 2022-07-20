@@ -10,21 +10,20 @@ import { ReviewTextInterface } from 'src/interface/review/merchantreviewreply.in
 export class ReviewService {
   constructor(
     @InjectModel('Review') private readonly reviewModel: Model<ReviewInterface>,
-    @InjectModel('reviewText') private readonly reviewTextModel: Model<ReviewTextInterface>,
+    @InjectModel('reviewText')
+    private readonly reviewTextModel: Model<ReviewTextInterface>,
     @InjectModel('Deal') private readonly dealModel: Model<DealInterface>,
-    @InjectModel('User') private readonly userModel: Model<UsersInterface>
+    @InjectModel('User') private readonly userModel: Model<UsersInterface>,
   ) {}
 
   async createReview(reviewDto) {
     try {
-      const reviewAlreadyGiven = await this.reviewModel
-        .findOne()
-        .and([
-          // { dealID: reviewDto.dealID },
-          { dealMongoID: reviewDto.dealMongoID },
-          { voucherMongoID: reviewDto.voucherMongoID },
-          { customerID: reviewDto.customerID },
-        ]);
+      const reviewAlreadyGiven = await this.reviewModel.findOne().and([
+        // { dealID: reviewDto.dealID },
+        { dealMongoID: reviewDto.dealMongoID },
+        { voucherMongoID: reviewDto.voucherMongoID },
+        { customerID: reviewDto.customerID },
+      ]);
 
       if (reviewAlreadyGiven) {
         throw new HttpException(
@@ -33,9 +32,10 @@ export class ReviewService {
         );
       }
 
-      reviewDto.totalRating = reviewDto.multipleRating.reduce((a, b) => {
-        return a + b?.ratingScore
-      }, 0) /  reviewDto.multipleRating?.length;
+      reviewDto.totalRating =
+        reviewDto.multipleRating.reduce((a, b) => {
+          return a + b?.ratingScore;
+        }, 0) / reviewDto.multipleRating?.length;
 
       const review = await this.reviewModel.create(reviewDto);
 
@@ -102,36 +102,49 @@ export class ReviewService {
     }
   }
 
-  async createReviewReply (reviewTextDto) {
-    return await new this.reviewTextModel(reviewTextDto).save(); 
+  async createReviewReply(reviewTextDto) {
+    await this.reviewTextModel.findOneAndUpdate(
+      {
+        reviewID: reviewTextDto.reviewID,
+        merchantID: reviewTextDto.merchantID,
+      },
+      {
+        ...reviewTextDto,
+      },
+      {
+        upsert: true,
+      },
+    );
+
+    return await this.reviewTextModel.findOne({
+      reviewID: reviewTextDto.reviewID,
+      merchantID: reviewTextDto.merchantID,
+    });
   }
 
-  async getMerchantReply (merchantID, reviewID) {
+  async getMerchantReply(merchantID, reviewID) {
     try {
-      
-       let merchantReply = await this.reviewTextModel
-        .aggregate([
-          {
-            $match: {
-              merchantID: merchantID,
-              reviewID: reviewID,
-              deletedCheck: false,
-            }
+      let merchantReply = await this.reviewTextModel.aggregate([
+        {
+          $match: {
+            merchantID: merchantID,
+            reviewID: reviewID,
+            deletedCheck: false,
           },
-          {
-            $addFields: {
-              id: '$_id'
-            }
+        },
+        {
+          $addFields: {
+            id: '$_id',
           },
-          {
-            $project: {
-              _id: 0
-            }
-          }
-        ]);
+        },
+        {
+          $project: {
+            _id: 0,
+          },
+        },
+      ]);
 
-        return merchantReply;
-
+      return merchantReply;
     } catch (err) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
     }
@@ -199,8 +212,8 @@ export class ReviewService {
               from: 'reviewText',
               as: 'merchantReplyText',
               localField: '_id',
-              foreignField: 'reviewID'
-            }
+              foreignField: 'reviewID',
+            },
           },
           {
             $unwind: '$merchantReplyText',

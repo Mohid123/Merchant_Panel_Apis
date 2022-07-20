@@ -26,9 +26,7 @@ let ReviewService = class ReviewService {
     async createReview(reviewDto) {
         var _a;
         try {
-            const reviewAlreadyGiven = await this.reviewModel
-                .findOne()
-                .and([
+            const reviewAlreadyGiven = await this.reviewModel.findOne().and([
                 { dealMongoID: reviewDto.dealMongoID },
                 { voucherMongoID: reviewDto.voucherMongoID },
                 { customerID: reviewDto.customerID },
@@ -36,9 +34,10 @@ let ReviewService = class ReviewService {
             if (reviewAlreadyGiven) {
                 throw new common_1.HttpException('Customer has already reviewed this deal.', common_1.HttpStatus.CONFLICT);
             }
-            reviewDto.totalRating = reviewDto.multipleRating.reduce((a, b) => {
-                return a + (b === null || b === void 0 ? void 0 : b.ratingScore);
-            }, 0) / ((_a = reviewDto.multipleRating) === null || _a === void 0 ? void 0 : _a.length);
+            reviewDto.totalRating =
+                reviewDto.multipleRating.reduce((a, b) => {
+                    return a + (b === null || b === void 0 ? void 0 : b.ratingScore);
+                }, 0) / ((_a = reviewDto.multipleRating) === null || _a === void 0 ? void 0 : _a.length);
             const review = await this.reviewModel.create(reviewDto);
             const reviewStats = await this.reviewModel.aggregate([
                 {
@@ -101,29 +100,37 @@ let ReviewService = class ReviewService {
         }
     }
     async createReviewReply(reviewTextDto) {
-        return await new this.reviewTextModel(reviewTextDto).save();
+        await this.reviewTextModel.findOneAndUpdate({
+            reviewID: reviewTextDto.reviewID,
+            merchantID: reviewTextDto.merchantID,
+        }, Object.assign({}, reviewTextDto), {
+            upsert: true,
+        });
+        return await this.reviewTextModel.findOne({
+            reviewID: reviewTextDto.reviewID,
+            merchantID: reviewTextDto.merchantID,
+        });
     }
     async getMerchantReply(merchantID, reviewID) {
         try {
-            let merchantReply = await this.reviewTextModel
-                .aggregate([
+            let merchantReply = await this.reviewTextModel.aggregate([
                 {
                     $match: {
                         merchantID: merchantID,
                         reviewID: reviewID,
                         deletedCheck: false,
-                    }
+                    },
                 },
                 {
                     $addFields: {
-                        id: '$_id'
-                    }
+                        id: '$_id',
+                    },
                 },
                 {
                     $project: {
-                        _id: 0
-                    }
-                }
+                        _id: 0,
+                    },
+                },
             ]);
             return merchantReply;
         }
@@ -187,8 +194,8 @@ let ReviewService = class ReviewService {
                         from: 'reviewText',
                         as: 'merchantReplyText',
                         localField: '_id',
-                        foreignField: 'reviewID'
-                    }
+                        foreignField: 'reviewID',
+                    },
                 },
                 {
                     $unwind: '$merchantReplyText',
