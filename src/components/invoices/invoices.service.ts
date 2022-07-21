@@ -30,15 +30,23 @@ export class InvoicesService {
   }
 
   async createInvoice(invoiceDto) {
-    invoiceDto.invoiceID = await this.generateVoucherId('invoiceID');
+    try {
+      invoiceDto.invoiceID = await this.generateVoucherId('invoiceID');
 
-    invoiceDto.invoiceDate = new Date().getTime();
+      invoiceDto.invoiceDate = new Date().getTime();
 
-    return await new this._invoicesModel(invoiceDto).save();
+      return await new this._invoicesModel(invoiceDto).save();
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
   }
 
   async getInvoice(invoiceURL) {
-    return await this._invoicesModel.findOne({ invoiceURL: invoiceURL });
+    try {
+      return await this._invoicesModel.findOne({ invoiceURL: invoiceURL });
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
   }
 
   async getAllInvoices(offset, limit) {
@@ -88,7 +96,7 @@ export class InvoicesService {
     invoiceID,
     offset,
     limit,
-    multipleInvoicesDto
+    multipleInvoicesDto,
   ) {
     try {
       offset = parseInt(offset) < 0 ? 0 : offset;
@@ -174,7 +182,7 @@ export class InvoicesService {
         };
       }
 
-      if( multipleInvoicesDto?.invoiceIDsArray?.length){
+      if (multipleInvoicesDto?.invoiceIDsArray?.length) {
         filters = {
           ...filters,
           invoiceID: { $in: multipleInvoicesDto.invoiceIDsArray },
@@ -193,7 +201,7 @@ export class InvoicesService {
       const totalCount = await this._invoicesModel.countDocuments({
         merchantID: merchantID,
         ...matchFilter,
-        ...filters
+        ...filters,
       });
 
       let invoices = await this._invoicesModel
@@ -202,7 +210,7 @@ export class InvoicesService {
             $match: {
               merchantID: merchantID,
               ...matchFilter,
-              ...filters
+              ...filters,
             },
           },
           {
