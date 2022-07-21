@@ -148,11 +148,7 @@ export class ReviewService {
         },
       ]);
 
-      if (merchantReply.length == 0) {
-        return {};
-      }
-
-      return merchantReply[0];
+      return merchantReply;
     } catch (err) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
     }
