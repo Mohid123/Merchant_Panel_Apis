@@ -15,7 +15,7 @@ export declare class ReviewService {
     createReviewReply(reviewTextDto: any): Promise<import("mongoose").Document<unknown, any, ReviewTextInterface> & ReviewTextInterface & {
         _id: string;
     }>;
-    getMerchantReply(merchantID: any, reviewID: any): Promise<any>;
+    getMerchantReply(merchantID: any, reviewID: any): Promise<any[]>;
     deleteReview(id: any): Promise<ReviewInterface & {
         _id: string;
     }>;

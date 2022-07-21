@@ -137,10 +137,7 @@ let ReviewService = class ReviewService {
                     },
                 },
             ]);
-            if (merchantReply.length == 0) {
-                return {};
-            }
-            return merchantReply[0];
+            return merchantReply;
         }
         catch (err) {
             throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
