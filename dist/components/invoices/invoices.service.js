@@ -32,12 +32,22 @@ let InvoicesService = class InvoicesService {
         return 'I' + sequenceDocument.sequenceValue;
     }
     async createInvoice(invoiceDto) {
-        invoiceDto.invoiceID = await this.generateVoucherId('invoiceID');
-        invoiceDto.invoiceDate = new Date().getTime();
-        return await new this._invoicesModel(invoiceDto).save();
+        try {
+            invoiceDto.invoiceID = await this.generateVoucherId('invoiceID');
+            invoiceDto.invoiceDate = new Date().getTime();
+            return await new this._invoicesModel(invoiceDto).save();
+        }
+        catch (err) {
+            throw new common_1.HttpException(err.message, common_1.HttpStatus.BAD_REQUEST);
+        }
     }
     async getInvoice(invoiceURL) {
-        return await this._invoicesModel.findOne({ invoiceURL: invoiceURL });
+        try {
+            return await this._invoicesModel.findOne({ invoiceURL: invoiceURL });
+        }
+        catch (err) {
+            throw new common_1.HttpException(err.message, common_1.HttpStatus.BAD_REQUEST);
+        }
     }
     async getAllInvoices(offset, limit) {
         try {

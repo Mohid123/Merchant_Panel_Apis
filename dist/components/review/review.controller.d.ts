@@ -11,7 +11,7 @@ export declare class ReviewController {
     createReviewReply(reviewTextDto: ReviewTextDto): Promise<import("mongoose").Document<unknown, any, import("../../interface/review/merchantreviewreply.interface").ReviewTextInterface> & import("../../interface/review/merchantreviewreply.interface").ReviewTextInterface & {
         _id: string;
     }>;
-    getMerchantReply(merchantID: string, reviewID: string): Promise<any[]>;
+    getMerchantReply(merchantID: string, reviewID: string): Promise<any>;
     deleteReview(reviewID: string): Promise<import("../../interface/review/review.interface").ReviewInterface & {
         _id: string;
     }>;

@@ -112,39 +112,49 @@ let DealService = class DealService {
         }
     }
     async updateDeal(updateDealDto, dealID) {
-        updateDealDto.vouchers = [updateDealDto.vouchers];
-        const deal = await this.dealModel.findById(dealID);
-        let dealVouchers = 0;
-        deal.vouchers = deal.vouchers.map((element) => {
-            updateDealDto.vouchers.forEach((el) => {
-                let calculateDiscountPercentage = ((el.originalPrice - el.dealPrice) / el.originalPrice) * 100;
-                el.discountPercentage = calculateDiscountPercentage;
-                if (el['voucherID'] === element['_id']) {
-                    element.numberOfVouchers += el.numberOfVouchers;
-                    element.subTitle = el.subTitle;
-                    element.originalPrice = el.originalPrice;
-                    element.dealPrice = el.dealPrice;
-                    element.discountPercentage = calculateDiscountPercentage;
-                }
+        try {
+            updateDealDto.vouchers = [updateDealDto.vouchers];
+            const deal = await this.dealModel.findById(dealID);
+            let dealVouchers = 0;
+            deal.vouchers = deal.vouchers.map((element) => {
+                updateDealDto.vouchers.forEach((el) => {
+                    let calculateDiscountPercentage = ((el.originalPrice - el.dealPrice) / el.originalPrice) * 100;
+                    el.discountPercentage = calculateDiscountPercentage;
+                    if (el['voucherID'] === element['_id']) {
+                        element.numberOfVouchers += el.numberOfVouchers;
+                        element.subTitle = el.subTitle;
+                        element.originalPrice = el.originalPrice;
+                        element.dealPrice = el.dealPrice;
+                        element.discountPercentage = calculateDiscountPercentage;
+                    }
+                });
+                dealVouchers += element.numberOfVouchers;
+                return element;
             });
-            dealVouchers += element.numberOfVouchers;
-            return element;
-        });
-        deal.availableVouchers = dealVouchers;
-        await this.dealModel.findByIdAndUpdate(dealID, deal);
-        return { message: 'Deal Updated Successfully' };
+            deal.availableVouchers = dealVouchers;
+            await this.dealModel.findByIdAndUpdate(dealID, deal);
+            return { message: 'Deal Updated Successfully' };
+        }
+        catch (err) {
+            throw new common_1.HttpException(err.message, common_1.HttpStatus.BAD_REQUEST);
+        }
     }
     async approveRejectDeal(dealID, dealStatusDto) {
-        let deal = await this.dealModel.findOne({
-            _id: dealID,
-            deletedCheck: false,
-            dealStatus: dealstatus_enum_1.DEALSTATUS.inReview,
-        });
-        if (dealStatusDto.dealStatus == dealstatus_enum_1.DEALSTATUS.scheduled) {
-            return await this.dealModel.updateOne({ _id: deal.id }, { dealStatus: dealstatus_enum_1.DEALSTATUS.scheduled });
+        try {
+            let deal = await this.dealModel.findOne({
+                _id: dealID,
+                deletedCheck: false,
+                dealStatus: dealstatus_enum_1.DEALSTATUS.inReview,
+            });
+            if (dealStatusDto.dealStatus == dealstatus_enum_1.DEALSTATUS.scheduled) {
+                return await this.dealModel.updateOne({ _id: deal.id }, { dealStatus: dealstatus_enum_1.DEALSTATUS.scheduled });
+            }
+            else if (dealStatusDto.dealStatus == dealstatus_enum_1.DEALSTATUS.expired) {
+                return await this.dealModel.updateOne({ _id: deal.id }, { dealStatus: dealstatus_enum_1.DEALSTATUS.expired });
+            }
         }
-        else if (dealStatusDto.dealStatus == dealstatus_enum_1.DEALSTATUS.expired) {
-            return await this.dealModel.updateOne({ _id: deal.id }, { dealStatus: dealstatus_enum_1.DEALSTATUS.expired });
+        catch (err) {
+            throw new common_1.HttpException(err.message, common_1.HttpStatus.BAD_REQUEST);
         }
     }
     async getAllDeals(req, offset, limit) {
@@ -523,168 +533,173 @@ let DealService = class DealService {
         }
     }
     async getSalesStatistics(req) {
-        const totalStats = {
-            totalDeals: 0,
-            scheduledDeals: 0,
-            pendingDeals: 0,
-            publishedDeals: 0,
-        };
-        const yearlyStats = {
-            totalDeals: 0,
-            scheduledDeals: 0,
-            pendingDeals: 0,
-            publishedDeals: 0,
-        };
-        const monthlyStats = [
-            {
+        try {
+            const totalStats = {
                 totalDeals: 0,
                 scheduledDeals: 0,
                 pendingDeals: 0,
                 publishedDeals: 0,
-            },
-            {
+            };
+            const yearlyStats = {
                 totalDeals: 0,
                 scheduledDeals: 0,
                 pendingDeals: 0,
                 publishedDeals: 0,
-            },
-            {
-                totalDeals: 0,
-                scheduledDeals: 0,
-                pendingDeals: 0,
-                publishedDeals: 0,
-            },
-            {
-                totalDeals: 0,
-                scheduledDeals: 0,
-                pendingDeals: 0,
-                publishedDeals: 0,
-            },
-            {
-                totalDeals: 0,
-                scheduledDeals: 0,
-                pendingDeals: 0,
-                publishedDeals: 0,
-            },
-            {
-                totalDeals: 0,
-                scheduledDeals: 0,
-                pendingDeals: 0,
-                publishedDeals: 0,
-            },
-            {
-                totalDeals: 0,
-                scheduledDeals: 0,
-                pendingDeals: 0,
-                publishedDeals: 0,
-            },
-            {
-                totalDeals: 0,
-                scheduledDeals: 0,
-                pendingDeals: 0,
-                publishedDeals: 0,
-            },
-            {
-                totalDeals: 0,
-                scheduledDeals: 0,
-                pendingDeals: 0,
-                publishedDeals: 0,
-            },
-            {
-                totalDeals: 0,
-                scheduledDeals: 0,
-                pendingDeals: 0,
-                publishedDeals: 0,
-            },
-            {
-                totalDeals: 0,
-                scheduledDeals: 0,
-                pendingDeals: 0,
-                publishedDeals: 0,
-            },
-            {
-                totalDeals: 0,
-                scheduledDeals: 0,
-                pendingDeals: 0,
-                publishedDeals: 0,
-            },
-        ];
-        const currentDate = new Date();
-        let totalDeals;
-        let scheduledDeals;
-        let pendingDeals;
-        let publishedDeals;
-        totalDeals = await this.dealModel
-            .find({ merchantID: req.user.id, deletedCheck: false })
-            .sort({ startDate: 1 });
-        scheduledDeals = await this.dealModel
-            .find({
-            merchantID: req.user.id,
-            dealStatus: dealstatus_enum_1.DEALSTATUS.scheduled,
-            deletedCheck: false,
-        })
-            .sort({ startDate: 1 });
-        pendingDeals = await this.dealModel
-            .find({
-            merchantID: req.user.id,
-            dealStatus: dealstatus_enum_1.DEALSTATUS.inReview,
-            deletedCheck: false,
-        })
-            .sort({ startDate: 1 });
-        publishedDeals = await this.dealModel
-            .find({
-            merchantID: req.user.id,
-            deletedCheck: false,
-            dealStatus: dealstatus_enum_1.DEALSTATUS.published,
-        })
-            .sort({ startDate: 1 });
-        totalDeals.forEach((data) => {
-            let currentDocDate = new Date(data.startDate);
-            totalStats.totalDeals = totalStats.totalDeals + 1;
-            if (currentDocDate.getFullYear() === currentDate.getFullYear()) {
-                monthlyStats[currentDocDate.getMonth()].totalDeals =
-                    monthlyStats[currentDocDate.getMonth()].totalDeals + 1;
+            };
+            const monthlyStats = [
+                {
+                    totalDeals: 0,
+                    scheduledDeals: 0,
+                    pendingDeals: 0,
+                    publishedDeals: 0,
+                },
+                {
+                    totalDeals: 0,
+                    scheduledDeals: 0,
+                    pendingDeals: 0,
+                    publishedDeals: 0,
+                },
+                {
+                    totalDeals: 0,
+                    scheduledDeals: 0,
+                    pendingDeals: 0,
+                    publishedDeals: 0,
+                },
+                {
+                    totalDeals: 0,
+                    scheduledDeals: 0,
+                    pendingDeals: 0,
+                    publishedDeals: 0,
+                },
+                {
+                    totalDeals: 0,
+                    scheduledDeals: 0,
+                    pendingDeals: 0,
+                    publishedDeals: 0,
+                },
+                {
+                    totalDeals: 0,
+                    scheduledDeals: 0,
+                    pendingDeals: 0,
+                    publishedDeals: 0,
+                },
+                {
+                    totalDeals: 0,
+                    scheduledDeals: 0,
+                    pendingDeals: 0,
+                    publishedDeals: 0,
+                },
+                {
+                    totalDeals: 0,
+                    scheduledDeals: 0,
+                    pendingDeals: 0,
+                    publishedDeals: 0,
+                },
+                {
+                    totalDeals: 0,
+                    scheduledDeals: 0,
+                    pendingDeals: 0,
+                    publishedDeals: 0,
+                },
+                {
+                    totalDeals: 0,
+                    scheduledDeals: 0,
+                    pendingDeals: 0,
+                    publishedDeals: 0,
+                },
+                {
+                    totalDeals: 0,
+                    scheduledDeals: 0,
+                    pendingDeals: 0,
+                    publishedDeals: 0,
+                },
+                {
+                    totalDeals: 0,
+                    scheduledDeals: 0,
+                    pendingDeals: 0,
+                    publishedDeals: 0,
+                },
+            ];
+            const currentDate = new Date();
+            let totalDeals;
+            let scheduledDeals;
+            let pendingDeals;
+            let publishedDeals;
+            totalDeals = await this.dealModel
+                .find({ merchantID: req.user.id, deletedCheck: false })
+                .sort({ startDate: 1 });
+            scheduledDeals = await this.dealModel
+                .find({
+                merchantID: req.user.id,
+                dealStatus: dealstatus_enum_1.DEALSTATUS.scheduled,
+                deletedCheck: false,
+            })
+                .sort({ startDate: 1 });
+            pendingDeals = await this.dealModel
+                .find({
+                merchantID: req.user.id,
+                dealStatus: dealstatus_enum_1.DEALSTATUS.inReview,
+                deletedCheck: false,
+            })
+                .sort({ startDate: 1 });
+            publishedDeals = await this.dealModel
+                .find({
+                merchantID: req.user.id,
+                deletedCheck: false,
+                dealStatus: dealstatus_enum_1.DEALSTATUS.published,
+            })
+                .sort({ startDate: 1 });
+            totalDeals.forEach((data) => {
+                let currentDocDate = new Date(data.startDate);
+                totalStats.totalDeals = totalStats.totalDeals + 1;
+                if (currentDocDate.getFullYear() === currentDate.getFullYear()) {
+                    monthlyStats[currentDocDate.getMonth()].totalDeals =
+                        monthlyStats[currentDocDate.getMonth()].totalDeals + 1;
+                }
+            });
+            scheduledDeals.forEach((data) => {
+                let currentDocDate = new Date(data.createdAt);
+                totalStats.scheduledDeals = totalStats.scheduledDeals + 1;
+                if (currentDocDate.getFullYear() === currentDate.getFullYear()) {
+                    monthlyStats[currentDocDate.getMonth()].scheduledDeals =
+                        monthlyStats[currentDocDate.getMonth()].scheduledDeals + 1;
+                }
+            });
+            pendingDeals.forEach((data) => {
+                let currentDocDate = new Date(data.createdAt);
+                totalStats.pendingDeals = totalStats.pendingDeals + 1;
+                if (currentDocDate.getFullYear() === currentDate.getFullYear()) {
+                    monthlyStats[currentDocDate.getMonth()].pendingDeals =
+                        monthlyStats[currentDocDate.getMonth()].pendingDeals + 1;
+                }
+            });
+            publishedDeals.forEach((data) => {
+                let currentDocDate = new Date(data.createdAt);
+                totalStats.publishedDeals = totalStats.publishedDeals + 1;
+                if (currentDocDate.getFullYear() === currentDate.getFullYear()) {
+                    monthlyStats[currentDocDate.getMonth()].publishedDeals =
+                        monthlyStats[currentDocDate.getMonth()].publishedDeals + 1;
+                }
+            });
+            for (let i = 0; i < monthlyStats.length; i++) {
+                yearlyStats.totalDeals =
+                    yearlyStats.totalDeals + monthlyStats[i].totalDeals;
+                yearlyStats.scheduledDeals =
+                    yearlyStats.scheduledDeals + monthlyStats[i].scheduledDeals;
+                yearlyStats.pendingDeals =
+                    yearlyStats.pendingDeals + monthlyStats[i].pendingDeals;
+                yearlyStats.publishedDeals =
+                    yearlyStats.publishedDeals + monthlyStats[i].publishedDeals;
             }
-        });
-        scheduledDeals.forEach((data) => {
-            let currentDocDate = new Date(data.createdAt);
-            totalStats.scheduledDeals = totalStats.scheduledDeals + 1;
-            if (currentDocDate.getFullYear() === currentDate.getFullYear()) {
-                monthlyStats[currentDocDate.getMonth()].scheduledDeals =
-                    monthlyStats[currentDocDate.getMonth()].scheduledDeals + 1;
-            }
-        });
-        pendingDeals.forEach((data) => {
-            let currentDocDate = new Date(data.createdAt);
-            totalStats.pendingDeals = totalStats.pendingDeals + 1;
-            if (currentDocDate.getFullYear() === currentDate.getFullYear()) {
-                monthlyStats[currentDocDate.getMonth()].pendingDeals =
-                    monthlyStats[currentDocDate.getMonth()].pendingDeals + 1;
-            }
-        });
-        publishedDeals.forEach((data) => {
-            let currentDocDate = new Date(data.createdAt);
-            totalStats.publishedDeals = totalStats.publishedDeals + 1;
-            if (currentDocDate.getFullYear() === currentDate.getFullYear()) {
-                monthlyStats[currentDocDate.getMonth()].publishedDeals =
-                    monthlyStats[currentDocDate.getMonth()].publishedDeals + 1;
-            }
-        });
-        for (let i = 0; i < monthlyStats.length; i++) {
-            yearlyStats.totalDeals =
-                yearlyStats.totalDeals + monthlyStats[i].totalDeals;
-            yearlyStats.scheduledDeals =
-                yearlyStats.scheduledDeals + monthlyStats[i].scheduledDeals;
-            yearlyStats.pendingDeals =
-                yearlyStats.pendingDeals + monthlyStats[i].pendingDeals;
-            yearlyStats.publishedDeals =
-                yearlyStats.publishedDeals + monthlyStats[i].publishedDeals;
+            return {
+                monthlyStats,
+                yearlyStats,
+                totalStats,
+            };
         }
-        return {
-            monthlyStats,
-            yearlyStats,
-            totalStats,
-        };
+        catch (err) {
+            throw new common_1.HttpException(err.message, common_1.HttpStatus.BAD_REQUEST);
+        }
     }
 };
 DealService = __decorate([

@@ -100,16 +100,21 @@ let ReviewService = class ReviewService {
         }
     }
     async createReviewReply(reviewTextDto) {
-        await this.reviewTextModel.findOneAndUpdate({
-            reviewID: reviewTextDto.reviewID,
-            merchantID: reviewTextDto.merchantID,
-        }, Object.assign({}, reviewTextDto), {
-            upsert: true,
-        });
-        return await this.reviewTextModel.findOne({
-            reviewID: reviewTextDto.reviewID,
-            merchantID: reviewTextDto.merchantID,
-        });
+        try {
+            await this.reviewTextModel.findOneAndUpdate({
+                reviewID: reviewTextDto.reviewID,
+                merchantID: reviewTextDto.merchantID,
+            }, Object.assign({}, reviewTextDto), {
+                upsert: true,
+            });
+            return await this.reviewTextModel.findOne({
+                reviewID: reviewTextDto.reviewID,
+                merchantID: reviewTextDto.merchantID,
+            });
+        }
+        catch (err) {
+            throw new common_1.HttpException(err.message, common_1.HttpStatus.BAD_REQUEST);
+        }
     }
     async getMerchantReply(merchantID, reviewID) {
         try {
@@ -132,14 +137,22 @@ let ReviewService = class ReviewService {
                     },
                 },
             ]);
-            return merchantReply;
+            if (merchantReply.length == 0) {
+                return {};
+            }
+            return merchantReply[0];
         }
         catch (err) {
             throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
         }
     }
     async deleteReview(id) {
-        return this.reviewModel.findOneAndDelete({ _id: id });
+        try {
+            return this.reviewModel.findOneAndDelete({ _id: id });
+        }
+        catch (err) {
+            throw new common_1.HttpException(err.message, common_1.HttpStatus.BAD_REQUEST);
+        }
     }
     async getAllReviews(offset, limit) {
         try {
