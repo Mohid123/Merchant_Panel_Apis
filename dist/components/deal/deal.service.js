@@ -266,6 +266,14 @@ let DealService = class DealService {
                                 },
                             },
                             {
+                                $lookup: {
+                                    from: 'reviewText',
+                                    as: 'merchantReplyText',
+                                    localField: '_id',
+                                    foreignField: 'reviewID',
+                                },
+                            },
+                            {
                                 $skip: parseInt(offset),
                             },
                             {
