@@ -31,6 +31,7 @@ export class VouchersController {
   }
 
   @ApiQuery({ name: 'deal', enum: SORT, required: false })
+  @ApiQuery({ name: 'voucher', enum: SORT, required: false })
   @ApiQuery({ name: 'amount', enum: SORT, required: false })
   @ApiQuery({ name: 'fee', enum: SORT, required: false })
   @ApiQuery({ name: 'net', enum: SORT, required: false })
@@ -42,6 +43,7 @@ export class VouchersController {
   getAllVouchers(
     @Param('merchantID') merchantID: string,
     @Query('deal') deal: SORT,
+    @Query('voucher') voucher: SORT,
     @Query('amount') amount: SORT,
     @Query('fee') fee: SORT,
     @Query('net') net: SORT,
@@ -49,17 +51,18 @@ export class VouchersController {
     @Query('paymentStatus') paymentStatus: BILLINGSTATUS,
     @Query('dateFrom') dateFrom: number,
     @Query('dateTo') dateTo: number,
-    @Query("voucherID") voucherID: string = "",
-    @Query("dealHeader") dealHeader: string = "",
-    @Query("voucherHeader") voucherHeader: string = "",
-    @Query("voucherStatus") voucherStatus: string = "",
-    @Query("invoiceStatus") invoiceStatus: string = "",
+    @Query('voucherID') voucherID: string = '',
+    @Query('dealHeader') dealHeader: string = '',
+    @Query('voucherHeader') voucherHeader: string = '',
+    @Query('voucherStatus') voucherStatus: string = '',
+    @Query('invoiceStatus') invoiceStatus: string = '',
     @Query('offset') offset: number = 0,
     @Query('limit') limit: number = 10,
-    @Body() multipleVouchersDto: MultipleVouchersDto
+    @Body() multipleVouchersDto: MultipleVouchersDto,
   ) {
     return this.voucherService.getAllVouchersByMerchantID(
       deal,
+      voucher,
       amount,
       fee,
       net,
@@ -75,7 +78,7 @@ export class VouchersController {
       invoiceStatus,
       offset,
       limit,
-      multipleVouchersDto
+      multipleVouchersDto,
     );
   }
 

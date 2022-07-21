@@ -55,6 +55,7 @@ export class VouchersService {
 
   async getAllVouchersByMerchantID(
     deal,
+    voucher,
     amount,
     fee,
     net,
@@ -70,7 +71,7 @@ export class VouchersService {
     invoiceStatus,
     offset,
     limit,
-    multipleVouchersDto
+    multipleVouchersDto,
   ) {
     try {
       offset = parseInt(offset) < 0 ? 0 : offset;
@@ -139,6 +140,14 @@ export class VouchersService {
           dealHeader: sortDeal,
         };
       }
+      if (voucher) {
+        let sortVoucher = voucher == SORT.ASC ? 1 : -1;
+        console.log('voucher');
+        sort = {
+          ...sort,
+          voucherHeader: sortVoucher,
+        };
+      }
       if (amount) {
         let sortAmount = amount == SORT.ASC ? 1 : -1;
         console.log('amount');
@@ -178,7 +187,7 @@ export class VouchersService {
           ...filters,
           voucherID: query,
         };
-      };
+      }
 
       if (dealHeader.trim().length) {
         var query = new RegExp(`${dealHeader}`, 'i');
@@ -186,7 +195,7 @@ export class VouchersService {
           ...filters,
           dealHeader: query,
         };
-      };
+      }
 
       if (voucherHeader.trim().length) {
         var query = new RegExp(`${voucherHeader}`, 'i');
@@ -194,7 +203,7 @@ export class VouchersService {
           ...filters,
           voucherHeader: query,
         };
-      };
+      }
 
       if (voucherStatus.trim().length) {
         var query = new RegExp(`${voucherStatus}`, 'i');
@@ -202,7 +211,7 @@ export class VouchersService {
           ...filters,
           status: query,
         };
-      };
+      }
 
       if (invoiceStatus.trim().length) {
         var query = new RegExp(`${invoiceStatus}`, 'i');
@@ -210,42 +219,42 @@ export class VouchersService {
           ...filters,
           paymentStatus: query,
         };
-      };
+      }
 
-      if( multipleVouchersDto?.voucherIDsArray?.length){
+      if (multipleVouchersDto?.voucherIDsArray?.length) {
         filters = {
           ...filters,
           voucherID: { $in: multipleVouchersDto.voucherIDsArray },
         };
-      };
+      }
 
-      if( multipleVouchersDto?.dealHeaderArray?.length){
+      if (multipleVouchersDto?.dealHeaderArray?.length) {
         filters = {
           ...filters,
           dealHeader: { $in: multipleVouchersDto.dealHeaderArray },
         };
-      };
+      }
 
-      if( multipleVouchersDto?.voucherHeaderArray?.length){
+      if (multipleVouchersDto?.voucherHeaderArray?.length) {
         filters = {
           ...filters,
           voucherHeader: { $in: multipleVouchersDto.voucherHeaderArray },
         };
-      };
+      }
 
-      if( multipleVouchersDto?.voucherStatusArray?.length){
+      if (multipleVouchersDto?.voucherStatusArray?.length) {
         filters = {
           ...filters,
           status: { $in: multipleVouchersDto.voucherStatusArray },
         };
-      };
+      }
 
-      if( multipleVouchersDto?.invoiceStatusArray?.length){
+      if (multipleVouchersDto?.invoiceStatusArray?.length) {
         filters = {
           ...filters,
           paymentStatus: { $in: multipleVouchersDto.invoiceStatusArray },
         };
-      };
+      }
 
       if (Object.keys(sort).length === 0 && sort.constructor === Object) {
         sort = {
@@ -259,7 +268,7 @@ export class VouchersService {
       const totalCount = await this.voucherModel.countDocuments({
         merchantID: merchantId,
         ...matchFilter,
-        ...filters
+        ...filters,
       });
 
       let vouchers = await this.voucherModel
@@ -268,7 +277,7 @@ export class VouchersService {
             $match: {
               merchantID: merchantId,
               ...matchFilter,
-              ...filters
+              ...filters,
             },
           },
           {
