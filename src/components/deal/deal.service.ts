@@ -313,14 +313,14 @@ export class DealService {
                     },
                   },
                 },
-                // {
-                //   $lookup: {
-                //     from: 'reviewText',
-                //     as: 'merchantReplyText',
-                //     localField: '_id',
-                //     foreignField: 'reviewID',
-                //   },
-                // },
+                {
+                  $lookup: {
+                    from: 'reviewText',
+                    as: 'merchantReplyText',
+                    localField: '_id',
+                    foreignField: 'reviewID',
+                  },
+                },
                 // {
                 //   $unwind: '$merchantReplyText',
                 // },
