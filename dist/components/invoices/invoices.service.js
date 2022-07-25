@@ -99,6 +99,11 @@ let InvoicesService = class InvoicesService {
             if (dateTo) {
                 dateToFilters = Object.assign(Object.assign({}, dateToFilters), { $lte: dateTo });
             }
+            else {
+                dateFromFilters = {
+                    $eq: dateFrom,
+                };
+            }
             if (status) {
                 matchFilter = Object.assign(Object.assign({}, matchFilter), { status: status });
             }
