@@ -121,6 +121,10 @@ export class InvoicesService {
           ...dateToFilters,
           $lte: dateTo,
         };
+      } else {
+        dateFromFilters = {
+          $eq: dateFrom,
+        };
       }
 
       if (status) {
