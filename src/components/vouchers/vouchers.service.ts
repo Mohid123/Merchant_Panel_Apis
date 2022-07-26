@@ -268,7 +268,7 @@ export class VouchersService {
       const totalCount = await this.voucherModel.countDocuments({
         merchantID: merchantId,
         ...matchFilter,
-        ...filters,
+        // ...filters,
       });
 
       let vouchers = await this.voucherModel
@@ -277,7 +277,7 @@ export class VouchersService {
             $match: {
               merchantID: merchantId,
               ...matchFilter,
-              ...filters,
+              // ...filters,
             },
           },
           {
