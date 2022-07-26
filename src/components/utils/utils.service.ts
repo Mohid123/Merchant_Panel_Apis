@@ -29,6 +29,9 @@ export class UtilService {
       });
   
       console.log(res.data);
+      if(res?.data?.success == 0) {
+        throw new BadRequestException(res?.data?.error);
+      }
       return res.data;
     }catch(err){
       console.log(err?.message);
