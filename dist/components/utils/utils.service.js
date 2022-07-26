@@ -25,6 +25,7 @@ let UtilService = class UtilService {
         return data;
     }
     async validateVatNumber(vatNumber) {
+        var _a, _b;
         try {
             const res = await axios_1.default.get(`https://vatcheckapi.com/api/validate/${vatNumber}?apikey=${process.env.VATCHECKAPIKEY}`, {
                 headers: {
@@ -32,6 +33,9 @@ let UtilService = class UtilService {
                 }
             });
             console.log(res.data);
+            if (((_a = res === null || res === void 0 ? void 0 : res.data) === null || _a === void 0 ? void 0 : _a.success) == 0) {
+                throw new common_1.BadRequestException((_b = res === null || res === void 0 ? void 0 : res.data) === null || _b === void 0 ? void 0 : _b.error);
+            }
             return res.data;
         }
         catch (err) {
