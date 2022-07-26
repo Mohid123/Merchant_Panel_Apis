@@ -25,13 +25,19 @@ let UtilService = class UtilService {
         return data;
     }
     async validateVatNumber(vatNumber) {
-        const res = await axios_1.default.get(`https://vatcheckapi.com/api/validate/${vatNumber}?apikey=${process.env.VATCHECKAPIKEY}`, {
-            headers: {
-                "apikey": process.env.VATCHECKAPIKEY
-            }
-        });
-        console.log(res.data);
-        return res.data;
+        try {
+            const res = await axios_1.default.get(`https://vatcheckapi.com/api/validate/${vatNumber}?apikey=${process.env.VATCHECKAPIKEY}`, {
+                headers: {
+                    "apikey": process.env.VATCHECKAPIKEY
+                }
+            });
+            console.log(res.data);
+            return res.data;
+        }
+        catch (err) {
+            console.log(err === null || err === void 0 ? void 0 : err.message);
+            throw new common_1.BadRequestException(err === null || err === void 0 ? void 0 : err.message);
+        }
     }
 };
 UtilService = __decorate([
