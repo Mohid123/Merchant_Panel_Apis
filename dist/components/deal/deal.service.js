@@ -487,7 +487,7 @@ let DealService = class DealService {
             }
             console.log(sort);
             console.log(matchFilter);
-            const totalCount = await this.dealModel.countDocuments(Object.assign(Object.assign({ merchantID: merchantID, deletedCheck: false }, matchFilter), filters));
+            const totalCount = await this.dealModel.countDocuments(Object.assign({ merchantID: merchantID, deletedCheck: false }, matchFilter));
             const deals = await this.dealModel
                 .aggregate([
                 {
