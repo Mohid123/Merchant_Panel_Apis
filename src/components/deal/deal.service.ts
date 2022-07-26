@@ -686,7 +686,7 @@ export class DealService {
         merchantID: merchantID,
         deletedCheck: false,
         ...matchFilter,
-        ...filters,
+        // ...filters,
       });
 
       const deals = await this.dealModel
