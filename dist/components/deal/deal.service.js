@@ -66,6 +66,9 @@ let DealService = class DealService {
                 if (dealDto.dealStatus) {
                     dealDto.dealStatus = dealstatus_enum_1.DEALSTATUS.inReview;
                 }
+                if (dealDto.dealStatus == 'Draft') {
+                    dealDto.dealStatus = dealstatus_enum_1.DEALSTATUS.draft;
+                }
             }
             if (dealDto.vouchers) {
                 dealDto.vouchers = dealDto.vouchers.map((el) => {
@@ -263,6 +266,7 @@ let DealService = class DealService {
                                             },
                                         ],
                                     },
+                                    isViewed: true,
                                 },
                             },
                             {

@@ -4,7 +4,7 @@ exports.DEALSTATUS = void 0;
 var DEALSTATUS;
 (function (DEALSTATUS) {
     DEALSTATUS["draft"] = "Draft";
-    DEALSTATUS["inReview"] = "In Review";
+    DEALSTATUS["inReview"] = "In review";
     DEALSTATUS["scheduled"] = "Scheduled";
     DEALSTATUS["needsAttention"] = "Needs Attention";
     DEALSTATUS["published"] = "Published";

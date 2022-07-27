@@ -24,6 +24,7 @@ const activity_module_1 = require("./components/activity/activity.module");
 const vouchers_module_1 = require("./components/vouchers/vouchers.module");
 const invoices_module_1 = require("./components/invoices/invoices.module");
 const utils_module_1 = require("./components/utils/utils.module");
+const leads_module_1 = require("./components/leads/leads.module");
 let AppModule = class AppModule {
 };
 AppModule = __decorate([
@@ -46,6 +47,7 @@ AppModule = __decorate([
             vouchers_module_1.VouchersModule,
             invoices_module_1.InvoicesModule,
             utils_module_1.UtilModule,
+            leads_module_1.LeadsModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],
