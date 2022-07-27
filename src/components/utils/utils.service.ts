@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import axios from 'axios';
 import { categoriesDataSet } from './categories';
 const fs = require('fs');
@@ -21,13 +21,21 @@ export class UtilService {
   }
 
   async validateVatNumber (vatNumber) {
-    const res = await axios.get(`https://vatcheckapi.com/api/validate/${vatNumber}?apikey=${process.env.VATCHECKAPIKEY}`,{
-      headers:{
-        "apikey": process.env.VATCHECKAPIKEY
+    try{
+      const res = await axios.get(`https://vatcheckapi.com/api/validate/${vatNumber}?apikey=${process.env.VATCHECKAPIKEY}`,{
+        headers:{
+          "apikey": process.env.VATCHECKAPIKEY
+        }
+      });
+  
+      console.log(res.data);
+      if(res?.data?.success == 0) {
+        throw new BadRequestException(res?.data?.error);
       }
-    });
-
-    console.log(res.data);
-    return res.data;
+      return res.data;
+    }catch(err){
+      console.log(err?.message);
+      throw new BadRequestException(err?.message);
+    }
   }
 }

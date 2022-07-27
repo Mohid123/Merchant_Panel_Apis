@@ -122,8 +122,10 @@ export class InvoicesService {
           $lte: dateTo,
         };
       } else {
-        dateFromFilters = {
-          $eq: dateFrom,
+        dateTo = dateFrom + 24 * 60 * 60 * 1000;
+        dateToFilters = {
+          ...dateToFilters,
+          $lte: dateTo,
         };
       }
 
@@ -205,7 +207,7 @@ export class InvoicesService {
       const totalCount = await this._invoicesModel.countDocuments({
         merchantID: merchantID,
         ...matchFilter,
-        ...filters,
+        // ...filters,
       });
 
       let invoices = await this._invoicesModel
@@ -214,7 +216,7 @@ export class InvoicesService {
             $match: {
               merchantID: merchantID,
               ...matchFilter,
-              ...filters,
+              // ...filters,
             },
           },
           {

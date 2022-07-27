@@ -439,7 +439,7 @@ export class DealService {
         merchantID: id,
         deletedCheck: false,
         ...matchFilter,
-        ...filters,
+        // ...filters,
       });
 
       const deals = await this.dealModel
@@ -449,7 +449,7 @@ export class DealService {
               merchantID: id,
               deletedCheck: false,
               ...matchFilter,
-              ...filters,
+              // ...filters,
               totalReviews: { $gt: 0 },
             },
           },
