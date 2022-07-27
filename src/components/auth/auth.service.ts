@@ -99,19 +99,21 @@ export class AuthService {
       // strict: true
     });
     console.log(password);
-    debugger;
+    
     return password;
   }
 
   async signup(loginDto) {
+    loginDto.email = loginDto?.email?.toLowerCase();
     let user = await this._usersService.findOne({
-      email: loginDto.email.toLowerCase(),
+      email: loginDto.email,
     });
     if (user) {
       throw new ForbiddenException('Email already exists');
-      return;
     }
     loginDto._id = new Types.ObjectId().toString();
+
+    loginDto.tradeName = loginDto.companyName;
 
     return await new this._usersService(loginDto).save();
   }
@@ -137,13 +139,13 @@ export class AuthService {
   }
 
   async isEmailExists(email) {
-    const user = await this._usersService.findOne({ email: email });
+    const user = await this._usersService.findOne({ email: email?.toLowerCase() });
 
     return user ? true : false;
   }
 
   async sendOtp(otpEmailDto) {
-    let userEmail = otpEmailDto.email;
+    let userEmail = otpEmailDto.email?.toLowerCase();
 
     const user = await this._usersService.findOne({ email: userEmail });
 

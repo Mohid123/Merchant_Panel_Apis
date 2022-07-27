@@ -5,7 +5,7 @@ import { DealInterface } from '../../interface/deal/deal.interface';
 export const DealSchema = new mongoose.Schema(
   {
     _id: { type: String, default: generateStringId },
-    dealID: { type: Number },
+    dealID: { type: String, unique: true },
     merchantID: { type: String },
     dealHeader: { type: String, default: '' },
     subTitle: { type: String, default: '' },
@@ -23,9 +23,9 @@ export const DealSchema = new mongoose.Schema(
     aboutThisDeal: { type: String, default: '' },
     readMore: { type: String, default: '' },
     finePrints: { type: String, default: '' },
-    dealStatus: { type: String, default: 'InComplete' },
+    dealStatus: { type: String, default: 'Draft' },
     deletedCheck: { type: Boolean, default: false },
-    isCollapsed: { type: Boolean, default: true },
+    isCollapsed: { type: Boolean, default: false },
     ratingsAverage: {
       type: Number,
       default: 0,

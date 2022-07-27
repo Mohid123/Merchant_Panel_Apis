@@ -2,7 +2,7 @@ import { ApiProperty } from "@nestjs/swagger";
 
 export class InvoiceDTO {
     @ApiProperty()
-    invoiceNo: number;
+    invoiceID: string;
 
     @ApiProperty()
     invoiceDate: number;

@@ -1,11 +1,13 @@
 import { Document } from 'mongoose';
 
 export interface VoucherInterface extends Document {
-  id: string;
-  voucherID: number;
-  dealName: string;
-  dealId: string;
+  _id: string;
+  voucherID: string;
+  voucherHeader: string;
+  dealHeader: string;
+  dealID: string;
   merchantID: string;
+  customerID: string;
   amount: number;
   fee: number;
   net: number;

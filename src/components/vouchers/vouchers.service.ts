@@ -25,7 +25,7 @@ export class VouchersService {
       { new: true },
     );
 
-    return sequenceDocument.sequenceValue;
+    return 'V' + sequenceDocument.sequenceValue;
   }
 
   async createVoucher(voucherDto) {
@@ -55,6 +55,7 @@ export class VouchersService {
 
   async getAllVouchersByMerchantID(
     deal,
+    voucher,
     amount,
     fee,
     net,
@@ -63,12 +64,19 @@ export class VouchersService {
     dateFrom,
     dateTo,
     merchantId,
+    voucherID,
+    dealHeader,
+    voucherHeader,
+    voucherStatus,
+    invoiceStatus,
     offset,
     limit,
+    multipleVouchersDto,
   ) {
     try {
       offset = parseInt(offset) < 0 ? 0 : offset;
       limit = parseInt(limit) < 1 ? 10 : limit;
+
       dateFrom = parseInt(dateFrom);
       dateTo = parseInt(dateTo);
 
@@ -129,7 +137,15 @@ export class VouchersService {
         console.log('deal');
         sort = {
           ...sort,
-          dealName: sortDeal,
+          dealHeader: sortDeal,
+        };
+      }
+      if (voucher) {
+        let sortVoucher = voucher == SORT.ASC ? 1 : -1;
+        console.log('voucher');
+        sort = {
+          ...sort,
+          voucherHeader: sortVoucher,
         };
       }
       if (amount) {
@@ -157,6 +173,89 @@ export class VouchersService {
         };
       }
 
+      voucherID = voucherID.trim();
+      dealHeader = dealHeader.trim();
+      voucherHeader = voucherHeader.trim();
+      voucherStatus = voucherStatus.trim();
+      invoiceStatus = invoiceStatus.trim();
+
+      let filters = {};
+
+      if (voucherID.trim().length) {
+        var query = new RegExp(`${voucherID}`, 'i');
+        filters = {
+          ...filters,
+          voucherID: query,
+        };
+      }
+
+      if (dealHeader.trim().length) {
+        var query = new RegExp(`${dealHeader}`, 'i');
+        filters = {
+          ...filters,
+          dealHeader: query,
+        };
+      }
+
+      if (voucherHeader.trim().length) {
+        var query = new RegExp(`${voucherHeader}`, 'i');
+        filters = {
+          ...filters,
+          voucherHeader: query,
+        };
+      }
+
+      if (voucherStatus.trim().length) {
+        var query = new RegExp(`${voucherStatus}`, 'i');
+        filters = {
+          ...filters,
+          status: query,
+        };
+      }
+
+      if (invoiceStatus.trim().length) {
+        var query = new RegExp(`${invoiceStatus}`, 'i');
+        filters = {
+          ...filters,
+          paymentStatus: query,
+        };
+      }
+
+      if (multipleVouchersDto?.voucherIDsArray?.length) {
+        filters = {
+          ...filters,
+          voucherID: { $in: multipleVouchersDto.voucherIDsArray },
+        };
+      }
+
+      if (multipleVouchersDto?.dealHeaderArray?.length) {
+        filters = {
+          ...filters,
+          dealHeader: { $in: multipleVouchersDto.dealHeaderArray },
+        };
+      }
+
+      if (multipleVouchersDto?.voucherHeaderArray?.length) {
+        filters = {
+          ...filters,
+          voucherHeader: { $in: multipleVouchersDto.voucherHeaderArray },
+        };
+      }
+
+      if (multipleVouchersDto?.voucherStatusArray?.length) {
+        filters = {
+          ...filters,
+          status: { $in: multipleVouchersDto.voucherStatusArray },
+        };
+      }
+
+      if (multipleVouchersDto?.invoiceStatusArray?.length) {
+        filters = {
+          ...filters,
+          paymentStatus: { $in: multipleVouchersDto.invoiceStatusArray },
+        };
+      }
+
       if (Object.keys(sort).length === 0 && sort.constructor === Object) {
         sort = {
           createdAt: 1,
@@ -169,6 +268,7 @@ export class VouchersService {
       const totalCount = await this.voucherModel.countDocuments({
         merchantID: merchantId,
         ...matchFilter,
+        // ...filters,
       });
 
       let vouchers = await this.voucherModel
@@ -177,6 +277,7 @@ export class VouchersService {
             $match: {
               merchantID: merchantId,
               ...matchFilter,
+              // ...filters,
             },
           },
           {

@@ -1,16 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 export class UpdateDealDto {
-  @ApiProperty()
-  endDate: Date;
+
   @ApiProperty({
-    example: [
+    example:
       {
         voucherID: '',
-        // soldVouchers: 0,
+        subTitle: '',
+        originalPrice: 0,
+        dealPrice: 0,
         numberOfVouchers: 0,
       },
-    ],
   })
-  vouchers: [];
+  vouchers: any;
 }

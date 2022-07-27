@@ -26,19 +26,27 @@ export class InvoicesService {
       { new: true },
     );
 
-    return sequenceDocument.sequenceValue;
+    return 'I' + sequenceDocument.sequenceValue;
   }
 
   async createInvoice(invoiceDto) {
-    invoiceDto.invoiceNo = await this.generateVoucherId('invoiceID');
+    try {
+      invoiceDto.invoiceID = await this.generateVoucherId('invoiceID');
 
-    invoiceDto.invoiceDate = new Date().getTime();
+      invoiceDto.invoiceDate = new Date().getTime();
 
-    return await new this._invoicesModel(invoiceDto).save();
+      return await new this._invoicesModel(invoiceDto).save();
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
   }
 
   async getInvoice(invoiceURL) {
-    return await this._invoicesModel.findOne({ invoiceURL: invoiceURL });
+    try {
+      return await this._invoicesModel.findOne({ invoiceURL: invoiceURL });
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
   }
 
   async getAllInvoices(offset, limit) {
@@ -85,8 +93,10 @@ export class InvoicesService {
     invoiceDate,
     invoiceAmount,
     status,
+    invoiceID,
     offset,
     limit,
+    multipleInvoicesDto,
   ) {
     try {
       offset = parseInt(offset) < 0 ? 0 : offset;
@@ -107,6 +117,12 @@ export class InvoicesService {
       }
 
       if (dateTo) {
+        dateToFilters = {
+          ...dateToFilters,
+          $lte: dateTo,
+        };
+      } else {
+        dateTo = dateFrom + 24 * 60 * 60 * 1000;
         dateToFilters = {
           ...dateToFilters,
           $lte: dateTo,
@@ -160,6 +176,25 @@ export class InvoicesService {
         };
       }
 
+      invoiceID = invoiceID.trim();
+
+      let filters = {};
+
+      if (invoiceID.trim().length) {
+        var query = new RegExp(`${invoiceID}`, 'i');
+        filters = {
+          ...filters,
+          invoiceID: query,
+        };
+      }
+
+      if (multipleInvoicesDto?.invoiceIDsArray?.length) {
+        filters = {
+          ...filters,
+          invoiceID: { $in: multipleInvoicesDto.invoiceIDsArray },
+        };
+      }
+
       if (
         Object.keys(sortFilters).length === 0 &&
         sortFilters.constructor === Object
@@ -172,6 +207,7 @@ export class InvoicesService {
       const totalCount = await this._invoicesModel.countDocuments({
         merchantID: merchantID,
         ...matchFilter,
+        // ...filters,
       });
 
       let invoices = await this._invoicesModel
@@ -180,6 +216,7 @@ export class InvoicesService {
             $match: {
               merchantID: merchantID,
               ...matchFilter,
+              // ...filters,
             },
           },
           {

@@ -1,11 +1,27 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { multipleRatings } from 'src/interface/review/review.interface';
 
 export class ReviewDto {
   @ApiProperty()
   id: string;
 
   @ApiProperty()
+  dealMongoID: string;
+
+  @ApiProperty()
   dealID: string;
+
+  @ApiProperty()
+  dealHeader: string;
+
+  @ApiProperty()
+  subDealHeader: string;
+
+  @ApiProperty()
+  voucherMongoID: string;
+
+  @ApiProperty()
+  voucherID: string;
 
   @ApiProperty()
   customerID: string;
@@ -17,7 +33,17 @@ export class ReviewDto {
   text: string;
 
   @ApiProperty()
-  rating: number;
+  totalRating: number;
+
+  @ApiProperty({
+    example: [
+      {
+        ratingName: '',
+        ratingScore: 0
+      }
+    ]
+  })
+  multipleRating: multipleRatings[];
 
   @ApiProperty()
   customerEmail: string;
@@ -27,4 +53,7 @@ export class ReviewDto {
 
   @ApiProperty()
   profilePicURL: string;
+
+  @ApiProperty()
+  voucherRedeemedDate: number;
 }

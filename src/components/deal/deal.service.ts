@@ -9,6 +9,8 @@ import { SORT } from '../../enum/sort/sort.enum';
 import { VoucherCounterInterface } from '../../interface/vouchers/vouchersCounter.interface';
 import { SubCategoryInterface } from '../../interface/category/subcategory.interface';
 import { arrayBuffer } from 'stream/consumers';
+import { RATINGENUM } from 'src/enum/review/ratingValue.enum';
+import { UsersInterface } from 'src/interface/user/users.interface';
 
 @Injectable()
 export class DealService {
@@ -20,6 +22,8 @@ export class DealService {
     private readonly voucherCounterModel: Model<VoucherCounterInterface>,
     @InjectModel('SubCategory')
     private readonly subCategoryModel: Model<SubCategoryInterface>,
+    @InjectModel('User')
+    private readonly _userModel: Model<UsersInterface>,
   ) {}
 
   async generateVoucherId(sequenceName) {
@@ -33,7 +37,7 @@ export class DealService {
       { new: true },
     );
 
-    return sequenceDocument.sequenceValue;
+    return 'D' + sequenceDocument.sequenceValue;
   }
 
   async createDeal(dealDto, req) {
@@ -134,50 +138,63 @@ export class DealService {
   }
 
   async updateDeal(updateDealDto, dealID) {
-    const deal = await this.dealModel.findById(dealID);
+    try {
+      updateDealDto.vouchers = [updateDealDto.vouchers];
+      const deal = await this.dealModel.findById(dealID);
 
-    let dealVouchers = 0;
-    let stamp = new Date(updateDealDto.endDate).getTime();
-    updateDealDto.endDate = stamp;
+      let dealVouchers = 0;
 
-    deal.endDate = updateDealDto.endDate;
+      deal.vouchers = deal.vouchers.map((element) => {
+        updateDealDto.vouchers.forEach((el) => {
+          let calculateDiscountPercentage =
+            ((el.originalPrice - el.dealPrice) / el.originalPrice) * 100;
+          el.discountPercentage = calculateDiscountPercentage;
 
-    deal.vouchers = deal.vouchers.map((element) => {
-      updateDealDto.vouchers.forEach((el) => {
-        if (el['voucherID'] === element['_id']) {
-          element.numberOfVouchers += el.numberOfVouchers;
-        }
+          if (el['voucherID'] === element['_id']) {
+            element.numberOfVouchers += el.numberOfVouchers;
+            element.subTitle = el.subTitle;
+            element.originalPrice = el.originalPrice;
+            element.dealPrice = el.dealPrice;
+            element.discountPercentage = calculateDiscountPercentage;
+          }
+        });
+
+        dealVouchers += element.numberOfVouchers;
+
+        return element;
       });
 
-      dealVouchers += element.numberOfVouchers;
+      deal.availableVouchers = dealVouchers;
 
-      return element;
-    });
+      await this.dealModel.findByIdAndUpdate(dealID, deal);
 
-    deal.availableVouchers = dealVouchers;
-
-    await this.dealModel.findByIdAndUpdate(dealID, deal);
-
-    return { message: 'Deal Updated Successfully' };
+      return { message: 'Deal Updated Successfully' };
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
   }
 
   async approveRejectDeal(dealID, dealStatusDto) {
-    let deal = await this.dealModel.findOne({
-      _id: dealID,
-      deletedCheck: false,
-      dealStatus: DEALSTATUS.inReview,
-    });
+    try {
+      let deal = await this.dealModel.findOne({
+        _id: dealID,
+        deletedCheck: false,
+        dealStatus: DEALSTATUS.inReview,
+      });
 
-    if (dealStatusDto.dealStatus == DEALSTATUS.scheduled) {
-      return await this.dealModel.updateOne(
-        { _id: deal.id },
-        { dealStatus: DEALSTATUS.scheduled },
-      );
-    } else if (dealStatusDto.dealStatus == DEALSTATUS.bounced) {
-      return await this.dealModel.updateOne(
-        { _id: deal.id },
-        { dealStatus: DEALSTATUS.bounced },
-      );
+      if (dealStatusDto.dealStatus == DEALSTATUS.scheduled) {
+        return await this.dealModel.updateOne(
+          { _id: deal.id },
+          { dealStatus: DEALSTATUS.scheduled },
+        );
+      } else if (dealStatusDto.dealStatus == DEALSTATUS.expired) {
+        return await this.dealModel.updateOne(
+          { _id: deal.id },
+          { dealStatus: DEALSTATUS.expired },
+        );
+      }
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -267,6 +284,7 @@ export class DealService {
           {
             $project: {
               dealHeader: 1,
+              dealID: 1,
               ratingsAverage: 1,
               totalReviews: 1,
               maxRating: 1,
@@ -278,16 +296,15 @@ export class DealService {
             $lookup: {
               from: 'reviews',
               let: {
-                dealID: id,
+                dealMongoID: id,
               },
-
               pipeline: [
                 {
                   $match: {
                     $expr: {
                       $and: [
                         {
-                          $eq: ['$dealID', '$$dealID'],
+                          $eq: ['$dealMongoID', '$$dealMongoID'],
                         },
                         {
                           $eq: ratingFilter['eq'],
@@ -296,6 +313,17 @@ export class DealService {
                     },
                   },
                 },
+                {
+                  $lookup: {
+                    from: 'reviewText',
+                    as: 'merchantReplyText',
+                    localField: '_id',
+                    foreignField: 'reviewID',
+                  },
+                },
+                // {
+                //   $unwind: '$merchantReplyText',
+                // },
                 {
                   $skip: parseInt(offset),
                 },
@@ -322,7 +350,7 @@ export class DealService {
       });
 
       if (!deal) {
-        throw new HttpException('SOmething went wrong', HttpStatus.BAD_REQUEST);
+        throw new HttpException('Something went wrong', HttpStatus.BAD_REQUEST);
       }
 
       return { status: 'success', message: 'Deal deleted successfully!' };
@@ -331,22 +359,88 @@ export class DealService {
     }
   }
 
-  async getDealsReviewStatsByMerchant(id, offset, limit) {
+  async getDealsReviewStatsByMerchant(
+    id,
+    // averageRating,
+    dealID,
+    offset,
+    limit,
+    multipleReviewsDto,
+  ) {
     offset = parseInt(offset) < 0 ? 0 : offset;
     limit = parseInt(limit) < 1 ? 10 : limit;
     try {
+      let matchFilter = {};
+
+      if (dealID.trim().length) {
+        var query = new RegExp(`${dealID}`, 'i');
+        matchFilter = {
+          ...matchFilter,
+          dealID: query,
+        };
+      }
+
+      let filters = {};
+
+      let averageRating = 'All';
+      if (multipleReviewsDto?.ratingsArray.length) {
+        averageRating = multipleReviewsDto?.ratingsArray[0];
+      }
+
+      let minValue = 1;
+      if (averageRating) {
+        switch (averageRating) {
+          case RATINGENUM.range1:
+            minValue = 1;
+            break;
+
+          case RATINGENUM.range2:
+            minValue = 2;
+            break;
+
+          case RATINGENUM.range3:
+            minValue = 3;
+            break;
+
+          case RATINGENUM.range4:
+            minValue = 4;
+            break;
+
+          case RATINGENUM.range5:
+            minValue = 5;
+            break;
+
+          default:
+            minValue = 1;
+            break;
+        }
+      }
+
+      console.log(minValue);
+      console.log(averageRating);
+
+      if (averageRating !== RATINGENUM.all) {
+        matchFilter = {
+          ...matchFilter,
+          ratingsAverage: {
+            $gte: minValue,
+          },
+        };
+      }
+
+      if (multipleReviewsDto?.dealIDsArray?.length) {
+        filters = {
+          ...filters,
+          dealID: { $in: multipleReviewsDto.dealIDsArray },
+        };
+      }
+
       const totalCount = await this.dealModel.countDocuments({
         merchantID: id,
         deletedCheck: false,
+        ...matchFilter,
+        // ...filters,
       });
-
-      // const deals = await this.dealModel
-      //   .find({
-      //     merchantId: id,
-      //     deletedCheck: false,
-      //   })
-      //   .skip(parseInt(offset))
-      //   .limit(parseInt(limit));
 
       const deals = await this.dealModel
         .aggregate([
@@ -354,11 +448,15 @@ export class DealService {
             $match: {
               merchantID: id,
               deletedCheck: false,
+              ...matchFilter,
+              // ...filters,
+              totalReviews: { $gt: 0 },
             },
           },
           {
             $project: {
               dealHeader: 1,
+              dealID: 1,
               ratingsAverage: 1,
               totalReviews: 1,
               maxRating: 1,
@@ -368,11 +466,13 @@ export class DealService {
         ])
         .skip(parseInt(offset))
         .limit(parseInt(limit));
+
       const totalMerchantReviews = await this.dealModel.aggregate([
         {
           $match: {
             merchantID: id,
             deletedCheck: false,
+            ...matchFilter,
           },
         },
         {
@@ -387,8 +487,11 @@ export class DealService {
         totalMerchantReviews[0] = 0;
       }
 
+      const merchant = await this._userModel.findOne({ _id: id });
+
       return {
-        totalDeals: totalCount,
+        // totalDeals: totalCount,
+        overallRating: merchant.ratingsAverage,
         totalMerchantReviews: totalMerchantReviews[0].nRating,
         data: deals,
       };
@@ -408,8 +511,12 @@ export class DealService {
     status,
     dateFrom,
     dateTo,
+    dealID,
+    header,
+    dealStatus,
     offset,
     limit,
+    multipleDealsDto,
     // req,
   ) {
     try {
@@ -515,6 +622,57 @@ export class DealService {
         };
       }
 
+      dealID = dealID.trim();
+      header = header.trim();
+      dealStatus = dealStatus.trim();
+
+      let filters = {};
+
+      if (dealID.trim().length) {
+        var query = new RegExp(`${dealID}`, 'i');
+        filters = {
+          ...filters,
+          dealID: query,
+        };
+      }
+
+      if (header.trim().length) {
+        var query = new RegExp(`${header}`, 'i');
+        filters = {
+          ...filters,
+          dealHeader: query,
+        };
+      }
+
+      if (dealStatus.trim().length) {
+        var query = new RegExp(`${dealStatus}`, 'i');
+        filters = {
+          ...filters,
+          dealStatus: query,
+        };
+      }
+
+      if (multipleDealsDto?.dealIDsArray?.length) {
+        filters = {
+          ...filters,
+          dealID: { $in: multipleDealsDto.dealIDsArray },
+        };
+      }
+
+      if (multipleDealsDto?.dealHeaderArray?.length) {
+        filters = {
+          ...filters,
+          dealHeader: { $in: multipleDealsDto.dealHeaderArray },
+        };
+      }
+
+      if (multipleDealsDto?.dealStatusArray?.length) {
+        filters = {
+          ...filters,
+          dealStatus: { $in: multipleDealsDto.dealStatusArray },
+        };
+      }
+
       if (Object.keys(sort).length === 0 && sort.constructor === Object) {
         sort = {
           createdAt: -1,
@@ -528,6 +686,7 @@ export class DealService {
         merchantID: merchantID,
         deletedCheck: false,
         ...matchFilter,
+        // ...filters,
       });
 
       const deals = await this.dealModel
@@ -537,10 +696,21 @@ export class DealService {
               merchantID: merchantID,
               deletedCheck: false,
               ...matchFilter,
+              ...filters,
             },
           },
           {
             $sort: sort,
+          },
+          {
+            $addFields: {
+              id: '$_id',
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+            },
           },
         ])
         .skip(parseInt(offset))
@@ -594,181 +764,185 @@ export class DealService {
   //   }
 
   async getSalesStatistics(req) {
-    const totalStats = {
-      totalDeals: 0,
-      scheduledDeals: 0,
-      pendingDeals: 0,
-      publishedDeals: 0,
-    };
+    try {
+      const totalStats = {
+        totalDeals: 0,
+        scheduledDeals: 0,
+        pendingDeals: 0,
+        publishedDeals: 0,
+      };
 
-    const yearlyStats = {
-      totalDeals: 0,
-      scheduledDeals: 0,
-      pendingDeals: 0,
-      publishedDeals: 0,
-    };
+      const yearlyStats = {
+        totalDeals: 0,
+        scheduledDeals: 0,
+        pendingDeals: 0,
+        publishedDeals: 0,
+      };
 
-    const monthlyStats = [
-      {
-        totalDeals: 0,
-        scheduledDeals: 0,
-        pendingDeals: 0,
-        publishedDeals: 0,
-      },
-      {
-        totalDeals: 0,
-        scheduledDeals: 0,
-        pendingDeals: 0,
-        publishedDeals: 0,
-      },
-      {
-        totalDeals: 0,
-        scheduledDeals: 0,
-        pendingDeals: 0,
-        publishedDeals: 0,
-      },
-      {
-        totalDeals: 0,
-        scheduledDeals: 0,
-        pendingDeals: 0,
-        publishedDeals: 0,
-      },
-      {
-        totalDeals: 0,
-        scheduledDeals: 0,
-        pendingDeals: 0,
-        publishedDeals: 0,
-      },
-      {
-        totalDeals: 0,
-        scheduledDeals: 0,
-        pendingDeals: 0,
-        publishedDeals: 0,
-      },
-      {
-        totalDeals: 0,
-        scheduledDeals: 0,
-        pendingDeals: 0,
-        publishedDeals: 0,
-      },
-      {
-        totalDeals: 0,
-        scheduledDeals: 0,
-        pendingDeals: 0,
-        publishedDeals: 0,
-      },
-      {
-        totalDeals: 0,
-        scheduledDeals: 0,
-        pendingDeals: 0,
-        publishedDeals: 0,
-      },
-      {
-        totalDeals: 0,
-        scheduledDeals: 0,
-        pendingDeals: 0,
-        publishedDeals: 0,
-      },
-      {
-        totalDeals: 0,
-        scheduledDeals: 0,
-        pendingDeals: 0,
-        publishedDeals: 0,
-      },
-      {
-        totalDeals: 0,
-        scheduledDeals: 0,
-        pendingDeals: 0,
-        publishedDeals: 0,
-      },
-    ];
+      const monthlyStats = [
+        {
+          totalDeals: 0,
+          scheduledDeals: 0,
+          pendingDeals: 0,
+          publishedDeals: 0,
+        },
+        {
+          totalDeals: 0,
+          scheduledDeals: 0,
+          pendingDeals: 0,
+          publishedDeals: 0,
+        },
+        {
+          totalDeals: 0,
+          scheduledDeals: 0,
+          pendingDeals: 0,
+          publishedDeals: 0,
+        },
+        {
+          totalDeals: 0,
+          scheduledDeals: 0,
+          pendingDeals: 0,
+          publishedDeals: 0,
+        },
+        {
+          totalDeals: 0,
+          scheduledDeals: 0,
+          pendingDeals: 0,
+          publishedDeals: 0,
+        },
+        {
+          totalDeals: 0,
+          scheduledDeals: 0,
+          pendingDeals: 0,
+          publishedDeals: 0,
+        },
+        {
+          totalDeals: 0,
+          scheduledDeals: 0,
+          pendingDeals: 0,
+          publishedDeals: 0,
+        },
+        {
+          totalDeals: 0,
+          scheduledDeals: 0,
+          pendingDeals: 0,
+          publishedDeals: 0,
+        },
+        {
+          totalDeals: 0,
+          scheduledDeals: 0,
+          pendingDeals: 0,
+          publishedDeals: 0,
+        },
+        {
+          totalDeals: 0,
+          scheduledDeals: 0,
+          pendingDeals: 0,
+          publishedDeals: 0,
+        },
+        {
+          totalDeals: 0,
+          scheduledDeals: 0,
+          pendingDeals: 0,
+          publishedDeals: 0,
+        },
+        {
+          totalDeals: 0,
+          scheduledDeals: 0,
+          pendingDeals: 0,
+          publishedDeals: 0,
+        },
+      ];
 
-    const currentDate = new Date();
+      const currentDate = new Date();
 
-    let totalDeals;
-    let scheduledDeals;
-    let pendingDeals;
-    let publishedDeals;
+      let totalDeals;
+      let scheduledDeals;
+      let pendingDeals;
+      let publishedDeals;
 
-    totalDeals = await this.dealModel
-      .find({ merchantID: req.user.id, deletedCheck: false })
-      .sort({ startDate: 1 });
+      totalDeals = await this.dealModel
+        .find({ merchantID: req.user.id, deletedCheck: false })
+        .sort({ startDate: 1 });
 
-    scheduledDeals = await this.dealModel
-      .find({
-        merchantID: req.user.id,
-        dealStatus: DEALSTATUS.scheduled,
-        deletedCheck: false,
-      })
-      .sort({ startDate: 1 });
+      scheduledDeals = await this.dealModel
+        .find({
+          merchantID: req.user.id,
+          dealStatus: DEALSTATUS.scheduled,
+          deletedCheck: false,
+        })
+        .sort({ startDate: 1 });
 
-    pendingDeals = await this.dealModel
-      .find({
-        merchantID: req.user.id,
-        dealStatus: DEALSTATUS.inReview,
-        deletedCheck: false,
-      })
-      .sort({ startDate: 1 });
+      pendingDeals = await this.dealModel
+        .find({
+          merchantID: req.user.id,
+          dealStatus: DEALSTATUS.inReview,
+          deletedCheck: false,
+        })
+        .sort({ startDate: 1 });
 
-    publishedDeals = await this.dealModel
-      .find({
-        merchantID: req.user.id,
-        deletedCheck: false,
-        dealStatus: DEALSTATUS.published,
-      })
-      .sort({ startDate: 1 });
+      publishedDeals = await this.dealModel
+        .find({
+          merchantID: req.user.id,
+          deletedCheck: false,
+          dealStatus: DEALSTATUS.published,
+        })
+        .sort({ startDate: 1 });
 
-    totalDeals.forEach((data) => {
-      let currentDocDate = new Date(data.startDate);
-      totalStats.totalDeals = totalStats.totalDeals + 1;
-      if (currentDocDate.getFullYear() === currentDate.getFullYear()) {
-        monthlyStats[currentDocDate.getMonth()].totalDeals =
-          monthlyStats[currentDocDate.getMonth()].totalDeals + 1;
+      totalDeals.forEach((data) => {
+        let currentDocDate = new Date(data.startDate);
+        totalStats.totalDeals = totalStats.totalDeals + 1;
+        if (currentDocDate.getFullYear() === currentDate.getFullYear()) {
+          monthlyStats[currentDocDate.getMonth()].totalDeals =
+            monthlyStats[currentDocDate.getMonth()].totalDeals + 1;
+        }
+      });
+
+      scheduledDeals.forEach((data) => {
+        let currentDocDate = new Date(data.createdAt);
+        totalStats.scheduledDeals = totalStats.scheduledDeals + 1;
+        if (currentDocDate.getFullYear() === currentDate.getFullYear()) {
+          monthlyStats[currentDocDate.getMonth()].scheduledDeals =
+            monthlyStats[currentDocDate.getMonth()].scheduledDeals + 1;
+        }
+      });
+
+      pendingDeals.forEach((data) => {
+        let currentDocDate = new Date(data.createdAt);
+        totalStats.pendingDeals = totalStats.pendingDeals + 1;
+        if (currentDocDate.getFullYear() === currentDate.getFullYear()) {
+          monthlyStats[currentDocDate.getMonth()].pendingDeals =
+            monthlyStats[currentDocDate.getMonth()].pendingDeals + 1;
+        }
+      });
+
+      publishedDeals.forEach((data: any) => {
+        let currentDocDate = new Date(data.createdAt);
+        totalStats.publishedDeals = totalStats.publishedDeals + 1;
+        if (currentDocDate.getFullYear() === currentDate.getFullYear()) {
+          monthlyStats[currentDocDate.getMonth()].publishedDeals =
+            monthlyStats[currentDocDate.getMonth()].publishedDeals + 1;
+        }
+      });
+
+      for (let i = 0; i < monthlyStats.length; i++) {
+        yearlyStats.totalDeals =
+          yearlyStats.totalDeals + monthlyStats[i].totalDeals;
+        yearlyStats.scheduledDeals =
+          yearlyStats.scheduledDeals + monthlyStats[i].scheduledDeals;
+        yearlyStats.pendingDeals =
+          yearlyStats.pendingDeals + monthlyStats[i].pendingDeals;
+        yearlyStats.publishedDeals =
+          yearlyStats.publishedDeals + monthlyStats[i].publishedDeals;
       }
-    });
 
-    scheduledDeals.forEach((data) => {
-      let currentDocDate = new Date(data.createdAt);
-      totalStats.scheduledDeals = totalStats.scheduledDeals + 1;
-      if (currentDocDate.getFullYear() === currentDate.getFullYear()) {
-        monthlyStats[currentDocDate.getMonth()].scheduledDeals =
-          monthlyStats[currentDocDate.getMonth()].scheduledDeals + 1;
-      }
-    });
-
-    pendingDeals.forEach((data) => {
-      let currentDocDate = new Date(data.createdAt);
-      totalStats.pendingDeals = totalStats.pendingDeals + 1;
-      if (currentDocDate.getFullYear() === currentDate.getFullYear()) {
-        monthlyStats[currentDocDate.getMonth()].pendingDeals =
-          monthlyStats[currentDocDate.getMonth()].pendingDeals + 1;
-      }
-    });
-
-    publishedDeals.forEach((data: any) => {
-      let currentDocDate = new Date(data.createdAt);
-      totalStats.publishedDeals = totalStats.publishedDeals + 1;
-      if (currentDocDate.getFullYear() === currentDate.getFullYear()) {
-        monthlyStats[currentDocDate.getMonth()].publishedDeals =
-          monthlyStats[currentDocDate.getMonth()].publishedDeals + 1;
-      }
-    });
-
-    for (let i = 0; i < monthlyStats.length; i++) {
-      yearlyStats.totalDeals =
-        yearlyStats.totalDeals + monthlyStats[i].totalDeals;
-      yearlyStats.scheduledDeals =
-        yearlyStats.scheduledDeals + monthlyStats[i].scheduledDeals;
-      yearlyStats.pendingDeals =
-        yearlyStats.pendingDeals + monthlyStats[i].pendingDeals;
-      yearlyStats.publishedDeals =
-        yearlyStats.publishedDeals + monthlyStats[i].publishedDeals;
+      return {
+        monthlyStats,
+        yearlyStats,
+        totalStats,
+      };
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
-
-    return {
-      monthlyStats,
-      yearlyStats,
-      totalStats,
-    };
   }
 }

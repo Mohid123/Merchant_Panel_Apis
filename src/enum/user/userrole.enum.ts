@@ -1,5 +1,6 @@
 export enum USERROLE {
     admin = "Admin",
     customer = "Customer",
-    merchant = "Merchant"
+    merchant = "Merchant",
+    affiliate = "Affiliate"
 }

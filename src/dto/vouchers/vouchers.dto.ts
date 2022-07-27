@@ -2,10 +2,16 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class VoucherDto {
   @ApiProperty()
-  voucherID: number;
+  voucherID: string;
 
   @ApiProperty()
-  dealName: string;
+  voucherHeader: string;
+
+  @ApiProperty()
+  dealHeader: string;
+
+  @ApiProperty()
+  dealID: string;
 
   @ApiProperty()
   amount: number;
@@ -26,7 +32,7 @@ export class VoucherDto {
   merchantID: string;
 
   @ApiProperty()
-  dealId: string;
+  customerID: string;
 
   @ApiProperty()
   boughtDate: Date;

@@ -4,24 +4,26 @@ import { Model } from 'mongoose';
 import { DealInterface } from '../../interface/deal/deal.interface';
 import { UsersInterface } from '../../interface/user/users.interface';
 import { ReviewInterface } from '../../interface/review/review.interface';
+import { ReviewTextInterface } from 'src/interface/review/merchantreviewreply.interface';
 
 @Injectable()
 export class ReviewService {
   constructor(
-    @InjectModel('Review')
-    private readonly reviewModel: Model<ReviewInterface>,
+    @InjectModel('Review') private readonly reviewModel: Model<ReviewInterface>,
+    @InjectModel('reviewText')
+    private readonly reviewTextModel: Model<ReviewTextInterface>,
     @InjectModel('Deal') private readonly dealModel: Model<DealInterface>,
     @InjectModel('User') private readonly userModel: Model<UsersInterface>,
   ) {}
 
   async createReview(reviewDto) {
     try {
-      const reviewAlreadyGiven = await this.reviewModel
-        .findOne()
-        .and([
-          { dealID: reviewDto.dealID },
-          { customerID: reviewDto.customerID },
-        ]);
+      const reviewAlreadyGiven = await this.reviewModel.findOne().and([
+        // { dealID: reviewDto.dealID },
+        { dealMongoID: reviewDto.dealMongoID },
+        { voucherMongoID: reviewDto.voucherMongoID },
+        { customerID: reviewDto.customerID },
+      ]);
 
       if (reviewAlreadyGiven) {
         throw new HttpException(
@@ -30,27 +32,32 @@ export class ReviewService {
         );
       }
 
+      reviewDto.totalRating =
+        reviewDto.multipleRating.reduce((a, b) => {
+          return a + b?.ratingScore;
+        }, 0) / reviewDto.multipleRating?.length;
+
       const review = await this.reviewModel.create(reviewDto);
 
       const reviewStats = await this.reviewModel.aggregate([
         {
           $match: {
-            dealID: reviewDto.dealID,
+            dealMongoID: reviewDto.dealMongoID,
           },
         },
         {
           $group: {
-            _id: '$dealId',
+            _id: '$dealID',
             nRating: { $sum: 1 },
-            avgRating: { $avg: '$rating' },
-            minRating: { $min: '$rating' },
-            maxRating: { $max: '$rating' },
+            avgRating: { $avg: '$totalRating' },
+            minRating: { $min: '$totalRating' },
+            maxRating: { $max: '$totalRating' },
           },
         },
       ]);
 
       if (reviewStats.length > 0) {
-        await this.dealModel.findByIdAndUpdate(reviewDto.dealID, {
+        await this.dealModel.findByIdAndUpdate(reviewDto.dealMongoID, {
           ratingsAverage: reviewStats[0].avgRating,
           totalReviews: reviewStats[0].nRating,
           minRating: reviewStats[0].minRating,
@@ -68,9 +75,9 @@ export class ReviewService {
           $group: {
             _id: '$merchantID',
             nRating: { $sum: 1 },
-            avgRating: { $avg: '$rating' },
-            minRating: { $min: '$rating' },
-            maxRating: { $max: '$rating' },
+            avgRating: { $avg: '$totalRating' },
+            minRating: { $min: '$totalRating' },
+            maxRating: { $max: '$totalRating' },
           },
         },
       ]);
@@ -78,7 +85,7 @@ export class ReviewService {
       if (userStats.length > 0) {
         await this.userModel.findByIdAndUpdate(reviewDto.merchantID, {
           ratingsAverage: userStats[0].avgRating,
-          ratingsQuantity: userStats[0].nRating,
+          totalReviews: userStats[0].nRating,
           minRating: userStats[0].minRating,
           maxRating: userStats[0].maxRating,
         });
@@ -95,8 +102,64 @@ export class ReviewService {
     }
   }
 
+  async createReviewReply(reviewTextDto) {
+    try {
+      await this.reviewTextModel.findOneAndUpdate(
+        {
+          reviewID: reviewTextDto.reviewID,
+          merchantID: reviewTextDto.merchantID,
+        },
+        {
+          ...reviewTextDto,
+        },
+        {
+          upsert: true,
+        },
+      );
+
+      return await this.reviewTextModel.findOne({
+        reviewID: reviewTextDto.reviewID,
+        merchantID: reviewTextDto.merchantID,
+      });
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async getMerchantReply(merchantID, reviewID) {
+    try {
+      let merchantReply = await this.reviewTextModel.aggregate([
+        {
+          $match: {
+            merchantID: merchantID,
+            reviewID: reviewID,
+            deletedCheck: false,
+          },
+        },
+        {
+          $addFields: {
+            id: '$_id',
+          },
+        },
+        {
+          $project: {
+            _id: 0,
+          },
+        },
+      ]);
+
+      return merchantReply;
+    } catch (err) {
+      throw new HttpException(err, HttpStatus.BAD_REQUEST);
+    }
+  }
+
   async deleteReview(id) {
-    return this.reviewModel.findOneAndDelete({ _id: id });
+    try {
+      return this.reviewModel.findOneAndDelete({ _id: id });
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
   }
 
   async getAllReviews(offset, limit) {
@@ -151,6 +214,17 @@ export class ReviewService {
             $match: {
               merchantID: merchantId,
             },
+          },
+          {
+            $lookup: {
+              from: 'reviewText',
+              as: 'merchantReplyText',
+              localField: '_id',
+              foreignField: 'reviewID',
+            },
+          },
+          {
+            $unwind: '$merchantReplyText',
           },
           {
             $sort: {
