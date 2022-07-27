@@ -14,19 +14,16 @@ const swagger_1 = require("@nestjs/swagger");
 class UpdateDealDto {
 }
 __decorate([
-    (0, swagger_1.ApiProperty)(),
-    __metadata("design:type", Date)
-], UpdateDealDto.prototype, "endDate", void 0);
-__decorate([
     (0, swagger_1.ApiProperty)({
-        example: [
-            {
-                voucherID: '',
-                numberOfVouchers: 0,
-            },
-        ],
+        example: {
+            voucherID: '',
+            subTitle: '',
+            originalPrice: 0,
+            dealPrice: 0,
+            numberOfVouchers: 0,
+        },
     }),
-    __metadata("design:type", Array)
+    __metadata("design:type", Object)
 ], UpdateDealDto.prototype, "vouchers", void 0);
 exports.UpdateDealDto = UpdateDealDto;
 //# sourceMappingURL=updatedeal.dto.js.map

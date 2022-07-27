@@ -83,18 +83,19 @@ let AuthService = class AuthService {
             uppercase: true,
         });
         console.log(password);
-        debugger;
         return password;
     }
     async signup(loginDto) {
+        var _a;
+        loginDto.email = (_a = loginDto === null || loginDto === void 0 ? void 0 : loginDto.email) === null || _a === void 0 ? void 0 : _a.toLowerCase();
         let user = await this._usersService.findOne({
-            email: loginDto.email.toLowerCase(),
+            email: loginDto.email,
         });
         if (user) {
             throw new common_1.ForbiddenException('Email already exists');
-            return;
         }
         loginDto._id = new mongoose_2.Types.ObjectId().toString();
+        loginDto.tradeName = loginDto.companyName;
         return await new this._usersService(loginDto).save();
     }
     async sendMail(emailDto) {
@@ -114,11 +115,12 @@ let AuthService = class AuthService {
         });
     }
     async isEmailExists(email) {
-        const user = await this._usersService.findOne({ email: email });
+        const user = await this._usersService.findOne({ email: email === null || email === void 0 ? void 0 : email.toLowerCase() });
         return user ? true : false;
     }
     async sendOtp(otpEmailDto) {
-        let userEmail = otpEmailDto.email;
+        var _a;
+        let userEmail = (_a = otpEmailDto.email) === null || _a === void 0 ? void 0 : _a.toLowerCase();
         const user = await this._usersService.findOne({ email: userEmail });
         if (!user) {
             throw new common_1.HttpException('email not found', common_1.HttpStatus.NOT_FOUND);

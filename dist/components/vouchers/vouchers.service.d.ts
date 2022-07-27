@@ -5,14 +5,14 @@ export declare class VouchersService {
     private readonly voucherModel;
     private readonly voucherCounterModel;
     constructor(voucherModel: Model<VoucherInterface>, voucherCounterModel: Model<VoucherCounterInterface>);
-    generateVoucherId(sequenceName: any): Promise<0>;
+    generateVoucherId(sequenceName: any): Promise<string>;
     createVoucher(voucherDto: any): Promise<import("mongoose").Document<unknown, any, VoucherInterface> & VoucherInterface & {
         _id: import("mongoose").Types.ObjectId;
     }>;
     searchByVoucherId(voucherId: any): Promise<(import("mongoose").Document<unknown, any, VoucherInterface> & VoucherInterface & {
         _id: import("mongoose").Types.ObjectId;
     })[]>;
-    getAllVouchersByMerchantID(deal: any, amount: any, fee: any, net: any, status: any, paymentStatus: any, dateFrom: any, dateTo: any, merchantId: any, offset: any, limit: any): Promise<{
+    getAllVouchersByMerchantID(deal: any, voucher: any, amount: any, fee: any, net: any, status: any, paymentStatus: any, dateFrom: any, dateTo: any, merchantId: any, voucherID: any, dealHeader: any, voucherHeader: any, voucherStatus: any, invoiceStatus: any, offset: any, limit: any, multipleVouchersDto: any): Promise<{
         totalCount: number;
         data: any[];
     }>;

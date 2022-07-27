@@ -4,6 +4,8 @@ import { DealStatusDto } from '../../dto/deal/updatedealstatus.dto';
 import { SORT } from '../../enum/sort/sort.enum';
 import { DEALSTATUS } from '../../enum/deal/dealstatus.enum';
 import { UpdateDealDto } from '../../dto/deal/updatedeal.dto';
+import { MultipleDealsDto } from 'src/dto/deal/multipledeals.dto';
+import { MultipleReviewsDto } from 'src/dto/review/multiplereviews.dto';
 export declare class DealController {
     private readonly dealService;
     constructor(dealService: DealService);
@@ -21,8 +23,8 @@ export declare class DealController {
     getDeal(id: string): Promise<import("../../interface/deal/deal.interface").DealInterface & {
         _id: any;
     }>;
-    getDealsReviewStatsByMerchant(merchantID: string, offset?: number, limit?: number): Promise<{
-        totalDeals: number;
+    getDealsReviewStatsByMerchant(merchantID: string, dealID: string, offset: number, limit: number, multipleReviewsDto: MultipleReviewsDto): Promise<{
+        overallRating: number;
         totalMerchantReviews: any;
         data: any[];
     }>;
@@ -30,7 +32,7 @@ export declare class DealController {
         totalCount: number;
         data: any[];
     }>;
-    getDealsByMerchantID(merchantID: string, dealHeader: SORT, price: SORT, startDate: SORT, endDate: SORT, availableVoucher: SORT, soldVoucher: SORT, status: DEALSTATUS, dateFrom: number, dateTo: number, offset?: number, limit?: number): Promise<{
+    getDealsByMerchantID(merchantID: string, dealHeader: SORT, price: SORT, startDate: SORT, endDate: SORT, availableVoucher: SORT, soldVoucher: SORT, status: DEALSTATUS, dateFrom: number, dateTo: number, dealID: string, header: string, dealStatus: string, offset: number, limit: number, multipleDealsDto: MultipleDealsDto): Promise<{
         totalDeals: number;
         data: any[];
     }>;

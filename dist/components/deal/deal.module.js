@@ -16,6 +16,7 @@ const deal_schema_1 = require("../../schema/deal/deal.schema");
 const category_schema_1 = require("../../schema/category/category.schema");
 const vouchersCounter_schema_1 = require("../../schema/vouchers/vouchersCounter.schema");
 const subcategory_schema_1 = require("../../schema/category/subcategory.schema");
+const users_schema_1 = require("../../schema/user/users.schema");
 let DealModule = class DealModule {
 };
 DealModule = __decorate([
@@ -26,7 +27,8 @@ DealModule = __decorate([
                 { name: 'Deal', schema: deal_schema_1.DealSchema },
                 { name: 'Category', schema: category_schema_1.CategorySchema },
                 { name: 'Counter', schema: vouchersCounter_schema_1.VoucherCounterSchema },
-                { name: 'SubCategory', schema: subcategory_schema_1.SubCategorySchema }
+                { name: 'SubCategory', schema: subcategory_schema_1.SubCategorySchema },
+                { name: 'User', schema: users_schema_1.UsersSchema }
             ]),
         ],
         controllers: [deal_controller_1.DealController],

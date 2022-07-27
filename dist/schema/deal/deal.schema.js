@@ -5,7 +5,7 @@ const mongoose = require("mongoose");
 const utils_1 = require("../../components/file-management/utils/utils");
 exports.DealSchema = new mongoose.Schema({
     _id: { type: String, default: utils_1.generateStringId },
-    dealID: { type: Number },
+    dealID: { type: String, unique: true },
     merchantID: { type: String },
     dealHeader: { type: String, default: '' },
     subTitle: { type: String, default: '' },
@@ -23,9 +23,9 @@ exports.DealSchema = new mongoose.Schema({
     aboutThisDeal: { type: String, default: '' },
     readMore: { type: String, default: '' },
     finePrints: { type: String, default: '' },
-    dealStatus: { type: String, default: 'InComplete' },
+    dealStatus: { type: String, default: 'Draft' },
     deletedCheck: { type: Boolean, default: false },
-    isCollapsed: { type: Boolean, default: true },
+    isCollapsed: { type: Boolean, default: false },
     ratingsAverage: {
         type: Number,
         default: 0,

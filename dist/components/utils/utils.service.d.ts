@@ -4,6 +4,14 @@ export declare class UtilService {
         city: string;
         lng: number;
         lat: number;
-    }>;
+    }[]>;
+    getAllCategoriesAndSubCategories(): Promise<{
+        id: string;
+        name: string;
+        subCategories: {
+            id: string;
+            name: string;
+        }[];
+    }[]>;
     validateVatNumber(vatNumber: any): Promise<any>;
 }

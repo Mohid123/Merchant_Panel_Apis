@@ -21,7 +21,6 @@ export declare class UsersController {
         message: string;
     }>;
     updateBusinessHours(updateHoursDTO: UpdateHoursDto): Promise<import("mongodb").UpdateResult>;
-    deleteUser(id: string): Promise<import("mongodb").UpdateResult>;
     geUserById(id: string): Promise<any>;
     getUserStats(id: string): Promise<any>;
     getAllUsers(offset?: number, limit?: number): Promise<{

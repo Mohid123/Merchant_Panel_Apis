@@ -1,5 +1,5 @@
 export declare class InvoiceDTO {
-    invoiceNo: number;
+    invoiceID: string;
     invoiceDate: number;
     invoiceAmount: number;
     status: string;

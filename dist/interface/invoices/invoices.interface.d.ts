@@ -1,5 +1,6 @@
 export interface InvoiceInterface {
-    invoiceNo: number;
+    _id: string;
+    invoiceID: string;
     invoiceDate: number;
     invoiceAmount: number;
     status: string;

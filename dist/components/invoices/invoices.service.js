@@ -29,15 +29,25 @@ let InvoicesService = class InvoicesService {
                 sequenceValue: 1,
             },
         }, { new: true });
-        return sequenceDocument.sequenceValue;
+        return 'I' + sequenceDocument.sequenceValue;
     }
     async createInvoice(invoiceDto) {
-        invoiceDto.invoiceNo = await this.generateVoucherId('invoiceID');
-        invoiceDto.invoiceDate = new Date().getTime();
-        return await new this._invoicesModel(invoiceDto).save();
+        try {
+            invoiceDto.invoiceID = await this.generateVoucherId('invoiceID');
+            invoiceDto.invoiceDate = new Date().getTime();
+            return await new this._invoicesModel(invoiceDto).save();
+        }
+        catch (err) {
+            throw new common_1.HttpException(err.message, common_1.HttpStatus.BAD_REQUEST);
+        }
     }
     async getInvoice(invoiceURL) {
-        return await this._invoicesModel.findOne({ invoiceURL: invoiceURL });
+        try {
+            return await this._invoicesModel.findOne({ invoiceURL: invoiceURL });
+        }
+        catch (err) {
+            throw new common_1.HttpException(err.message, common_1.HttpStatus.BAD_REQUEST);
+        }
     }
     async getAllInvoices(offset, limit) {
         try {
@@ -73,7 +83,8 @@ let InvoicesService = class InvoicesService {
             throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
         }
     }
-    async getAllInvoicesByMerchant(merchantID, dateFrom, dateTo, invoiceDate, invoiceAmount, status, offset, limit) {
+    async getAllInvoicesByMerchant(merchantID, dateFrom, dateTo, invoiceDate, invoiceAmount, status, invoiceID, offset, limit, multipleInvoicesDto) {
+        var _a;
         try {
             offset = parseInt(offset) < 0 ? 0 : offset;
             limit = parseInt(limit) < 1 ? 10 : limit;
@@ -87,6 +98,11 @@ let InvoicesService = class InvoicesService {
             }
             if (dateTo) {
                 dateToFilters = Object.assign(Object.assign({}, dateToFilters), { $lte: dateTo });
+            }
+            else {
+                dateFromFilters = {
+                    $eq: dateFrom,
+                };
             }
             if (status) {
                 matchFilter = Object.assign(Object.assign({}, matchFilter), { status: status });
@@ -114,6 +130,15 @@ let InvoicesService = class InvoicesService {
                     sortInvoiceAmount = -1;
                 }
                 sortFilters = Object.assign(Object.assign({}, sortFilters), { invoiceAmount: sortInvoiceAmount });
+            }
+            invoiceID = invoiceID.trim();
+            let filters = {};
+            if (invoiceID.trim().length) {
+                var query = new RegExp(`${invoiceID}`, 'i');
+                filters = Object.assign(Object.assign({}, filters), { invoiceID: query });
+            }
+            if ((_a = multipleInvoicesDto === null || multipleInvoicesDto === void 0 ? void 0 : multipleInvoicesDto.invoiceIDsArray) === null || _a === void 0 ? void 0 : _a.length) {
+                filters = Object.assign(Object.assign({}, filters), { invoiceID: { $in: multipleInvoicesDto.invoiceIDsArray } });
             }
             if (Object.keys(sortFilters).length === 0 &&
                 sortFilters.constructor === Object) {

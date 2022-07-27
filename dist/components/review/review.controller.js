@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ReviewController = void 0;
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
+const merchantreviewreply_dto_1 = require("../../dto/review/merchantreviewreply.dto");
 const review_dto_1 = require("../../dto/review/review.dto");
 const jwt_auth_guard_1 = require("../auth/jwt-auth.guard");
 const review_service_1 = require("./review.service");
@@ -24,6 +25,12 @@ let ReviewController = class ReviewController {
     }
     createReview(revieDto) {
         return this.reviewService.createReview(revieDto);
+    }
+    createReviewReply(reviewTextDto) {
+        return this.reviewService.createReviewReply(reviewTextDto);
+    }
+    getMerchantReply(merchantID, reviewID) {
+        return this.reviewService.getMerchantReply(merchantID, reviewID);
     }
     deleteReview(reviewID) {
         return this.reviewService.deleteReview(reviewID);
@@ -42,6 +49,21 @@ __decorate([
     __metadata("design:paramtypes", [review_dto_1.ReviewDto]),
     __metadata("design:returntype", void 0)
 ], ReviewController.prototype, "createReview", null);
+__decorate([
+    (0, common_1.Post)('createReviewReply'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [merchantreviewreply_dto_1.ReviewTextDto]),
+    __metadata("design:returntype", void 0)
+], ReviewController.prototype, "createReviewReply", null);
+__decorate([
+    (0, common_1.Get)('getMerchantReply/:merchantID/:reviewID'),
+    __param(0, (0, common_1.Param)('merchantID')),
+    __param(1, (0, common_1.Param)('reviewID')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:returntype", void 0)
+], ReviewController.prototype, "getMerchantReply", null);
 __decorate([
     (0, common_1.Post)('deleteReview/:reviewID'),
     __param(0, (0, common_1.Param)('reviewID')),

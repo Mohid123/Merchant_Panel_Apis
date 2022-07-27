@@ -3,13 +3,15 @@ import { CategoryInterface } from '../../interface/category/category.interface';
 import { DealInterface } from '../../interface/deal/deal.interface';
 import { VoucherCounterInterface } from '../../interface/vouchers/vouchersCounter.interface';
 import { SubCategoryInterface } from '../../interface/category/subcategory.interface';
+import { UsersInterface } from 'src/interface/user/users.interface';
 export declare class DealService {
     private readonly dealModel;
     private readonly categorymodel;
     private readonly voucherCounterModel;
     private readonly subCategoryModel;
-    constructor(dealModel: Model<DealInterface>, categorymodel: Model<CategoryInterface>, voucherCounterModel: Model<VoucherCounterInterface>, subCategoryModel: Model<SubCategoryInterface>);
-    generateVoucherId(sequenceName: any): Promise<0>;
+    private readonly _userModel;
+    constructor(dealModel: Model<DealInterface>, categorymodel: Model<CategoryInterface>, voucherCounterModel: Model<VoucherCounterInterface>, subCategoryModel: Model<SubCategoryInterface>, _userModel: Model<UsersInterface>);
+    generateVoucherId(sequenceName: any): Promise<string>;
     createDeal(dealDto: any, req: any): Promise<DealInterface & {
         _id: any;
     }>;
@@ -29,12 +31,12 @@ export declare class DealService {
         status: string;
         message: string;
     }>;
-    getDealsReviewStatsByMerchant(id: any, offset: any, limit: any): Promise<{
-        totalDeals: number;
+    getDealsReviewStatsByMerchant(id: any, dealID: any, offset: any, limit: any, multipleReviewsDto: any): Promise<{
+        overallRating: number;
         totalMerchantReviews: any;
         data: any[];
     }>;
-    getDealsByMerchantID(merchantID: any, dealHeader: any, price: any, startDate: any, endDate: any, availableVoucher: any, soldVoucher: any, status: any, dateFrom: any, dateTo: any, offset: any, limit: any): Promise<{
+    getDealsByMerchantID(merchantID: any, dealHeader: any, price: any, startDate: any, endDate: any, availableVoucher: any, soldVoucher: any, status: any, dateFrom: any, dateTo: any, dealID: any, header: any, dealStatus: any, offset: any, limit: any, multipleDealsDto: any): Promise<{
         totalDeals: number;
         data: any[];
     }>;

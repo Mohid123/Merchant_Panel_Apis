@@ -24,6 +24,8 @@ const updatedealstatus_dto_1 = require("../../dto/deal/updatedealstatus.dto");
 const sort_enum_1 = require("../../enum/sort/sort.enum");
 const dealstatus_enum_1 = require("../../enum/deal/dealstatus.enum");
 const updatedeal_dto_1 = require("../../dto/deal/updatedeal.dto");
+const multipledeals_dto_1 = require("../../dto/deal/multipledeals.dto");
+const multiplereviews_dto_1 = require("../../dto/review/multiplereviews.dto");
 let DealController = class DealController {
     constructor(dealService) {
         this.dealService = dealService;
@@ -43,14 +45,14 @@ let DealController = class DealController {
     getDeal(id) {
         return this.dealService.getDeal(id);
     }
-    getDealsReviewStatsByMerchant(merchantID, offset = 0, limit = 10) {
-        return this.dealService.getDealsReviewStatsByMerchant(merchantID, offset, limit);
+    getDealsReviewStatsByMerchant(merchantID, dealID = '', offset = 0, limit = 10, multipleReviewsDto) {
+        return this.dealService.getDealsReviewStatsByMerchant(merchantID, dealID, offset, limit, multipleReviewsDto);
     }
     getAllDeals(offset = 0, limit = 10, req) {
         return this.dealService.getAllDeals(req, offset, limit);
     }
-    getDealsByMerchantID(merchantID, dealHeader, price, startDate, endDate, availableVoucher, soldVoucher, status, dateFrom, dateTo, offset = 0, limit = 10) {
-        return this.dealService.getDealsByMerchantID(merchantID, dealHeader, price, startDate, endDate, availableVoucher, soldVoucher, status, dateFrom, dateTo, offset, limit);
+    getDealsByMerchantID(merchantID, dealHeader, price, startDate, endDate, availableVoucher, soldVoucher, status, dateFrom, dateTo, dealID = '', header = '', dealStatus = '', offset = 0, limit = 10, multipleDealsDto) {
+        return this.dealService.getDealsByMerchantID(merchantID, dealHeader, price, startDate, endDate, availableVoucher, soldVoucher, status, dateFrom, dateTo, dealID, header, dealStatus, offset, limit, multipleDealsDto);
     }
     getSalesStatistics(req) {
         return this.dealService.getSalesStatistics(req);
@@ -105,12 +107,14 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], DealController.prototype, "getDeal", null);
 __decorate([
-    (0, common_1.Get)('getDealsReviewStatsByMerchant/:merchantID'),
+    (0, common_1.Post)('getDealsReviewStatsByMerchant/:merchantID'),
     __param(0, (0, common_1.Param)('merchantID')),
-    __param(1, (0, common_1.Query)('offset')),
-    __param(2, (0, common_1.Query)('limit')),
+    __param(1, (0, common_1.Query)('dealID')),
+    __param(2, (0, common_1.Query)('offset')),
+    __param(3, (0, common_1.Query)('limit')),
+    __param(4, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Number, Number]),
+    __metadata("design:paramtypes", [String, String, Number, Number, multiplereviews_dto_1.MultipleReviewsDto]),
     __metadata("design:returntype", void 0)
 ], DealController.prototype, "getDealsReviewStatsByMerchant", null);
 __decorate([
@@ -132,7 +136,7 @@ __decorate([
     (0, swagger_1.ApiQuery)({ name: 'status', enum: dealstatus_enum_1.DEALSTATUS, required: false }),
     (0, swagger_1.ApiQuery)({ name: 'dateFrom', required: false }),
     (0, swagger_1.ApiQuery)({ name: 'dateTo', required: false }),
-    (0, common_1.Get)('getDealsByMerchantID/:merchantID'),
+    (0, common_1.Post)('getDealsByMerchantID/:merchantID'),
     __param(0, (0, common_1.Param)('merchantID')),
     __param(1, (0, common_1.Query)('dealHeader')),
     __param(2, (0, common_1.Query)('price')),
@@ -143,10 +147,14 @@ __decorate([
     __param(7, (0, common_1.Query)('status')),
     __param(8, (0, common_1.Query)('dateFrom')),
     __param(9, (0, common_1.Query)('dateTo')),
-    __param(10, (0, common_1.Query)('offset')),
-    __param(11, (0, common_1.Query)('limit')),
+    __param(10, (0, common_1.Query)('dealID')),
+    __param(11, (0, common_1.Query)('header')),
+    __param(12, (0, common_1.Query)('dealStatus')),
+    __param(13, (0, common_1.Query)('offset')),
+    __param(14, (0, common_1.Query)('limit')),
+    __param(15, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, String, String, String, String, String, String, Number, Number, Number, Number]),
+    __metadata("design:paramtypes", [String, String, String, String, String, String, String, String, Number, Number, String, String, String, Number, Number, multipledeals_dto_1.MultipleDealsDto]),
     __metadata("design:returntype", void 0)
 ], DealController.prototype, "getDealsByMerchantID", null);
 __decorate([

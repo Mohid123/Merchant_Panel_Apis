@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.InvoicesController = void 0;
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
+const multipleinvoices_dto_1 = require("../../dto/invoices/multipleinvoices.dto");
 const invoices_dto_1 = require("../../dto/invoices/invoices.dto");
 const billingStatus_enum_1 = require("../../enum/billing/billingStatus.enum");
 const sortinvoiceamount_enum_1 = require("../../enum/sorting/sortinvoiceamount.enum");
@@ -34,8 +35,8 @@ let InvoicesController = class InvoicesController {
     getAllInvoices(offset = 0, limit = 10) {
         return this._invoiceService.getAllInvoices(offset, limit);
     }
-    getAllInvoicesByMerchant(merchantID, dateFrom = 0, dateTo = 0, invoiceDate, invoiceAmount, status, offset = 0, limit = 10) {
-        return this._invoiceService.getAllInvoicesByMerchant(merchantID, dateFrom, dateTo, invoiceDate, invoiceAmount, status, offset, limit);
+    getAllInvoicesByMerchant(merchantID, dateFrom = 0, dateTo = 0, invoiceDate, invoiceAmount, status, invoiceID = "", offset = 0, limit = 10, multipleInvoicesDto) {
+        return this._invoiceService.getAllInvoicesByMerchant(merchantID, dateFrom, dateTo, invoiceDate, invoiceAmount, status, invoiceID, offset, limit, multipleInvoicesDto);
     }
 };
 __decorate([
@@ -66,17 +67,19 @@ __decorate([
     (0, swagger_1.ApiQuery)({ name: 'invoiceDate', enum: sortinvoicedate_enum_1.INVOICEDATEENUM, required: false }),
     (0, swagger_1.ApiQuery)({ name: 'invoiceAmount', enum: sortinvoiceamount_enum_1.INVOICEAMOUNTENUM, required: false }),
     (0, swagger_1.ApiQuery)({ name: 'status', enum: billingStatus_enum_1.BILLINGSTATUS, required: false }),
-    (0, common_1.Get)('getAllInvoicesByMerchant/:merchantID'),
+    (0, common_1.Post)('getAllInvoicesByMerchant/:merchantID'),
     __param(0, (0, common_1.Param)('merchantID')),
     __param(1, (0, common_1.Query)('dateFrom')),
     __param(2, (0, common_1.Query)('dateTo')),
     __param(3, (0, common_1.Query)('invoiceDate')),
     __param(4, (0, common_1.Query)('invoiceAmount')),
     __param(5, (0, common_1.Query)('status')),
-    __param(6, (0, common_1.Query)('offset')),
-    __param(7, (0, common_1.Query)('limit')),
+    __param(6, (0, common_1.Query)("invoiceID")),
+    __param(7, (0, common_1.Query)('offset')),
+    __param(8, (0, common_1.Query)('limit')),
+    __param(9, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Number, Number, String, String, String, Number, Number]),
+    __metadata("design:paramtypes", [String, Number, Number, String, String, String, String, Number, Number, multipleinvoices_dto_1.MultipleInvoicesDto]),
     __metadata("design:returntype", void 0)
 ], InvoicesController.prototype, "getAllInvoicesByMerchant", null);
 InvoicesController = __decorate([

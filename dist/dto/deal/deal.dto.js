@@ -19,7 +19,7 @@ __decorate([
 ], DealDto.prototype, "id", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
-    __metadata("design:type", Number)
+    __metadata("design:type", String)
 ], DealDto.prototype, "dealID", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),

@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.VouchersController = void 0;
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
+const multiplevouchers_dto_1 = require("../../dto/vouchers/multiplevouchers.dto");
 const vouchers_dto_1 = require("../../dto/vouchers/vouchers.dto");
 const billingStatus_enum_1 = require("../../enum/billing/billingStatus.enum");
 const sort_enum_1 = require("../../enum/sort/sort.enum");
@@ -29,8 +30,8 @@ let VouchersController = class VouchersController {
     createVoucher(voucherDto) {
         return this.voucherService.createVoucher(voucherDto);
     }
-    getAllVouchers(merchantID, deal, amount, fee, net, status, paymentStatus, dateFrom, dateTo, offset = 0, limit = 10) {
-        return this.voucherService.getAllVouchersByMerchantID(deal, amount, fee, net, status, paymentStatus, dateFrom, dateTo, merchantID, offset, limit);
+    getAllVouchers(merchantID, deal, voucher, amount, fee, net, status, paymentStatus, dateFrom, dateTo, voucherID = '', dealHeader = '', voucherHeader = '', voucherStatus = '', invoiceStatus = '', offset = 0, limit = 10, multipleVouchersDto) {
+        return this.voucherService.getAllVouchersByMerchantID(deal, voucher, amount, fee, net, status, paymentStatus, dateFrom, dateTo, merchantID, voucherID, dealHeader, voucherHeader, voucherStatus, invoiceStatus, offset, limit, multipleVouchersDto);
     }
     searchByVoucherId(voucherId) {
         return this.voucherService.searchByVoucherId(voucherId);
@@ -46,6 +47,7 @@ __decorate([
 ], VouchersController.prototype, "createVoucher", null);
 __decorate([
     (0, swagger_1.ApiQuery)({ name: 'deal', enum: sort_enum_1.SORT, required: false }),
+    (0, swagger_1.ApiQuery)({ name: 'voucher', enum: sort_enum_1.SORT, required: false }),
     (0, swagger_1.ApiQuery)({ name: 'amount', enum: sort_enum_1.SORT, required: false }),
     (0, swagger_1.ApiQuery)({ name: 'fee', enum: sort_enum_1.SORT, required: false }),
     (0, swagger_1.ApiQuery)({ name: 'net', enum: sort_enum_1.SORT, required: false }),
@@ -53,20 +55,27 @@ __decorate([
     (0, swagger_1.ApiQuery)({ name: 'paymentStatus', enum: billingStatus_enum_1.BILLINGSTATUS, required: false }),
     (0, swagger_1.ApiQuery)({ name: 'dateFrom', required: false }),
     (0, swagger_1.ApiQuery)({ name: 'dateTo', required: false }),
-    (0, common_1.Get)('getAllVouchersByMerchantID/:merchantID'),
+    (0, common_1.Post)('getAllVouchersByMerchantID/:merchantID'),
     __param(0, (0, common_1.Param)('merchantID')),
     __param(1, (0, common_1.Query)('deal')),
-    __param(2, (0, common_1.Query)('amount')),
-    __param(3, (0, common_1.Query)('fee')),
-    __param(4, (0, common_1.Query)('net')),
-    __param(5, (0, common_1.Query)('status')),
-    __param(6, (0, common_1.Query)('paymentStatus')),
-    __param(7, (0, common_1.Query)('dateFrom')),
-    __param(8, (0, common_1.Query)('dateTo')),
-    __param(9, (0, common_1.Query)('offset')),
-    __param(10, (0, common_1.Query)('limit')),
+    __param(2, (0, common_1.Query)('voucher')),
+    __param(3, (0, common_1.Query)('amount')),
+    __param(4, (0, common_1.Query)('fee')),
+    __param(5, (0, common_1.Query)('net')),
+    __param(6, (0, common_1.Query)('status')),
+    __param(7, (0, common_1.Query)('paymentStatus')),
+    __param(8, (0, common_1.Query)('dateFrom')),
+    __param(9, (0, common_1.Query)('dateTo')),
+    __param(10, (0, common_1.Query)('voucherID')),
+    __param(11, (0, common_1.Query)('dealHeader')),
+    __param(12, (0, common_1.Query)('voucherHeader')),
+    __param(13, (0, common_1.Query)('voucherStatus')),
+    __param(14, (0, common_1.Query)('invoiceStatus')),
+    __param(15, (0, common_1.Query)('offset')),
+    __param(16, (0, common_1.Query)('limit')),
+    __param(17, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, String, String, String, String, String, Number, Number, Number, Number]),
+    __metadata("design:paramtypes", [String, String, String, String, String, String, String, String, Number, Number, String, String, String, String, String, Number, Number, multiplevouchers_dto_1.MultipleVouchersDto]),
     __metadata("design:returntype", void 0)
 ], VouchersController.prototype, "getAllVouchers", null);
 __decorate([
