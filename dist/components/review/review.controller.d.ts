@@ -23,4 +23,9 @@ export declare class ReviewController {
         totalCount: number;
         data: any[];
     }>;
+    updateReviewViewState(reviewID: string): Promise<import("mongodb").UpdateResult>;
+    getNewReviewsForMerchant(merchantId: string, offset?: number, limit?: number): Promise<{
+        totalCount: number;
+        data: any[];
+    }>;
 }

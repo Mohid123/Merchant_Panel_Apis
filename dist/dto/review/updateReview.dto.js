@@ -29,5 +29,9 @@ __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
 ], UpdateReviewDto.prototype, "profilePicURL", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", Boolean)
+], UpdateReviewDto.prototype, "isViewed", void 0);
 exports.UpdateReviewDto = UpdateReviewDto;
 //# sourceMappingURL=updateReview.dto.js.map

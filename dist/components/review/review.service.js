@@ -237,6 +237,60 @@ let ReviewService = class ReviewService {
             throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
         }
     }
+    async updateReviewViewState(id) {
+        return await this.reviewModel.updateOne({ _id: id }, { isViewed: true });
+    }
+    async getNewReviewsForMerchant(merchantId, offset, limit) {
+        try {
+            offset = parseInt(offset) < 0 ? 0 : offset;
+            limit = parseInt(limit) < 1 ? 10 : limit;
+            const totalCount = await this.reviewModel.countDocuments({
+                merchantID: merchantId,
+                isViewed: false,
+            });
+            const reviews = await this.reviewModel
+                .aggregate([
+                {
+                    $match: {
+                        merchantID: merchantId,
+                        isViewed: false,
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'reviewText',
+                        as: 'merchantReplyText',
+                        localField: '_id',
+                        foreignField: 'reviewID',
+                    },
+                },
+                {
+                    $sort: {
+                        createdAt: -1,
+                    },
+                },
+                {
+                    $addFields: {
+                        id: '$_id',
+                    },
+                },
+                {
+                    $project: {
+                        _id: 0,
+                    },
+                },
+            ])
+                .skip(parseInt(offset))
+                .limit(parseInt(limit));
+            return {
+                totalCount: totalCount,
+                data: reviews,
+            };
+        }
+        catch (err) {
+            throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
+        }
+    }
 };
 ReviewService = __decorate([
     (0, common_1.Injectable)(),

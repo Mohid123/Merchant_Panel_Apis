@@ -41,6 +41,12 @@ let ReviewController = class ReviewController {
     getReviewsByMerchant(merchantId, offset = 0, limit = 10) {
         return this.reviewService.getReviewsByMerchant(merchantId, offset, limit);
     }
+    updateReviewViewState(reviewID) {
+        return this.reviewService.updateReviewViewState(reviewID);
+    }
+    getNewReviewsForMerchant(merchantId, offset = 0, limit = 10) {
+        return this.reviewService.getNewReviewsForMerchant(merchantId, offset, limit);
+    }
 };
 __decorate([
     (0, common_1.Post)('createReview'),
@@ -88,6 +94,22 @@ __decorate([
     __metadata("design:paramtypes", [String, Number, Number]),
     __metadata("design:returntype", void 0)
 ], ReviewController.prototype, "getReviewsByMerchant", null);
+__decorate([
+    (0, common_1.Post)('updateReviewViewState/:reviewID'),
+    __param(0, (0, common_1.Param)('reviewID')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], ReviewController.prototype, "updateReviewViewState", null);
+__decorate([
+    (0, common_1.Get)('getNewReviewsForMerchant/:merchantId'),
+    __param(0, (0, common_1.Param)('merchantId')),
+    __param(1, (0, common_1.Query)('offset')),
+    __param(2, (0, common_1.Query)('limit')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Number, Number]),
+    __metadata("design:returntype", void 0)
+], ReviewController.prototype, "getNewReviewsForMerchant", null);
 ReviewController = __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, swagger_1.ApiBearerAuth)(),

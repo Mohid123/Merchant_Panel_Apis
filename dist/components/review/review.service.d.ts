@@ -27,4 +27,9 @@ export declare class ReviewService {
         totalCount: number;
         data: any[];
     }>;
+    updateReviewViewState(id: any): Promise<import("mongodb").UpdateResult>;
+    getNewReviewsForMerchant(merchantId: any, offset: any, limit: any): Promise<{
+        totalCount: number;
+        data: any[];
+    }>;
 }

@@ -16,4 +16,5 @@ export declare class ReviewDto {
     customerName: string;
     profilePicURL: string;
     voucherRedeemedDate: number;
+    isViewed: boolean;
 }

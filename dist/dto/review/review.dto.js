@@ -62,9 +62,9 @@ __decorate([
         example: [
             {
                 ratingName: '',
-                ratingScore: 0
-            }
-        ]
+                ratingScore: 0,
+            },
+        ],
     }),
     __metadata("design:type", Array)
 ], ReviewDto.prototype, "multipleRating", void 0);
@@ -84,5 +84,9 @@ __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", Number)
 ], ReviewDto.prototype, "voucherRedeemedDate", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", Boolean)
+], ReviewDto.prototype, "isViewed", void 0);
 exports.ReviewDto = ReviewDto;
 //# sourceMappingURL=review.dto.js.map
