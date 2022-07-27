@@ -39,7 +39,7 @@ let DealService = class DealService {
     async createDeal(dealDto, req) {
         try {
             var dealVouchers = 0;
-            var delaSoldVocuhers = 0;
+            var dealSoldVouchers = 0;
             let savedDeal = null;
             if (dealDto.id) {
                 savedDeal = await this.dealModel.findById(dealDto.id);
@@ -99,7 +99,7 @@ let DealService = class DealService {
                 }
             }
             dealDto.availableVouchers = dealVouchers;
-            dealDto.soldVouchers = delaSoldVocuhers;
+            dealDto.soldVouchers = dealSoldVouchers;
             if (!savedDeal) {
                 const deal = await this.dealModel.create(dealDto);
                 return deal;
