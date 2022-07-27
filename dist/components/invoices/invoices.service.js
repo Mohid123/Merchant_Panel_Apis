@@ -100,9 +100,8 @@ let InvoicesService = class InvoicesService {
                 dateToFilters = Object.assign(Object.assign({}, dateToFilters), { $lte: dateTo });
             }
             else {
-                dateFromFilters = {
-                    $eq: dateFrom,
-                };
+                dateTo = dateFrom + 24 * 60 * 60 * 1000;
+                dateToFilters = Object.assign(Object.assign({}, dateToFilters), { $lte: dateTo });
             }
             if (status) {
                 matchFilter = Object.assign(Object.assign({}, matchFilter), { status: status });
