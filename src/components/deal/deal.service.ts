@@ -43,7 +43,7 @@ export class DealService {
   async createDeal(dealDto, req) {
     try {
       var dealVouchers = 0;
-      var delaSoldVocuhers = 0;
+      var dealSoldVouchers = 0;
       let savedDeal = null;
 
       if (dealDto.id) {
@@ -93,7 +93,7 @@ export class DealService {
 
           dealVouchers += el.numberOfVouchers;
           el.soldVouchers = 0;
-          // delaSoldVocuhers += el?.soldVouchers;
+          // dealSoldVouchers += el?.soldVouchers;
 
           if (el.voucherValidity > 0) {
             startTime = 0;
@@ -122,7 +122,7 @@ export class DealService {
       }
 
       dealDto.availableVouchers = dealVouchers;
-      dealDto.soldVouchers = delaSoldVocuhers;
+      dealDto.soldVouchers = dealSoldVouchers;
 
       if (!savedDeal) {
         const deal = await this.dealModel.create(dealDto);
