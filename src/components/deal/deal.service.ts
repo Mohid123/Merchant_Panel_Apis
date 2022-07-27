@@ -78,8 +78,12 @@ export class DealService {
         dealDto.dealHeader = dealDto.dealHeader.toUpperCase();
 
         dealDto.merchantID = req.user.id;
+
         if (dealDto.dealStatus) {
           dealDto.dealStatus = DEALSTATUS.inReview;
+        }
+        if (dealDto.dealStatus == 'Draft') {
+          dealDto.dealStatus = DEALSTATUS.draft;
         }
       }
 
@@ -311,6 +315,7 @@ export class DealService {
                         },
                       ],
                     },
+                    isViewed: true,
                   },
                 },
                 {
