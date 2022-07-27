@@ -253,4 +253,62 @@ export class ReviewService {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
     }
   }
+
+  async updateReviewViewState(id) {
+    return await this.reviewModel.updateOne({ _id: id }, { isViewed: true });
+  }
+
+  async getNewReviewsForMerchant(merchantId, offset, limit) {
+    try {
+      offset = parseInt(offset) < 0 ? 0 : offset;
+      limit = parseInt(limit) < 1 ? 10 : limit;
+
+      const totalCount = await this.reviewModel.countDocuments({
+        merchantID: merchantId,
+        isViewed: false,
+      });
+
+      const reviews = await this.reviewModel
+        .aggregate([
+          {
+            $match: {
+              merchantID: merchantId,
+              isViewed: false,
+            },
+          },
+          {
+            $lookup: {
+              from: 'reviewText',
+              as: 'merchantReplyText',
+              localField: '_id',
+              foreignField: 'reviewID',
+            },
+          },
+          {
+            $sort: {
+              createdAt: -1,
+            },
+          },
+          {
+            $addFields: {
+              id: '$_id',
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+            },
+          },
+        ])
+        .skip(parseInt(offset))
+        .limit(parseInt(limit));
+
+      return {
+        totalCount: totalCount,
+        data: reviews,
+      };
+    } catch (err) {
+      throw new HttpException(err, HttpStatus.BAD_REQUEST);
+    }
+  }
 }
