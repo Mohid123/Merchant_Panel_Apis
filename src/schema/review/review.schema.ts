@@ -37,7 +37,8 @@ export const ReviewSchema = new mongoose.Schema(
     },
     customerName: { type: String, default: '' },
     profilePicURL: { type: String, default: '' },
-    voucherRedeemedDate: { type: Number }
+    voucherRedeemedDate: { type: Number },
+    isViewed: { type: Boolean, default: false },
   },
   {
     collection: 'reviews',

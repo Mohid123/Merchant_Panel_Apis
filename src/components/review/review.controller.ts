@@ -1,4 +1,12 @@
-import { Body, Controller, Param, Get, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Param,
+  Get,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { ReviewTextDto } from 'src/dto/review/merchantreviewreply.dto';
 import { ReviewDto } from '../../dto/review/review.dto';
@@ -19,35 +27,55 @@ export class ReviewController {
   }
 
   @Post('createReviewReply')
-  createReviewReply (@Body() reviewTextDto:ReviewTextDto) {
-    return this.reviewService.createReviewReply(reviewTextDto)
+  createReviewReply(@Body() reviewTextDto: ReviewTextDto) {
+    return this.reviewService.createReviewReply(reviewTextDto);
   }
 
   @Get('getMerchantReply/:merchantID/:reviewID')
-  getMerchantReply (
+  getMerchantReply(
     @Param('merchantID') merchantID: string,
-    @Param('reviewID') reviewID: string) {
-    return this.reviewService.getMerchantReply(merchantID, reviewID)
+    @Param('reviewID') reviewID: string,
+  ) {
+    return this.reviewService.getMerchantReply(merchantID, reviewID);
   }
 
   @Post('deleteReview/:reviewID')
-  deleteReview (@Param('reviewID') reviewID:string) {
-    return this.reviewService.deleteReview(reviewID)
+  deleteReview(@Param('reviewID') reviewID: string) {
+    return this.reviewService.deleteReview(reviewID);
   }
 
   @Get('getAllReviews')
   getAllReviews(
     @Query('offset') offset: number = 0,
-    @Query('limit') limit: number = 10) {
+    @Query('limit') limit: number = 10,
+  ) {
     return this.reviewService.getAllReviews(offset, limit);
   }
 
   @Get('getReviewsByMerchant/:merchantId')
-  getReviewsByMerchant (
-    @Param('merchantId') merchantId:string,
+  getReviewsByMerchant(
+    @Param('merchantId') merchantId: string,
     @Query('offset') offset: number = 0,
-    @Query('limit') limit: number = 10
+    @Query('limit') limit: number = 10,
   ) {
-    return this.reviewService.getReviewsByMerchant(merchantId, offset, limit)
+    return this.reviewService.getReviewsByMerchant(merchantId, offset, limit);
+  }
+
+  @Post('updateReviewViewState/:reviewID')
+  updateReviewViewState(@Param('reviewID') reviewID: string) {
+    return this.reviewService.updateReviewViewState(reviewID);
+  }
+
+  @Get('getNewReviewsForMerchant/:merchantId')
+  getNewReviewsForMerchant(
+    @Param('merchantId') merchantId: string,
+    @Query('offset') offset: number = 0,
+    @Query('limit') limit: number = 10,
+  ) {
+    return this.reviewService.getNewReviewsForMerchant(
+      merchantId,
+      offset,
+      limit,
+    );
   }
 }

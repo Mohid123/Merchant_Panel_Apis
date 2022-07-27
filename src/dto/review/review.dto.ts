@@ -39,9 +39,9 @@ export class ReviewDto {
     example: [
       {
         ratingName: '',
-        ratingScore: 0
-      }
-    ]
+        ratingScore: 0,
+      },
+    ],
   })
   multipleRating: multipleRatings[];
 
@@ -56,4 +56,7 @@ export class ReviewDto {
 
   @ApiProperty()
   voucherRedeemedDate: number;
+
+  @ApiProperty()
+  isViewed: boolean;
 }

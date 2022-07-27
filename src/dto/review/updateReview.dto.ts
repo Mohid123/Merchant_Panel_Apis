@@ -12,4 +12,7 @@ export class UpdateReviewDto {
 
   @ApiProperty()
   profilePicURL: string;
+
+  @ApiProperty()
+  isViewed: boolean;
 }

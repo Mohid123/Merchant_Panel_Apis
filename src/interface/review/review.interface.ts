@@ -22,4 +22,5 @@ export interface ReviewInterface extends Document {
   customerName: string;
   profilePicURL: string;
   voucherRedeemedDate: number;
+  isViewed: boolean;
 }
