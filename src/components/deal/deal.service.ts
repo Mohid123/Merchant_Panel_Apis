@@ -82,10 +82,7 @@ export class DealService {
         if (dealDto.dealStatus) {
           dealDto.dealStatus = DEALSTATUS.inReview;
         }
-        if (dealDto.dealStatus == 'Draft') {
-          dealDto.dealStatus = DEALSTATUS.draft;
-        }
-        if (dealDto.isDuplicate == true) {
+        if (dealDto.dealStatus == 'Draft' || dealDto.isDuplicate == true) {
           dealDto.dealStatus = DEALSTATUS.draft;
         }
       }
@@ -706,11 +703,6 @@ export class DealService {
               ...matchFilter,
               ...filters,
             },
-          },
-          {
-            $sort: {
-              createdAt: -1
-            }
           },
           {
             $sort: sort,
