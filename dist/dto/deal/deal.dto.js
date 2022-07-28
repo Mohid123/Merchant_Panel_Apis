@@ -82,6 +82,8 @@ __decorate([
                 discountPercentage: 0,
                 soldVouchers: 0,
                 numberOfVouchers: 0,
+                grossEarning: 0,
+                netEarning: 0,
                 voucherValidity: 0,
                 voucherStartDate: new Date(),
                 voucherEndDate: new Date(),

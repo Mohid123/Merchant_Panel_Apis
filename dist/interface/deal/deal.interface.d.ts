@@ -7,6 +7,8 @@ export interface VoucherInterface {
     discountPercentage: number;
     soldVouchers: number;
     numberOfVouchers: number;
+    grossEarning: number;
+    netEarning: string;
     voucherValidity: number;
     voucherStartDate: Date;
     voucherEndDate: Date;
@@ -36,6 +38,7 @@ export interface DealInterface extends Document {
     readMore: string;
     finePrints: string;
     dealStatus: string;
+    netEarnings: number;
     deletedCheck: boolean;
     pageNumber: number;
     isCollapsed: boolean;

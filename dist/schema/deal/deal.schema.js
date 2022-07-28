@@ -24,6 +24,7 @@ exports.DealSchema = new mongoose.Schema({
     readMore: { type: String, default: '' },
     finePrints: { type: String, default: '' },
     dealStatus: { type: String, default: '' },
+    netEarnings: { type: Number, default: 0 },
     deletedCheck: { type: Boolean, default: false },
     isCollapsed: { type: Boolean, default: false },
     isDuplicate: { type: Boolean, default: false },
