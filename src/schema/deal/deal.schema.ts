@@ -23,9 +23,10 @@ export const DealSchema = new mongoose.Schema(
     aboutThisDeal: { type: String, default: '' },
     readMore: { type: String, default: '' },
     finePrints: { type: String, default: '' },
-    dealStatus: { type: String, default: 'Draft' },
+    dealStatus: { type: String, default: '' },
     deletedCheck: { type: Boolean, default: false },
     isCollapsed: { type: Boolean, default: false },
+    isDuplicate: { type: Boolean, default: false },
     ratingsAverage: {
       type: Number,
       default: 0,

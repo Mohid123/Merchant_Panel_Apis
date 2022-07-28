@@ -95,4 +95,7 @@ export class DealDto {
 
   @ApiProperty()
   isCollapsed: boolean;
+
+  @ApiProperty()
+  isDuplicate: boolean;
 }

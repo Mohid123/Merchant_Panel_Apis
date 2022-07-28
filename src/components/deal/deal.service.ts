@@ -82,7 +82,7 @@ export class DealService {
         if (dealDto.dealStatus) {
           dealDto.dealStatus = DEALSTATUS.inReview;
         }
-        if (dealDto.dealStatus == 'Draft') {
+        if (dealDto.dealStatus == 'Draft' || dealDto.isDuplicate == true) {
           dealDto.dealStatus = DEALSTATUS.draft;
         }
       }
