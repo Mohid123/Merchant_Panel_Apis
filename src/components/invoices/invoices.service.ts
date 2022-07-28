@@ -117,6 +117,7 @@ export class InvoicesService {
       }
 
       if (dateTo) {
+        dateTo = dateTo + 24 * 60 * 60 * 1000;
         dateToFilters = {
           ...dateToFilters,
           $lte: dateTo,

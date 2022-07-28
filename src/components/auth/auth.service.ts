@@ -56,6 +56,30 @@ export class AuthService {
     };
   }
 
+  async loginForCRM(loginDto) {
+    const user = {
+      id: '62e24ed393beea2cdbf8ccd2',
+      email: 'admin@divideals.com',
+      password: 'DiviDeals@123',
+      role: 'Manager',
+      isFromCRM: true,
+    };
+
+    if (!(loginDto.email == user.email)) {
+      throw new UnauthorizedException('Incorrect email!');
+    }
+
+    if (!(loginDto.password == user.password)) {
+      throw new UnauthorizedException('Incorrect password!');
+    }
+
+    delete user.password;
+
+    const token = await this.generateToken(user);
+
+    return { token: token.access_token };
+  }
+
   async login(loginDto) {
     let user = await this._usersService.findOne({
       email: loginDto.email.toLowerCase(),
@@ -99,7 +123,7 @@ export class AuthService {
       // strict: true
     });
     console.log(password);
-    
+
     return password;
   }
 
@@ -139,7 +163,9 @@ export class AuthService {
   }
 
   async isEmailExists(email) {
-    const user = await this._usersService.findOne({ email: email?.toLowerCase() });
+    const user = await this._usersService.findOne({
+      email: email?.toLowerCase(),
+    });
 
     return user ? true : false;
   }

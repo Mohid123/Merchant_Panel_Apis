@@ -5,7 +5,6 @@ import { generateStringId } from '../../components/file-management/utils/utils';
 export const LeadSchema = new mongoose.Schema(
   {
     _id: { type: String, default: generateStringId },
-    leadId: { type: String, default: '' },
     email: { type: String, default: '' },
     password: { type: String, default: '' },
     firstName: { type: String, default: '' },
