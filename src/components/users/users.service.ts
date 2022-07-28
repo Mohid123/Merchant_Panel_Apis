@@ -816,7 +816,7 @@ export class UsersService {
 
       const merchant = await new this._userModel(approveMerchantDto).save();
 
-      return { _id: userID, merchantID: approveMerchantDto.merchantID };
+      return { enquiryID: userID, merchantID: approveMerchantDto.merchantID };
     } catch (err) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
     }
