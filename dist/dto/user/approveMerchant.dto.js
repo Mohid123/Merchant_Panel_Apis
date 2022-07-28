@@ -59,6 +59,8 @@ __decorate([
     (0, swagger_1.ApiProperty)({
         example: [
             {
+                _id: '',
+                locationName: '',
                 streetAddress: '',
                 zipCode: '',
                 city: '',
