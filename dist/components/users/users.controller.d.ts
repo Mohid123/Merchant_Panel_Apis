@@ -40,7 +40,7 @@ export declare class UsersController {
     }>;
     validateVatNumber(vatNumber: string): Promise<any>;
     approveMerchant(id: string, approveMerchantDto: ApproveMerchantDTO): Promise<{
-        _id: any;
+        enquiryID: any;
         merchantID: any;
     }>;
 }
