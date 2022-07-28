@@ -37,6 +37,7 @@ let DealService = class DealService {
         return 'D' + sequenceDocument.sequenceValue;
     }
     async createDeal(dealDto, req) {
+        var _a;
         try {
             var dealVouchers = 0;
             var dealSoldVouchers = 0;
@@ -61,7 +62,7 @@ let DealService = class DealService {
                 dealDto.endDate = stamp;
             }
             if (!savedDeal) {
-                dealDto.dealHeader = dealDto.dealHeader.toUpperCase();
+                dealDto.dealHeader = (_a = dealDto === null || dealDto === void 0 ? void 0 : dealDto.dealHeader) === null || _a === void 0 ? void 0 : _a.toUpperCase();
                 dealDto.merchantID = req.user.id;
                 if (dealDto.dealStatus) {
                     dealDto.dealStatus = dealstatus_enum_1.DEALSTATUS.inReview;
