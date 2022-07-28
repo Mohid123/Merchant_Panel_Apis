@@ -708,6 +708,11 @@ export class DealService {
             },
           },
           {
+            $sort: {
+              createdAt: -1
+            }
+          },
+          {
             $sort: sort,
           },
           {
