@@ -695,7 +695,7 @@ let UsersService = class UsersService {
             };
             this.sendMail(emailDto);
             const merchant = await new this._userModel(approveMerchantDto).save();
-            return { message: 'Merchant Approved Successfully!' };
+            return { _id: userID, merchantID: approveMerchantDto.merchantID };
         }
         catch (err) {
             throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);

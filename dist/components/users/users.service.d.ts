@@ -41,6 +41,7 @@ export declare class UsersService {
         message: string;
     }>;
     approveMerchant(userID: any, approveMerchantDto: any): Promise<{
-        message: string;
+        _id: any;
+        merchantID: any;
     }>;
 }

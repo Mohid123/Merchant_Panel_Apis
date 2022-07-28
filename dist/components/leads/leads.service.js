@@ -17,6 +17,7 @@ const common_1 = require("@nestjs/common");
 const mongoose_1 = require("@nestjs/mongoose");
 const axios_1 = require("axios");
 const mongoose_2 = require("mongoose");
+const utils_1 = require("../file-management/utils/utils");
 let LeadsService = class LeadsService {
     constructor(_leadModel) {
         this._leadModel = _leadModel;
@@ -66,8 +67,11 @@ let LeadsService = class LeadsService {
         if (lead.length == 0) {
             throw new common_1.HttpException('No Record Found!', common_1.HttpStatus.BAD_REQUEST);
         }
+        let _locationId = (0, utils_1.generateStringId)();
         lead[0].locations = [
             {
+                _id: _locationId,
+                locationName: '',
                 streetAddress: lead[0].streetAddress,
                 zipCode: lead[0].zipCode.toString(),
                 city: lead[0].city,
