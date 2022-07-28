@@ -8,6 +8,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import axios from 'axios';
 import { Model } from 'mongoose';
 import { LeadInterface } from 'src/interface/lead/lead.interface';
+import { generateStringId } from '../file-management/utils/utils';
 
 @Injectable()
 export class LeadsService {
@@ -68,8 +69,12 @@ export class LeadsService {
       throw new HttpException('No Record Found!', HttpStatus.BAD_REQUEST);
     }
 
+    let _locationId = generateStringId();
+
     lead[0].locations = [
       {
+        _id: _locationId,
+        locationName: '',
         streetAddress: lead[0].streetAddress,
         zipCode: lead[0].zipCode.toString(),
         city: lead[0].city,
