@@ -23,4 +23,5 @@ export declare class DealDto {
     finePrints: string;
     pageNumber: string;
     isCollapsed: boolean;
+    isDuplicate: boolean;
 }

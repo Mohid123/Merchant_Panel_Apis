@@ -52,6 +52,24 @@ let AuthService = class AuthService {
             access_token: `Bearer ${this.jwtService.sign(payload)}`,
         };
     }
+    async loginForCRM(loginDto) {
+        const user = {
+            id: '62e24ed393beea2cdbf8ccd2',
+            email: 'admin@divideals.com',
+            password: 'DiviDeals@123',
+            role: 'Manager',
+            isFromCRM: true,
+        };
+        if (!(loginDto.email == user.email)) {
+            throw new common_1.UnauthorizedException('Incorrect email!');
+        }
+        if (!(loginDto.password == user.password)) {
+            throw new common_1.UnauthorizedException('Incorrect password!');
+        }
+        delete user.password;
+        const token = await this.generateToken(user);
+        return { token: token.access_token };
+    }
     async login(loginDto) {
         let user = await this._usersService.findOne({
             email: loginDto.email.toLowerCase(),
@@ -115,7 +133,9 @@ let AuthService = class AuthService {
         });
     }
     async isEmailExists(email) {
-        const user = await this._usersService.findOne({ email: email === null || email === void 0 ? void 0 : email.toLowerCase() });
+        const user = await this._usersService.findOne({
+            email: email === null || email === void 0 ? void 0 : email.toLowerCase(),
+        });
         return user ? true : false;
     }
     async sendOtp(otpEmailDto) {

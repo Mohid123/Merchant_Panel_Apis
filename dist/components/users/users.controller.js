@@ -16,6 +16,7 @@ exports.UsersController = void 0;
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const resetPassword_dto_1 = require("../../dto/resetPasswordDto/resetPassword.dto");
+const approveMerchant_dto_1 = require("../../dto/user/approveMerchant.dto");
 const updatepassword_dto_1 = require("../../dto/user/updatepassword.dto");
 const userstatus_enum_1 = require("../../enum/user/userstatus.enum");
 const kyc_dto_1 = require("../../dto/user/kyc.dto");
@@ -24,6 +25,7 @@ const updatemerchantprofile_dto_1 = require("../../dto/user/updatemerchantprofil
 const users_dto_1 = require("../../dto/user/users.dto");
 const jwt_admin_auth_guard_1 = require("../auth/jwt-admin-auth.guard");
 const jwt_auth_guard_1 = require("../auth/jwt-auth.guard");
+const jwt_manager_auth_guard_1 = require("../auth/jwt-manager-auth.guard");
 const users_service_1 = require("./users.service");
 let UsersController = class UsersController {
     constructor(_usersService) {
@@ -65,8 +67,13 @@ let UsersController = class UsersController {
     validateVatNumber(vatNumber) {
         return this._usersService.validateVatNumber(vatNumber);
     }
+    approveMerchant(id, approveMerchantDto) {
+        return this._usersService.approveMerchant(id, approveMerchantDto);
+    }
 };
 __decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.Post)('addUser'),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
@@ -74,6 +81,8 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "addUser", null);
 __decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.Post)('changePassword/:id'),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
@@ -82,6 +91,8 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "changePassword", null);
 __decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.Post)('completeKYC/:merchantID'),
     __param(0, (0, common_1.Param)('merchantID')),
     __param(1, (0, common_1.Body)()),
@@ -90,6 +101,8 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "completeKYC", null);
 __decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.Post)('updateMerchantprofile/:merchantID'),
     __param(0, (0, common_1.Param)('merchantID')),
     __param(1, (0, common_1.Body)()),
@@ -98,6 +111,8 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "updateMerchantprofile", null);
 __decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.Post)('updateBusinessHours'),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
@@ -105,6 +120,8 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "updateBusinessHours", null);
 __decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.Get)('getUserById/:id'),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
@@ -112,6 +129,8 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "geUserById", null);
 __decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.Get)('getMerchantStats/:id'),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
@@ -119,6 +138,8 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "getUserStats", null);
 __decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.Get)('getAllUsers'),
     __param(0, (0, common_1.Query)('offset')),
     __param(1, (0, common_1.Query)('limit')),
@@ -127,6 +148,8 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "getAllUsers", null);
 __decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.Post)('/resetPassword'),
     __param(0, (0, common_1.Body)()),
     __param(1, (0, common_1.Req)()),
@@ -154,16 +177,27 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "approvePendingUsers", null);
 __decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.Post)('validateVatNumber/:vatNumber'),
     __param(0, (0, common_1.Param)('vatNumber')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "validateVatNumber", null);
+__decorate([
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)(jwt_manager_auth_guard_1.JwtManagerAuthGuard),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Post)('approveMerchant/:id'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, approveMerchant_dto_1.ApproveMerchantDTO]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "approveMerchant", null);
 UsersController = __decorate([
     (0, swagger_1.ApiTags)('Users'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
-    (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.Controller)('users'),
     __metadata("design:paramtypes", [users_service_1.UsersService])
 ], UsersController);

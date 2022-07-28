@@ -30,4 +30,7 @@ export declare class AuthController {
         message: string;
         token: string;
     }>;
+    loginForCRM(loginDto: LoginDto): Promise<{
+        token: string;
+    }>;
 }

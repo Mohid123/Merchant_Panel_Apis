@@ -66,7 +66,7 @@ let DealService = class DealService {
                 if (dealDto.dealStatus) {
                     dealDto.dealStatus = dealstatus_enum_1.DEALSTATUS.inReview;
                 }
-                if (dealDto.dealStatus == 'Draft') {
+                if (dealDto.dealStatus == 'Draft' || dealDto.isDuplicate == true) {
                     dealDto.dealStatus = dealstatus_enum_1.DEALSTATUS.draft;
                 }
             }

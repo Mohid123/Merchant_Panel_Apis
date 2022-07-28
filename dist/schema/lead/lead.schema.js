@@ -5,7 +5,6 @@ const mongoose = require("mongoose");
 const utils_1 = require("../../components/file-management/utils/utils");
 exports.LeadSchema = new mongoose.Schema({
     _id: { type: String, default: utils_1.generateStringId },
-    leadId: { type: String, default: '' },
     email: { type: String, default: '' },
     password: { type: String, default: '' },
     firstName: { type: String, default: '' },

@@ -51,6 +51,9 @@ let AuthController = class AuthController {
     verifyOtp(otp) {
         return this._authService.verifyOtp(otp);
     }
+    loginForCRM(loginDto) {
+        return this._authService.loginForCRM(loginDto);
+    }
 };
 __decorate([
     (0, common_1.Get)('login/:email/:password'),
@@ -102,6 +105,13 @@ __decorate([
     __metadata("design:paramtypes", [Number]),
     __metadata("design:returntype", void 0)
 ], AuthController.prototype, "verifyOtp", null);
+__decorate([
+    (0, common_1.Post)('loginForCRM'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [login_dto_1.LoginDto]),
+    __metadata("design:returntype", void 0)
+], AuthController.prototype, "loginForCRM", null);
 AuthController = __decorate([
     (0, swagger_1.ApiTags)('Auth'),
     (0, common_1.Controller)('auth'),

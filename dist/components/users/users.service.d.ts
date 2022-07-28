@@ -2,10 +2,13 @@ import { Model } from 'mongoose';
 import { UpdateHoursDto } from '../../dto/user/updatehours.dto';
 import { UsersInterface } from '../../interface/user/users.interface';
 import { EmailDTO } from 'src/dto/email/email.dto';
+import { VoucherCounterInterface } from 'src/interface/vouchers/vouchersCounter.interface';
 export declare class UsersService {
     private readonly _userModel;
-    constructor(_userModel: Model<UsersInterface>);
+    private readonly voucherCounterModel;
+    constructor(_userModel: Model<UsersInterface>, voucherCounterModel: Model<VoucherCounterInterface>);
     onModuleInit(): void;
+    generateMerchantId(sequenceName: any): Promise<string>;
     addUser(usersDto: any): Promise<import("mongoose").Document<unknown, any, UsersInterface> & UsersInterface & {
         _id: string;
     }>;
@@ -35,6 +38,9 @@ export declare class UsersService {
     private generatePassword;
     sendMail(emailDto: EmailDTO): Promise<void>;
     approvePendingUsers(status: any, userID: any): Promise<{
+        message: string;
+    }>;
+    approveMerchant(userID: any, approveMerchantDto: any): Promise<{
         message: string;
     }>;
 }

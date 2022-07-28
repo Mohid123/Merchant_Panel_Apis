@@ -1,5 +1,6 @@
 /// <reference types="mongoose" />
 import { ResetPasswordDto } from 'src/dto/resetPasswordDto/resetPassword.dto';
+import { ApproveMerchantDTO } from 'src/dto/user/approveMerchant.dto';
 import { UpdatePasswordDto } from 'src/dto/user/updatepassword.dto';
 import { USERSTATUS } from 'src/enum/user/userstatus.enum';
 import { KycDto } from '../../dto/user/kyc.dto';
@@ -38,4 +39,7 @@ export declare class UsersController {
         message: string;
     }>;
     validateVatNumber(vatNumber: string): Promise<any>;
+    approveMerchant(id: string, approveMerchantDto: ApproveMerchantDTO): Promise<{
+        message: string;
+    }>;
 }

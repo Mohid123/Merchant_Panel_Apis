@@ -7,5 +7,6 @@ var USERROLE;
     USERROLE["customer"] = "Customer";
     USERROLE["merchant"] = "Merchant";
     USERROLE["affiliate"] = "Affiliate";
+    USERROLE["manager"] = "Manager";
 })(USERROLE = exports.USERROLE || (exports.USERROLE = {}));
 //# sourceMappingURL=userrole.enum.js.map

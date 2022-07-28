@@ -3,7 +3,6 @@ import { LeadInterface } from 'src/interface/lead/lead.interface';
 export declare class LeadsService {
     private readonly _leadModel;
     constructor(_leadModel: Model<LeadInterface>);
-    createLead(leadDto: any): Promise<import("mongoose").Document<unknown, any, LeadInterface> & LeadInterface & {
-        _id: string;
-    }>;
+    createLead(leadDto: any): Promise<any>;
+    getLead(id: any): Promise<any>;
 }

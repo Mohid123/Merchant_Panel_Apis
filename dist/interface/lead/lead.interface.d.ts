@@ -11,7 +11,6 @@ export interface Gallery {
 }
 export interface LeadInterface {
     _id: string;
-    leadId: string;
     email: string;
     password: string;
     firstName: string;

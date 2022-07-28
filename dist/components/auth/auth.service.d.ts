@@ -13,6 +13,9 @@ export declare class AuthService {
         access_token: string;
     }>;
     private generateToken;
+    loginForCRM(loginDto: any): Promise<{
+        token: string;
+    }>;
     login(loginDto: any): Promise<{
         user: import("mongoose").Document<unknown, any, UsersInterface> & UsersInterface & {
             _id: string;

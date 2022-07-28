@@ -16,6 +16,8 @@ exports.LeadsController = void 0;
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const lead_dto_1 = require("../../dto/lead/lead.dto");
+const jwt_auth_guard_1 = require("../auth/jwt-auth.guard");
+const jwt_manager_auth_guard_1 = require("../auth/jwt-manager-auth.guard");
 const leads_service_1 = require("./leads.service");
 let LeadsController = class LeadsController {
     constructor(_leadsService) {
@@ -23,6 +25,9 @@ let LeadsController = class LeadsController {
     }
     createLead(leadDto) {
         return this._leadsService.createLead(leadDto);
+    }
+    getLead(id) {
+        return this._leadsService.getLead(id);
     }
 };
 __decorate([
@@ -32,6 +37,16 @@ __decorate([
     __metadata("design:paramtypes", [lead_dto_1.LeadDto]),
     __metadata("design:returntype", void 0)
 ], LeadsController.prototype, "createLead", null);
+__decorate([
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)(jwt_manager_auth_guard_1.JwtManagerAuthGuard),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Get)('getLead/:id'),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], LeadsController.prototype, "getLead", null);
 LeadsController = __decorate([
     (0, swagger_1.ApiTags)('Leads'),
     (0, common_1.Controller)('leads'),
