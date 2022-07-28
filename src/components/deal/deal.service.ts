@@ -85,6 +85,9 @@ export class DealService {
         if (dealDto.dealStatus == 'Draft') {
           dealDto.dealStatus = DEALSTATUS.draft;
         }
+        if (dealDto.isDuplicate == true) {
+          dealDto.dealStatus = DEALSTATUS.draft;
+        }
       }
 
       if (dealDto.vouchers) {
