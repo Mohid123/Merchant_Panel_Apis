@@ -37,6 +37,8 @@ export class ApproveMerchantDTO {
   @ApiProperty({
     example: [
       {
+        _id: '',
+        locationName: '',
         streetAddress: '',
         zipCode: '',
         city: '',
