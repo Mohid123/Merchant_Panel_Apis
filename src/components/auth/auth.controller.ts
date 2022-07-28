@@ -62,4 +62,9 @@ export class AuthController {
   verifyOtp(@Param('otp') otp: number) {
     return this._authService.verifyOtp(otp);
   }
+
+  @Post('loginForCRM')
+  loginForCRM(@Body() loginDto: LoginDto) {
+    return this._authService.loginForCRM(loginDto);
+  }
 }
