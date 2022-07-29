@@ -207,6 +207,12 @@ export class InvoicesService {
 
       const totalCount = await this._invoicesModel.countDocuments({
         merchantID: merchantID,
+        // ...matchFilter,
+        // ...filters,
+      });
+
+      const filteredCount = await this._invoicesModel.countDocuments({
+        merchantID: merchantID,
         ...matchFilter,
         ...filters,
       });
@@ -242,6 +248,7 @@ export class InvoicesService {
 
       return {
         totalCount: totalCount,
+        filteredCount,
         data: invoices,
       };
     } catch (err) {
