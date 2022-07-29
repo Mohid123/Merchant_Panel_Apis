@@ -33,7 +33,7 @@ export class LeadsService {
       `https://sandbox.zohoapis.eu/crm/v2/functions/createleadinzoho/actions/execute?auth_type=apikey&zapikey=1003.527925363aa0ee3a8c9cf0be2f92f93a.5464e31887b65bfe3e373beb87462db7&enquiryid=${lead.id}`,
     );
 
-    return res.data;
+    return lead;
   }
 
   async getLead(id) {
