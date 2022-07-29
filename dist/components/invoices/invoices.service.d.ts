@@ -18,6 +18,7 @@ export declare class InvoicesService {
     }>;
     getAllInvoicesByMerchant(merchantID: any, dateFrom: any, dateTo: any, invoiceDate: any, invoiceAmount: any, status: any, invoiceID: any, offset: any, limit: any, multipleInvoicesDto: any): Promise<{
         totalCount: number;
+        filteredCount: number;
         data: any[];
     }>;
 }

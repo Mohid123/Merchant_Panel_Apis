@@ -146,7 +146,10 @@ let InvoicesService = class InvoicesService {
                     createdAt: -1,
                 };
             }
-            const totalCount = await this._invoicesModel.countDocuments(Object.assign(Object.assign({ merchantID: merchantID }, matchFilter), filters));
+            const totalCount = await this._invoicesModel.countDocuments({
+                merchantID: merchantID,
+            });
+            const filteredCount = await this._invoicesModel.countDocuments(Object.assign(Object.assign({ merchantID: merchantID }, matchFilter), filters));
             let invoices = await this._invoicesModel
                 .aggregate([
                 {
@@ -171,6 +174,7 @@ let InvoicesService = class InvoicesService {
                 .limit(parseInt(limit));
             return {
                 totalCount: totalCount,
+                filteredCount,
                 data: invoices,
             };
         }

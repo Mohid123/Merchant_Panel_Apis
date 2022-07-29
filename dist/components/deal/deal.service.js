@@ -360,11 +360,15 @@ let DealService = class DealService {
             if ((_a = multipleReviewsDto === null || multipleReviewsDto === void 0 ? void 0 : multipleReviewsDto.dealIDsArray) === null || _a === void 0 ? void 0 : _a.length) {
                 filters = Object.assign(Object.assign({}, filters), { dealID: { $in: multipleReviewsDto.dealIDsArray } });
             }
-            const totalCount = await this.dealModel.countDocuments(Object.assign({ merchantID: id, deletedCheck: false }, matchFilter));
+            const totalCount = await this.dealModel.countDocuments({
+                merchantID: id,
+                deletedCheck: false,
+            });
+            const filteredDealCount = await this.dealModel.countDocuments(Object.assign(Object.assign({ merchantID: id, deletedCheck: false }, matchFilter), filters));
             const deals = await this.dealModel
                 .aggregate([
                 {
-                    $match: Object.assign(Object.assign({ merchantID: id, deletedCheck: false }, matchFilter), { totalReviews: { $gt: 0 } }),
+                    $match: Object.assign(Object.assign(Object.assign({ merchantID: id, deletedCheck: false }, matchFilter), filters), { totalReviews: { $gt: 0 } }),
                 },
                 {
                     $project: {
@@ -395,6 +399,8 @@ let DealService = class DealService {
             }
             const merchant = await this._userModel.findOne({ _id: id });
             return {
+                totalDeals: totalCount,
+                filteredDealCount,
                 overallRating: merchant.ratingsAverage,
                 totalMerchantReviews: totalMerchantReviews[0].nRating,
                 data: deals,

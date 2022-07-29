@@ -19,6 +19,7 @@ export declare class InvoicesController {
     }>;
     getAllInvoicesByMerchant(merchantID: string, dateFrom: number, dateTo: number, invoiceDate: INVOICEDATEENUM, invoiceAmount: INVOICEAMOUNTENUM, status: INVOICEAMOUNTENUM, invoiceID: string, offset: number, limit: number, multipleInvoicesDto: MultipleInvoicesDto): Promise<{
         totalCount: number;
+        filteredCount: number;
         data: any[];
     }>;
 }
