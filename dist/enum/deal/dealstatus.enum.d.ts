@@ -2,7 +2,7 @@ export declare enum DEALSTATUS {
     draft = "Draft",
     inReview = "In review",
     scheduled = "Scheduled",
-    needsAttention = "Needs Attention",
+    needsAttention = "Needs attention",
     published = "Published",
     expired = "Expired"
 }

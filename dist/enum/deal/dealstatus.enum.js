@@ -6,7 +6,7 @@ var DEALSTATUS;
     DEALSTATUS["draft"] = "Draft";
     DEALSTATUS["inReview"] = "In review";
     DEALSTATUS["scheduled"] = "Scheduled";
-    DEALSTATUS["needsAttention"] = "Needs Attention";
+    DEALSTATUS["needsAttention"] = "Needs attention";
     DEALSTATUS["published"] = "Published";
     DEALSTATUS["expired"] = "Expired";
 })(DEALSTATUS = exports.DEALSTATUS || (exports.DEALSTATUS = {}));

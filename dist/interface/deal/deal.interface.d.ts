@@ -8,7 +8,7 @@ export interface VoucherInterface {
     soldVouchers: number;
     numberOfVouchers: number;
     grossEarning: number;
-    netEarning: string;
+    netEarning: number;
     voucherValidity: number;
     voucherStartDate: Date;
     voucherEndDate: Date;
