@@ -271,6 +271,12 @@ export class VouchersService {
         ...filters,
       });
 
+      const filteredCount = await this.voucherModel.countDocuments({
+        merchantID: merchantId,
+        // ...matchFilter,
+        // ...filters,
+      });
+
       let vouchers = await this.voucherModel
         .aggregate([
           {
@@ -299,6 +305,7 @@ export class VouchersService {
 
       return {
         totalCount: totalCount,
+        filteredCount,
         data: vouchers,
       };
     } catch (error) {

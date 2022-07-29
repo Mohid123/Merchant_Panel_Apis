@@ -445,8 +445,15 @@ export class DealService {
       const totalCount = await this.dealModel.countDocuments({
         merchantID: id,
         deletedCheck: false,
-        ...matchFilter,
+        // ...matchFilter,
         // ...filters,
+      });
+
+      const filteredDealCount = await this.dealModel.countDocuments({
+        merchantID: id,
+        deletedCheck: false,
+        ...matchFilter,
+        ...filters,
       });
 
       const deals = await this.dealModel
@@ -456,7 +463,7 @@ export class DealService {
               merchantID: id,
               deletedCheck: false,
               ...matchFilter,
-              // ...filters,
+              ...filters,
               totalReviews: { $gt: 0 },
             },
           },
@@ -497,7 +504,8 @@ export class DealService {
       const merchant = await this._userModel.findOne({ _id: id });
 
       return {
-        // totalDeals: totalCount,
+        totalDeals: totalCount,
+        filteredDealCount,
         overallRating: merchant.ratingsAverage,
         totalMerchantReviews: totalMerchantReviews[0].nRating,
         data: deals,
