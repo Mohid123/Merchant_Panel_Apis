@@ -160,11 +160,11 @@ let VouchersService = class VouchersService {
             }
             console.log(sort);
             console.log(matchFilter);
-            const totalCount = await this.voucherModel.countDocuments(Object.assign({ merchantID: merchantId }, matchFilter));
+            const totalCount = await this.voucherModel.countDocuments(Object.assign(Object.assign({ merchantID: merchantId }, matchFilter), filters));
             let vouchers = await this.voucherModel
                 .aggregate([
                 {
-                    $match: Object.assign({ merchantID: merchantId }, matchFilter),
+                    $match: Object.assign(Object.assign({ merchantID: merchantId }, matchFilter), filters),
                 },
                 {
                     $sort: sort,
