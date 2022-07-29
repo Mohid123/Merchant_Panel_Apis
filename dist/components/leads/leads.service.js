@@ -34,7 +34,7 @@ let LeadsService = class LeadsService {
         leadDto.tradeName = leadDto.companyName;
         const lead = await new this._leadModel(leadDto).save();
         const res = await axios_1.default.get(`https://sandbox.zohoapis.eu/crm/v2/functions/createleadinzoho/actions/execute?auth_type=apikey&zapikey=1003.527925363aa0ee3a8c9cf0be2f92f93a.5464e31887b65bfe3e373beb87462db7&enquiryid=${lead.id}`);
-        return res.data;
+        return lead;
     }
     async getLead(id) {
         const lead = await this._leadModel.aggregate([
