@@ -79,6 +79,8 @@ let DealService = class DealService {
                     el.discountPercentage = calculateDiscountPercentage;
                     dealVouchers += el.numberOfVouchers;
                     el.soldVouchers = 0;
+                    el.grossEarning = 0;
+                    el.netEarning = 0;
                     if (el.voucherValidity > 0) {
                         startTime = 0;
                         endTime = 0;
