@@ -97,6 +97,8 @@ export class DealService {
 
           dealVouchers += el.numberOfVouchers;
           el.soldVouchers = 0;
+          el.grossEarning = 0;
+          el.netEarning = 0;
           // dealSoldVouchers += el?.soldVouchers;
 
           if (el.voucherValidity > 0) {
