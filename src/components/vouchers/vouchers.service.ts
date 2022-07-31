@@ -268,6 +268,12 @@ export class VouchersService {
       const totalCount = await this.voucherModel.countDocuments({
         merchantID: merchantId,
         ...matchFilter,
+        ...filters,
+      });
+
+      const filteredCount = await this.voucherModel.countDocuments({
+        merchantID: merchantId,
+        // ...matchFilter,
         // ...filters,
       });
 
@@ -299,6 +305,7 @@ export class VouchersService {
 
       return {
         totalCount: totalCount,
+        filteredCount,
         data: vouchers,
       };
     } catch (error) {
