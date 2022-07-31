@@ -217,7 +217,7 @@ export class InvoicesService {
             $match: {
               merchantID: merchantID,
               ...matchFilter,
-              // ...filters,
+              ...filters,
             },
           },
           {

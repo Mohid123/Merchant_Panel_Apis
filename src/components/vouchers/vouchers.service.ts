@@ -258,7 +258,7 @@ export class VouchersService {
 
       if (Object.keys(sort).length === 0 && sort.constructor === Object) {
         sort = {
-          createdAt: 1,
+          createdAt: -1,
         };
       }
 
@@ -277,7 +277,7 @@ export class VouchersService {
             $match: {
               merchantID: merchantId,
               ...matchFilter,
-              // ...filters,
+              ...filters,
             },
           },
           {
