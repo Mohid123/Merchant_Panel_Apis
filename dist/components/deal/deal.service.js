@@ -106,6 +106,7 @@ let DealService = class DealService {
             }
             dealDto.availableVouchers = dealVouchers;
             dealDto.soldVouchers = dealSoldVouchers;
+            dealDto.isCollapsed = false;
             if (!savedDeal) {
                 const deal = await this.dealModel.create(dealDto);
                 return deal;
