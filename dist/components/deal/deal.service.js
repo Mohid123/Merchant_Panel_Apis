@@ -34,7 +34,8 @@ let DealService = class DealService {
                 sequenceValue: 1,
             },
         }, { new: true });
-        return 'D' + sequenceDocument.sequenceValue;
+        const year = new Date().getFullYear() % 2000;
+        return `DBE${year}${sequenceDocument.sequenceValue < 100000 ? '0' : ''}${sequenceDocument.sequenceValue < 10000 ? '0' : ''}${sequenceDocument.sequenceValue}`;
     }
     async createDeal(dealDto, req) {
         var _a;
