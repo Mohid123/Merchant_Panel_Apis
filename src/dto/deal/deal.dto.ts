@@ -100,4 +100,10 @@ export class DealDto {
 
   @ApiProperty()
   isDuplicate: boolean;
+
+  @ApiProperty()
+  isSpecialOffer: boolean;
+
+  @ApiProperty()
+  dealPreviewURL: string;
 }
