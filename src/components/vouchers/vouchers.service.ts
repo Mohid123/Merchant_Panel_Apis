@@ -291,17 +291,37 @@ export class VouchersService {
             },
           },
           {
-            $sort: sort,
-          },
-          {
             $addFields: {
               id: '$_id',
+              voucherHeader: {
+                $toLower: '$voucherHeader'
+              }
             },
           },
           {
             $project: {
               _id: 0,
+              voucherID: 1,
+              dealHeader: 1,
+              dealID: 1,
+              merchantID: 1,
+              customerID: 1,
+              amount: 1,
+              fee: 1,
+              net: 1,
+              status: 1,
+              paymentStatus: 1,
+              boughtDate: 1,
+              deletedCheck: 1,
+              createdAt: 1,
+              updatedAt:1,
+              voucherHeader: {
+                $toLower: '$voucherHeader'
+              }
             },
+          },
+          {
+            $sort: sort,
           },
         ])
         .skip(parseInt(offset))
