@@ -89,6 +89,10 @@ export class DealService {
         if (dealDto.dealStatus == 'Draft' || dealDto.isDuplicate == true) {
           dealDto.dealStatus = DEALSTATUS.draft;
         }
+
+        if(!dealDto.dealStatus){
+          dealDto.dealStatus = DEALSTATUS.draft;
+        }
       }
 
       if (dealDto.vouchers) {
@@ -133,6 +137,7 @@ export class DealService {
 
       dealDto.availableVouchers = dealVouchers;
       dealDto.soldVouchers = dealSoldVouchers;
+      dealDto.isCollapsed = false;
 
       if (!savedDeal) {
         const deal = await this.dealModel.create(dealDto);
