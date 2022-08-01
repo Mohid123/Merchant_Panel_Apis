@@ -1019,6 +1019,36 @@ export class DealService {
     }
   }
 
+  async getNewFavouriteDeal(offset, limit) {
+    try {
+      offset = parseInt(offset) < 0 ? 0 : offset;
+      limit = parseInt(limit) < 1 ? 10 : limit;
+
+      const totalCount = await this.dealModel.countDocuments({
+        deletedCheck: false,
+      });
+      const deals = await this.dealModel
+        .aggregate([
+          {
+            $match: {
+              deletedCheck: false,
+            },
+          },
+          {
+            $sample: { size: totalCount },
+          },
+        ])
+        .skip(parseInt(offset))
+        .limit(parseInt(limit));
+      return {
+        totalCount: totalCount,
+        data: deals,
+      };
+    } catch (err) {
+      throw new HttpException(err, HttpStatus.BAD_REQUEST);
+    }
+  }
+
   //   async createVoucher(voucherDto) {
   //     try {
   //       let dealId = voucherDto.dealId;

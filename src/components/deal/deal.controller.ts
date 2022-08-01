@@ -224,4 +224,12 @@ export class DealController {
   ) {
     return this.dealService.getHotDeals(offset, limit);
   }
+
+  @Get('getNewFavouriteDeal')
+  getNewFavouriteDeal(
+    @Query('offset') offset: number = 0,
+    @Query('limit') limit: number = 10,
+  ) {
+    return this.dealService.getNewFavouriteDeal(offset, limit);
+  }
 }
