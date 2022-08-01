@@ -25,7 +25,11 @@ export class VouchersService {
       { new: true },
     );
 
-    return 'V' + sequenceDocument.sequenceValue;
+    const year = new Date().getFullYear() % 2000;
+
+    return `VBE${year}${sequenceDocument.sequenceValue < 100000 ? '0' : ''}${
+      sequenceDocument.sequenceValue < 10000 ? '0' : ''
+    }${sequenceDocument.sequenceValue}`;
   }
 
   async createVoucher(voucherDto) {
