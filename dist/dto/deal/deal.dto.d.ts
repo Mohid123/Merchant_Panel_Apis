@@ -24,4 +24,6 @@ export declare class DealDto {
     pageNumber: string;
     isCollapsed: boolean;
     isDuplicate: boolean;
+    isSpecialOffer: boolean;
+    dealPreviewURL: string;
 }

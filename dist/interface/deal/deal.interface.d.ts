@@ -43,4 +43,6 @@ export interface DealInterface extends Document {
     pageNumber: number;
     isCollapsed: boolean;
     isDuplicate: boolean;
+    isSpecialOffer: boolean;
+    dealPreviewURL: string;
 }

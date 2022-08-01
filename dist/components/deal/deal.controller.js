@@ -63,9 +63,29 @@ let DealController = class DealController {
     getTopRatedDeals(merchantID) {
         return this.dealService.getTopRatedDeals(merchantID);
     }
+    getNewDeals(offset = 0, limit = 10) {
+        return this.dealService.getNewDeals(offset, limit);
+    }
+    getLowPriceDeals(price, offset = 0, limit = 10) {
+        return this.dealService.getLowPriceDeals(price, offset, limit);
+    }
+    getDiscountedDeals(percentage, offset = 0, limit = 10) {
+        return this.dealService.getDiscountedDeals(percentage, offset, limit);
+    }
+    getSpecialOfferDeals(offset = 0, limit = 10) {
+        return this.dealService.getSpecialOfferDeals(offset, limit);
+    }
+    getHotDeals(offset = 0, limit = 10) {
+        return this.dealService.getHotDeals(offset, limit);
+    }
+    getNewFavouriteDeal(offset = 0, limit = 10) {
+        return this.dealService.getNewFavouriteDeal(offset, limit);
+    }
 };
 __decorate([
+    (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.UseGuards)(jwt_merchant_auth_guard_1.JwtMerchantAuthGuard),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Post)('createDeal'),
     __param(0, (0, common_1.Body)()),
     __param(1, (0, common_1.Req)()),
@@ -74,7 +94,9 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], DealController.prototype, "createDeal", null);
 __decorate([
+    (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.UseGuards)(jwt_merchant_auth_guard_1.JwtMerchantAuthGuard),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Post)('updateDeal/:dealID'),
     __param(0, (0, common_1.Param)('dealID')),
     __param(1, (0, common_1.Body)()),
@@ -83,7 +105,9 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], DealController.prototype, "updateDeal", null);
 __decorate([
+    (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.UseGuards)(jwt_merchant_auth_guard_1.JwtMerchantAuthGuard),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Post)('deleteDeal/:dealID'),
     __param(0, (0, common_1.Param)('dealID')),
     __metadata("design:type", Function),
@@ -91,7 +115,9 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], DealController.prototype, "deleteDeal", null);
 __decorate([
+    (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.UseGuards)(jwt_admin_auth_guard_1.JwtAdminAuthGuard),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Post)('approveRejectDeal/:dealID'),
     __param(0, (0, common_1.Param)('dealID')),
     __param(1, (0, common_1.Body)()),
@@ -100,6 +126,8 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], DealController.prototype, "approveRejectDeal", null);
 __decorate([
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Get)('getDeal/:id'),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
@@ -107,6 +135,8 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], DealController.prototype, "getDeal", null);
 __decorate([
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Post)('getDealsReviewStatsByMerchant/:merchantID'),
     __param(0, (0, common_1.Param)('merchantID')),
     __param(1, (0, common_1.Query)('dealID')),
@@ -118,6 +148,8 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], DealController.prototype, "getDealsReviewStatsByMerchant", null);
 __decorate([
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Get)('getAllDeals'),
     __param(0, (0, common_1.Query)('offset')),
     __param(1, (0, common_1.Query)('limit')),
@@ -127,6 +159,8 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], DealController.prototype, "getAllDeals", null);
 __decorate([
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, swagger_1.ApiQuery)({ name: 'dealHeader', enum: sort_enum_1.SORT, required: false }),
     (0, swagger_1.ApiQuery)({ name: 'price', enum: sort_enum_1.SORT, required: false }),
     (0, swagger_1.ApiQuery)({ name: 'startDate', enum: sort_enum_1.SORT, required: false }),
@@ -158,6 +192,8 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], DealController.prototype, "getDealsByMerchantID", null);
 __decorate([
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Get)('getSalesStatistics'),
     __param(0, (0, common_1.Req)()),
     __metadata("design:type", Function),
@@ -165,6 +201,8 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], DealController.prototype, "getSalesStatistics", null);
 __decorate([
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, swagger_1.ApiQuery)({ name: 'rating', required: false }),
     (0, common_1.Get)('getDealReviews/:dealID'),
     __param(0, (0, common_1.Param)('dealID')),
@@ -176,15 +214,65 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], DealController.prototype, "getDealReviews", null);
 __decorate([
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Get)('getTopRatedDeals/:merchantID'),
     __param(0, (0, common_1.Param)('merchantID')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], DealController.prototype, "getTopRatedDeals", null);
+__decorate([
+    (0, common_1.Get)('getNewDeals'),
+    __param(0, (0, common_1.Query)('offset')),
+    __param(1, (0, common_1.Query)('limit')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, Number]),
+    __metadata("design:returntype", void 0)
+], DealController.prototype, "getNewDeals", null);
+__decorate([
+    (0, common_1.Get)('getLowPriceDeals/:price'),
+    __param(0, (0, common_1.Param)('price')),
+    __param(1, (0, common_1.Query)('offset')),
+    __param(2, (0, common_1.Query)('limit')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, Number, Number]),
+    __metadata("design:returntype", void 0)
+], DealController.prototype, "getLowPriceDeals", null);
+__decorate([
+    (0, common_1.Get)('getDiscountedDeals/:percentage'),
+    __param(0, (0, common_1.Param)('percentage')),
+    __param(1, (0, common_1.Query)('offset')),
+    __param(2, (0, common_1.Query)('limit')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, Number, Number]),
+    __metadata("design:returntype", void 0)
+], DealController.prototype, "getDiscountedDeals", null);
+__decorate([
+    (0, common_1.Get)('getSpecialOfferDeals'),
+    __param(0, (0, common_1.Query)('offset')),
+    __param(1, (0, common_1.Query)('limit')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, Number]),
+    __metadata("design:returntype", void 0)
+], DealController.prototype, "getSpecialOfferDeals", null);
+__decorate([
+    (0, common_1.Get)('getHotDeals'),
+    __param(0, (0, common_1.Query)('offset')),
+    __param(1, (0, common_1.Query)('limit')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, Number]),
+    __metadata("design:returntype", void 0)
+], DealController.prototype, "getHotDeals", null);
+__decorate([
+    (0, common_1.Get)('getNewFavouriteDeal'),
+    __param(0, (0, common_1.Query)('offset')),
+    __param(1, (0, common_1.Query)('limit')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, Number]),
+    __metadata("design:returntype", void 0)
+], DealController.prototype, "getNewFavouriteDeal", null);
 DealController = __decorate([
-    (0, swagger_1.ApiBearerAuth)(),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, swagger_1.ApiTags)('Deal'),
     (0, common_1.Controller)('deal'),
     __metadata("design:paramtypes", [deal_service_1.DealService])

@@ -28,6 +28,8 @@ exports.DealSchema = new mongoose.Schema({
     deletedCheck: { type: Boolean, default: false },
     isCollapsed: { type: Boolean, default: false },
     isDuplicate: { type: Boolean, default: false },
+    isSpecialOffer: { type: Boolean, default: false },
+    dealPreviewURL: { type: String },
     ratingsAverage: {
         type: Number,
         default: 0,
