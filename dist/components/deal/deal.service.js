@@ -70,6 +70,9 @@ let DealService = class DealService {
                 if (dealDto.dealStatus == 'Draft' || dealDto.isDuplicate == true) {
                     dealDto.dealStatus = dealstatus_enum_1.DEALSTATUS.draft;
                 }
+                if (!dealDto.dealStatus) {
+                    dealDto.dealStatus = dealstatus_enum_1.DEALSTATUS.draft;
+                }
             }
             if (dealDto.vouchers) {
                 dealDto.vouchers = dealDto.vouchers.map((el) => {
