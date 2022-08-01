@@ -22,20 +22,22 @@ import { RATINGENUM } from 'src/enum/review/ratingValue.enum';
 import { MultipleDealsDto } from 'src/dto/deal/multipledeals.dto';
 import { MultipleReviewsDto } from 'src/dto/review/multiplereviews.dto';
 
-@ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
 @ApiTags('Deal')
 @Controller('deal')
 export class DealController {
   constructor(private readonly dealService: DealService) {}
 
+  @ApiBearerAuth()
   @UseGuards(JwtMerchantAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Post('createDeal')
   createDeal(@Body() dealDto: DealDto, @Req() req) {
     return this.dealService.createDeal(dealDto, req);
   }
 
+  @ApiBearerAuth()
   @UseGuards(JwtMerchantAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Post('updateDeal/:dealID')
   updateDeal(
     @Param('dealID') dealID: string,
@@ -44,13 +46,17 @@ export class DealController {
     return this.dealService.updateDeal(updateDealDto, dealID);
   }
 
+  @ApiBearerAuth()
   @UseGuards(JwtMerchantAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Post('deleteDeal/:dealID')
   deleteDeal(@Param('dealID') dealID: string) {
     return this.dealService.deleteDeal(dealID);
   }
 
+  @ApiBearerAuth()
   @UseGuards(JwtAdminAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Post('approveRejectDeal/:dealID')
   approveRejectDeal(
     @Param('dealID') dealID: string,
@@ -59,11 +65,15 @@ export class DealController {
     return this.dealService.approveRejectDeal(dealID, dealStatusDto);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
   @Get('getDeal/:id')
   getDeal(@Param('id') id: string) {
     return this.dealService.getDeal(id);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
   // @ApiQuery({ name: 'averageRating', enum: RATINGENUM, required: false })
   @Post('getDealsReviewStatsByMerchant/:merchantID')
   getDealsReviewStatsByMerchant(
@@ -84,6 +94,8 @@ export class DealController {
     );
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
   @Get('getAllDeals')
   getAllDeals(
     @Query('offset') offset: number = 0,
@@ -92,7 +104,8 @@ export class DealController {
   ) {
     return this.dealService.getAllDeals(req, offset, limit);
   }
-
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
   @ApiQuery({ name: 'dealHeader', enum: SORT, required: false })
   @ApiQuery({ name: 'price', enum: SORT, required: false })
   @ApiQuery({ name: 'startDate', enum: SORT, required: false })
@@ -143,11 +156,15 @@ export class DealController {
     );
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
   @Get('getSalesStatistics')
   getSalesStatistics(@Req() req) {
     return this.dealService.getSalesStatistics(req);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
   @ApiQuery({ name: 'rating', required: false })
   @Get('getDealReviews/:dealID')
   getDealReviews(
@@ -159,8 +176,52 @@ export class DealController {
     return this.dealService.getDealReviews(offset, limit, rating, dealID);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
   @Get('getTopRatedDeals/:merchantID')
   getTopRatedDeals(@Param('merchantID') merchantID: string) {
     return this.dealService.getTopRatedDeals(merchantID);
+  }
+
+  @Get('getNewDeals')
+  getNewDeals(
+    @Query('offset') offset: number = 0,
+    @Query('limit') limit: number = 10,
+  ) {
+    return this.dealService.getNewDeals(offset, limit);
+  }
+
+  @Get('getLowPriceDeals/:price')
+  getLowPriceDeals(
+    @Param('price') price: number,
+    @Query('offset') offset: number = 0,
+    @Query('limit') limit: number = 10,
+  ) {
+    return this.dealService.getLowPriceDeals(price, offset, limit);
+  }
+
+  @Get('getDiscountedDeals/:percentage')
+  getDiscountedDeals(
+    @Param('percentage') percentage: number,
+    @Query('offset') offset: number = 0,
+    @Query('limit') limit: number = 10,
+  ) {
+    return this.dealService.getDiscountedDeals(percentage, offset, limit);
+  }
+
+  @Get('getSpecialOfferDeals')
+  getSpecialOfferDeals(
+    @Query('offset') offset: number = 0,
+    @Query('limit') limit: number = 10,
+  ) {
+    return this.dealService.getSpecialOfferDeals(offset, limit);
+  }
+
+  @Get('getHotDeals')
+  getHotDeals(
+    @Query('offset') offset: number = 0,
+    @Query('limit') limit: number = 10,
+  ) {
+    return this.dealService.getHotDeals(offset, limit);
   }
 }

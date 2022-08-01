@@ -90,7 +90,7 @@ export class DealService {
           dealDto.dealStatus = DEALSTATUS.draft;
         }
 
-        if(!dealDto.dealStatus){
+        if (!dealDto.dealStatus) {
           dealDto.dealStatus = DEALSTATUS.draft;
         }
       }
@@ -117,6 +117,9 @@ export class DealService {
             endTime = new Date(el.voucherEndDate).getTime();
           }
 
+          el.originalPrice = parseFloat(el.originalPrice);
+          el.dealPrice = parseFloat(el.dealPrice);
+          el.numberOfVouchers = parseInt(el.numberOfVouchers);
           el._id = generateStringId();
           el.voucherStartDate = startTime;
           el.voucherEndDate = endTime;
@@ -769,6 +772,250 @@ export class DealService {
       return deals;
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async getLowPriceDeals(price, offset, limit) {
+    try {
+      price = parseFloat(price);
+      offset = parseInt(offset) < 0 ? 0 : offset;
+      limit = parseInt(limit) < 1 ? 10 : limit;
+      const totalCount = await this.dealModel.countDocuments({
+        deletedCheck: false,
+        vouchers: { $elemMatch: { dealPrice: { $lt: price } } },
+      });
+      let deals = await this.dealModel
+        .aggregate([
+          {
+            $match: {
+              deletedCheck: false,
+              vouchers: {
+                $elemMatch: { dealPrice: { $lt: price } },
+              },
+            },
+          },
+          {
+            $sort: {
+              createdAt: -1,
+            },
+          },
+          {
+            $addFields: {
+              id: '$_id',
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+            },
+          },
+        ])
+        .skip(parseInt(offset))
+        .limit(parseInt(limit));
+      return {
+        totalCount: totalCount,
+        data: deals,
+      };
+    } catch (err) {
+      throw new HttpException(err, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async getNewDeals(offset, limit) {
+    try {
+      offset = parseInt(offset) < 0 ? 0 : offset;
+      limit = parseInt(limit) < 1 ? 10 : limit;
+
+      const totalCount = await this.dealModel.countDocuments({
+        deletedCheck: false,
+      });
+
+      let deals = await this.dealModel
+        .aggregate([
+          {
+            $match: {
+              deletedCheck: false,
+            },
+          },
+          {
+            $sort: {
+              createdAt: -1,
+            },
+          },
+          {
+            $addFields: {
+              id: '$_id',
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+            },
+          },
+        ])
+        .skip(parseInt(offset))
+        .limit(parseInt(limit));
+
+      return {
+        totalCount: totalCount,
+        data: deals,
+      };
+    } catch (err) {
+      throw new HttpException(err, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async getDiscountedDeals(percentage, offset, limit) {
+    try {
+      percentage = parseFloat(percentage);
+
+      offset = parseInt(offset) < 0 ? 0 : offset;
+      limit = parseInt(limit) < 1 ? 10 : limit;
+      const totalCount = await this.dealModel.countDocuments({
+        deletedCheck: false,
+        vouchers: { $elemMatch: { discountPercentage: { $gte: percentage } } },
+      });
+      let deals = await this.dealModel
+        .aggregate([
+          {
+            $match: {
+              deletedCheck: false,
+              vouchers: {
+                $elemMatch: { discountPercentage: { $gte: percentage } },
+              },
+            },
+          },
+          {
+            $sort: {
+              createdAt: -1,
+            },
+          },
+          {
+            $addFields: {
+              id: '$_id',
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+            },
+          },
+        ])
+        .skip(parseInt(offset))
+        .limit(parseInt(limit));
+      return {
+        totalCount: totalCount,
+        data: deals,
+      };
+    } catch (err) {
+      throw new HttpException(err, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async getHotDeals(offset, limit) {
+    try {
+      offset = parseInt(offset) < 0 ? 0 : offset;
+      limit = parseInt(limit) < 1 ? 10 : limit;
+      const totalCount = await this.dealModel.countDocuments({
+        deletedCheck: false,
+        availableVouchers: { $gt: 0 },
+        soldVouchers: { $gt: 0 },
+      });
+      let deals = await this.dealModel
+        .aggregate([
+          {
+            $match: {
+              deletedCheck: false,
+              availableVouchers: { $gt: 0 },
+              soldVouchers: { $gt: 0 },
+            },
+          },
+          {
+            $addFields: {
+              id: '$_id',
+              added: { $add: ['$soldVouchers', '$availableVouchers'] },
+            },
+          },
+          {
+            $addFields: {
+              divided: { $divide: ['$soldVouchers', '$added'] },
+              percent: {
+                $multiply: ['$divided', 100],
+              },
+            },
+          },
+          {
+            $addFields: {
+              percent: {
+                $multiply: ['$divided', 100],
+              },
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+              added: 0,
+              divided: 0,
+            },
+          },
+
+          {
+            $sort: {
+              percent: -1,
+            },
+          },
+        ])
+        .skip(parseInt(offset))
+        .limit(parseInt(limit));
+      return {
+        totalCount: totalCount,
+        data: deals,
+      };
+    } catch (err) {
+      throw new HttpException(err, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async getSpecialOfferDeals(offset, limit) {
+    try {
+      offset = parseInt(offset) < 0 ? 0 : offset;
+      limit = parseInt(limit) < 1 ? 10 : limit;
+      const totalCount = await this.dealModel.countDocuments({
+        deletedCheck: false,
+        isSpecialOffer: true,
+      });
+      let deals = await this.dealModel
+        .aggregate([
+          {
+            $match: {
+              deletedCheck: false,
+              isSpecialOffer: true,
+            },
+          },
+          {
+            $addFields: {
+              id: '$_id',
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+            },
+          },
+          {
+            $sort: {
+              createdAt: -1,
+            },
+          },
+        ])
+        .skip(parseInt(offset))
+        .limit(parseInt(limit));
+      return {
+        totalCount: totalCount,
+        data: deals,
+      };
+    } catch (err) {
+      throw new HttpException(err, HttpStatus.BAD_REQUEST);
     }
   }
 
