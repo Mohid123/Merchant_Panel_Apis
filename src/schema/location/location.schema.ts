@@ -5,6 +5,14 @@ import { generateStringId } from '../../components/file-management/utils/utils';
 export const LocationSchema = new mongoose.Schema(
   {
     _id: { type: String, default: generateStringId },
+    location: {
+      type: {
+        type: String,
+        default: 'Point',
+        enum: 'Point',
+      },
+      coordinates: [Number],
+    },
     merchantID: { type: String },
     locationName: { type: String },
     streetAddress: { type: String },

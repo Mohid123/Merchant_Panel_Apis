@@ -232,4 +232,15 @@ export class DealController {
   ) {
     return this.dealService.getNewFavouriteDeal(offset, limit);
   }
+
+  @Get('getNearByDeals/:lat/:lng/:distance')
+  getNearByDeals(
+    @Param('lat') lat: number,
+    @Param('lng') lng: number,
+    @Param('distance') distance: number,
+    @Query('offset') offset: number = 0,
+    @Query('limit') limit: number = 10,
+  ) {
+    return this.dealService.getNearByDeals(lat, lng, distance, offset, limit);
+  }
 }
