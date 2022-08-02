@@ -170,10 +170,10 @@ export class DealService {
           el.discountPercentage = calculateDiscountPercentage;
 
           if (el['voucherID'] === element['_id']) {
-            element.numberOfVouchers += el.numberOfVouchers;
+            element.numberOfVouchers = parseInt(el.numberOfVouchers);
             element.subTitle = el.subTitle;
-            element.originalPrice = el.originalPrice;
-            element.dealPrice = el.dealPrice;
+            element.originalPrice = parseFloat(el.originalPrice);
+            element.dealPrice = parseFloat(el.dealPrice);
             element.discountPercentage = calculateDiscountPercentage;
           }
         });
