@@ -10,6 +10,14 @@ export class LocationService {
   ) {}
 
   async createLocation(locationDto) {
-    return await new this._locationModel(locationDto).save();
+    let coordinates = [33.5705073, 73.1434092];
+    const locationObj = {
+      ...locationDto,
+      location: {
+        coordinates: coordinates,
+      },
+    };
+
+    return await new this._locationModel(locationObj).save();
   }
 }
