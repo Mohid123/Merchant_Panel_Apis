@@ -34,7 +34,7 @@ export class LeadDto {
   streetAddress: string;
 
   @ApiProperty()
-  zipCode: number;
+  zipCode: string;
 
   @ApiProperty()
   city: string;
