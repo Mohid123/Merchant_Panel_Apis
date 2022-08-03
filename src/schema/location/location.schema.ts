@@ -21,6 +21,7 @@ export const LocationSchema = new mongoose.Schema(
     googleMapPin: { type: String },
     province: { type: String },
     phoneNumber: { type: String },
+    plusCode: { type: String },
   },
   {
     collection: 'locations',

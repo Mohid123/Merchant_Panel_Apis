@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Location } from 'src/interface/location/location.interface';
+var OpenLocationCode = require('open-location-code').OpenLocationCode;
+var openLocationCode = new OpenLocationCode();
 
 @Injectable()
 export class LocationService {
@@ -10,7 +12,9 @@ export class LocationService {
   ) {}
 
   async createLocation(locationDto) {
-    let coordinates = [33.5705073, 73.1434092];
+    const coord = await openLocationCode.decode(locationDto.plusCode);
+
+    let coordinates = [coord.latitudeCenter, coord.longitudeCenter];
     const locationObj = {
       ...locationDto,
       location: {

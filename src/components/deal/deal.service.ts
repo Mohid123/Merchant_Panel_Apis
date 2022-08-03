@@ -11,7 +11,6 @@ import { SubCategoryInterface } from '../../interface/category/subcategory.inter
 import { arrayBuffer } from 'stream/consumers';
 import { RATINGENUM } from 'src/enum/review/ratingValue.enum';
 import { UsersInterface } from 'src/interface/user/users.interface';
-let nodeGeocoder = require('node-geocoder');
 
 @Injectable()
 export class DealService {
@@ -1052,57 +1051,45 @@ export class DealService {
 
   async getNearByDeals(lat, lng, distance, offset, limit) {
     try {
-      // let options = {
-      //   provider: 'opencage',
-      //   apiKey: 'c6c0ed181a084150abd7d0bd727c1b0a',
-      //   formatterPattern: 'gpx',
-      // };
-      // let geoCoder = nodeGeocoder(options);
-      // const res = await geoCoder.geocode({
-      //   address: 'I-10',
-      //   country: 'Pakistan',
-      //   zipcode: '44000',
-      // });
-      // const res = await geoCoder.reverse({ lat: 33.5705073, lon: 73.1434092 });
-      // console.log(res);
-
-      debugger;
+      offset = parseInt(offset) < 0 ? 0 : offset;
+      limit = parseInt(limit) < 1 ? 10 : limit;
 
       let radius = parseFloat(distance) / 6378.1;
-
-      const deal = await this.dealModel.aggregate([
-        {
-          $match: {
-            deletedCheck: false,
-            _id: '62e8e037ccb1c98c087bc6fd',
+      const deal = await this.dealModel
+        .aggregate([
+          {
+            $match: {
+              deletedCheck: false,
+            },
           },
-        },
-        {
-          $lookup: {
-            from: 'locations',
-            as: 'location',
-            localField: 'merchantID',
-            foreignField: 'merchantID',
+          {
+            $lookup: {
+              from: 'locations',
+              as: 'location',
+              localField: 'merchantID',
+              foreignField: 'merchantID',
+            },
           },
-        },
-        {
-          $unwind: '$location',
-        },
-        {
-          $addFields: {
-            locationCoordinates: '$location.location',
+          {
+            $unwind: '$location',
           },
-        },
-        {
-          $match: {
-            locationCoordinates: {
-              $geoWithin: {
-                $centerSphere: [[parseFloat(lat), parseFloat(lng)], radius],
+          {
+            $addFields: {
+              locationCoordinates: '$location.location',
+            },
+          },
+          {
+            $match: {
+              locationCoordinates: {
+                $geoWithin: {
+                  $centerSphere: [[parseFloat(lat), parseFloat(lng)], radius],
+                },
               },
             },
           },
-        },
-      ]);
+        ])
+        .skip(parseInt(offset))
+        .limit(parseInt(limit));
 
       return deal;
     } catch (err) {
