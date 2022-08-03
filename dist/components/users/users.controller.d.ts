@@ -41,6 +41,6 @@ export declare class UsersController {
     validateVatNumber(vatNumber: string): Promise<any>;
     approveMerchant(id: string, approveMerchantDto: ApproveMerchantDTO): Promise<{
         enquiryID: any;
-        merchantID: any;
+        merchantID: string;
     }>;
 }

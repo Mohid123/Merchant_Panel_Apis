@@ -4,11 +4,13 @@ import { UsersInterface } from '../../interface/user/users.interface';
 import { EmailDTO } from 'src/dto/email/email.dto';
 import { VoucherCounterInterface } from 'src/interface/vouchers/vouchersCounter.interface';
 import { Location } from 'src/interface/location/location.interface';
+import { LeadInterface } from 'src/interface/lead/lead.interface';
 export declare class UsersService {
     private readonly _userModel;
     private readonly _locationModel;
     private readonly voucherCounterModel;
-    constructor(_userModel: Model<UsersInterface>, _locationModel: Model<Location>, voucherCounterModel: Model<VoucherCounterInterface>);
+    private readonly _leadModel;
+    constructor(_userModel: Model<UsersInterface>, _locationModel: Model<Location>, voucherCounterModel: Model<VoucherCounterInterface>, _leadModel: Model<LeadInterface>);
     onModuleInit(): void;
     generateMerchantId(sequenceName: any): Promise<string>;
     addUser(usersDto: any): Promise<import("mongoose").Document<unknown, any, UsersInterface> & UsersInterface & {
@@ -44,6 +46,6 @@ export declare class UsersService {
     }>;
     approveMerchant(userID: any, approveMerchantDto: any): Promise<{
         enquiryID: any;
-        merchantID: any;
+        merchantID: string;
     }>;
 }

@@ -26,10 +26,11 @@ var generator = require('generate-password');
 var otpGenerator = require('otp-generator');
 let transporter;
 let UsersService = class UsersService {
-    constructor(_userModel, _locationModel, voucherCounterModel) {
+    constructor(_userModel, _locationModel, voucherCounterModel, _leadModel) {
         this._userModel = _userModel;
         this._locationModel = _locationModel;
         this.voucherCounterModel = voucherCounterModel;
+        this._leadModel = _leadModel;
     }
     onModuleInit() {
         transporter = nodemailer.createTransport({
@@ -534,6 +535,7 @@ let UsersService = class UsersService {
                 province: approveMerchantDto.province,
                 phoneNumber: approveMerchantDto.phoneNumber,
             };
+            await this._leadModel.updateOne({ _id: userID }, { deletedCheck: true });
             const location = await new this._locationModel(locObj).save();
             const emailDto = {
                 from: `"Divideals" <${process.env.EMAIL}>`,
@@ -698,7 +700,7 @@ let UsersService = class UsersService {
             };
             this.sendMail(emailDto);
             const merchant = await new this._userModel(approveMerchantDto).save();
-            return { enquiryID: userID, merchantID: approveMerchantDto.merchantID };
+            return { enquiryID: userID, merchantID: merchant === null || merchant === void 0 ? void 0 : merchant.userID };
         }
         catch (err) {
             throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
@@ -710,7 +712,9 @@ UsersService = __decorate([
     __param(0, (0, mongoose_1.InjectModel)('User')),
     __param(1, (0, mongoose_1.InjectModel)('Location')),
     __param(2, (0, mongoose_1.InjectModel)('Counter')),
+    __param(3, (0, mongoose_1.InjectModel)('Lead')),
     __metadata("design:paramtypes", [mongoose_2.Model,
+        mongoose_2.Model,
         mongoose_2.Model,
         mongoose_2.Model])
 ], UsersService);
