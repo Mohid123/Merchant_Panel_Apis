@@ -15,6 +15,7 @@ import { EmailDTO } from 'src/dto/email/email.dto';
 import * as nodemailer from 'nodemailer';
 import axios from 'axios';
 import { VoucherCounterInterface } from 'src/interface/vouchers/vouchersCounter.interface';
+import { Location } from 'src/interface/location/location.interface';
 
 var htmlencode = require('htmlencode');
 var generator = require('generate-password');
@@ -26,6 +27,7 @@ let transporter;
 export class UsersService {
   constructor(
     @InjectModel('User') private readonly _userModel: Model<UsersInterface>,
+    @InjectModel('Location') private readonly _locationModel: Model<Location>,
     @InjectModel('Counter')
     private readonly voucherCounterModel: Model<VoucherCounterInterface>,
   ) {}
@@ -616,18 +618,8 @@ export class UsersService {
       approveMerchantDto.pinCode = pinCode;
       approveMerchantDto.password = hashedPassword;
       approveMerchantDto.status = USERSTATUS.approved;
-      approveMerchantDto.streetAddress =
-        approveMerchantDto.locations[0].streetAddress;
-      approveMerchantDto.zipCode =
-        approveMerchantDto.locations[0].zipCode.toString();
-      approveMerchantDto.city = approveMerchantDto.locations[0].city;
-      approveMerchantDto.googleMapPin =
-        approveMerchantDto.locations[0].googleMapPin;
-      approveMerchantDto.province = approveMerchantDto.locations[0].province;
-      approveMerchantDto.phoneNumber =
-        approveMerchantDto.locations[0].phoneNumber;
+      approveMerchantDto.zipCode = approveMerchantDto.zipCode.toString();
       approveMerchantDto.userID = await this.generateMerchantId('merchantID');
-      delete approveMerchantDto.locations;
 
       const userObj = {
         ID: new Types.ObjectId().toHexString(),
@@ -643,6 +635,18 @@ export class UsersService {
         province: approveMerchantDto.province,
         zipCode: approveMerchantDto.zipCode,
       };
+
+      const locObj = {
+        merchantID: approveMerchantDto.userID,
+        streetAddress: approveMerchantDto.streetAddress,
+        zipCode: approveMerchantDto.zipCode,
+        city: approveMerchantDto.city,
+        googleMapPin: approveMerchantDto.googleMapPin,
+        province: approveMerchantDto.province,
+        phoneNumber: approveMerchantDto.phoneNumber,
+      };
+
+      const location = await new this._locationModel(locObj).save();
 
       const emailDto: EmailDTO = {
         from: `"Divideals" <${process.env.EMAIL}>`,
