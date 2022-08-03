@@ -66,7 +66,7 @@ let LeadsService = class LeadsService {
                     province: 1,
                     website_socialAppLink: 1,
                     googleMapPin: 1,
-                    businessType: 1,
+                    categoryType: 1,
                 },
             },
         ]);
