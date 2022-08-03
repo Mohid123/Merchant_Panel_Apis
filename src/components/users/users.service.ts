@@ -832,7 +832,7 @@ export class UsersService {
 
       return { enquiryID: userID, merchantID: merchant?.userID };
     } catch (err) {
-      throw new HttpException(err, HttpStatus.BAD_REQUEST);
+      throw new HttpException(err?.message, HttpStatus.BAD_REQUEST);
     }
   }
 }
