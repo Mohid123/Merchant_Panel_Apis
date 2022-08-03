@@ -9,6 +9,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.UsersModule = void 0;
 const common_1 = require("@nestjs/common");
 const mongoose_1 = require("@nestjs/mongoose");
+const location_schema_1 = require("../../schema/location/location.schema");
 const vouchersCounter_schema_1 = require("../../schema/vouchers/vouchersCounter.schema");
 const users_schema_1 = require("../../schema/user/users.schema");
 const users_controller_1 = require("./users.controller");
@@ -21,6 +22,7 @@ UsersModule = __decorate([
             mongoose_1.MongooseModule.forFeature([
                 { name: 'User', schema: users_schema_1.UsersSchema },
                 { name: 'Counter', schema: vouchersCounter_schema_1.VoucherCounterSchema },
+                { name: 'Location', schema: location_schema_1.LocationSchema },
             ]),
         ],
         controllers: [users_controller_1.UsersController],

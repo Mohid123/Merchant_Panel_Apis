@@ -3,10 +3,12 @@ import { UpdateHoursDto } from '../../dto/user/updatehours.dto';
 import { UsersInterface } from '../../interface/user/users.interface';
 import { EmailDTO } from 'src/dto/email/email.dto';
 import { VoucherCounterInterface } from 'src/interface/vouchers/vouchersCounter.interface';
+import { Location } from 'src/interface/location/location.interface';
 export declare class UsersService {
     private readonly _userModel;
+    private readonly _locationModel;
     private readonly voucherCounterModel;
-    constructor(_userModel: Model<UsersInterface>, voucherCounterModel: Model<VoucherCounterInterface>);
+    constructor(_userModel: Model<UsersInterface>, _locationModel: Model<Location>, voucherCounterModel: Model<VoucherCounterInterface>);
     onModuleInit(): void;
     generateMerchantId(sequenceName: any): Promise<string>;
     addUser(usersDto: any): Promise<import("mongoose").Document<unknown, any, UsersInterface> & UsersInterface & {
