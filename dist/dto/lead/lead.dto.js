@@ -48,6 +48,10 @@ __decorate([
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
+], LeadDto.prototype, "companyName", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
 ], LeadDto.prototype, "streetAddress", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),

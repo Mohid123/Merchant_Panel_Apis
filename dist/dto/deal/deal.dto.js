@@ -57,9 +57,14 @@ __decorate([
     (0, swagger_1.ApiProperty)({
         example: [
             {
-                mediaUrl: '',
                 type: '',
-            },
+                captureFileURL: '',
+                path: '',
+                thumbnailURL: '',
+                thumbnailPath: '',
+                blurHash: '',
+                backgroundColorHex: '',
+            }
         ],
     }),
     __metadata("design:type", Array)

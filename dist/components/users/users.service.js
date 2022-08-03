@@ -503,6 +503,8 @@ let UsersService = class UsersService {
                 lowerCaseAlphabets: false,
                 specialChars: false,
             });
+            approveMerchantDto.tradeName = approveMerchantDto.companyName;
+            approveMerchantDto.businessType = approveMerchantDto.categoryType;
             approveMerchantDto.pinCode = pinCode;
             approveMerchantDto.password = hashedPassword;
             approveMerchantDto.status = userstatus_enum_1.USERSTATUS.approved;

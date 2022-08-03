@@ -8,6 +8,7 @@ export declare class LeadDto {
     role: string;
     businessType: string[];
     legalName: string;
+    companyName: string;
     streetAddress: string;
     zipCode: number;
     city: string;

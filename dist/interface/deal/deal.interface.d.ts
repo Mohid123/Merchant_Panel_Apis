@@ -14,8 +14,13 @@ export interface VoucherInterface {
     voucherEndDate: Date;
 }
 export interface MedialUrl {
-    merdiaUrl: string;
     type: string;
+    captureFileURL: string;
+    path: string;
+    thumbnailURL: string;
+    thumbnailPath: string;
+    blurHash: string;
+    backgroundColorHex: string;
 }
 export interface DealInterface extends Document {
     id: string;

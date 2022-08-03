@@ -11,6 +11,13 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
+var __asyncValues = (this && this.__asyncValues) || function (o) {
+    if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
+    var m = o[Symbol.asyncIterator], i;
+    return m ? m.call(o) : (o = typeof __values === "function" ? __values(o) : o[Symbol.iterator](), i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () { return this; }, i);
+    function verb(n) { i[n] = o[n] && function (v) { return new Promise(function (resolve, reject) { v = o[n](v), settle(resolve, reject, v.done, v.value); }); }; }
+    function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DealService = void 0;
 const common_1 = require("@nestjs/common");
@@ -38,7 +45,8 @@ let DealService = class DealService {
         return `DBE${year}${sequenceDocument.sequenceValue < 100000 ? '0' : ''}${sequenceDocument.sequenceValue < 10000 ? '0' : ''}${sequenceDocument.sequenceValue}`;
     }
     async createDeal(dealDto, req) {
-        var _a;
+        var e_1, _a;
+        var _b;
         try {
             var dealVouchers = 0;
             var dealSoldVouchers = 0;
@@ -63,7 +71,7 @@ let DealService = class DealService {
                 dealDto.endDate = stamp;
             }
             if (!savedDeal) {
-                dealDto.dealHeader = (_a = dealDto === null || dealDto === void 0 ? void 0 : dealDto.dealHeader) === null || _a === void 0 ? void 0 : _a.toUpperCase();
+                dealDto.dealHeader = (_b = dealDto === null || dealDto === void 0 ? void 0 : dealDto.dealHeader) === null || _b === void 0 ? void 0 : _b.toUpperCase();
                 dealDto.merchantID = req.user.id;
                 if (dealDto.dealStatus) {
                     dealDto.dealStatus = dealstatus_enum_1.DEALSTATUS.inReview;
@@ -102,13 +110,55 @@ let DealService = class DealService {
                     return el;
                 });
             }
-            if (dealDto.mediaUrl) {
-                for (let i = 0; i < dealDto.mediaUrl.length; i++) {
-                    if (dealDto.mediaUrl[i].type == 'video') {
-                        console.log('Inside if');
-                        var item = dealDto.mediaUrl.splice(i, 1);
-                        dealDto.mediaUrl.splice(0, 0, item[0]);
+            if (dealDto.mediaUrl && dealDto.mediaUrl.length) {
+                dealDto['type'] = dealDto.mediaUrl[0].type;
+                dealDto['captureFileURL'] = dealDto.mediaUrl[0].captureFileURL;
+                dealDto['path'] = dealDto.mediaUrl[0].path;
+                if (dealDto['type'] == 'Video') {
+                    dealDto['thumbnailURL'] = dealDto.mediaUrl[0].thumbnailURL;
+                    dealDto['thumbnailPath'] = dealDto.mediaUrl[0].thumbnailPath;
+                }
+                if (dealDto.mediaUrl) {
+                    for (let i = 0; i < dealDto.mediaUrl.length; i++) {
+                        if (dealDto.mediaUrl[i].type == 'Video') {
+                            console.log('Inside if');
+                            var item = dealDto.mediaUrl.splice(i, 1);
+                            dealDto.mediaUrl.splice(0, 0, item[0]);
+                        }
                     }
+                }
+                try {
+                    for (var _c = __asyncValues(dealDto.mediaUrl), _d; _d = await _c.next(), !_d.done;) {
+                        let mediaObj = _d.value;
+                        await new Promise(async (resolve, reject) => {
+                            try {
+                                let urlMedia = '';
+                                if (mediaObj.type == 'Video') {
+                                    urlMedia = mediaObj.thumbnailURL;
+                                }
+                                else {
+                                    urlMedia = mediaObj.captureFileURL;
+                                }
+                                mediaObj['blurHash'] = await (0, utils_1.encodeImageToBlurhash)(urlMedia);
+                                if (!mediaObj.backgroundColorHex) {
+                                    const data = await (0, utils_1.getDominantColor)(mediaObj.captureFileURL);
+                                    mediaObj['backgroundColorHex'] = data.hexCode;
+                                }
+                                resolve({});
+                            }
+                            catch (err) {
+                                console.log("Error", err);
+                                reject(err);
+                            }
+                        });
+                    }
+                }
+                catch (e_1_1) { e_1 = { error: e_1_1 }; }
+                finally {
+                    try {
+                        if (_d && !_d.done && (_a = _c.return)) await _a.call(_c);
+                    }
+                    finally { if (e_1) throw e_1.error; }
                 }
             }
             dealDto.availableVouchers = dealVouchers;
