@@ -710,7 +710,7 @@ let UsersService = class UsersService {
             return { enquiryID: userID, merchantID: merchant === null || merchant === void 0 ? void 0 : merchant.userID };
         }
         catch (err) {
-            throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
+            throw new common_1.HttpException(err === null || err === void 0 ? void 0 : err.message, common_1.HttpStatus.BAD_REQUEST);
         }
     }
 };
