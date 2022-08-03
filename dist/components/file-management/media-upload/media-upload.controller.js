@@ -134,7 +134,7 @@ __decorate([
         fileFilter: fileFilter,
         storage: (0, multer_1.diskStorage)({
             destination: function (req, file, cb) {
-                const dir = 'mediaFiles/NFT/' + req.params.folderName.toLowerCase();
+                const dir = 'mediaFiles/Divideals/' + req.params.folderName.toLowerCase();
                 fs.exists(dir, (exist) => {
                     if (!exist) {
                         return fs.mkdir(dir, { recursive: true }, (error) => cb(error, dir));

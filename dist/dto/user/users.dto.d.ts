@@ -1,6 +1,7 @@
 import { businessHour } from "../../interface/user/users.interface";
 export declare class UsersDto {
     id: string;
+    userID: string;
     email: string;
     password: string;
     firstName: string;

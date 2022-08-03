@@ -81,6 +81,12 @@ let DealController = class DealController {
     getNewFavouriteDeal(offset = 0, limit = 10) {
         return this.dealService.getNewFavouriteDeal(offset, limit);
     }
+    getNearByDeals(lat, lng, distance, offset = 0, limit = 10) {
+        return this.dealService.getNearByDeals(lat, lng, distance, offset, limit);
+    }
+    searchDeals(header = '', offset = 0, limit = 10) {
+        return this.dealService.searchDeals(header, offset, limit);
+    }
 };
 __decorate([
     (0, swagger_1.ApiBearerAuth)(),
@@ -272,6 +278,26 @@ __decorate([
     __metadata("design:paramtypes", [Number, Number]),
     __metadata("design:returntype", void 0)
 ], DealController.prototype, "getNewFavouriteDeal", null);
+__decorate([
+    (0, common_1.Get)('getNearByDeals/:lat/:lng/:distance'),
+    __param(0, (0, common_1.Param)('lat')),
+    __param(1, (0, common_1.Param)('lng')),
+    __param(2, (0, common_1.Param)('distance')),
+    __param(3, (0, common_1.Query)('offset')),
+    __param(4, (0, common_1.Query)('limit')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, Number, Number, Number, Number]),
+    __metadata("design:returntype", void 0)
+], DealController.prototype, "getNearByDeals", null);
+__decorate([
+    (0, common_1.Get)('searchDeals'),
+    __param(0, (0, common_1.Query)('header')),
+    __param(1, (0, common_1.Query)('offset')),
+    __param(2, (0, common_1.Query)('limit')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Number, Number]),
+    __metadata("design:returntype", void 0)
+], DealController.prototype, "searchDeals", null);
 DealController = __decorate([
     (0, swagger_1.ApiTags)('Deal'),
     (0, common_1.Controller)('deal'),

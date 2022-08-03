@@ -25,9 +25,10 @@ var generator = require('generate-password');
 var otpGenerator = require('otp-generator');
 let transporter;
 let AuthService = class AuthService {
-    constructor(_usersService, _otpService, jwtService) {
+    constructor(_usersService, _otpService, voucherCounterModel, jwtService) {
         this._usersService = _usersService;
         this._otpService = _otpService;
+        this.voucherCounterModel = voucherCounterModel;
         this.jwtService = jwtService;
     }
     onModuleInit() {
@@ -38,6 +39,15 @@ let AuthService = class AuthService {
                 pass: 'qwerty!@#456',
             },
         });
+    }
+    async generateCustomerId(sequenceName) {
+        const sequenceDocument = await this.voucherCounterModel.findByIdAndUpdate(sequenceName, {
+            $inc: {
+                sequenceValue: 1,
+            },
+        }, { new: true });
+        const year = new Date().getFullYear() % 2000;
+        return `CBE${year}${sequenceDocument.sequenceValue < 100000 ? '0' : ''}${sequenceDocument.sequenceValue < 10000 ? '0' : ''}${sequenceDocument.sequenceValue}`;
     }
     async loginToken() {
         const userData = {
@@ -73,12 +83,38 @@ let AuthService = class AuthService {
     async login(loginDto) {
         let user = await this._usersService.findOne({
             email: loginDto.email.toLowerCase(),
+            deletedCheck: false,
+            role: 'Merchant'
         });
         if (!user) {
             throw new common_1.UnauthorizedException('Incorrect email!');
         }
-        if (!(user.status == userstatus_enum_1.USERSTATUS.approved)) {
+        if (!(user.status == userstatus_enum_1.USERSTATUS.approved || user.role == 'Merchant')) {
             throw new common_1.NotFoundException('Merchant Not Found!');
+        }
+        const isValidCredentials = await bcrypt.compare(loginDto.password, user.password);
+        if (!isValidCredentials) {
+            throw new common_1.UnauthorizedException('Incorrect password!');
+        }
+        user = JSON.parse(JSON.stringify(user));
+        delete user.password;
+        delete user.aboutUs;
+        delete user.finePrint;
+        delete user.businessHours;
+        const token = this.generateToken(user);
+        return { user, token: token.access_token };
+    }
+    async loginCustomer(loginDto) {
+        let user = await this._usersService.findOne({
+            email: loginDto.email.toLowerCase(),
+            deletedCheck: false,
+            role: 'Customer'
+        });
+        if (!user) {
+            throw new common_1.UnauthorizedException('Incorrect email!');
+        }
+        if (!(user.role == 'Customer')) {
+            throw new common_1.NotFoundException('Customer Not Found!');
         }
         const isValidCredentials = await bcrypt.compare(loginDto.password, user.password);
         if (!isValidCredentials) {
@@ -108,13 +144,37 @@ let AuthService = class AuthService {
         loginDto.email = (_a = loginDto === null || loginDto === void 0 ? void 0 : loginDto.email) === null || _a === void 0 ? void 0 : _a.toLowerCase();
         let user = await this._usersService.findOne({
             email: loginDto.email,
+            deletedCheck: false,
+            role: 'Merchant'
         });
         if (user) {
             throw new common_1.ForbiddenException('Email already exists');
         }
         loginDto._id = new mongoose_2.Types.ObjectId().toString();
+        loginDto.status = userstatus_enum_1.USERSTATUS.pending;
+        loginDto.role = 'Merchant';
         loginDto.tradeName = loginDto.companyName;
         return await new this._usersService(loginDto).save();
+    }
+    async signupCustomer(signupUserDto) {
+        var _a;
+        signupUserDto.email = (_a = signupUserDto === null || signupUserDto === void 0 ? void 0 : signupUserDto.email) === null || _a === void 0 ? void 0 : _a.toLowerCase();
+        let user = await this._usersService.findOne({
+            email: signupUserDto.email,
+            deletedCheck: false,
+            role: 'Customer'
+        });
+        if (user) {
+            throw new common_1.ForbiddenException('Email already exists');
+        }
+        signupUserDto._id = new mongoose_2.Types.ObjectId().toString();
+        signupUserDto.status = userstatus_enum_1.USERSTATUS.approved;
+        signupUserDto.role = 'Customer';
+        signupUserDto.userID = await this.generateCustomerId('customerID');
+        const salt = await bcrypt.genSalt();
+        let hashedPassword = await bcrypt.hash(signupUserDto.password, salt);
+        signupUserDto.password = hashedPassword;
+        return await new this._usersService(signupUserDto).save();
     }
     async sendMail(emailDto) {
         var mailOptions = {
@@ -415,7 +475,9 @@ AuthService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, mongoose_1.InjectModel)('User')),
     __param(1, (0, mongoose_1.InjectModel)('OTP')),
+    __param(2, (0, mongoose_1.InjectModel)('Counter')),
     __metadata("design:paramtypes", [mongoose_2.Model,
+        mongoose_2.Model,
         mongoose_2.Model,
         jwt_1.JwtService])
 ], AuthService);

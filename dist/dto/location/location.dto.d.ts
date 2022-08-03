@@ -7,4 +7,5 @@ export declare class LocationDTO {
     googleMapPin: string;
     province: string;
     phoneNumber: string;
+    plusCode: string;
 }

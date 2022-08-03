@@ -26,6 +26,8 @@ const invoices_module_1 = require("./components/invoices/invoices.module");
 const utils_module_1 = require("./components/utils/utils.module");
 const leads_module_1 = require("./components/leads/leads.module");
 const location_module_1 = require("./components/location/location.module");
+const blog_module_1 = require("./components/blog/blog.module");
+const subscribe_module_1 = require("./components/subscribe/subscribe.module");
 let AppModule = class AppModule {
 };
 AppModule = __decorate([
@@ -47,9 +49,11 @@ AppModule = __decorate([
             media_upload_module_1.MediaUploadModule,
             vouchers_module_1.VouchersModule,
             invoices_module_1.InvoicesModule,
-            utils_module_1.UtilModule,
             leads_module_1.LeadsModule,
             location_module_1.LocationModule,
+            blog_module_1.BlogModule,
+            subscribe_module_1.SubscribeModule,
+            utils_module_1.UtilModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],

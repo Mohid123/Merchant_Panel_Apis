@@ -568,6 +568,7 @@ let DealService = class DealService {
             limit = parseInt(limit) < 1 ? 10 : limit;
             const totalCount = await this.dealModel.countDocuments({
                 deletedCheck: false,
+                dealStatus: dealstatus_enum_1.DEALSTATUS.published,
                 vouchers: { $elemMatch: { dealPrice: { $lt: price } } },
             });
             let deals = await this.dealModel
@@ -575,6 +576,7 @@ let DealService = class DealService {
                 {
                     $match: {
                         deletedCheck: false,
+                        dealStatus: dealstatus_enum_1.DEALSTATUS.published,
                         vouchers: {
                             $elemMatch: { dealPrice: { $lt: price } },
                         },
@@ -613,12 +615,14 @@ let DealService = class DealService {
             limit = parseInt(limit) < 1 ? 10 : limit;
             const totalCount = await this.dealModel.countDocuments({
                 deletedCheck: false,
+                dealStatus: dealstatus_enum_1.DEALSTATUS.published,
             });
             let deals = await this.dealModel
                 .aggregate([
                 {
                     $match: {
                         deletedCheck: false,
+                        dealStatus: dealstatus_enum_1.DEALSTATUS.published,
                     },
                 },
                 {
@@ -655,6 +659,7 @@ let DealService = class DealService {
             limit = parseInt(limit) < 1 ? 10 : limit;
             const totalCount = await this.dealModel.countDocuments({
                 deletedCheck: false,
+                dealStatus: dealstatus_enum_1.DEALSTATUS.published,
                 vouchers: { $elemMatch: { discountPercentage: { $gte: percentage } } },
             });
             let deals = await this.dealModel
@@ -662,6 +667,7 @@ let DealService = class DealService {
                 {
                     $match: {
                         deletedCheck: false,
+                        dealStatus: dealstatus_enum_1.DEALSTATUS.published,
                         vouchers: {
                             $elemMatch: { discountPercentage: { $gte: percentage } },
                         },
@@ -700,6 +706,7 @@ let DealService = class DealService {
             limit = parseInt(limit) < 1 ? 10 : limit;
             const totalCount = await this.dealModel.countDocuments({
                 deletedCheck: false,
+                dealStatus: dealstatus_enum_1.DEALSTATUS.published,
                 availableVouchers: { $gt: 0 },
                 soldVouchers: { $gt: 0 },
             });
@@ -708,6 +715,7 @@ let DealService = class DealService {
                 {
                     $match: {
                         deletedCheck: false,
+                        dealStatus: dealstatus_enum_1.DEALSTATUS.published,
                         availableVouchers: { $gt: 0 },
                         soldVouchers: { $gt: 0 },
                     },
@@ -763,6 +771,7 @@ let DealService = class DealService {
             limit = parseInt(limit) < 1 ? 10 : limit;
             const totalCount = await this.dealModel.countDocuments({
                 deletedCheck: false,
+                dealStatus: dealstatus_enum_1.DEALSTATUS.published,
                 isSpecialOffer: true,
             });
             let deals = await this.dealModel
@@ -770,6 +779,7 @@ let DealService = class DealService {
                 {
                     $match: {
                         deletedCheck: false,
+                        dealStatus: dealstatus_enum_1.DEALSTATUS.published,
                         isSpecialOffer: true,
                     },
                 },
@@ -806,12 +816,14 @@ let DealService = class DealService {
             limit = parseInt(limit) < 1 ? 10 : limit;
             const totalCount = await this.dealModel.countDocuments({
                 deletedCheck: false,
+                dealStatus: dealstatus_enum_1.DEALSTATUS.published,
             });
             const deals = await this.dealModel
                 .aggregate([
                 {
                     $match: {
                         deletedCheck: false,
+                        dealStatus: dealstatus_enum_1.DEALSTATUS.published,
                     },
                 },
                 {
@@ -822,6 +834,94 @@ let DealService = class DealService {
                 .limit(parseInt(limit));
             return {
                 totalCount: totalCount,
+                data: deals,
+            };
+        }
+        catch (err) {
+            throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
+        }
+    }
+    async getNearByDeals(lat, lng, distance, offset, limit) {
+        try {
+            offset = parseInt(offset) < 0 ? 0 : offset;
+            limit = parseInt(limit) < 1 ? 10 : limit;
+            let radius = parseFloat(distance) / 6378.1;
+            const deal = await this.dealModel
+                .aggregate([
+                {
+                    $match: {
+                        deletedCheck: false,
+                        dealStatus: dealstatus_enum_1.DEALSTATUS.published,
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'locations',
+                        as: 'location',
+                        localField: 'merchantID',
+                        foreignField: 'merchantID',
+                    },
+                },
+                {
+                    $unwind: '$location',
+                },
+                {
+                    $addFields: {
+                        locationCoordinates: '$location.location',
+                    },
+                },
+                {
+                    $match: {
+                        locationCoordinates: {
+                            $geoWithin: {
+                                $centerSphere: [[parseFloat(lat), parseFloat(lng)], radius],
+                            },
+                        },
+                    },
+                },
+            ])
+                .skip(parseInt(offset))
+                .limit(parseInt(limit));
+            return deal;
+        }
+        catch (err) {
+            console.log(err);
+        }
+    }
+    async searchDeals(header, offset, limit) {
+        try {
+            header = header.trim();
+            let filters = {};
+            if (header.trim().length) {
+                var query = new RegExp(`${header}`, 'i');
+                filters = Object.assign(Object.assign({}, filters), { dealHeader: query });
+            }
+            const totalCount = await this.dealModel.countDocuments(Object.assign({ deletedCheck: false, dealStatus: dealstatus_enum_1.DEALSTATUS.published }, filters));
+            const deals = await this.dealModel
+                .aggregate([
+                {
+                    $match: Object.assign({ deletedCheck: false, dealStatus: dealstatus_enum_1.DEALSTATUS.published }, filters),
+                },
+                {
+                    $sort: {
+                        createdAt: -1
+                    },
+                },
+                {
+                    $addFields: {
+                        id: '$_id',
+                    },
+                },
+                {
+                    $project: {
+                        _id: 0,
+                    },
+                },
+            ])
+                .skip(parseInt(offset))
+                .limit(parseInt(limit));
+            return {
+                totalDeals: totalCount,
                 data: deals,
             };
         }

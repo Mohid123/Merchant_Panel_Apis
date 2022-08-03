@@ -84,4 +84,9 @@ export declare class DealController {
         totalCount: number;
         data: any[];
     }>;
+    getNearByDeals(lat: number, lng: number, distance: number, offset?: number, limit?: number): Promise<any[]>;
+    searchDeals(header?: string, offset?: number, limit?: number): Promise<{
+        totalDeals: number;
+        data: any[];
+    }>;
 }

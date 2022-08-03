@@ -16,12 +16,19 @@ exports.LocationService = void 0;
 const common_1 = require("@nestjs/common");
 const mongoose_1 = require("@nestjs/mongoose");
 const mongoose_2 = require("mongoose");
+var OpenLocationCode = require('open-location-code').OpenLocationCode;
+var openLocationCode = new OpenLocationCode();
 let LocationService = class LocationService {
     constructor(_locationModel) {
         this._locationModel = _locationModel;
     }
     async createLocation(locationDto) {
-        return await new this._locationModel(locationDto).save();
+        const coord = await openLocationCode.decode(locationDto.plusCode);
+        let coordinates = [coord.latitudeCenter, coord.longitudeCenter];
+        const locationObj = Object.assign(Object.assign({}, locationDto), { location: {
+                coordinates: coordinates,
+            } });
+        return await new this._locationModel(locationObj).save();
     }
 };
 LocationService = __decorate([

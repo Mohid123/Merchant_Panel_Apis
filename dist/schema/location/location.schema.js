@@ -5,6 +5,14 @@ const mongoose = require("mongoose");
 const utils_1 = require("../../components/file-management/utils/utils");
 exports.LocationSchema = new mongoose.Schema({
     _id: { type: String, default: utils_1.generateStringId },
+    location: {
+        type: {
+            type: String,
+            default: 'Point',
+            enum: 'Point',
+        },
+        coordinates: [Number],
+    },
     merchantID: { type: String },
     locationName: { type: String },
     streetAddress: { type: String },
@@ -13,6 +21,7 @@ exports.LocationSchema = new mongoose.Schema({
     googleMapPin: { type: String },
     province: { type: String },
     phoneNumber: { type: String },
+    plusCode: { type: String },
 }, {
     collection: 'locations',
 });

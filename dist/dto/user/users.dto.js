@@ -20,6 +20,10 @@ __decorate([
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
+], UsersDto.prototype, "userID", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
 ], UsersDto.prototype, "email", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),

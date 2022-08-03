@@ -67,6 +67,11 @@ export declare class DealService {
         totalCount: number;
         data: any[];
     }>;
+    getNearByDeals(lat: any, lng: any, distance: any, offset: any, limit: any): Promise<any[]>;
+    searchDeals(header: any, offset: any, limit: any): Promise<{
+        totalDeals: number;
+        data: any[];
+    }>;
     getSalesStatistics(req: any): Promise<{
         monthlyStats: {
             totalDeals: number;

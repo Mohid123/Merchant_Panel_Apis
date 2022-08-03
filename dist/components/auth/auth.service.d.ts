@@ -3,12 +3,15 @@ import { Model } from 'mongoose';
 import { UsersInterface } from '../../interface/user/users.interface';
 import { EmailDTO } from '../../dto/email/email.dto';
 import { OTP } from 'src/interface/otp/otp.interface';
+import { VoucherCounterInterface } from 'src/interface/vouchers/vouchersCounter.interface';
 export declare class AuthService {
     private readonly _usersService;
     private readonly _otpService;
+    private readonly voucherCounterModel;
     private jwtService;
-    constructor(_usersService: Model<UsersInterface>, _otpService: Model<OTP>, jwtService: JwtService);
+    constructor(_usersService: Model<UsersInterface>, _otpService: Model<OTP>, voucherCounterModel: Model<VoucherCounterInterface>, jwtService: JwtService);
     onModuleInit(): void;
+    generateCustomerId(sequenceName: any): Promise<string>;
     loginToken(): Promise<{
         access_token: string;
     }>;
@@ -22,8 +25,17 @@ export declare class AuthService {
         };
         token: string;
     }>;
+    loginCustomer(loginDto: any): Promise<{
+        user: import("mongoose").Document<unknown, any, UsersInterface> & UsersInterface & {
+            _id: string;
+        };
+        token: string;
+    }>;
     generatePassword(): Promise<any>;
     signup(loginDto: any): Promise<import("mongoose").Document<unknown, any, UsersInterface> & UsersInterface & {
+        _id: string;
+    }>;
+    signupCustomer(signupUserDto: any): Promise<import("mongoose").Document<unknown, any, UsersInterface> & UsersInterface & {
         _id: string;
     }>;
     sendMail(emailDto: EmailDTO): Promise<void>;

@@ -12,6 +12,7 @@ const common_1 = require("@nestjs/common");
 const jwt_1 = require("@nestjs/jwt");
 const mongoose_1 = require("@nestjs/mongoose");
 const otp_schema_1 = require("../../schema/otp/otp.schema");
+const vouchersCounter_schema_1 = require("../../schema/vouchers/vouchersCounter.schema");
 const users_schema_1 = require("../../schema/user/users.schema");
 const auth_controller_1 = require("./auth.controller");
 const auth_service_1 = require("./auth.service");
@@ -27,6 +28,7 @@ let AuthModule = AuthModule_1 = class AuthModule {
                 mongoose_1.MongooseModule.forFeature([
                     { name: 'User', schema: users_schema_1.UsersSchema },
                     { name: 'OTP', schema: otp_schema_1.OtpSchema },
+                    { name: 'Counter', schema: vouchersCounter_schema_1.VoucherCounterSchema },
                 ]),
             ],
             controllers: [auth_controller_1.AuthController],

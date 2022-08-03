@@ -516,7 +516,7 @@ let UsersService = class UsersService {
             approveMerchantDto.province = approveMerchantDto.locations[0].province;
             approveMerchantDto.phoneNumber =
                 approveMerchantDto.locations[0].phoneNumber;
-            approveMerchantDto.merchantID = await this.generateMerchantId('merchantID');
+            approveMerchantDto.userID = await this.generateMerchantId('merchantID');
             delete approveMerchantDto.locations;
             const userObj = {
                 ID: new mongoose_2.Types.ObjectId().toHexString(),
