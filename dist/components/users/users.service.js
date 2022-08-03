@@ -26,8 +26,9 @@ var generator = require('generate-password');
 var otpGenerator = require('otp-generator');
 let transporter;
 let UsersService = class UsersService {
-    constructor(_userModel, voucherCounterModel) {
+    constructor(_userModel, _locationModel, voucherCounterModel) {
         this._userModel = _userModel;
+        this._locationModel = _locationModel;
         this.voucherCounterModel = voucherCounterModel;
     }
     onModuleInit() {
@@ -508,18 +509,8 @@ let UsersService = class UsersService {
             approveMerchantDto.pinCode = pinCode;
             approveMerchantDto.password = hashedPassword;
             approveMerchantDto.status = userstatus_enum_1.USERSTATUS.approved;
-            approveMerchantDto.streetAddress =
-                approveMerchantDto.locations[0].streetAddress;
-            approveMerchantDto.zipCode =
-                approveMerchantDto.locations[0].zipCode.toString();
-            approveMerchantDto.city = approveMerchantDto.locations[0].city;
-            approveMerchantDto.googleMapPin =
-                approveMerchantDto.locations[0].googleMapPin;
-            approveMerchantDto.province = approveMerchantDto.locations[0].province;
-            approveMerchantDto.phoneNumber =
-                approveMerchantDto.locations[0].phoneNumber;
+            approveMerchantDto.zipCode = approveMerchantDto.zipCode.toString();
             approveMerchantDto.userID = await this.generateMerchantId('merchantID');
-            delete approveMerchantDto.locations;
             const userObj = {
                 ID: new mongoose_2.Types.ObjectId().toHexString(),
                 firstName: approveMerchantDto.firstName,
@@ -534,6 +525,16 @@ let UsersService = class UsersService {
                 province: approveMerchantDto.province,
                 zipCode: approveMerchantDto.zipCode,
             };
+            const locObj = {
+                merchantID: approveMerchantDto.userID,
+                streetAddress: approveMerchantDto.streetAddress,
+                zipCode: approveMerchantDto.zipCode,
+                city: approveMerchantDto.city,
+                googleMapPin: approveMerchantDto.googleMapPin,
+                province: approveMerchantDto.province,
+                phoneNumber: approveMerchantDto.phoneNumber,
+            };
+            const location = await new this._locationModel(locObj).save();
             const emailDto = {
                 from: `"Divideals" <${process.env.EMAIL}>`,
                 to: userObj.email,
@@ -707,8 +708,10 @@ let UsersService = class UsersService {
 UsersService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, mongoose_1.InjectModel)('User')),
-    __param(1, (0, mongoose_1.InjectModel)('Counter')),
+    __param(1, (0, mongoose_1.InjectModel)('Location')),
+    __param(2, (0, mongoose_1.InjectModel)('Counter')),
     __metadata("design:paramtypes", [mongoose_2.Model,
+        mongoose_2.Model,
         mongoose_2.Model])
 ], UsersService);
 exports.UsersService = UsersService;

@@ -17,7 +17,6 @@ const common_1 = require("@nestjs/common");
 const mongoose_1 = require("@nestjs/mongoose");
 const axios_1 = require("axios");
 const mongoose_2 = require("mongoose");
-const utils_1 = require("../file-management/utils/utils");
 let LeadsService = class LeadsService {
     constructor(_leadModel) {
         this._leadModel = _leadModel;
@@ -67,7 +66,6 @@ let LeadsService = class LeadsService {
                     vatNumber: 1,
                     province: 1,
                     website_socialAppLink: 1,
-                    googleMapPin: 1,
                     countryCode: 1,
                     leadSource: 1,
                 },
@@ -76,25 +74,6 @@ let LeadsService = class LeadsService {
         if (lead.length == 0) {
             throw new common_1.HttpException('No Record Found!', common_1.HttpStatus.BAD_REQUEST);
         }
-        let _locationId = (0, utils_1.generateStringId)();
-        lead[0].locations = [
-            {
-                _id: _locationId,
-                locationName: '',
-                streetAddress: lead[0].streetAddress,
-                zipCode: lead[0].zipCode.toString(),
-                city: lead[0].city,
-                googleMapPin: lead[0].googleMapPin,
-                province: lead[0].province,
-                phoneNumber: lead[0].phoneNumber,
-            },
-        ];
-        delete lead[0].streetAddress;
-        delete lead[0].zipCode;
-        delete lead[0].city;
-        delete lead[0].googleMapPin;
-        delete lead[0].province;
-        delete lead[0].phoneNumber;
         return lead[0];
     }
 };
