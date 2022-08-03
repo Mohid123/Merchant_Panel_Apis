@@ -43,7 +43,7 @@ export class UsersService {
       service: 'Gmail',
       auth: {
         user: 'noreplydivideals@gmail.com',
-        pass: 'qwerty!@#456',
+        pass: 'eyccuiqvdskyaknn',
       },
     });
   }
@@ -606,9 +606,12 @@ export class UsersService {
 
   async approveMerchant(userID, approveMerchantDto) {
     try {
-      const lead = await this._leadModel.findOne({_id:userID,deletedCheck:false});
-      if(!lead){
-        throw new BadRequestException('Merchent already approved')
+      const lead = await this._leadModel.findOne({
+        _id: userID,
+        deletedCheck: false,
+      });
+      if (!lead) {
+        throw new BadRequestException('Merchent already approved');
       }
       let generatedPassword = await this.generatePassword();
       const salt = await bcrypt.genSalt();
@@ -652,7 +655,7 @@ export class UsersService {
         province: approveMerchantDto.province,
         phoneNumber: approveMerchantDto.phoneNumber,
       };
-      await this._leadModel.updateOne({_id:userID},{deletedCheck:true})
+      await this._leadModel.updateOne({ _id: userID }, { deletedCheck: true });
       const location = await new this._locationModel(locObj).save();
 
       const emailDto: EmailDTO = {
@@ -826,7 +829,7 @@ export class UsersService {
       // user.password = generatedPassword;
 
       const merchant = await new this._userModel(approveMerchantDto).save();
-      
+
       return { enquiryID: userID, merchantID: merchant?.userID };
     } catch (err) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
