@@ -243,4 +243,13 @@ export class DealController {
   ) {
     return this.dealService.getNearByDeals(lat, lng, distance, offset, limit);
   }
+
+  @Get('searchDeals')
+  searchDeals (
+    @Query('header') header: string = '',
+    @Query('offset') offset: number = 0,
+    @Query('limit') limit: number = 10,
+  ) {
+    return this.dealService.searchDeals(header, offset, limit)
+  }
 }

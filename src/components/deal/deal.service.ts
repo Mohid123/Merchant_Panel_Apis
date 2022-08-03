@@ -1110,6 +1110,63 @@ export class DealService {
     }
   }
 
+  async searchDeals (header, offset, limit) {
+    try {
+      header = header.trim();
+
+      let filters = {};
+
+      if (header.trim().length) {
+              var query = new RegExp(`${header}`, 'i');
+              filters = {
+                ...filters,
+                dealHeader: query,
+              };
+            }
+
+      const totalCount = await this.dealModel.countDocuments({
+        deletedCheck: false,
+        dealStatus: DEALSTATUS.published,
+        ...filters,
+      });
+
+      const deals = await this.dealModel
+              .aggregate([
+                {
+                  $match: {
+                    deletedCheck: false,
+                    dealStatus: DEALSTATUS.published,
+                    ...filters,
+                  },
+                },
+                {
+                  $sort: {
+                    createdAt: -1
+                  },
+                },
+                {
+                  $addFields: {
+                    id: '$_id',
+                  },
+                },
+                {
+                  $project: {
+                    _id: 0,
+                  },
+                },
+              ])
+              .skip(parseInt(offset))
+              .limit(parseInt(limit));
+
+            return {
+              totalDeals: totalCount,
+              data: deals,
+            };
+    } catch (err) {
+      throw new HttpException(err, HttpStatus.BAD_REQUEST);
+    }
+  }
+
   //   async createVoucher(voucherDto) {
   //     try {
   //       let dealId = voucherDto.dealId;
