@@ -497,6 +497,10 @@ let UsersService = class UsersService {
     }
     async approveMerchant(userID, approveMerchantDto) {
         try {
+            const lead = await this._leadModel.findOne({ _id: userID, deletedCheck: false });
+            if (!lead) {
+                throw new common_1.BadRequestException('Merchent already approved');
+            }
             let generatedPassword = await this.generatePassword();
             const salt = await bcrypt.genSalt();
             let hashedPassword = await bcrypt.hash(generatedPassword, salt);
