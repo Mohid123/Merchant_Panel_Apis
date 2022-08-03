@@ -28,6 +28,9 @@ export class LeadDto {
   legalName: string;
 
   @ApiProperty()
+  companyName: string;
+
+  @ApiProperty()
   streetAddress: string;
 
   @ApiProperty()

@@ -611,6 +611,8 @@ export class UsersService {
         specialChars: false,
       });
 
+      approveMerchantDto.tradeName = approveMerchantDto.companyName;
+      approveMerchantDto.businessType = approveMerchantDto.categoryType;
       approveMerchantDto.pinCode = pinCode;
       approveMerchantDto.password = hashedPassword;
       approveMerchantDto.status = USERSTATUS.approved;
@@ -624,9 +626,7 @@ export class UsersService {
       approveMerchantDto.province = approveMerchantDto.locations[0].province;
       approveMerchantDto.phoneNumber =
         approveMerchantDto.locations[0].phoneNumber;
-      approveMerchantDto.userID = await this.generateMerchantId(
-        'merchantID',
-      );
+      approveMerchantDto.userID = await this.generateMerchantId('merchantID');
       delete approveMerchantDto.locations;
 
       const userObj = {
