@@ -34,9 +34,9 @@ export class AuthController {
     }
   }
 
-  @Post('loginMerchant')
-  loginMerchant(@Body() loginDto: LoginDto) {
-    return this._authService.loginMerchant(loginDto);
+  @Post('login')
+  login(@Body() loginDto: LoginDto) {
+    return this._authService.login(loginDto);
   }
 
   @Post('loginCustomer')
@@ -44,9 +44,9 @@ export class AuthController {
     return this._authService.loginCustomer(loginDto);
   }
 
-  @Post('signupMerchant')
+  @Post('signup')
   signup(@Body() signupDto: SignUpDTO) {
-    return this._authService.signupMerchant(signupDto);
+    return this._authService.signup(signupDto);
   }
 
   @Post('signupCustomer')

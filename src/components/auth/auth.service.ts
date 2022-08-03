@@ -100,7 +100,7 @@ export class AuthService {
     return { token: token.access_token };
   }
 
-  async loginMerchant(loginDto) {
+  async login(loginDto) {
     let user = await this._usersService.findOne({
       email: loginDto.email.toLowerCase(),
       deletedCheck: false,
@@ -184,7 +184,7 @@ export class AuthService {
     return password;
   }
 
-  async signupMerchant(loginDto) {
+  async signup(loginDto) {
     loginDto.email = loginDto?.email?.toLowerCase();
     let user = await this._usersService.findOne({
       email: loginDto.email,
