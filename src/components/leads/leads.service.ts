@@ -46,6 +46,7 @@ export class LeadsService {
       {
         $addFields: {
           companyName: '$tradeName',
+          categoryType: '$businessType',
         },
       },
       {
