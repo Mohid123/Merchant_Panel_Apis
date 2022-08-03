@@ -46,6 +46,7 @@ export class LeadsService {
       {
         $addFields: {
           companyName: '$tradeName',
+          categoryType: '$businessType',
         },
       },
       {
@@ -57,7 +58,6 @@ export class LeadsService {
           phoneNumber: 1,
           role: 1,
           status: 1,
-          categoryType: 1,
           companyName: 1,
           streetAddress: 1,
           zipCode: 1,
@@ -66,6 +66,7 @@ export class LeadsService {
           province: 1,
           website_socialAppLink: 1,
           googleMapPin: 1,
+          businessType: 1,
         },
       },
     ]);
