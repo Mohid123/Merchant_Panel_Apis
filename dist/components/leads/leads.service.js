@@ -44,6 +44,11 @@ let LeadsService = class LeadsService {
                 },
             },
             {
+                $addFields: {
+                    companyName: '$tradeName',
+                },
+            },
+            {
                 $project: {
                     _id: 1,
                     email: 1,
