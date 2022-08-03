@@ -64,7 +64,7 @@ export class MediaUploadController {
       fileFilter: fileFilter,
       storage: diskStorage({
         destination: function (req, file, cb) {
-          const dir = 'mediaFiles/Divideals/' + req.params.folderName.toLowerCase();
+          const dir = 'mediaFiles/NFT/' + req.params.folderName.toLowerCase();
 
           fs.exists(dir, (exist) => {
             if (!exist) {
