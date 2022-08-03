@@ -37,7 +37,7 @@ let UsersService = class UsersService {
             service: 'Gmail',
             auth: {
                 user: 'noreplydivideals@gmail.com',
-                pass: 'qwerty!@#456',
+                pass: 'eyccuiqvdskyaknn',
             },
         });
     }
@@ -497,7 +497,10 @@ let UsersService = class UsersService {
     }
     async approveMerchant(userID, approveMerchantDto) {
         try {
-            const lead = await this._leadModel.findOne({ _id: userID, deletedCheck: false });
+            const lead = await this._leadModel.findOne({
+                _id: userID,
+                deletedCheck: false,
+            });
             if (!lead) {
                 throw new common_1.BadRequestException('Merchent already approved');
             }
