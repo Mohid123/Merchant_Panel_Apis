@@ -22,4 +22,6 @@ export declare class LeadDto {
     profilePicBlurHash: string;
     deletedCheck: boolean;
     status: string;
+    countryCode: string;
+    leadSource: string;
 }

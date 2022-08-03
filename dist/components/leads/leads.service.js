@@ -32,6 +32,8 @@ let LeadsService = class LeadsService {
             throw new common_1.ForbiddenException('Email already exists');
         }
         leadDto.tradeName = leadDto.companyName;
+        leadDto.countryCode = 'BE';
+        leadDto.leadSource = 'web';
         const lead = await new this._leadModel(leadDto).save();
         const res = await axios_1.default.get(`https://sandbox.zohoapis.eu/crm/v2/functions/createleadinzoho/actions/execute?auth_type=apikey&zapikey=1003.527925363aa0ee3a8c9cf0be2f92f93a.5464e31887b65bfe3e373beb87462db7&enquiryid=${lead.id}`);
         return lead;
@@ -66,7 +68,8 @@ let LeadsService = class LeadsService {
                     province: 1,
                     website_socialAppLink: 1,
                     googleMapPin: 1,
-                    categoryType: 1,
+                    countryCode: 1,
+                    leadSource: 1,
                 },
             },
         ]);

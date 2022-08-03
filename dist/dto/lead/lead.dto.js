@@ -153,5 +153,13 @@ __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
 ], LeadDto.prototype, "status", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
+], LeadDto.prototype, "countryCode", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
+], LeadDto.prototype, "leadSource", void 0);
 exports.LeadDto = LeadDto;
 //# sourceMappingURL=lead.dto.js.map

@@ -130,6 +130,12 @@ export class LeadDto {
   @ApiProperty()
   status: string;
 
+  @ApiProperty()
+  countryCode: string;
+
+  @ApiProperty()
+  leadSource: string;
+
   // @ApiProperty()
   // totalVoucherSales: number;
 

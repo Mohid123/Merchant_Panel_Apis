@@ -13,4 +13,6 @@ export declare class SignUpDTO {
     city: string;
     province: string;
     website_socialAppLink: string;
+    countryCode: string;
+    leadSource: string;
 }

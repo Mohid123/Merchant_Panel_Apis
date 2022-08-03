@@ -84,7 +84,7 @@ let AuthService = class AuthService {
         let user = await this._usersService.findOne({
             email: loginDto.email.toLowerCase(),
             deletedCheck: false,
-            role: 'Merchant'
+            role: 'Merchant',
         });
         if (!user) {
             throw new common_1.UnauthorizedException('Incorrect email!');
@@ -108,7 +108,7 @@ let AuthService = class AuthService {
         let user = await this._usersService.findOne({
             email: loginDto.email.toLowerCase(),
             deletedCheck: false,
-            role: 'Customer'
+            role: 'Customer',
         });
         if (!user) {
             throw new common_1.UnauthorizedException('Incorrect email!');
@@ -145,7 +145,7 @@ let AuthService = class AuthService {
         let user = await this._usersService.findOne({
             email: loginDto.email,
             deletedCheck: false,
-            role: 'Merchant'
+            role: 'Merchant',
         });
         if (user) {
             throw new common_1.ForbiddenException('Email already exists');
@@ -154,6 +154,8 @@ let AuthService = class AuthService {
         loginDto.status = userstatus_enum_1.USERSTATUS.pending;
         loginDto.role = 'Merchant';
         loginDto.tradeName = loginDto.companyName;
+        loginDto.countryCode = 'BE';
+        loginDto.leadSource = 'web';
         return await new this._usersService(loginDto).save();
     }
     async signupCustomer(signupUserDto) {
@@ -162,7 +164,7 @@ let AuthService = class AuthService {
         let user = await this._usersService.findOne({
             email: signupUserDto.email,
             deletedCheck: false,
-            role: 'Customer'
+            role: 'Customer',
         });
         if (user) {
             throw new common_1.ForbiddenException('Email already exists');

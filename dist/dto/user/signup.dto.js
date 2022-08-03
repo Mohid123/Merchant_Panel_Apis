@@ -72,5 +72,13 @@ __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
 ], SignUpDTO.prototype, "website_socialAppLink", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
+], SignUpDTO.prototype, "countryCode", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
+], SignUpDTO.prototype, "leadSource", void 0);
 exports.SignUpDTO = SignUpDTO;
 //# sourceMappingURL=signup.dto.js.map

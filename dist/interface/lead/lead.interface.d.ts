@@ -51,6 +51,8 @@ export interface LeadInterface {
     scheduledDeals: number;
     pendingDeals: number;
     soldDeals: number;
+    countryCode: string;
+    leadSource: string;
     ratingsAverage: number;
     totalReviews: number;
     maxRating: number;
