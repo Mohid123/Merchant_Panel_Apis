@@ -11,6 +11,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { EmailDTO } from 'src/dto/email/email.dto';
 import { OtpEmailDto } from 'src/dto/otp/otpEmail.dto';
 import { IsEmailExistsDTO } from 'src/dto/user/is-email-exists.dto';
+import { SignUpCustomerDTO } from 'src/dto/user/signupcustomer.dto';
 
 import { LoginDto } from '../../dto/user/login.dto';
 import { SignUpDTO } from '../../dto/user/signup.dto';
@@ -33,14 +34,24 @@ export class AuthController {
     }
   }
 
-  @Post('login')
-  login(@Body() loginDto: LoginDto) {
-    return this._authService.login(loginDto);
+  @Post('loginMerchant')
+  loginMerchant(@Body() loginDto: LoginDto) {
+    return this._authService.loginMerchant(loginDto);
   }
 
-  @Post('signup')
+  @Post('loginCustomer')
+  loginCustomer(@Body() loginDto: LoginDto) {
+    return this._authService.loginCustomer(loginDto);
+  }
+
+  @Post('signupMerchant')
   signup(@Body() signupDto: SignUpDTO) {
-    return this._authService.signup(signupDto);
+    return this._authService.signupMerchant(signupDto);
+  }
+
+  @Post('signupCustomer')
+  signupUser (@Body() signupUserDto:SignUpCustomerDTO ) {
+    return this._authService.signupCustomer(signupUserDto)
   }
 
   @Post('sendEmail')

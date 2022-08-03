@@ -5,6 +5,9 @@ import { businessHour } from "../../interface/user/users.interface";
 export class UsersDto {
     @ApiProperty()
     id: string;
+
+    @ApiProperty()
+    userID: string;
     
     @ApiProperty()
     email: string;

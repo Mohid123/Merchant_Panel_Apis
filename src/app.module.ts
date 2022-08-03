@@ -17,6 +17,8 @@ import { InvoicesModule } from './components/invoices/invoices.module';
 import { UtilModule } from './components/utils/utils.module';
 import { LeadsModule } from './components/leads/leads.module';
 import { LocationModule } from './components/location/location.module';
+import { BlogModule } from './components/blog/blog.module';
+import { SubscribeModule } from './components/subscribe/subscribe.module';
 
 @Module({
   imports: [
@@ -36,9 +38,11 @@ import { LocationModule } from './components/location/location.module';
     MediaUploadModule,
     VouchersModule,
     InvoicesModule,
-    UtilModule,
     LeadsModule,
     LocationModule,
+    BlogModule,
+    SubscribeModule,
+    UtilModule,
   ],
   controllers: [AppController],
   providers: [AppService],

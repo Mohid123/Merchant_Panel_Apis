@@ -16,6 +16,7 @@ import * as nodemailer from 'nodemailer';
 import { OTP } from 'src/interface/otp/otp.interface';
 import { cpuUsage } from 'process';
 import { USERSTATUS } from 'src/enum/user/userstatus.enum';
+import { VoucherCounterInterface } from 'src/interface/vouchers/vouchersCounter.interface';
 
 var htmlencode = require('htmlencode');
 var generator = require('generate-password');
@@ -28,6 +29,7 @@ export class AuthService {
   constructor(
     @InjectModel('User') private readonly _usersService: Model<UsersInterface>,
     @InjectModel('OTP') private readonly _otpService: Model<OTP>,
+    @InjectModel('Counter') private readonly voucherCounterModel: Model<VoucherCounterInterface>,
     private jwtService: JwtService,
   ) {}
 
@@ -39,6 +41,24 @@ export class AuthService {
         pass: 'qwerty!@#456',
       },
     });
+  }
+
+  async generateCustomerId(sequenceName) {
+    const sequenceDocument = await this.voucherCounterModel.findByIdAndUpdate(
+      sequenceName,
+      {
+        $inc: {
+          sequenceValue: 1,
+        },
+      },
+      { new: true },
+    );
+
+    const year = new Date().getFullYear() % 2000;
+
+    return `CBE${year}${sequenceDocument.sequenceValue < 100000 ? '0' : ''}${
+      sequenceDocument.sequenceValue < 10000 ? '0' : ''
+    }${sequenceDocument.sequenceValue}`;
   }
 
   async loginToken() {
@@ -80,17 +100,54 @@ export class AuthService {
     return { token: token.access_token };
   }
 
-  async login(loginDto) {
+  async loginMerchant(loginDto) {
     let user = await this._usersService.findOne({
       email: loginDto.email.toLowerCase(),
+      deletedCheck: false,
+      role: 'Merchant'
     });
 
     if (!user) {
       throw new UnauthorizedException('Incorrect email!');
     }
 
-    if (!(user.status == USERSTATUS.approved)) {
+    if (!(user.status == USERSTATUS.approved || user.role == 'Merchant')) {
       throw new NotFoundException('Merchant Not Found!');
+    }
+
+    const isValidCredentials = await bcrypt.compare(
+      loginDto.password,
+      user.password,
+    );
+
+    if (!isValidCredentials) {
+      throw new UnauthorizedException('Incorrect password!');
+    }
+    user = JSON.parse(JSON.stringify(user));
+
+    delete user.password;
+    delete user.aboutUs;
+    delete user.finePrint;
+    delete user.businessHours;
+
+    const token = this.generateToken(user);
+
+    return { user, token: token.access_token };
+  }
+
+  async loginCustomer (loginDto) {
+    let user = await this._usersService.findOne({
+      email: loginDto.email.toLowerCase(),
+      deletedCheck: false,
+      role: 'Customer'
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('Incorrect email!');
+    }
+
+    if (!(user.role == 'Customer')) {
+      throw new NotFoundException('Customer Not Found!');
     }
 
     const isValidCredentials = await bcrypt.compare(
@@ -127,19 +184,49 @@ export class AuthService {
     return password;
   }
 
-  async signup(loginDto) {
+  async signupMerchant(loginDto) {
     loginDto.email = loginDto?.email?.toLowerCase();
     let user = await this._usersService.findOne({
       email: loginDto.email,
+      deletedCheck: false,
+      role: 'Merchant'
     });
     if (user) {
       throw new ForbiddenException('Email already exists');
     }
     loginDto._id = new Types.ObjectId().toString();
 
+    loginDto.status = USERSTATUS.pending;
+    loginDto.role = 'Merchant';
     loginDto.tradeName = loginDto.companyName;
 
     return await new this._usersService(loginDto).save();
+  }
+
+  async signupCustomer(signupUserDto) {
+    signupUserDto.email = signupUserDto?.email?.toLowerCase();
+    let user = await this._usersService.findOne({
+      email: signupUserDto.email,
+      deletedCheck: false,
+      role: 'Customer'
+    });
+    if (user) {
+      throw new ForbiddenException('Email already exists');
+    }
+    signupUserDto._id = new Types.ObjectId().toString();
+
+    signupUserDto.status = USERSTATUS.approved;
+    signupUserDto.role = 'Customer';
+    signupUserDto.userID = await this.generateCustomerId(
+      'customerID',
+    );
+
+    const salt = await bcrypt.genSalt();
+    let hashedPassword = await bcrypt.hash(signupUserDto.password, salt);
+
+    signupUserDto.password = hashedPassword;
+
+    return await new this._usersService(signupUserDto).save();
   }
 
   async sendMail(emailDto: EmailDTO) {

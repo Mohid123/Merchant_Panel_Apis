@@ -7,7 +7,7 @@ import * as bcrypt from 'bcrypt';
 export const UsersSchema = new mongoose.Schema(
   {
     _id: { type: String, default: generateStringId },
-    merchantID: { type: String },
+    userID: { type: String },
     email: { type: String, default: '' },
     password: { type: String, default: '' },
     firstName: { type: String, default: '' },
@@ -35,7 +35,7 @@ export const UsersSchema = new mongoose.Schema(
     gallery: { type: [String] },
     voucherPinCode: { type: Number },
     deletedCheck: { type: Boolean, default: false },
-    status: { type: String, default: 'Pending' },
+    status: { type: String, default: '' },
     newUser: { type: Boolean, default: true },
     totalVoucherSales: { type: Number, default: 0 },
     redeemedVouchers: { type: Number, default: 0 },
