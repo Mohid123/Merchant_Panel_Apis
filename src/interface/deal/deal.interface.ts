@@ -17,8 +17,13 @@ export interface VoucherInterface {
 }
 
 export interface MedialUrl {
-  merdiaUrl: string;
-  type: string;
+  type: string,
+  captureFileURL: string,
+  path: string,
+  thumbnailURL: string,
+  thumbnailPath: string,
+  blurHash: string,
+  backgroundColorHex: string,
 }
 
 export interface DealInterface extends Document {

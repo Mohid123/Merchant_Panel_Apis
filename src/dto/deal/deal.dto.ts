@@ -38,9 +38,14 @@ export class DealDto {
   @ApiProperty({
     example: [
       {
-        mediaUrl: '',
         type: '',
-      },
+        captureFileURL: '',
+        path: '',
+        thumbnailURL: '',
+        thumbnailPath: '',
+        blurHash:'',
+        backgroundColorHex:'',
+      }
     ],
   })
   mediaUrl: MedialUrl[];

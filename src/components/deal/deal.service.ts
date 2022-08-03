@@ -4,7 +4,7 @@ import { Model } from 'mongoose';
 import { DEALSTATUS } from '../../enum/deal/dealstatus.enum';
 import { CategoryInterface } from '../../interface/category/category.interface';
 import { DealInterface } from '../../interface/deal/deal.interface';
-import { generateStringId } from '../file-management/utils/utils';
+import { encodeImageToBlurhash, generateStringId, getDominantColor } from '../file-management/utils/utils';
 import { SORT } from '../../enum/sort/sort.enum';
 import { VoucherCounterInterface } from '../../interface/vouchers/vouchersCounter.interface';
 import { SubCategoryInterface } from '../../interface/category/subcategory.interface';
@@ -128,15 +128,47 @@ export class DealService {
         });
       }
 
-      if (dealDto.mediaUrl) {
-        for (let i = 0; i < dealDto.mediaUrl.length; i++) {
-          if (dealDto.mediaUrl[i].type == 'video') {
-            console.log('Inside if');
-            var item = dealDto.mediaUrl.splice(i, 1);
-            dealDto.mediaUrl.splice(0, 0, item[0]);
+      if (dealDto.mediaUrl && dealDto.mediaUrl.length) {
+        dealDto['type'] = dealDto.mediaUrl[0].type;
+        dealDto['captureFileURL'] = dealDto.mediaUrl[0].captureFileURL;
+        dealDto['path'] = dealDto.mediaUrl[0].path;
+        if(dealDto['type']=='Video'){
+          dealDto['thumbnailURL'] = dealDto.mediaUrl[0].thumbnailURL;
+          dealDto['thumbnailPath'] = dealDto.mediaUrl[0].thumbnailPath;
+        }
+        if (dealDto.mediaUrl) {
+          for (let i = 0; i < dealDto.mediaUrl.length; i++) {
+            if (dealDto.mediaUrl[i].type == 'Video') {
+              console.log('Inside if');
+              var item = dealDto.mediaUrl.splice(i, 1);
+              dealDto.mediaUrl.splice(0, 0, item[0]);
+            }
           }
         }
-      }
+        for await (let mediaObj of dealDto.mediaUrl) {
+          await new Promise(async (resolve, reject) => {
+            try {
+              let urlMedia = ''
+              if (mediaObj.type == 'Video') {
+                urlMedia = mediaObj.thumbnailURL;
+              } else {
+                urlMedia = mediaObj.captureFileURL;
+              }
+              mediaObj['blurHash'] = await encodeImageToBlurhash(urlMedia);
+              if (!mediaObj.backgroundColorHex) {
+                const data = await getDominantColor(mediaObj.captureFileURL);
+                mediaObj['backgroundColorHex'] = data.hexCode;
+              }
+      
+              resolve({})
+            } catch (err) {
+              console.log("Error", err);
+              reject(err)
+            }
+          })
+  
+        }
+    }
 
       dealDto.availableVouchers = dealVouchers;
       dealDto.soldVouchers = dealSoldVouchers;
@@ -1117,12 +1149,12 @@ export class DealService {
       let filters = {};
 
       if (header.trim().length) {
-              var query = new RegExp(`${header}`, 'i');
-              filters = {
-                ...filters,
-                dealHeader: query,
-              };
-            }
+        var query = new RegExp(`${header}`, 'i');
+        filters = {
+          ...filters,
+          dealHeader: query,
+        };
+      }
 
       const totalCount = await this.dealModel.countDocuments({
         deletedCheck: false,
@@ -1131,37 +1163,37 @@ export class DealService {
       });
 
       const deals = await this.dealModel
-              .aggregate([
-                {
-                  $match: {
-                    deletedCheck: false,
-                    dealStatus: DEALSTATUS.published,
-                    ...filters,
-                  },
-                },
-                {
-                  $sort: {
-                    createdAt: -1
-                  },
-                },
-                {
-                  $addFields: {
-                    id: '$_id',
-                  },
-                },
-                {
-                  $project: {
-                    _id: 0,
-                  },
-                },
-              ])
-              .skip(parseInt(offset))
-              .limit(parseInt(limit));
+        .aggregate([
+          {
+            $match: {
+              deletedCheck: false,
+              dealStatus: DEALSTATUS.published,
+              ...filters,
+            },
+          },
+          {
+            $sort: {
+              createdAt: -1
+            },
+          },
+          {
+            $addFields: {
+              id: '$_id',
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+            },
+          },
+        ])
+        .skip(parseInt(offset))
+        .limit(parseInt(limit));
 
-            return {
-              totalDeals: totalCount,
-              data: deals,
-            };
+      return {
+        totalDeals: totalCount,
+        data: deals,
+      };
     } catch (err) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
     }
