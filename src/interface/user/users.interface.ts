@@ -14,7 +14,7 @@ export interface Gallery {
 
 export interface UsersInterface {
   _id: string;
-  merchantID: string;
+  userID: string;
   email: string;
   password: string;
   firstName: string;

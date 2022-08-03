@@ -624,7 +624,7 @@ export class UsersService {
       approveMerchantDto.province = approveMerchantDto.locations[0].province;
       approveMerchantDto.phoneNumber =
         approveMerchantDto.locations[0].phoneNumber;
-      approveMerchantDto.merchantID = await this.generateMerchantId(
+      approveMerchantDto.userID = await this.generateMerchantId(
         'merchantID',
       );
       delete approveMerchantDto.locations;

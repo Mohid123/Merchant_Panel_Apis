@@ -782,6 +782,7 @@ export class DealService {
       limit = parseInt(limit) < 1 ? 10 : limit;
       const totalCount = await this.dealModel.countDocuments({
         deletedCheck: false,
+        dealStatus: DEALSTATUS.published,
         vouchers: { $elemMatch: { dealPrice: { $lt: price } } },
       });
       let deals = await this.dealModel
@@ -789,6 +790,7 @@ export class DealService {
           {
             $match: {
               deletedCheck: false,
+              dealStatus: DEALSTATUS.published,
               vouchers: {
                 $elemMatch: { dealPrice: { $lt: price } },
               },
@@ -828,6 +830,7 @@ export class DealService {
 
       const totalCount = await this.dealModel.countDocuments({
         deletedCheck: false,
+        dealStatus: DEALSTATUS.published,
       });
 
       let deals = await this.dealModel
@@ -835,6 +838,7 @@ export class DealService {
           {
             $match: {
               deletedCheck: false,
+              dealStatus: DEALSTATUS.published,
             },
           },
           {
@@ -873,6 +877,7 @@ export class DealService {
       limit = parseInt(limit) < 1 ? 10 : limit;
       const totalCount = await this.dealModel.countDocuments({
         deletedCheck: false,
+        dealStatus: DEALSTATUS.published,
         vouchers: { $elemMatch: { discountPercentage: { $gte: percentage } } },
       });
       let deals = await this.dealModel
@@ -880,6 +885,7 @@ export class DealService {
           {
             $match: {
               deletedCheck: false,
+              dealStatus: DEALSTATUS.published,
               vouchers: {
                 $elemMatch: { discountPercentage: { $gte: percentage } },
               },
@@ -918,6 +924,7 @@ export class DealService {
       limit = parseInt(limit) < 1 ? 10 : limit;
       const totalCount = await this.dealModel.countDocuments({
         deletedCheck: false,
+        dealStatus: DEALSTATUS.published,
         availableVouchers: { $gt: 0 },
         soldVouchers: { $gt: 0 },
       });
@@ -926,6 +933,7 @@ export class DealService {
           {
             $match: {
               deletedCheck: false,
+              dealStatus: DEALSTATUS.published,
               availableVouchers: { $gt: 0 },
               soldVouchers: { $gt: 0 },
             },
@@ -982,6 +990,7 @@ export class DealService {
       limit = parseInt(limit) < 1 ? 10 : limit;
       const totalCount = await this.dealModel.countDocuments({
         deletedCheck: false,
+        dealStatus: DEALSTATUS.published,
         isSpecialOffer: true,
       });
       let deals = await this.dealModel
@@ -989,6 +998,7 @@ export class DealService {
           {
             $match: {
               deletedCheck: false,
+              dealStatus: DEALSTATUS.published,
               isSpecialOffer: true,
             },
           },
@@ -1026,12 +1036,14 @@ export class DealService {
 
       const totalCount = await this.dealModel.countDocuments({
         deletedCheck: false,
+        dealStatus: DEALSTATUS.published,
       });
       const deals = await this.dealModel
         .aggregate([
           {
             $match: {
               deletedCheck: false,
+              dealStatus: DEALSTATUS.published,
             },
           },
           {
@@ -1044,6 +1056,112 @@ export class DealService {
         totalCount: totalCount,
         data: deals,
       };
+    } catch (err) {
+      throw new HttpException(err, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async getNearByDeals(lat, lng, distance, offset, limit) {
+    try {
+      offset = parseInt(offset) < 0 ? 0 : offset;
+      limit = parseInt(limit) < 1 ? 10 : limit;
+
+      let radius = parseFloat(distance) / 6378.1;
+      const deal = await this.dealModel
+        .aggregate([
+          {
+            $match: {
+              deletedCheck: false,
+              dealStatus: DEALSTATUS.published,
+            },
+          },
+          {
+            $lookup: {
+              from: 'locations',
+              as: 'location',
+              localField: 'merchantID',
+              foreignField: 'merchantID',
+            },
+          },
+          {
+            $unwind: '$location',
+          },
+          {
+            $addFields: {
+              locationCoordinates: '$location.location',
+            },
+          },
+          {
+            $match: {
+              locationCoordinates: {
+                $geoWithin: {
+                  $centerSphere: [[parseFloat(lat), parseFloat(lng)], radius],
+                },
+              },
+            },
+          },
+        ])
+        .skip(parseInt(offset))
+        .limit(parseInt(limit));
+
+      return deal;
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  async searchDeals (header, offset, limit) {
+    try {
+      header = header.trim();
+
+      let filters = {};
+
+      if (header.trim().length) {
+              var query = new RegExp(`${header}`, 'i');
+              filters = {
+                ...filters,
+                dealHeader: query,
+              };
+            }
+
+      const totalCount = await this.dealModel.countDocuments({
+        deletedCheck: false,
+        dealStatus: DEALSTATUS.published,
+        ...filters,
+      });
+
+      const deals = await this.dealModel
+              .aggregate([
+                {
+                  $match: {
+                    deletedCheck: false,
+                    dealStatus: DEALSTATUS.published,
+                    ...filters,
+                  },
+                },
+                {
+                  $sort: {
+                    createdAt: -1
+                  },
+                },
+                {
+                  $addFields: {
+                    id: '$_id',
+                  },
+                },
+                {
+                  $project: {
+                    _id: 0,
+                  },
+                },
+              ])
+              .skip(parseInt(offset))
+              .limit(parseInt(limit));
+
+            return {
+              totalDeals: totalCount,
+              data: deals,
+            };
     } catch (err) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
     }
