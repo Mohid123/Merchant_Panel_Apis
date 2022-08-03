@@ -24,4 +24,7 @@ export class LocationDTO {
 
   @ApiProperty()
   phoneNumber: string;
+
+  @ApiProperty()
+  plusCode: string;
 }

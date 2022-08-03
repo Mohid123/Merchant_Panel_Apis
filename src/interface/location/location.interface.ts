@@ -9,4 +9,5 @@ export interface Location extends Document {
   googleMapPin: string;
   province: string;
   phoneNumber: string;
+  plusCode: string;
 }
