@@ -1,7 +1,9 @@
 import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { SubscribeDTO } from 'src/dto/subscribe/subscribe.dto';
 import { SubscribeService } from './subscribe.service';
 
+@ApiTags('Subscription')
 @Controller('subscribe')
 export class SubscribeController {
     constructor(private readonly _subscribeService: SubscribeService) {}
