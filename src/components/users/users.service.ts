@@ -16,6 +16,7 @@ import * as nodemailer from 'nodemailer';
 import axios from 'axios';
 import { VoucherCounterInterface } from 'src/interface/vouchers/vouchersCounter.interface';
 import { Location } from 'src/interface/location/location.interface';
+import { LeadInterface } from 'src/interface/lead/lead.interface';
 
 var htmlencode = require('htmlencode');
 var generator = require('generate-password');
@@ -30,6 +31,7 @@ export class UsersService {
     @InjectModel('Location') private readonly _locationModel: Model<Location>,
     @InjectModel('Counter')
     private readonly voucherCounterModel: Model<VoucherCounterInterface>,
+    @InjectModel('Lead') private readonly _leadModel: Model<LeadInterface>,
   ) {}
 
   onModuleInit() {
@@ -645,7 +647,7 @@ export class UsersService {
         province: approveMerchantDto.province,
         phoneNumber: approveMerchantDto.phoneNumber,
       };
-
+      await this._leadModel.updateOne({_id:userID},{deletedCheck:true})
       const location = await new this._locationModel(locObj).save();
 
       const emailDto: EmailDTO = {
@@ -819,8 +821,8 @@ export class UsersService {
       // user.password = generatedPassword;
 
       const merchant = await new this._userModel(approveMerchantDto).save();
-
-      return { enquiryID: userID, merchantID: approveMerchantDto.merchantID };
+      
+      return { enquiryID: userID, merchantID: merchant?.userID };
     } catch (err) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
     }

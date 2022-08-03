@@ -45,11 +45,12 @@ export class LeadsService {
       {
         $match: {
           _id: id,
+          deletedCheck:false,
         },
       },
       {
         $addFields: {
-          companyName: '$tradeName',
+          companyName: '$legalName',
           categoryType: '$businessType',
         },
       },
