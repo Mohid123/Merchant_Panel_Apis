@@ -28,6 +28,9 @@ export class LeadDto {
   legalName: string;
 
   @ApiProperty()
+  companyName: string;
+
+  @ApiProperty()
   streetAddress: string;
 
   @ApiProperty()
@@ -129,6 +132,12 @@ export class LeadDto {
 
   @ApiProperty()
   status: string;
+
+  @ApiProperty()
+  countryCode: string;
+
+  @ApiProperty()
+  leadSource: string;
 
   // @ApiProperty()
   // totalVoucherSales: number;

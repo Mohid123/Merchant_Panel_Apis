@@ -48,6 +48,8 @@ export const UsersSchema = new mongoose.Schema(
     scheduledDeals: { type: Number, default: 0 },
     pendingDeals: { type: Number, default: 0 },
     soldDeals: { type: Number, default: 0 },
+    countryCode: { type: String, default: 'BE' },
+    leadSource: { type: String, default: 'web' },
     ratingsAverage: {
       type: Number,
       default: 0,

@@ -27,6 +27,10 @@ export class LeadsService {
 
     leadDto.tradeName = leadDto.companyName;
 
+    leadDto.countryCode = 'BE';
+
+    leadDto.leadSource = 'web';
+
     const lead = await new this._leadModel(leadDto).save();
 
     const res = await axios.get(
@@ -41,6 +45,12 @@ export class LeadsService {
       {
         $match: {
           _id: id,
+        },
+      },
+      {
+        $addFields: {
+          companyName: '$tradeName',
+          categoryType: '$businessType',
         },
       },
       {
@@ -61,6 +71,8 @@ export class LeadsService {
           province: 1,
           website_socialAppLink: 1,
           googleMapPin: 1,
+          countryCode: 1,
+          leadSource: 1,
         },
       },
     ]);

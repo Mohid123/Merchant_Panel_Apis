@@ -29,7 +29,8 @@ export class AuthService {
   constructor(
     @InjectModel('User') private readonly _usersService: Model<UsersInterface>,
     @InjectModel('OTP') private readonly _otpService: Model<OTP>,
-    @InjectModel('Counter') private readonly voucherCounterModel: Model<VoucherCounterInterface>,
+    @InjectModel('Counter')
+    private readonly voucherCounterModel: Model<VoucherCounterInterface>,
     private jwtService: JwtService,
   ) {}
 
@@ -104,7 +105,7 @@ export class AuthService {
     let user = await this._usersService.findOne({
       email: loginDto.email.toLowerCase(),
       deletedCheck: false,
-      role: 'Merchant'
+      role: 'Merchant',
     });
 
     if (!user) {
@@ -135,11 +136,11 @@ export class AuthService {
     return { user, token: token.access_token };
   }
 
-  async loginCustomer (loginDto) {
+  async loginCustomer(loginDto) {
     let user = await this._usersService.findOne({
       email: loginDto.email.toLowerCase(),
       deletedCheck: false,
-      role: 'Customer'
+      role: 'Customer',
     });
 
     if (!user) {
@@ -189,7 +190,7 @@ export class AuthService {
     let user = await this._usersService.findOne({
       email: loginDto.email,
       deletedCheck: false,
-      role: 'Merchant'
+      role: 'Merchant',
     });
     if (user) {
       throw new ForbiddenException('Email already exists');
@@ -199,7 +200,8 @@ export class AuthService {
     loginDto.status = USERSTATUS.pending;
     loginDto.role = 'Merchant';
     loginDto.tradeName = loginDto.companyName;
-
+    loginDto.countryCode = 'BE';
+    loginDto.leadSource = 'web';
     return await new this._usersService(loginDto).save();
   }
 
@@ -208,7 +210,7 @@ export class AuthService {
     let user = await this._usersService.findOne({
       email: signupUserDto.email,
       deletedCheck: false,
-      role: 'Customer'
+      role: 'Customer',
     });
     if (user) {
       throw new ForbiddenException('Email already exists');
@@ -217,9 +219,7 @@ export class AuthService {
 
     signupUserDto.status = USERSTATUS.approved;
     signupUserDto.role = 'Customer';
-    signupUserDto.userID = await this.generateCustomerId(
-      'customerID',
-    );
+    signupUserDto.userID = await this.generateCustomerId('customerID');
 
     const salt = await bcrypt.genSalt();
     let hashedPassword = await bcrypt.hash(signupUserDto.password, salt);
