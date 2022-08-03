@@ -63,6 +63,7 @@ export class LeadsService {
           phoneNumber: 1,
           role: 1,
           status: 1,
+          categoryType: 1,
           companyName: 1,
           streetAddress: 1,
           zipCode: 1,
