@@ -1,51 +1,51 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty } from '@nestjs/swagger';
 
 export class UpdateMerchantProfileDto {
-    @ApiProperty()
-    firstName: string;
+  @ApiProperty()
+  firstName: string;
 
-    @ApiProperty()
-    lastName: string;
+  @ApiProperty()
+  lastName: string;
 
-    @ApiProperty()
-    phoneNumber: string;
+  @ApiProperty()
+  phoneNumber: string;
 
-    @ApiProperty()
-    legalName: string;
-    
-    @ApiProperty()
-    streetAddress: string;
+  @ApiProperty()
+  legalName: string;
 
-    @ApiProperty()
-    zipCode: number;
-    
-    @ApiProperty()
-    city: string;
+  @ApiProperty()
+  streetAddress: string;
 
-    @ApiProperty()
-    vatNumber: string;
+  @ApiProperty()
+  zipCode: string;
 
-    @ApiProperty()
-    tradeName: string;
+  @ApiProperty()
+  city: string;
 
-    @ApiProperty()
-    googleMapPin: string;
+  @ApiProperty()
+  vatNumber: string;
 
-    @ApiProperty()
-    profilePicURL: string;
+  @ApiProperty()
+  tradeName: string;
 
-    @ApiProperty()
-    profilePicBlurHash: string;
+  @ApiProperty()
+  googleMapPin: string;
 
-    @ApiProperty()
-    website_socialAppLink: string;
+  @ApiProperty()
+  profilePicURL: string;
 
-    @ApiProperty()
-    gallery: [string];
+  @ApiProperty()
+  profilePicBlurHash: string;
 
-    @ApiProperty()
-    aboutUs: string;
+  @ApiProperty()
+  website_socialAppLink: string;
 
-    @ApiProperty()
-    finePrint: string;
+  @ApiProperty()
+  gallery: [string];
+
+  @ApiProperty()
+  aboutUs: string;
+
+  @ApiProperty()
+  finePrint: string;
 }
