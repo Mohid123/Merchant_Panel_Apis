@@ -15,7 +15,7 @@ exports.LeadSchema = new mongoose.Schema({
     legalName: { type: String, default: '' },
     tradeName: { type: String, default: '' },
     streetAddress: { type: String, default: '' },
-    zipCode: { type: Number, default: 0 },
+    zipCode: { type: String, default: '' },
     city: { type: String, default: '' },
     vatNumber: { type: String, default: '' },
     iban: { type: String, default: '' },

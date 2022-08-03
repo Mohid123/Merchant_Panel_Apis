@@ -55,7 +55,7 @@ __decorate([
 ], LeadDto.prototype, "streetAddress", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
-    __metadata("design:type", Number)
+    __metadata("design:type", String)
 ], LeadDto.prototype, "zipCode", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),

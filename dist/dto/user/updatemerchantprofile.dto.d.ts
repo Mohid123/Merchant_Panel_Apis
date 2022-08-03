@@ -4,7 +4,7 @@ export declare class UpdateMerchantProfileDto {
     phoneNumber: string;
     legalName: string;
     streetAddress: string;
-    zipCode: number;
+    zipCode: string;
     city: string;
     vatNumber: string;
     tradeName: string;

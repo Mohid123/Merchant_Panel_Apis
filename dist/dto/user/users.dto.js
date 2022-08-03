@@ -59,7 +59,7 @@ __decorate([
 ], UsersDto.prototype, "streetAddress", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
-    __metadata("design:type", Number)
+    __metadata("design:type", String)
 ], UsersDto.prototype, "zipCode", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
@@ -89,51 +89,51 @@ __decorate([
                 firstStartTime: '',
                 firstEndTime: '',
                 secondStartTime: '',
-                secondEndTime: ''
+                secondEndTime: '',
             },
             {
                 day: 'TU',
                 firstStartTime: '',
                 firstEndTime: '',
                 secondStartTime: '',
-                secondEndTime: ''
+                secondEndTime: '',
             },
             {
                 day: 'WD',
                 firstStartTime: '',
                 firstEndTime: '',
                 secondStartTime: '',
-                secondEndTime: ''
+                secondEndTime: '',
             },
             {
                 day: 'TH',
                 firstStartTime: '',
                 firstEndTime: '',
                 secondStartTime: '',
-                secondEndTime: ''
+                secondEndTime: '',
             },
             {
                 day: 'FR',
                 firstStartTime: '',
                 firstEndTime: '',
                 secondStartTime: '',
-                secondEndTime: ''
+                secondEndTime: '',
             },
             {
                 day: 'SA',
                 firstStartTime: '',
                 firstEndTime: '',
                 secondStartTime: '',
-                secondEndTime: ''
+                secondEndTime: '',
             },
             {
                 day: 'SU',
                 firstStartTime: '',
                 firstEndTime: '',
                 secondStartTime: '',
-                secondEndTime: ''
+                secondEndTime: '',
             },
-        ]
+        ],
     }),
     __metadata("design:type", Array)
 ], UsersDto.prototype, "businessHours", void 0);

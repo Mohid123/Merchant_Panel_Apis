@@ -10,7 +10,7 @@ export declare class LeadDto {
     legalName: string;
     companyName: string;
     streetAddress: string;
-    zipCode: number;
+    zipCode: string;
     city: string;
     vatNumber: string;
     province: string;

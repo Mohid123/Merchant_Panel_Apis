@@ -22,7 +22,7 @@ export interface UsersInterface {
     legalName: string;
     tradeName: string;
     streetAddress: string;
-    zipCode: number;
+    zipCode: string;
     city: string;
     vatNumber: string;
     iban: string;

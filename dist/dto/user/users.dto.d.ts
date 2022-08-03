@@ -1,4 +1,4 @@
-import { businessHour } from "../../interface/user/users.interface";
+import { businessHour } from '../../interface/user/users.interface';
 export declare class UsersDto {
     id: string;
     userID: string;
@@ -11,7 +11,7 @@ export declare class UsersDto {
     businessType: string[];
     legalName: string;
     streetAddress: string;
-    zipCode: number;
+    zipCode: string;
     city: string;
     vatNumber: string;
     province: string;
