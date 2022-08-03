@@ -39,7 +39,7 @@ export class AuthService {
       service: 'Gmail',
       auth: {
         user: 'noreplydivideals@gmail.com',
-        pass: 'qwerty!@#456',
+        pass: 'eyccuiqvdskyaknn',
       },
     });
   }

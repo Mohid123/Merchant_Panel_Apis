@@ -40,7 +40,7 @@ export class UsersService {
       service: 'Gmail',
       auth: {
         user: 'noreplydivideals@gmail.com',
-        pass: 'qwerty!@#456',
+        pass: 'eyccuiqvdskyaknn',
       },
     });
   }
@@ -820,7 +820,7 @@ export class UsersService {
 
       const merchant = await new this._userModel(approveMerchantDto).save();
 
-      return { enquiryID: userID, merchantID: approveMerchantDto.merchantID };
+      return { enquiryID: userID, merchantID: approveMerchantDto.userID };
     } catch (err) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
     }
