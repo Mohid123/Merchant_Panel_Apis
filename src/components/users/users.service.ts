@@ -606,11 +606,11 @@ export class UsersService {
 
   async approveMerchant(userID, approveMerchantDto) {
     try {
-      const lead = await this._leadModel.findOne({
+      const lead = await this._userModel.findOne({
         _id: userID,
         deletedCheck: false,
       });
-      if (!lead) {
+      if (lead) {
         throw new BadRequestException('Merchent already approved');
       }
       let generatedPassword = await this.generatePassword();
@@ -832,7 +832,7 @@ export class UsersService {
 
       return { enquiryID: userID, merchantID: merchant?.userID };
     } catch (err) {
-      throw new HttpException(err?.message, HttpStatus.BAD_REQUEST);
+      throw new HttpException(err, HttpStatus.BAD_REQUEST);
     }
   }
 }
