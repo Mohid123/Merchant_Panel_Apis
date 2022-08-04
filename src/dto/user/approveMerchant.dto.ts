@@ -34,19 +34,24 @@ export class ApproveMerchantDTO {
   @ApiProperty()
   website_socialAppLink: string;
 
-  @ApiProperty({
-    example: [
-      {
-        _id: '',
-        locationName: '',
-        streetAddress: '',
-        zipCode: '',
-        city: '',
-        googleMapPin: '',
-        province: '',
-        phoneNumber: '',
-      },
-    ],
-  })
-  locations: [];
+  @ApiProperty()
+  locationName: string;
+
+  @ApiProperty()
+  streetAddress: string;
+
+  @ApiProperty()
+  zipCode: string;
+
+  @ApiProperty()
+  city: string;
+
+  @ApiProperty()
+  googleMapPin: string;
+
+  @ApiProperty()
+  province: string;
+
+  @ApiProperty()
+  phoneNumber: string;
 }
