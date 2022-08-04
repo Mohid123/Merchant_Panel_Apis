@@ -46,7 +46,7 @@ let DealService = class DealService {
     }
     async createDeal(dealDto, req) {
         var e_1, _a;
-        var _b;
+        var _b, _c;
         try {
             var dealVouchers = 0;
             var dealSoldVouchers = 0;
@@ -110,6 +110,10 @@ let DealService = class DealService {
                     return el;
                 });
             }
+            let minVoucher = (_c = dealDto.vouchers) === null || _c === void 0 ? void 0 : _c.sort((a, b) => (a === null || a === void 0 ? void 0 : a.dealPrice) - (b === null || b === void 0 ? void 0 : b.dealPrice))[0];
+            dealDto.minDealPrice = minVoucher === null || minVoucher === void 0 ? void 0 : minVoucher.dealPrice;
+            dealDto.minOriginalPrice = minVoucher === null || minVoucher === void 0 ? void 0 : minVoucher.originalPrice;
+            dealDto.minDiscountPercentage = minVoucher === null || minVoucher === void 0 ? void 0 : minVoucher.discountPercentage;
             if (dealDto.mediaUrl && dealDto.mediaUrl.length) {
                 dealDto['type'] = dealDto.mediaUrl[0].type;
                 dealDto['captureFileURL'] = dealDto.mediaUrl[0].captureFileURL;
@@ -128,8 +132,8 @@ let DealService = class DealService {
                     }
                 }
                 try {
-                    for (var _c = __asyncValues(dealDto.mediaUrl), _d; _d = await _c.next(), !_d.done;) {
-                        let mediaObj = _d.value;
+                    for (var _d = __asyncValues(dealDto.mediaUrl), _e; _e = await _d.next(), !_e.done;) {
+                        let mediaObj = _e.value;
                         await new Promise(async (resolve, reject) => {
                             try {
                                 let urlMedia = '';
@@ -140,10 +144,8 @@ let DealService = class DealService {
                                     urlMedia = mediaObj.captureFileURL;
                                 }
                                 mediaObj['blurHash'] = await (0, utils_1.encodeImageToBlurhash)(urlMedia);
-                                if (!mediaObj.backgroundColorHex) {
-                                    const data = await (0, utils_1.getDominantColor)(mediaObj.captureFileURL);
-                                    mediaObj['backgroundColorHex'] = data.hexCode;
-                                }
+                                let data = mediaObj['backgroundColorHex'] = await (0, utils_1.getDominantColor)(urlMedia);
+                                mediaObj['backgroundColorHex'] = data.hexCode;
                                 resolve({});
                             }
                             catch (err) {
@@ -156,7 +158,7 @@ let DealService = class DealService {
                 catch (e_1_1) { e_1 = { error: e_1_1 }; }
                 finally {
                     try {
-                        if (_d && !_d.done && (_a = _c.return)) await _a.call(_c);
+                        if (_e && !_e.done && (_a = _d.return)) await _a.call(_d);
                     }
                     finally { if (e_1) throw e_1.error; }
                 }
