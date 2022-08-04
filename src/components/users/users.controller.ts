@@ -136,9 +136,10 @@ export class UsersController {
   @ApiBearerAuth()
   @UseGuards(JwtManagerAuthGuard)
   @UseGuards(JwtAuthGuard)
-  @Post('approveMerchant/:id')
+  @ApiQuery({ name: 'id', required: false })
+  @Post('approveMerchant')
   approveMerchant(
-    @Param('id') id: string,
+    @Query('id') id: string,
     @Body() approveMerchantDto: ApproveMerchantDTO,
   ) {
     return this._usersService.approveMerchant(id, approveMerchantDto);
