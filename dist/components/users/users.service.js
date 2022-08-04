@@ -535,7 +535,9 @@ let UsersService = class UsersService {
                 province: approveMerchantDto.province,
                 phoneNumber: approveMerchantDto.phoneNumber,
             };
-            await this._leadModel.updateOne({ _id: userID }, { deletedCheck: true });
+            if (userID) {
+                await this._leadModel.updateOne({ _id: userID }, { deletedCheck: true });
+            }
             const location = await new this._locationModel(locObj).save();
             const emailDto = {
                 from: `"Divideals" <${process.env.EMAIL}>`,
