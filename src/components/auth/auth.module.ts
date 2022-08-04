@@ -1,6 +1,7 @@
 import { DynamicModule, Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { MongooseModule } from '@nestjs/mongoose';
+import { LeadSchema } from 'src/schema/lead/lead.schema';
 import { OtpSchema } from 'src/schema/otp/otp.schema';
 import { VoucherCounterSchema } from 'src/schema/vouchers/vouchersCounter.schema';
 import { UsersSchema } from '../../schema/user/users.schema';
@@ -21,6 +22,7 @@ export class AuthModule {
           { name: 'User', schema: UsersSchema },
           { name: 'OTP', schema: OtpSchema },
           { name: 'Counter', schema: VoucherCounterSchema },
+          { name: 'Lead', schema: LeadSchema },
         ]),
       ],
       controllers: [AuthController],

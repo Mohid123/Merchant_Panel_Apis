@@ -606,13 +606,6 @@ export class UsersService {
 
   async approveMerchant(userID, approveMerchantDto) {
     try {
-      const lead = await this._leadModel.findOne({
-        _id: userID,
-        deletedCheck: false,
-      });
-      if (!lead) {
-        throw new BadRequestException('Merchent already approved');
-      }
       let generatedPassword = await this.generatePassword();
       const salt = await bcrypt.genSalt();
       let hashedPassword = await bcrypt.hash(generatedPassword, salt);
@@ -832,7 +825,7 @@ export class UsersService {
 
       return { enquiryID: userID, merchantID: merchant?.userID };
     } catch (err) {
-      throw new HttpException(err?.message, HttpStatus.BAD_REQUEST);
+      throw new HttpException(err, HttpStatus.BAD_REQUEST);
     }
   }
 }
