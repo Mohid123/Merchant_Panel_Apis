@@ -640,11 +640,36 @@ let DealService = class DealService {
                 {
                     $addFields: {
                         id: '$_id',
+                        mediaUrl: {
+                            $slice: ["$mediaUrl", 1]
+                        }
                     },
                 },
                 {
                     $project: {
                         _id: 0,
+                        dealID: 0,
+                        merchantID: 0,
+                        subTitle: 0,
+                        categoryName: 0,
+                        subCategoryID: 0,
+                        subCategory: 0,
+                        vouchers: 0,
+                        availableVouchers: 0,
+                        aboutThisDeal: 0,
+                        readMore: 0,
+                        finePrints: 0,
+                        netEarnings: 0,
+                        isCollapsed: 0,
+                        isDuplicate: 0,
+                        totalReviews: 0,
+                        maxRating: 0,
+                        minRating: 0,
+                        pageNumber: 0,
+                        updatedAt: 0,
+                        __v: 0,
+                        endDate: 0,
+                        startDate: 0
                     },
                 },
             ])
@@ -683,11 +708,36 @@ let DealService = class DealService {
                 {
                     $addFields: {
                         id: '$_id',
+                        mediaUrl: {
+                            $slice: ["$mediaUrl", 1]
+                        }
                     },
                 },
                 {
                     $project: {
                         _id: 0,
+                        dealID: 0,
+                        merchantID: 0,
+                        subTitle: 0,
+                        categoryName: 0,
+                        subCategoryID: 0,
+                        subCategory: 0,
+                        vouchers: 0,
+                        availableVouchers: 0,
+                        aboutThisDeal: 0,
+                        readMore: 0,
+                        finePrints: 0,
+                        netEarnings: 0,
+                        isCollapsed: 0,
+                        isDuplicate: 0,
+                        totalReviews: 0,
+                        maxRating: 0,
+                        minRating: 0,
+                        pageNumber: 0,
+                        updatedAt: 0,
+                        __v: 0,
+                        endDate: 0,
+                        startDate: 0
                     },
                 },
             ])
@@ -731,11 +781,36 @@ let DealService = class DealService {
                 {
                     $addFields: {
                         id: '$_id',
+                        mediaUrl: {
+                            $slice: ["$mediaUrl", 1]
+                        }
                     },
                 },
                 {
                     $project: {
                         _id: 0,
+                        dealID: 0,
+                        merchantID: 0,
+                        subTitle: 0,
+                        categoryName: 0,
+                        subCategoryID: 0,
+                        subCategory: 0,
+                        vouchers: 0,
+                        availableVouchers: 0,
+                        aboutThisDeal: 0,
+                        readMore: 0,
+                        finePrints: 0,
+                        netEarnings: 0,
+                        isCollapsed: 0,
+                        isDuplicate: 0,
+                        totalReviews: 0,
+                        maxRating: 0,
+                        minRating: 0,
+                        pageNumber: 0,
+                        updatedAt: 0,
+                        __v: 0,
+                        endDate: 0,
+                        startDate: 0
                     },
                 },
             ])
@@ -792,10 +867,39 @@ let DealService = class DealService {
                     },
                 },
                 {
+                    $addFields: {
+                        mediaUrl: {
+                            $slice: ["$mediaUrl", 1]
+                        }
+                    }
+                },
+                {
                     $project: {
                         _id: 0,
                         added: 0,
                         divided: 0,
+                        dealID: 0,
+                        merchantID: 0,
+                        subTitle: 0,
+                        categoryName: 0,
+                        subCategoryID: 0,
+                        subCategory: 0,
+                        vouchers: 0,
+                        availableVouchers: 0,
+                        aboutThisDeal: 0,
+                        readMore: 0,
+                        finePrints: 0,
+                        netEarnings: 0,
+                        isCollapsed: 0,
+                        isDuplicate: 0,
+                        totalReviews: 0,
+                        maxRating: 0,
+                        minRating: 0,
+                        pageNumber: 0,
+                        updatedAt: 0,
+                        __v: 0,
+                        endDate: 0,
+                        startDate: 0
                     },
                 },
                 {
@@ -836,11 +940,36 @@ let DealService = class DealService {
                 {
                     $addFields: {
                         id: '$_id',
+                        mediaUrl: {
+                            $slice: ["$mediaUrl", 1]
+                        }
                     },
                 },
                 {
                     $project: {
                         _id: 0,
+                        dealID: 0,
+                        merchantID: 0,
+                        subTitle: 0,
+                        categoryName: 0,
+                        subCategoryID: 0,
+                        subCategory: 0,
+                        vouchers: 0,
+                        availableVouchers: 0,
+                        aboutThisDeal: 0,
+                        readMore: 0,
+                        finePrints: 0,
+                        netEarnings: 0,
+                        isCollapsed: 0,
+                        isDuplicate: 0,
+                        totalReviews: 0,
+                        maxRating: 0,
+                        minRating: 0,
+                        pageNumber: 0,
+                        updatedAt: 0,
+                        __v: 0,
+                        endDate: 0,
+                        startDate: 0
                     },
                 },
                 {
@@ -879,6 +1008,46 @@ let DealService = class DealService {
                 {
                     $sample: { size: totalCount },
                 },
+                {
+                    $sort: {
+                        createdAt: -1
+                    }
+                },
+                {
+                    $addFields: {
+                        id: '$_id',
+                        mediaUrl: {
+                            $slice: ["$mediaUrl", 1]
+                        }
+                    }
+                },
+                {
+                    $project: {
+                        _id: 0,
+                        dealID: 0,
+                        merchantID: 0,
+                        subTitle: 0,
+                        categoryName: 0,
+                        subCategoryID: 0,
+                        subCategory: 0,
+                        vouchers: 0,
+                        availableVouchers: 0,
+                        aboutThisDeal: 0,
+                        readMore: 0,
+                        finePrints: 0,
+                        netEarnings: 0,
+                        isCollapsed: 0,
+                        isDuplicate: 0,
+                        totalReviews: 0,
+                        maxRating: 0,
+                        minRating: 0,
+                        pageNumber: 0,
+                        updatedAt: 0,
+                        __v: 0,
+                        endDate: 0,
+                        startDate: 0
+                    },
+                }
             ])
                 .skip(parseInt(offset))
                 .limit(parseInt(limit));
@@ -960,11 +1129,36 @@ let DealService = class DealService {
                 {
                     $addFields: {
                         id: '$_id',
+                        mediaUrl: {
+                            $slice: ["$mediaUrl", 1]
+                        }
                     },
                 },
                 {
                     $project: {
                         _id: 0,
+                        dealID: 0,
+                        merchantID: 0,
+                        subTitle: 0,
+                        categoryName: 0,
+                        subCategoryID: 0,
+                        subCategory: 0,
+                        vouchers: 0,
+                        availableVouchers: 0,
+                        aboutThisDeal: 0,
+                        readMore: 0,
+                        finePrints: 0,
+                        netEarnings: 0,
+                        isCollapsed: 0,
+                        isDuplicate: 0,
+                        totalReviews: 0,
+                        maxRating: 0,
+                        minRating: 0,
+                        pageNumber: 0,
+                        updatedAt: 0,
+                        __v: 0,
+                        endDate: 0,
+                        startDate: 0
                     },
                 },
             ])

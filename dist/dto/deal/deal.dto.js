@@ -111,6 +111,18 @@ __decorate([
 ], DealDto.prototype, "availableVouchers", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", Number)
+], DealDto.prototype, "minDealPrice", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", Number)
+], DealDto.prototype, "minOriginalPrice", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", Number)
+], DealDto.prototype, "minDiscountPercentage", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
 ], DealDto.prototype, "dealStatus", void 0);
 __decorate([

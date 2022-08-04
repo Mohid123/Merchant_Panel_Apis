@@ -17,6 +17,9 @@ export declare class DealDto {
     aboutThisDeal: string;
     soldVouchers: number;
     availableVouchers: number;
+    minDealPrice: number;
+    minOriginalPrice: number;
+    minDiscountPercentage: number;
     dealStatus: string;
     deletedCheck: boolean;
     readMore: string;

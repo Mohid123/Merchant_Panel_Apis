@@ -39,6 +39,9 @@ export interface DealInterface extends Document {
     vouchers: VoucherInterface[];
     availableVouchers: number;
     soldVouchers: number;
+    minDealPrice: number;
+    minOriginalPrice: number;
+    minDiscountPercentage: number;
     aboutThisDeal: string;
     readMore: string;
     finePrints: string;
