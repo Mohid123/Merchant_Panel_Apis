@@ -6,7 +6,6 @@ export interface VoucherInterface {
   originalPrice: number;
   dealPrice: number;
   discountPercentage: number;
-  // details: string;
   soldVouchers: number;
   numberOfVouchers: number;
   grossEarning: number;
@@ -17,13 +16,14 @@ export interface VoucherInterface {
 }
 
 export interface MedialUrl {
-  type: string,
-  captureFileURL: string,
-  path: string,
-  thumbnailURL: string,
-  thumbnailPath: string,
-  blurHash: string,
-  backgroundColorHex: string,
+  merdiaUrl: string;
+  type: string;
+  // captureFileURL: string,
+  // path: string,
+  // thumbnailURL: string,
+  // thumbnailPath: string,
+  // blurHash: string,
+  // backgroundColorHex: string,
 }
 
 export interface DealInterface extends Document {
