@@ -35,9 +35,6 @@ export class ApproveMerchantDTO {
   website_socialAppLink: string;
 
   @ApiProperty()
-  locationName: string;
-
-  @ApiProperty()
   streetAddress: string;
 
   @ApiProperty()
@@ -47,11 +44,14 @@ export class ApproveMerchantDTO {
   city: string;
 
   @ApiProperty()
-  googleMapPin: string;
-
-  @ApiProperty()
   province: string;
 
   @ApiProperty()
   phoneNumber: string;
+
+  @ApiProperty()
+  countryCode: string;
+
+  @ApiProperty()
+  leadSource: string;
 }

@@ -606,13 +606,24 @@ export class UsersService {
 
   async approveMerchant(userID, approveMerchantDto) {
     try {
-      const lead = await this._userModel.findOne({
+      let lead = await this._userModel.findOne({
         _id: userID,
         deletedCheck: false,
       });
       if (lead) {
         throw new BadRequestException('Merchent already approved');
       }
+
+      lead = await this._userModel.findOne({
+        email: approveMerchantDto.email,
+      });
+
+      if (lead) {
+        throw new BadRequestException(
+          'Mercahnt with this email already exists!',
+        );
+      }
+
       let generatedPassword = await this.generatePassword();
       const salt = await bcrypt.genSalt();
       let hashedPassword = await bcrypt.hash(generatedPassword, salt);
