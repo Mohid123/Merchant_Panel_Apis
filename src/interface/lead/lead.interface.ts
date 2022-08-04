@@ -24,7 +24,7 @@ export interface LeadInterface {
   legalName: string;
   tradeName: string;
   streetAddress: string;
-  zipCode: number;
+  zipCode: string;
   city: string;
   vatNumber: string;
   iban: string;

@@ -34,7 +34,7 @@ export class LeadsService {
     const lead = await new this._leadModel(leadDto).save();
 
     const res = await axios.get(
-      `https://sandbox.zohoapis.eu/crm/v2/functions/createleadinzoho/actions/execute?auth_type=apikey&zapikey=1003.527925363aa0ee3a8c9cf0be2f92f93a.5464e31887b65bfe3e373beb87462db7&enquiryid=${lead.id}`,
+      `https://www.zohoapis.eu/crm/v2/functions/createleadinzoho/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&enquiryid=${lead.id}`,
     );
 
     return lead;
@@ -45,11 +45,12 @@ export class LeadsService {
       {
         $match: {
           _id: id,
+          deletedCheck: false,
         },
       },
       {
         $addFields: {
-          companyName: '$tradeName',
+          companyName: '$legalName',
           categoryType: '$businessType',
         },
       },
@@ -70,7 +71,6 @@ export class LeadsService {
           vatNumber: 1,
           province: 1,
           website_socialAppLink: 1,
-          googleMapPin: 1,
           countryCode: 1,
           leadSource: 1,
         },
@@ -81,27 +81,27 @@ export class LeadsService {
       throw new HttpException('No Record Found!', HttpStatus.BAD_REQUEST);
     }
 
-    let _locationId = generateStringId();
+    // let _locationId = generateStringId();
 
-    lead[0].locations = [
-      {
-        _id: _locationId,
-        locationName: '',
-        streetAddress: lead[0].streetAddress,
-        zipCode: lead[0].zipCode.toString(),
-        city: lead[0].city,
-        googleMapPin: lead[0].googleMapPin,
-        province: lead[0].province,
-        phoneNumber: lead[0].phoneNumber,
-      },
-    ];
+    // lead[0].locations = [
+    //   {
+    //     _id: _locationId,
+    //     locationName: '',
+    //     streetAddress: lead[0].streetAddress,
+    //     zipCode: lead[0].zipCode.toString(),
+    //     city: lead[0].city,
+    //     googleMapPin: lead[0].googleMapPin,
+    //     province: lead[0].province,
+    //     phoneNumber: lead[0].phoneNumber,
+    //   },
+    // ];
 
-    delete lead[0].streetAddress;
-    delete lead[0].zipCode;
-    delete lead[0].city;
-    delete lead[0].googleMapPin;
-    delete lead[0].province;
-    delete lead[0].phoneNumber;
+    // delete lead[0].streetAddress;
+    // delete lead[0].zipCode;
+    // delete lead[0].city;
+    // delete lead[0].googleMapPin;
+    // delete lead[0].province;
+    // delete lead[0].phoneNumber;
 
     return lead[0];
   }

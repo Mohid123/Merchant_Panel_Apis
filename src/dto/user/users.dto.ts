@@ -1,168 +1,174 @@
 /* eslint-disable prettier/prettier */
-import { ApiProperty } from "@nestjs/swagger";
-import { businessHour } from "../../interface/user/users.interface";
+import { ApiProperty } from '@nestjs/swagger';
+import { businessHour } from '../../interface/user/users.interface';
 
 export class UsersDto {
-    @ApiProperty()
-    id: string;
+  @ApiProperty()
+  id: string;
 
-    @ApiProperty()
-    userID: string;
-    
-    @ApiProperty()
-    email: string;
+  @ApiProperty()
+  userID: string;
 
-    @ApiProperty()
-    password: string;
+  @ApiProperty()
+  email: string;
 
-    @ApiProperty()
-    firstName: string;
+  @ApiProperty()
+  password: string;
 
-    @ApiProperty()
-    lastName: string;
+  @ApiProperty()
+  firstName: string;
 
-    @ApiProperty()
-    phoneNumber: string;
+  @ApiProperty()
+  lastName: string;
 
-    @ApiProperty()
-    role: string;
+  @ApiProperty()
+  phoneNumber: string;
 
-    @ApiProperty()
-    businessType: string[];
+  @ApiProperty()
+  role: string;
 
-    @ApiProperty()
-    legalName: string;
-    
-    @ApiProperty()
-    streetAddress: string;
+  @ApiProperty()
+  businessType: string[];
 
-    @ApiProperty()
-    zipCode: number;
-    
-    @ApiProperty()
-    city: string;
+  @ApiProperty()
+  legalName: string;
 
-    @ApiProperty()
-    vatNumber: string;
+  @ApiProperty()
+  streetAddress: string;
 
-    // @ApiProperty()
-    // iban: string;
+  @ApiProperty()
+  zipCode: string;
 
-    // @ApiProperty()
-    // bankName: string;
+  @ApiProperty()
+  city: string;
 
-    // @ApiProperty()
-    // kycStatus: boolean;
+  @ApiProperty()
+  vatNumber: string;
 
-    @ApiProperty()
-    province: string;
+  // @ApiProperty()
+  // iban: string;
 
-    @ApiProperty()
-    website_socialAppLink: string;
+  // @ApiProperty()
+  // bankName: string;
 
-    @ApiProperty()
-    googleMapPin: string;
+  // @ApiProperty()
+  // kycStatus: boolean;
 
-    @ApiProperty({
-        example: [
-            {
-                day: 'MN',
-                firstStartTime: '',
-                firstEndTime: '',
-                secondStartTime: '',
-                secondEndTime: ''
-            },
-            {
-                day: 'TU',
-                firstStartTime: '',
-                firstEndTime: '',
-                secondStartTime: '',
-                secondEndTime: ''
-            },
-            {
-                day: 'WD',
-                firstStartTime: '',
-                firstEndTime: '',
-                secondStartTime: '',
-                secondEndTime: ''
-            },
-            {
-                day: 'TH',
-                firstStartTime: '',
-                firstEndTime: '',
-                secondStartTime: '',
-                secondEndTime: ''
-            },
-            {
-                day: 'FR',
-                firstStartTime: '',
-                firstEndTime: '',
-                secondStartTime: '',
-                secondEndTime: ''
-            },
-            {
-                day: 'SA',
-                firstStartTime: '',
-                firstEndTime: '',
-                secondStartTime: '',
-                secondEndTime: ''
-            },
-            {
-                day: 'SU',
-                firstStartTime: '',
-                firstEndTime: '',
-                secondStartTime: '',
-                secondEndTime: ''
-            },
-        ]
-    })
-    businessHours: businessHour[];
+  @ApiProperty()
+  province: string;
 
-    @ApiProperty()
-    finePrint: string;
+  @ApiProperty()
+  website_socialAppLink: string;
 
-    @ApiProperty()
-    aboutUs: string;
+  @ApiProperty()
+  googleMapPin: string;
 
-    @ApiProperty()
-    profilePicURL: string;
+  @ApiProperty({
+    example: [
+      {
+        day: 'MN',
+        firstStartTime: '',
+        firstEndTime: '',
+        secondStartTime: '',
+        secondEndTime: '',
+      },
+      {
+        day: 'TU',
+        firstStartTime: '',
+        firstEndTime: '',
+        secondStartTime: '',
+        secondEndTime: '',
+      },
+      {
+        day: 'WD',
+        firstStartTime: '',
+        firstEndTime: '',
+        secondStartTime: '',
+        secondEndTime: '',
+      },
+      {
+        day: 'TH',
+        firstStartTime: '',
+        firstEndTime: '',
+        secondStartTime: '',
+        secondEndTime: '',
+      },
+      {
+        day: 'FR',
+        firstStartTime: '',
+        firstEndTime: '',
+        secondStartTime: '',
+        secondEndTime: '',
+      },
+      {
+        day: 'SA',
+        firstStartTime: '',
+        firstEndTime: '',
+        secondStartTime: '',
+        secondEndTime: '',
+      },
+      {
+        day: 'SU',
+        firstStartTime: '',
+        firstEndTime: '',
+        secondStartTime: '',
+        secondEndTime: '',
+      },
+    ],
+  })
+  businessHours: businessHour[];
 
-    @ApiProperty()
-    profilePicBlurHash: string;
+  @ApiProperty()
+  finePrint: string;
 
-    @ApiProperty()
-    deletedCheck: boolean;
+  @ApiProperty()
+  aboutUs: string;
 
-    @ApiProperty()
-    status: string;
+  @ApiProperty()
+  profilePicURL: string;
 
-    // @ApiProperty()
-    // totalVoucherSales: number;
+  @ApiProperty()
+  profilePicBlurHash: string;
 
-    // @ApiProperty()
-    // redeemedVouchers: number;
+  @ApiProperty()
+  deletedCheck: boolean;
 
-    // @ApiProperty()
-    // purchasedVouchers: number;
+  @ApiProperty()
+  status: string;
 
-    // @ApiProperty()
-    // totalEarnings: number;
+  @ApiProperty()
+  countryCode: string;
 
-    // @ApiProperty()
-    // paidEarnings: number;
+  @ApiProperty()
+  leadSource: string;
 
-    // @ApiProperty()
-    // pendingEarnings: number;
+  // @ApiProperty()
+  // totalVoucherSales: number;
 
-    // @ApiProperty()
-    // totalDeals: number;
+  // @ApiProperty()
+  // redeemedVouchers: number;
 
-    // @ApiProperty()
-    // scheduledDeals: number;
+  // @ApiProperty()
+  // purchasedVouchers: number;
 
-    // @ApiProperty()
-    // pendingDeals: number;
+  // @ApiProperty()
+  // totalEarnings: number;
 
-    // @ApiProperty()
-    // soldDeals: number;
+  // @ApiProperty()
+  // paidEarnings: number;
+
+  // @ApiProperty()
+  // pendingEarnings: number;
+
+  // @ApiProperty()
+  // totalDeals: number;
+
+  // @ApiProperty()
+  // scheduledDeals: number;
+
+  // @ApiProperty()
+  // pendingDeals: number;
+
+  // @ApiProperty()
+  // soldDeals: number;
 }

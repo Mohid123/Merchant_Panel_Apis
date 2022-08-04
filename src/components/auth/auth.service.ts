@@ -17,6 +17,7 @@ import { OTP } from 'src/interface/otp/otp.interface';
 import { cpuUsage } from 'process';
 import { USERSTATUS } from 'src/enum/user/userstatus.enum';
 import { VoucherCounterInterface } from 'src/interface/vouchers/vouchersCounter.interface';
+import { LeadInterface } from 'src/interface/lead/lead.interface';
 
 var htmlencode = require('htmlencode');
 var generator = require('generate-password');
@@ -31,6 +32,7 @@ export class AuthService {
     @InjectModel('OTP') private readonly _otpService: Model<OTP>,
     @InjectModel('Counter')
     private readonly voucherCounterModel: Model<VoucherCounterInterface>,
+    @InjectModel('Lead') private readonly _leadModel: Model<LeadInterface>,
     private jwtService: JwtService,
   ) {}
 
@@ -39,7 +41,7 @@ export class AuthService {
       service: 'Gmail',
       auth: {
         user: 'noreplydivideals@gmail.com',
-        pass: 'qwerty!@#456',
+        pass: 'eyccuiqvdskyaknn',
       },
     });
   }
@@ -253,8 +255,11 @@ export class AuthService {
     const user = await this._usersService.findOne({
       email: email?.toLowerCase(),
     });
+    const lead = await this._leadModel.findOne({
+      email:email?.toLowerCase(),
+    })
 
-    return user ? true : false;
+    return user || lead ? true : false;
   }
 
   async sendOtp(otpEmailDto) {
