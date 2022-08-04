@@ -128,6 +128,12 @@ export class DealService {
         });
       }
 
+      let minVoucher = dealDto.vouchers?.sort((a,b)=>a?.dealPrice - b?.dealPrice)[0];
+      
+      dealDto.minDealPrice = minVoucher?.dealPrice;
+      dealDto.minOriginalPrice = minVoucher?.originalPrice;
+      dealDto.minDiscountPercentage = minVoucher?.discountPercentage;
+
       if (dealDto.mediaUrl && dealDto.mediaUrl.length) {
         dealDto['type'] = dealDto.mediaUrl[0].type;
         dealDto['captureFileURL'] = dealDto.mediaUrl[0].captureFileURL;
@@ -155,11 +161,9 @@ export class DealService {
                 urlMedia = mediaObj.captureFileURL;
               }
               mediaObj['blurHash'] = await encodeImageToBlurhash(urlMedia);
-              if (!mediaObj.backgroundColorHex) {
-                const data = await getDominantColor(mediaObj.captureFileURL);
-                mediaObj['backgroundColorHex'] = data.hexCode;
-              }
-      
+              let data = mediaObj['backgroundColorHex'] = await getDominantColor(urlMedia);
+              mediaObj['backgroundColorHex'] = data.hexCode;
+              
               resolve({})
             } catch (err) {
               console.log("Error", err);
