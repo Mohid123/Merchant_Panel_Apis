@@ -57,13 +57,8 @@ __decorate([
     (0, swagger_1.ApiProperty)({
         example: [
             {
+                mediaUrl: '',
                 type: '',
-                captureFileURL: '',
-                path: '',
-                thumbnailURL: '',
-                thumbnailPath: '',
-                blurHash: '',
-                backgroundColorHex: '',
             }
         ],
     }),
@@ -139,7 +134,7 @@ __decorate([
 ], DealDto.prototype, "finePrints", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
-    __metadata("design:type", String)
+    __metadata("design:type", Number)
 ], DealDto.prototype, "pageNumber", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
