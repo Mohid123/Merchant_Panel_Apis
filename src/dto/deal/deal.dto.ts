@@ -38,13 +38,15 @@ export class DealDto {
   @ApiProperty({
     example: [
       {
+        mediaUrl: '',
         type: '',
-        captureFileURL: '',
-        path: '',
-        thumbnailURL: '',
-        thumbnailPath: '',
-        blurHash:'',
-        backgroundColorHex:'',
+        // type: '',
+        // captureFileURL: '',
+        // path: '',
+        // thumbnailURL: '',
+        // thumbnailPath: '',
+        // blurHash:'',
+        // backgroundColorHex:'',
       }
     ],
   })
@@ -63,7 +65,6 @@ export class DealDto {
         originalPrice: 0,
         dealPrice: 0,
         discountPercentage: 0,
-        // details: '',
         soldVouchers: 0,
         numberOfVouchers: 0,
         grossEarning: 0,
@@ -107,7 +108,7 @@ export class DealDto {
   finePrints: string;
 
   @ApiProperty()
-  pageNumber: string;
+  pageNumber: number;
 
   @ApiProperty()
   isCollapsed: boolean;
