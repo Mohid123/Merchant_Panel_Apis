@@ -86,6 +86,15 @@ export class DealDto {
   availableVouchers: number;
 
   @ApiProperty()
+  minDealPrice: number;
+
+  @ApiProperty()
+  minOriginalPrice: number;
+
+  @ApiProperty()
+  minDiscountPercentage: number;
+
+  @ApiProperty()
   dealStatus: string;
 
   @ApiProperty()
