@@ -56,21 +56,32 @@ __decorate([
     __metadata("design:type", String)
 ], ApproveMerchantDTO.prototype, "website_socialAppLink", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({
-        example: [
-            {
-                _id: '',
-                locationName: '',
-                streetAddress: '',
-                zipCode: '',
-                city: '',
-                googleMapPin: '',
-                province: '',
-                phoneNumber: '',
-            },
-        ],
-    }),
-    __metadata("design:type", Array)
-], ApproveMerchantDTO.prototype, "locations", void 0);
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
+], ApproveMerchantDTO.prototype, "streetAddress", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
+], ApproveMerchantDTO.prototype, "zipCode", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
+], ApproveMerchantDTO.prototype, "city", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
+], ApproveMerchantDTO.prototype, "province", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
+], ApproveMerchantDTO.prototype, "phoneNumber", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
+], ApproveMerchantDTO.prototype, "countryCode", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
+], ApproveMerchantDTO.prototype, "leadSource", void 0);
 exports.ApproveMerchantDTO = ApproveMerchantDTO;
 //# sourceMappingURL=approveMerchant.dto.js.map

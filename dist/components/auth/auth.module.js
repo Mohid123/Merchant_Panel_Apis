@@ -11,6 +11,7 @@ exports.AuthModule = void 0;
 const common_1 = require("@nestjs/common");
 const jwt_1 = require("@nestjs/jwt");
 const mongoose_1 = require("@nestjs/mongoose");
+const lead_schema_1 = require("../../schema/lead/lead.schema");
 const otp_schema_1 = require("../../schema/otp/otp.schema");
 const vouchersCounter_schema_1 = require("../../schema/vouchers/vouchersCounter.schema");
 const users_schema_1 = require("../../schema/user/users.schema");
@@ -29,6 +30,7 @@ let AuthModule = AuthModule_1 = class AuthModule {
                     { name: 'User', schema: users_schema_1.UsersSchema },
                     { name: 'OTP', schema: otp_schema_1.OtpSchema },
                     { name: 'Counter', schema: vouchersCounter_schema_1.VoucherCounterSchema },
+                    { name: 'Lead', schema: lead_schema_1.LeadSchema },
                 ]),
             ],
             controllers: [auth_controller_1.AuthController],

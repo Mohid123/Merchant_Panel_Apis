@@ -161,5 +161,13 @@ __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
 ], UsersDto.prototype, "status", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
+], UsersDto.prototype, "countryCode", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
+], UsersDto.prototype, "leadSource", void 0);
 exports.UsersDto = UsersDto;
 //# sourceMappingURL=users.dto.js.map

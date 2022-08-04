@@ -24,4 +24,6 @@ export declare class UsersDto {
     profilePicBlurHash: string;
     deletedCheck: boolean;
     status: string;
+    countryCode: string;
+    leadSource: string;
 }

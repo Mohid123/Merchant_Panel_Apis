@@ -25,10 +25,11 @@ var generator = require('generate-password');
 var otpGenerator = require('otp-generator');
 let transporter;
 let AuthService = class AuthService {
-    constructor(_usersService, _otpService, voucherCounterModel, jwtService) {
+    constructor(_usersService, _otpService, voucherCounterModel, _leadModel, jwtService) {
         this._usersService = _usersService;
         this._otpService = _otpService;
         this.voucherCounterModel = voucherCounterModel;
+        this._leadModel = _leadModel;
         this.jwtService = jwtService;
     }
     onModuleInit() {
@@ -198,7 +199,10 @@ let AuthService = class AuthService {
         const user = await this._usersService.findOne({
             email: email === null || email === void 0 ? void 0 : email.toLowerCase(),
         });
-        return user ? true : false;
+        const lead = await this._leadModel.findOne({
+            email: email === null || email === void 0 ? void 0 : email.toLowerCase(),
+        });
+        return user || lead ? true : false;
     }
     async sendOtp(otpEmailDto) {
         var _a;
@@ -478,7 +482,9 @@ AuthService = __decorate([
     __param(0, (0, mongoose_1.InjectModel)('User')),
     __param(1, (0, mongoose_1.InjectModel)('OTP')),
     __param(2, (0, mongoose_1.InjectModel)('Counter')),
+    __param(3, (0, mongoose_1.InjectModel)('Lead')),
     __metadata("design:paramtypes", [mongoose_2.Model,
+        mongoose_2.Model,
         mongoose_2.Model,
         mongoose_2.Model,
         jwt_1.JwtService])

@@ -9,5 +9,11 @@ export declare class ApproveMerchantDTO {
     companyName: string;
     vatNumber: string;
     website_socialAppLink: string;
-    locations: [];
+    streetAddress: string;
+    zipCode: string;
+    city: string;
+    province: string;
+    phoneNumber: string;
+    countryCode: string;
+    leadSource: string;
 }

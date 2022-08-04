@@ -497,13 +497,6 @@ let UsersService = class UsersService {
     }
     async approveMerchant(userID, approveMerchantDto) {
         try {
-            const lead = await this._leadModel.findOne({
-                _id: userID,
-                deletedCheck: false,
-            });
-            if (!lead) {
-                throw new common_1.BadRequestException('Merchent already approved');
-            }
             let generatedPassword = await this.generatePassword();
             const salt = await bcrypt.genSalt();
             let hashedPassword = await bcrypt.hash(generatedPassword, salt);
@@ -710,7 +703,7 @@ let UsersService = class UsersService {
             return { enquiryID: userID, merchantID: merchant === null || merchant === void 0 ? void 0 : merchant.userID };
         }
         catch (err) {
-            throw new common_1.HttpException(err === null || err === void 0 ? void 0 : err.message, common_1.HttpStatus.BAD_REQUEST);
+            throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
         }
     }
 };

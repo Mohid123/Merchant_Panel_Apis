@@ -4,12 +4,14 @@ import { UsersInterface } from '../../interface/user/users.interface';
 import { EmailDTO } from '../../dto/email/email.dto';
 import { OTP } from 'src/interface/otp/otp.interface';
 import { VoucherCounterInterface } from 'src/interface/vouchers/vouchersCounter.interface';
+import { LeadInterface } from 'src/interface/lead/lead.interface';
 export declare class AuthService {
     private readonly _usersService;
     private readonly _otpService;
     private readonly voucherCounterModel;
+    private readonly _leadModel;
     private jwtService;
-    constructor(_usersService: Model<UsersInterface>, _otpService: Model<OTP>, voucherCounterModel: Model<VoucherCounterInterface>, jwtService: JwtService);
+    constructor(_usersService: Model<UsersInterface>, _otpService: Model<OTP>, voucherCounterModel: Model<VoucherCounterInterface>, _leadModel: Model<LeadInterface>, jwtService: JwtService);
     onModuleInit(): void;
     generateCustomerId(sequenceName: any): Promise<string>;
     loginToken(): Promise<{
