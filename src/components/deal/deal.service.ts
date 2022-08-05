@@ -132,46 +132,63 @@ export class DealService {
         });
       }
 
-      if (dealDto.mediaUrl && dealDto.mediaUrl.length) {
-        dealDto['type'] = dealDto.mediaUrl[0].type;
-        dealDto['captureFileURL'] = dealDto.mediaUrl[0].captureFileURL;
-        dealDto['path'] = dealDto.mediaUrl[0].path;
-        if (dealDto['type'] == 'Video') {
-          dealDto['thumbnailURL'] = dealDto.mediaUrl[0].thumbnailURL;
-          dealDto['thumbnailPath'] = dealDto.mediaUrl[0].thumbnailPath;
-        }
-        if (dealDto.mediaUrl) {
-          for (let i = 0; i < dealDto.mediaUrl.length; i++) {
-            if (dealDto.mediaUrl[i].type == 'Video') {
-              console.log('Inside if');
-              var item = dealDto.mediaUrl.splice(i, 1);
-              dealDto.mediaUrl.splice(0, 0, item[0]);
-            }
+      let minVoucher = dealDto.vouchers?.sort(
+        (a, b) => a?.dealPrice - b?.dealPrice,
+      )[0];
+
+      dealDto.minDealPrice = minVoucher?.dealPrice;
+      dealDto.minOriginalPrice = minVoucher?.originalPrice;
+      dealDto.minDiscountPercentage = minVoucher?.discountPercentage;
+
+      if (dealDto.mediaUrl) {
+        for (let i = 0; i < dealDto.mediaUrl.length; i++) {
+          if (dealDto.mediaUrl[i].type == 'Video') {
+            console.log('Inside if');
+            var item = dealDto.mediaUrl.splice(i, 1);
+            dealDto.mediaUrl.splice(0, 0, item[0]);
           }
         }
-        for await (let mediaObj of dealDto.mediaUrl) {
-          await new Promise(async (resolve, reject) => {
-            try {
-              let urlMedia = '';
-              if (mediaObj.type == 'Video') {
-                urlMedia = mediaObj.thumbnailURL;
-              } else {
-                urlMedia = mediaObj.captureFileURL;
-              }
-              mediaObj['blurHash'] = await encodeImageToBlurhash(urlMedia);
-              if (!mediaObj.backgroundColorHex) {
-                const data = await getDominantColor(mediaObj.captureFileURL);
-                mediaObj['backgroundColorHex'] = data.hexCode;
-              }
-
-              resolve({});
-            } catch (err) {
-              console.log('Error', err);
-              reject(err);
-            }
-          });
-        }
       }
+
+      //   if (dealDto.mediaUrl && dealDto.mediaUrl.length) {
+      //     dealDto['type'] = dealDto.mediaUrl[0].type;
+      //     dealDto['captureFileURL'] = dealDto.mediaUrl[0].captureFileURL;
+      //     dealDto['path'] = dealDto.mediaUrl[0].path;
+      //     if(dealDto['type']=='Video'){
+      //       dealDto['thumbnailURL'] = dealDto.mediaUrl[0].thumbnailURL;
+      //       dealDto['thumbnailPath'] = dealDto.mediaUrl[0].thumbnailPath;
+      //     }
+      //     if (dealDto.mediaUrl) {
+      //       for (let i = 0; i < dealDto.mediaUrl.length; i++) {
+      //         if (dealDto.mediaUrl[i].type == 'Video') {
+      //           console.log('Inside if');
+      //           var item = dealDto.mediaUrl.splice(i, 1);
+      //           dealDto.mediaUrl.splice(0, 0, item[0]);
+      //         }
+      //       }
+      //     }
+      //     for await (let mediaObj of dealDto.mediaUrl) {
+      //       await new Promise(async (resolve, reject) => {
+      //         try {
+      //           let urlMedia = ''
+      //           if (mediaObj.type == 'Video') {
+      //             urlMedia = mediaObj.thumbnailURL;
+      //           } else {
+      //             urlMedia = mediaObj.captureFileURL;
+      //           }
+      //           mediaObj['blurHash'] = await encodeImageToBlurhash(urlMedia);
+      //           let data = mediaObj['backgroundColorHex'] = await getDominantColor(urlMedia);
+      //           mediaObj['backgroundColorHex'] = data.hexCode;
+
+      //           resolve({})
+      //         } catch (err) {
+      //           console.log("Error", err);
+      //           reject(err)
+      //         }
+      //       })
+
+      //     }
+      // }
 
       dealDto.availableVouchers = dealVouchers;
       dealDto.soldVouchers = dealSoldVouchers;
@@ -839,11 +856,36 @@ export class DealService {
           {
             $addFields: {
               id: '$_id',
+              mediaUrl: {
+                $slice: ['$mediaUrl', 1],
+              },
             },
           },
           {
             $project: {
               _id: 0,
+              dealID: 0,
+              merchantID: 0,
+              subTitle: 0,
+              categoryName: 0,
+              subCategoryID: 0,
+              subCategory: 0,
+              vouchers: 0,
+              availableVouchers: 0,
+              aboutThisDeal: 0,
+              readMore: 0,
+              finePrints: 0,
+              netEarnings: 0,
+              isCollapsed: 0,
+              isDuplicate: 0,
+              totalReviews: 0,
+              maxRating: 0,
+              minRating: 0,
+              pageNumber: 0,
+              updatedAt: 0,
+              __v: 0,
+              endDate: 0,
+              startDate: 0,
             },
           },
         ])
@@ -884,11 +926,36 @@ export class DealService {
           {
             $addFields: {
               id: '$_id',
+              mediaUrl: {
+                $slice: ['$mediaUrl', 1],
+              },
             },
           },
           {
             $project: {
               _id: 0,
+              dealID: 0,
+              merchantID: 0,
+              subTitle: 0,
+              categoryName: 0,
+              subCategoryID: 0,
+              subCategory: 0,
+              vouchers: 0,
+              availableVouchers: 0,
+              aboutThisDeal: 0,
+              readMore: 0,
+              finePrints: 0,
+              netEarnings: 0,
+              isCollapsed: 0,
+              isDuplicate: 0,
+              totalReviews: 0,
+              maxRating: 0,
+              minRating: 0,
+              pageNumber: 0,
+              updatedAt: 0,
+              __v: 0,
+              endDate: 0,
+              startDate: 0,
             },
           },
         ])
@@ -934,11 +1001,36 @@ export class DealService {
           {
             $addFields: {
               id: '$_id',
+              mediaUrl: {
+                $slice: ['$mediaUrl', 1],
+              },
             },
           },
           {
             $project: {
               _id: 0,
+              dealID: 0,
+              merchantID: 0,
+              subTitle: 0,
+              categoryName: 0,
+              subCategoryID: 0,
+              subCategory: 0,
+              vouchers: 0,
+              availableVouchers: 0,
+              aboutThisDeal: 0,
+              readMore: 0,
+              finePrints: 0,
+              netEarnings: 0,
+              isCollapsed: 0,
+              isDuplicate: 0,
+              totalReviews: 0,
+              maxRating: 0,
+              minRating: 0,
+              pageNumber: 0,
+              updatedAt: 0,
+              __v: 0,
+              endDate: 0,
+              startDate: 0,
             },
           },
         ])
@@ -995,10 +1087,39 @@ export class DealService {
             },
           },
           {
+            $addFields: {
+              mediaUrl: {
+                $slice: ['$mediaUrl', 1],
+              },
+            },
+          },
+          {
             $project: {
               _id: 0,
               added: 0,
               divided: 0,
+              dealID: 0,
+              merchantID: 0,
+              subTitle: 0,
+              categoryName: 0,
+              subCategoryID: 0,
+              subCategory: 0,
+              vouchers: 0,
+              availableVouchers: 0,
+              aboutThisDeal: 0,
+              readMore: 0,
+              finePrints: 0,
+              netEarnings: 0,
+              isCollapsed: 0,
+              isDuplicate: 0,
+              totalReviews: 0,
+              maxRating: 0,
+              minRating: 0,
+              pageNumber: 0,
+              updatedAt: 0,
+              __v: 0,
+              endDate: 0,
+              startDate: 0,
             },
           },
 
@@ -1040,11 +1161,36 @@ export class DealService {
           {
             $addFields: {
               id: '$_id',
+              mediaUrl: {
+                $slice: ['$mediaUrl', 1],
+              },
             },
           },
           {
             $project: {
               _id: 0,
+              dealID: 0,
+              merchantID: 0,
+              subTitle: 0,
+              categoryName: 0,
+              subCategoryID: 0,
+              subCategory: 0,
+              vouchers: 0,
+              availableVouchers: 0,
+              aboutThisDeal: 0,
+              readMore: 0,
+              finePrints: 0,
+              netEarnings: 0,
+              isCollapsed: 0,
+              isDuplicate: 0,
+              totalReviews: 0,
+              maxRating: 0,
+              minRating: 0,
+              pageNumber: 0,
+              updatedAt: 0,
+              __v: 0,
+              endDate: 0,
+              startDate: 0,
             },
           },
           {
@@ -1083,6 +1229,46 @@ export class DealService {
           },
           {
             $sample: { size: totalCount },
+          },
+          {
+            $sort: {
+              createdAt: -1,
+            },
+          },
+          {
+            $addFields: {
+              id: '$_id',
+              mediaUrl: {
+                $slice: ['$mediaUrl', 1],
+              },
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+              dealID: 0,
+              merchantID: 0,
+              subTitle: 0,
+              categoryName: 0,
+              subCategoryID: 0,
+              subCategory: 0,
+              vouchers: 0,
+              availableVouchers: 0,
+              aboutThisDeal: 0,
+              readMore: 0,
+              finePrints: 0,
+              netEarnings: 0,
+              isCollapsed: 0,
+              isDuplicate: 0,
+              totalReviews: 0,
+              maxRating: 0,
+              minRating: 0,
+              pageNumber: 0,
+              updatedAt: 0,
+              __v: 0,
+              endDate: 0,
+              startDate: 0,
+            },
           },
         ])
         .skip(parseInt(offset))
@@ -1182,11 +1368,36 @@ export class DealService {
           {
             $addFields: {
               id: '$_id',
+              mediaUrl: {
+                $slice: ['$mediaUrl', 1],
+              },
             },
           },
           {
             $project: {
               _id: 0,
+              dealID: 0,
+              merchantID: 0,
+              subTitle: 0,
+              categoryName: 0,
+              subCategoryID: 0,
+              subCategory: 0,
+              vouchers: 0,
+              availableVouchers: 0,
+              aboutThisDeal: 0,
+              readMore: 0,
+              finePrints: 0,
+              netEarnings: 0,
+              isCollapsed: 0,
+              isDuplicate: 0,
+              totalReviews: 0,
+              maxRating: 0,
+              minRating: 0,
+              pageNumber: 0,
+              updatedAt: 0,
+              __v: 0,
+              endDate: 0,
+              startDate: 0,
             },
           },
         ])

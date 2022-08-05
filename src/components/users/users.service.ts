@@ -606,6 +606,7 @@ export class UsersService {
 
   async approveMerchant(userID, approveMerchantDto) {
     try {
+      console.log('Approve Merchant body',approveMerchantDto)
       let generatedPassword = await this.generatePassword();
       const salt = await bcrypt.genSalt();
       let hashedPassword = await bcrypt.hash(generatedPassword, salt);
@@ -648,7 +649,9 @@ export class UsersService {
         province: approveMerchantDto.province,
         phoneNumber: approveMerchantDto.phoneNumber,
       };
-      await this._leadModel.updateOne({ _id: userID }, { deletedCheck: true });
+      if(userID){
+        await this._leadModel.updateOne({ _id: userID }, { deletedCheck: true });
+      }
       const location = await new this._locationModel(locObj).save();
 
       const emailDto: EmailDTO = {
