@@ -497,6 +497,7 @@ let UsersService = class UsersService {
     }
     async approveMerchant(userID, approveMerchantDto) {
         try {
+            console.log('Approve Merchant body', approveMerchantDto);
             let generatedPassword = await this.generatePassword();
             const salt = await bcrypt.genSalt();
             let hashedPassword = await bcrypt.hash(generatedPassword, salt);
