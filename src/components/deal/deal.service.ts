@@ -4,7 +4,11 @@ import { Model } from 'mongoose';
 import { DEALSTATUS } from '../../enum/deal/dealstatus.enum';
 import { CategoryInterface } from '../../interface/category/category.interface';
 import { DealInterface } from '../../interface/deal/deal.interface';
-import { encodeImageToBlurhash, generateStringId, getDominantColor } from '../file-management/utils/utils';
+import {
+  encodeImageToBlurhash,
+  generateStringId,
+  getDominantColor,
+} from '../file-management/utils/utils';
 import { SORT } from '../../enum/sort/sort.enum';
 import { VoucherCounterInterface } from '../../interface/vouchers/vouchersCounter.interface';
 import { SubCategoryInterface } from '../../interface/category/subcategory.interface';
@@ -143,7 +147,7 @@ export class DealService {
         dealDto['type'] = dealDto.mediaUrl[0].type;
         dealDto['captureFileURL'] = dealDto.mediaUrl[0].captureFileURL;
         dealDto['path'] = dealDto.mediaUrl[0].path;
-        if(dealDto['type']=='Video'){
+        if (dealDto['type'] == 'Video') {
           dealDto['thumbnailURL'] = dealDto.mediaUrl[0].thumbnailURL;
           dealDto['thumbnailPath'] = dealDto.mediaUrl[0].thumbnailPath;
         }
@@ -159,7 +163,7 @@ export class DealService {
         for await (let mediaObj of dealDto.mediaUrl) {
           await new Promise(async (resolve, reject) => {
             try {
-              let urlMedia = ''
+              let urlMedia = '';
               if (mediaObj.type == 'Video') {
                 urlMedia = mediaObj.thumbnailURL;
               } else {
@@ -171,13 +175,12 @@ export class DealService {
               
               resolve({})
             } catch (err) {
-              console.log("Error", err);
-              reject(err)
+              console.log('Error', err);
+              reject(err);
             }
-          })
-  
+          });
         }
-    }
+      }
 
       dealDto.availableVouchers = dealVouchers;
       dealDto.soldVouchers = dealSoldVouchers;
@@ -1305,7 +1308,7 @@ export class DealService {
             $match: {
               locationCoordinates: {
                 $geoWithin: {
-                  $centerSphere: [[parseFloat(lat), parseFloat(lng)], radius],
+                  $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
                 },
               },
             },
@@ -1320,7 +1323,7 @@ export class DealService {
     }
   }
 
-  async searchDeals (header, offset, limit) {
+  async searchDeals(header, offset, limit) {
     try {
       header = header.trim();
 
@@ -1351,7 +1354,7 @@ export class DealService {
           },
           {
             $sort: {
-              createdAt: -1
+              createdAt: -1,
             },
           },
           {
