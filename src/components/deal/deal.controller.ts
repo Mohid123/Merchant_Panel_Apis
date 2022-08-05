@@ -251,4 +251,12 @@ export class DealController {
   ) {
     return this.dealService.searchDeals(header, offset, limit)
   }
+
+  // @Get('changeMediaURL')
+  // changeMediaURL (
+  // ) {
+  //   return this.dealService.changeMediaURL()
+  // }
+
+  
 }

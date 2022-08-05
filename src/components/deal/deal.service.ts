@@ -1602,4 +1602,27 @@ export class DealService {
       throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
+
+  async changeMediaURL() {
+    let deals = await this.dealModel.find();
+    deals = JSON.parse(JSON.stringify(deals))
+    
+    for await(let deal of deals){
+      let updatedMediaArr = [];
+      if(deal?.mediaUrl?.length){
+        for await(let mediaObj of deal?.mediaUrl){
+          if(typeof(mediaObj)=='string'){
+            let tempMediaObj:string = mediaObj  
+            let updatedMedia = tempMediaObj.replace('//dividealapi','//stagingdividealapi');
+
+            updatedMediaArr.push(updatedMedia)
+          }
+        }
+
+        await this.dealModel.updateOne({_id:deal.id},{mediaUrl:updatedMediaArr})
+        console.log('deals changed',deal.id)
+      }
+
+    }
+  }
 }
