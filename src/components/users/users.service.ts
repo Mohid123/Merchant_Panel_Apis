@@ -617,7 +617,7 @@ export class UsersService {
         specialChars: false,
       });
 
-      approveMerchantDto.tradeName = approveMerchantDto.companyName;
+      approveMerchantDto.legalName = approveMerchantDto.companyName;
       approveMerchantDto.businessType = approveMerchantDto.categoryType;
       approveMerchantDto.pinCode = pinCode;
       approveMerchantDto.password = hashedPassword;
