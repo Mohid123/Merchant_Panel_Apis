@@ -398,7 +398,7 @@ export class UsersService {
       const salt = await bcrypt.genSalt();
       let hashedPassword = await bcrypt.hash(generatedPassword, salt);
 
-      const pinCode = otpGenerator.generate(6, {
+      const pinCode = otpGenerator.generate(4, {
         upperCaseAlphabets: false,
         lowerCaseAlphabets: false,
         specialChars: false,
@@ -610,15 +610,17 @@ export class UsersService {
       const salt = await bcrypt.genSalt();
       let hashedPassword = await bcrypt.hash(generatedPassword, salt);
 
-      const pinCode = otpGenerator.generate(6, {
+      const pinCode = otpGenerator.generate(4, {
         upperCaseAlphabets: false,
         lowerCaseAlphabets: false,
         specialChars: false,
       });
+      
+      delete approveMerchantDto.leadSource;
 
-      approveMerchantDto.tradeName = approveMerchantDto.companyName;
+      approveMerchantDto.legalName = approveMerchantDto.companyName;
       approveMerchantDto.businessType = approveMerchantDto.categoryType;
-      approveMerchantDto.pinCode = pinCode;
+      approveMerchantDto.voucherPinCode = pinCode;
       approveMerchantDto.password = hashedPassword;
       approveMerchantDto.status = USERSTATUS.approved;
       approveMerchantDto.zipCode = approveMerchantDto.zipCode.toString();
