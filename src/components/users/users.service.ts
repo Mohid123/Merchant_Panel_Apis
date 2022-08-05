@@ -615,6 +615,8 @@ export class UsersService {
         lowerCaseAlphabets: false,
         specialChars: false,
       });
+      
+      delete approveMerchantDto.leadSource;
 
       approveMerchantDto.legalName = approveMerchantDto.companyName;
       approveMerchantDto.businessType = approveMerchantDto.categoryType;
