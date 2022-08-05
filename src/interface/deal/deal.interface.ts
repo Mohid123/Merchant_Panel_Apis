@@ -2,11 +2,11 @@ import { Document } from 'mongoose';
 
 export interface VoucherInterface {
   id: string;
+  subDealID: string;
   subTitle: string;
   originalPrice: number;
   dealPrice: number;
   discountPercentage: number;
-  // details: string;
   soldVouchers: number;
   numberOfVouchers: number;
   grossEarning: number;

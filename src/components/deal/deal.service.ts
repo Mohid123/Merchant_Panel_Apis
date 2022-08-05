@@ -8,7 +8,6 @@ import { encodeImageToBlurhash, generateStringId, getDominantColor } from '../fi
 import { SORT } from '../../enum/sort/sort.enum';
 import { VoucherCounterInterface } from '../../interface/vouchers/vouchersCounter.interface';
 import { SubCategoryInterface } from '../../interface/category/subcategory.interface';
-import { arrayBuffer } from 'stream/consumers';
 import { RATINGENUM } from 'src/enum/review/ratingValue.enum';
 import { UsersInterface } from 'src/interface/user/users.interface';
 
@@ -96,6 +95,7 @@ export class DealService {
       }
 
       if (dealDto.vouchers) {
+        let num = 1;
         dealDto.vouchers = dealDto.vouchers.map((el) => {
           let startTime;
           let endTime;
@@ -111,7 +111,11 @@ export class DealService {
 
           if (el.voucherValidity > 0) {
             startTime = 0;
-            endTime = 0;
+
+            let today = new Date();
+            let tomorrow = new Date();
+            let newDay = tomorrow.setDate(today.getDate() + el.voucherValidity);
+            endTime = new Date(newDay).getTime();
           } else {
             startTime = new Date(el.voucherStartDate).getTime();
             endTime = new Date(el.voucherEndDate).getTime();
@@ -121,6 +125,7 @@ export class DealService {
           el.dealPrice = parseFloat(el.dealPrice);
           el.numberOfVouchers = parseInt(el.numberOfVouchers);
           el._id = generateStringId();
+          el.subDealID = dealDto.dealID + '-' + num++;
           el.voucherStartDate = startTime;
           el.voucherEndDate = endTime;
 
