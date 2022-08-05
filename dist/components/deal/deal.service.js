@@ -595,8 +595,8 @@ let DealService = class DealService {
                     $addFields: {
                         id: '$_id',
                         mediaUrl: {
-                            $slice: ["$mediaUrl", 1]
-                        }
+                            $slice: ['$mediaUrl', 1],
+                        },
                     },
                 },
                 {
@@ -623,7 +623,7 @@ let DealService = class DealService {
                         updatedAt: 0,
                         __v: 0,
                         endDate: 0,
-                        startDate: 0
+                        startDate: 0,
                     },
                 },
             ])
@@ -663,8 +663,8 @@ let DealService = class DealService {
                     $addFields: {
                         id: '$_id',
                         mediaUrl: {
-                            $slice: ["$mediaUrl", 1]
-                        }
+                            $slice: ['$mediaUrl', 1],
+                        },
                     },
                 },
                 {
@@ -691,7 +691,7 @@ let DealService = class DealService {
                         updatedAt: 0,
                         __v: 0,
                         endDate: 0,
-                        startDate: 0
+                        startDate: 0,
                     },
                 },
             ])
@@ -736,8 +736,8 @@ let DealService = class DealService {
                     $addFields: {
                         id: '$_id',
                         mediaUrl: {
-                            $slice: ["$mediaUrl", 1]
-                        }
+                            $slice: ['$mediaUrl', 1],
+                        },
                     },
                 },
                 {
@@ -764,7 +764,7 @@ let DealService = class DealService {
                         updatedAt: 0,
                         __v: 0,
                         endDate: 0,
-                        startDate: 0
+                        startDate: 0,
                     },
                 },
             ])
@@ -823,9 +823,9 @@ let DealService = class DealService {
                 {
                     $addFields: {
                         mediaUrl: {
-                            $slice: ["$mediaUrl", 1]
-                        }
-                    }
+                            $slice: ['$mediaUrl', 1],
+                        },
+                    },
                 },
                 {
                     $project: {
@@ -853,7 +853,7 @@ let DealService = class DealService {
                         updatedAt: 0,
                         __v: 0,
                         endDate: 0,
-                        startDate: 0
+                        startDate: 0,
                     },
                 },
                 {
@@ -895,8 +895,8 @@ let DealService = class DealService {
                     $addFields: {
                         id: '$_id',
                         mediaUrl: {
-                            $slice: ["$mediaUrl", 1]
-                        }
+                            $slice: ['$mediaUrl', 1],
+                        },
                     },
                 },
                 {
@@ -923,7 +923,7 @@ let DealService = class DealService {
                         updatedAt: 0,
                         __v: 0,
                         endDate: 0,
-                        startDate: 0
+                        startDate: 0,
                     },
                 },
                 {
@@ -964,16 +964,16 @@ let DealService = class DealService {
                 },
                 {
                     $sort: {
-                        createdAt: -1
-                    }
+                        createdAt: -1,
+                    },
                 },
                 {
                     $addFields: {
                         id: '$_id',
                         mediaUrl: {
-                            $slice: ["$mediaUrl", 1]
-                        }
-                    }
+                            $slice: ['$mediaUrl', 1],
+                        },
+                    },
                 },
                 {
                     $project: {
@@ -999,9 +999,9 @@ let DealService = class DealService {
                         updatedAt: 0,
                         __v: 0,
                         endDate: 0,
-                        startDate: 0
+                        startDate: 0,
                     },
-                }
+                },
             ])
                 .skip(parseInt(offset))
                 .limit(parseInt(limit));
@@ -1047,7 +1047,7 @@ let DealService = class DealService {
                     $match: {
                         locationCoordinates: {
                             $geoWithin: {
-                                $centerSphere: [[parseFloat(lat), parseFloat(lng)], radius],
+                                $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
                             },
                         },
                     },
@@ -1077,15 +1077,15 @@ let DealService = class DealService {
                 },
                 {
                     $sort: {
-                        createdAt: -1
+                        createdAt: -1,
                     },
                 },
                 {
                     $addFields: {
                         id: '$_id',
                         mediaUrl: {
-                            $slice: ["$mediaUrl", 1]
-                        }
+                            $slice: ['$mediaUrl', 1],
+                        },
                     },
                 },
                 {
@@ -1112,7 +1112,7 @@ let DealService = class DealService {
                         updatedAt: 0,
                         __v: 0,
                         endDate: 0,
-                        startDate: 0
+                        startDate: 0,
                     },
                 },
             ])

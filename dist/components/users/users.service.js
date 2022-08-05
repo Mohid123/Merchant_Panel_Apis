@@ -506,7 +506,7 @@ let UsersService = class UsersService {
                 lowerCaseAlphabets: false,
                 specialChars: false,
             });
-            approveMerchantDto.tradeName = approveMerchantDto.companyName;
+            approveMerchantDto.legalName = approveMerchantDto.companyName;
             approveMerchantDto.businessType = approveMerchantDto.categoryType;
             approveMerchantDto.pinCode = pinCode;
             approveMerchantDto.password = hashedPassword;

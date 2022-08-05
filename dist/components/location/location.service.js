@@ -24,7 +24,7 @@ let LocationService = class LocationService {
     }
     async createLocation(locationDto) {
         const coord = await openLocationCode.decode(locationDto.plusCode);
-        let coordinates = [coord.latitudeCenter, coord.longitudeCenter];
+        let coordinates = [coord.longitudeCenter, coord.latitudeCenter];
         const locationObj = Object.assign(Object.assign({}, locationDto), { location: {
                 coordinates: coordinates,
             } });
