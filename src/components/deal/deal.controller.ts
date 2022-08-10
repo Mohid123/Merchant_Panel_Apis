@@ -162,17 +162,21 @@ export class DealController {
     return this.dealService.getSalesStatistics(req);
   }
 
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
+  @ApiQuery({ name: 'createdAt', enum: SORT, required: false })
+  @ApiQuery({ name: 'totalRating', enum: SORT, required: false })
+  // @ApiBearerAuth()
+  // @UseGuards(JwtAuthGuard)
   @ApiQuery({ name: 'rating', required: false })
   @Get('getDealReviews/:dealID')
   getDealReviews(
     @Param('dealID') dealID: string,
+    @Query('createdAt') createdAt: SORT,
+    @Query('totalRating') totalRating: SORT,
     @Query('rating') rating: number,
     @Query('offset') offset: number = 0,
     @Query('limit') limit: number = 10,
   ) {
-    return this.dealService.getDealReviews(offset, limit, rating, dealID);
+    return this.dealService.getDealReviews(offset, limit, rating, dealID, createdAt, totalRating);
   }
 
   @ApiBearerAuth()
@@ -250,6 +254,16 @@ export class DealController {
     @Query('limit') limit: number = 10,
   ) {
     return this.dealService.searchDeals(header, offset, limit)
+  }
+
+  @Get('getSimilarDeals/:categoryName/:subCategoryName')
+  getSimilarDeals (
+    @Param('categoryName') categoryName: string,
+    @Param('subCategoryName') subCategoryName: string,
+    @Query('offset') offset: number = 0,
+    @Query('limit') limit: number = 10,
+  ) {
+    return this.dealService.getSimilarDeals(categoryName, subCategoryName, offset, limit)
   }
 
   // @Get('changeMediaURL')

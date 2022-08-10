@@ -318,7 +318,7 @@ export class DealService {
     }
   }
 
-  async getDealReviews(offset, limit, rating, id) {
+  async getDealReviews(offset, limit, rating, id, createdAt, totalRating) {
     try {
       offset = parseInt(offset) < 0 ? 0 : offset;
       limit = parseInt(limit) < 1 ? 10 : limit;
@@ -335,6 +335,33 @@ export class DealService {
           eq: ['', ''],
         };
       }
+
+      let sort = {};
+
+      if (createdAt) {
+        let sortCreatedAt = createdAt == SORT.ASC ? 1 : -1;
+        console.log('createdAt');
+        sort = {
+          ...sort,
+          createdAt: sortCreatedAt,
+        };
+      }
+
+      if (totalRating) {
+        let sortRating = totalRating == SORT.ASC ? 1 : -1;
+        console.log('totalRating');
+        sort = {
+          ...sort,
+          totalRating: sortRating,
+        };
+      }
+
+      if (Object.keys(sort).length === 0 && sort.constructor === Object) {
+        sort = {
+          createdAt: -1,
+        };
+      }
+
       console.log(ratingFilter['eq']);
       const deal = await this.dealModel
         .aggregate([
@@ -375,6 +402,9 @@ export class DealService {
                     },
                     isViewed: true,
                   },
+                },
+                {
+                  $sort: sort
                 },
                 {
                   $lookup: {
@@ -1400,6 +1430,56 @@ export class DealService {
         totalDeals: totalCount,
         data: deals,
       };
+    } catch (err) {
+      throw new HttpException(err, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async getSimilarDeals (categoryName, subCategoryName, offset, limit) {
+    try {
+      offset = parseInt(offset) < 0 ? 0 : offset;
+      limit = parseInt(limit) < 1 ? 10 : limit;
+
+      const totalCount = await this.dealModel.countDocuments({
+        deletedCheck: false,
+        dealStatus: DEALSTATUS.published,
+        categoryName: categoryName,
+        subCategory: subCategoryName
+      });
+
+      const similarDeals = await this.dealModel.aggregate([
+        {
+          $match: {
+            deletedCheck: false,
+            dealStatus: DEALSTATUS.published,
+            categoryName: categoryName,
+            subCategory: subCategoryName
+          }
+        },
+        {
+          $sort: {
+            ratingsAverage: -1
+          }
+        },
+        {
+          $addFields: {
+            id: '$_id'
+          }
+        },
+        {
+          $project: {
+            _id: 0
+          }
+        }
+      ])
+      .skip(parseInt(offset))
+      .limit(parseInt(limit));
+
+      return {
+        totalCount: totalCount,
+        deals: similarDeals
+      }
+
     } catch (err) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
     }

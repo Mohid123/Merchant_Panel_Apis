@@ -13,12 +13,14 @@ export const ReviewSchema = new mongoose.Schema(
     voucherMongoID: { type: String, default: '' },
     voucherID: { type: String, default: '' },
     customerID: { type: String, default: '' },
+    merchantMongoID: { type: String, default: '' },
     merchantID: { type: String, default: '' },
     text: {
       type: String,
       required: [true, 'A review must not be empty.'],
       trim: true,
     },
+    mediaUrl: { type: Array },
     totalRating: {
       type: Number,
       min: [1, 'Rating must be above or equal to 1.0'],

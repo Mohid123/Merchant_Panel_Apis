@@ -8,8 +8,13 @@ export interface businessHour {
 }
 
 export interface Gallery {
-  pictureUrl: string;
-  pictureBlurHash: string;
+  type: string,
+  captureFileURL: string,
+  path: string,
+  thumbnailURL: string,
+  thumbnailPath: string,
+  blurHash: string,
+  backgroundColorHex: string,
 }
 
 export interface UsersInterface {
@@ -39,7 +44,7 @@ export interface UsersInterface {
   aboutUs: string;
   profilePicURL: string;
   profilePicBlurHash: string;
-  gallery: [string];
+  gallery: Gallery[];
   voucherPinCode: number;
   deletedCheck: boolean;
   status: string;

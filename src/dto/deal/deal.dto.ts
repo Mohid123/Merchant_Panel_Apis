@@ -12,6 +12,9 @@ export class DealDto {
   dealID: string;
 
   @ApiProperty()
+  merchantMongoID: string;
+
+  @ApiProperty()
   merchantID: string;
 
   @ApiProperty()

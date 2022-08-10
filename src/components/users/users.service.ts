@@ -11,7 +11,7 @@ import * as bcrypt from 'bcrypt';
 import { UpdateHoursDto } from '../../dto/user/updatehours.dto';
 import { USERSTATUS } from '../../enum/user/userstatus.enum';
 import { UsersInterface } from '../../interface/user/users.interface';
-import { encodeImageToBlurhash } from '../file-management/utils/utils';
+import { encodeImageToBlurhash, getDominantColor } from '../file-management/utils/utils';
 import { EmailDTO } from 'src/dto/email/email.dto';
 import * as nodemailer from 'nodemailer';
 import axios from 'axios';
@@ -146,10 +146,43 @@ export class UsersService {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
 
-    if (usersDto?.profilePicURL) {
-      usersDto.profilePicBlurHash = await encodeImageToBlurhash(
-        usersDto.profilePicURL,
-      );
+    if (usersDto.gallery && usersDto.gallery.length) {
+      usersDto['type'] = usersDto.gallery[0].type;
+      usersDto['captureFileURL'] = usersDto.gallery[0].captureFileURL;
+      usersDto['path'] = usersDto.gallery[0].path;
+      if (usersDto['type'] == 'Video') {
+        usersDto['thumbnailURL'] = usersDto.gallery[0].thumbnailURL;
+        usersDto['thumbnailPath'] = usersDto.gallery[0].thumbnailPath;
+      }
+      if (usersDto.gallery) {
+        for (let i = 0; i < usersDto.gallery.length; i++) {
+          if (usersDto.gallery[i].type == 'Video') {
+            console.log('Inside if');
+            var item = usersDto.gallery.splice(i, 1);
+            usersDto.gallery.splice(0, 0, item[0]);
+          }
+        }
+      }
+      for await (let mediaObj of usersDto.gallery) {
+        await new Promise(async (resolve, reject) => {
+          try {
+            let urlMedia = '';
+            if (mediaObj.type == 'Video') {
+              urlMedia = mediaObj.thumbnailURL;
+            } else {
+              urlMedia = mediaObj.captureFileURL;
+            }
+            mediaObj['blurHash'] = await encodeImageToBlurhash(urlMedia);
+            let data = mediaObj['backgroundColorHex'] = await getDominantColor(urlMedia);
+            mediaObj['backgroundColorHex'] = data.hexCode;
+            
+            resolve({})
+          } catch (err) {
+            console.log('Error', err);
+            reject(err);
+          }
+        });
+      }
     }
 
     await this._userModel.updateOne({ _id: merchantID }, usersDto);

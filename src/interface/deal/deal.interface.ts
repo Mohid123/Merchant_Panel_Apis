@@ -29,6 +29,7 @@ export interface MedialUrl {
 export interface DealInterface extends Document {
   id: string;
   dealID: string;
+  merchantMongoID: string;
   merchantID: string;
   dealHeader: string;
   subTitle: string;
@@ -52,6 +53,7 @@ export interface DealInterface extends Document {
   dealStatus: string;
   netEarnings: number;
   deletedCheck: boolean;
+  reviewMediaUrl: MedialUrl[];
   pageNumber: number;
   isCollapsed: boolean;
   isDuplicate: boolean;

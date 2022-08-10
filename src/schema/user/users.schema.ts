@@ -32,7 +32,7 @@ export const UsersSchema = new mongoose.Schema(
     aboutUs: { type: String, default: '' },
     profilePicURL: { type: String, default: '' },
     profilePicBlurHash: { type: String, default: '' },
-    gallery: { type: [String] },
+    gallery: { type: Array },
     voucherPinCode: { type: Number },
     deletedCheck: { type: Boolean, default: false },
     status: { type: String, default: '' },

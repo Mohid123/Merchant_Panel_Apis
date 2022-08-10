@@ -5,6 +5,7 @@ import { DealInterface } from '../../interface/deal/deal.interface';
 import { UsersInterface } from '../../interface/user/users.interface';
 import { ReviewInterface } from '../../interface/review/review.interface';
 import { ReviewTextInterface } from 'src/interface/review/merchantreviewreply.interface';
+import { encodeImageToBlurhash, getDominantColor } from '../file-management/utils/utils';
 
 @Injectable()
 export class ReviewService {
@@ -37,6 +38,36 @@ export class ReviewService {
           return a + b?.ratingScore;
         }, 0) / reviewDto.multipleRating?.length;
 
+        if (reviewDto.mediaUrl && reviewDto.mediaUrl.length) {
+          reviewDto['type'] = reviewDto.mediaUrl[0].type;
+          reviewDto['captureFileURL'] = reviewDto.mediaUrl[0].captureFileURL;
+          reviewDto['path'] = reviewDto.mediaUrl[0].path;
+          if (reviewDto['type'] == 'Video') {
+            reviewDto['thumbnailURL'] = reviewDto.mediaUrl[0].thumbnailURL;
+            reviewDto['thumbnailPath'] = reviewDto.mediaUrl[0].thumbnailPath;
+          }
+          
+          for await (let mediaObj of reviewDto.mediaUrl) {
+            await new Promise(async (resolve, reject) => {
+              try {
+                let urlMedia = '';
+                if (mediaObj.type == 'Video') {
+                  urlMedia = mediaObj.thumbnailURL;
+                } else {
+                  urlMedia = mediaObj.captureFileURL;
+                }
+                mediaObj['blurHash'] = await encodeImageToBlurhash(urlMedia);
+                let data = mediaObj['backgroundColorHex'] = await getDominantColor(urlMedia);
+                mediaObj['backgroundColorHex'] = data.hexCode;
+                resolve({})
+              } catch (err) {
+                console.log('Error', err);
+                reject(err);
+              }
+            });
+          }
+        }
+
       const review = await this.reviewModel.create(reviewDto);
 
       const reviewStats = await this.reviewModel.aggregate([
@@ -68,12 +99,12 @@ export class ReviewService {
       const userStats = await this.reviewModel.aggregate([
         {
           $match: {
-            merchantID: reviewDto.merchantID,
+            merchantMongoID: reviewDto.merchantMongoID,
           },
         },
         {
           $group: {
-            _id: '$merchantID',
+            _id: '$merchantMongoID',
             nRating: { $sum: 1 },
             avgRating: { $avg: '$totalRating' },
             minRating: { $min: '$totalRating' },
@@ -83,17 +114,27 @@ export class ReviewService {
       ]);
 
       if (userStats.length > 0) {
-        await this.userModel.findByIdAndUpdate(reviewDto.merchantID, {
+        await this.userModel.findByIdAndUpdate(reviewDto.merchantMongoID, {
           ratingsAverage: userStats[0].avgRating,
           totalReviews: userStats[0].nRating,
           minRating: userStats[0].minRating,
           maxRating: userStats[0].maxRating,
         });
       } else {
-        await this.userModel.findByIdAndUpdate(reviewDto.merchantID, {
+        await this.userModel.findByIdAndUpdate(reviewDto.merchantMongoID, {
           ratingsAverage: 0,
           ratingsQuantity: 0,
         });
+      }
+
+      if (reviewDto.mediaUrl && reviewDto.mediaUrl.length) {
+        let deal = await this.dealModel.findOne({_id: reviewDto.dealMongoID});
+
+        if (deal) {
+          deal.reviewMediaUrl.unshift(...reviewDto.mediaUrl);
+          deal.reviewMediaUrl = deal.reviewMediaUrl.slice(0,50);
+          await this.dealModel.updateOne({_id: reviewDto.dealMongoID},{$set:{reviewMediaUrl: deal.reviewMediaUrl}});
+        }
       }
 
       return review;

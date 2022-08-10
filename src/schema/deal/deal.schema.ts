@@ -6,11 +6,12 @@ export const DealSchema = new mongoose.Schema(
   {
     _id: { type: String, default: generateStringId },
     dealID: { type: String, unique: true },
+    merchantMongoID: { type: String },
     merchantID: { type: String },
     dealHeader: { type: String, default: '' },
     subTitle: { type: String, default: '' },
     highlights: { type: String, default: '' },
-    categoryID: { type: mongoose.Schema.Types.String, ref: 'Category' },
+    categoryID: { type: String , default: '' },
     categoryName: { type: String },
     subCategoryID: { type: String, default: '' },
     subCategory: { type: String, default: '' },
@@ -33,6 +34,7 @@ export const DealSchema = new mongoose.Schema(
     isDuplicate: { type: Boolean, default: false },
     isSpecialOffer: { type: Boolean, default: false },
     dealPreviewURL: { type: String },
+    reviewMediaUrl: { type: Array },
     ratingsAverage: {
       type: Number,
       default: 0,

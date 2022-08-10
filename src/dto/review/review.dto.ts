@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { multipleRatings } from 'src/interface/review/review.interface';
+import { MedialUrl, multipleRatings } from 'src/interface/review/review.interface';
 
 export class ReviewDto {
   @ApiProperty()
@@ -27,10 +27,28 @@ export class ReviewDto {
   customerID: string;
 
   @ApiProperty()
+  merchantMongoID: string;
+
+  @ApiProperty()
   merchantID: string;
 
   @ApiProperty()
   text: string;
+
+  @ApiProperty({
+    example: [
+      {
+        type: '',
+        captureFileURL: '',
+        path: '',
+        thumbnailURL: '',
+        thumbnailPath: '',
+        blurHash:'',
+        backgroundColorHex:'',
+      }
+    ],
+  })
+  mediaUrl: MedialUrl[];
 
   @ApiProperty()
   totalRating: number;
