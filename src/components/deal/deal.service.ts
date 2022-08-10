@@ -82,7 +82,7 @@ export class DealService {
         dealDto.endDate = stamp;
       }
       if (!savedDeal) {
-        dealDto.dealHeader = dealDto?.dealHeader?.toUpperCase();
+        dealDto.dealHeader = dealDto?.dealHeader;
 
         dealDto.merchantID = req.user.id;
 
