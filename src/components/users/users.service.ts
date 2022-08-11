@@ -127,16 +127,20 @@ export class UsersService {
   }
 
   async completeKYC(merchantID, kycDto) {
-    // let validation:any = await this.validateVatNumber(kycDto.vatNumber);
-    // if (validation.success == 0) {
-    //   throw new UnauthorizedException('Wrong Vatnumber!');
-    // }
 
     await this._userModel.updateOne({ _id: merchantID }, kycDto);
     await this._userModel.updateOne({ _id: merchantID }, { kycStatus: true });
 
     return {
       message: 'KYC has been updated successfully!',
+    };
+  }
+
+  async updateVoucherPinCode (merchantID, voucherPinCodeDto) {
+    await this._userModel.updateOne({_id: merchantID}, voucherPinCodeDto);
+
+    return {
+      message: 'Voucher pin code has been updated successfully!'
     };
   }
 

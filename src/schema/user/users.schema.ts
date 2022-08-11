@@ -22,6 +22,8 @@ export const UsersSchema = new mongoose.Schema(
     city: { type: String, default: '' },
     vatNumber: { type: String, default: '' },
     iban: { type: String, default: '' },
+    bic_swiftCode: { type: String, default: '' },
+    accountHolder: { type: String, default: '' },
     bankName: { type: String, default: '' },
     kycStatus: { type: Boolean, default: false },
     province: { type: String, default: '' },

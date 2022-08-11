@@ -34,6 +34,8 @@ export interface UsersInterface {
   city: string;
   vatNumber: string;
   iban: string;
+  bic_swiftCode: string;
+  accountHolder: string;
   bankName: string;
   kycStatus: boolean;
   province: string;
