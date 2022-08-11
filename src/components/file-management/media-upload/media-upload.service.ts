@@ -12,15 +12,44 @@ export class MediaUploadService {
   async compressImageTo300(file) {
     const img = await jimp.read(file['path']);
 
+    const compressionSizes = [
+      {
+        height: 300,
+        width: 500,
+      },
+      {
+        height: 600,
+        width: 1000,
+      },
+      {
+        height: 900,
+        width: 1500,
+      },
+    ];
+
     const height = img.bitmap.height;
     const width = img.bitmap.width;
 
     if ((height < 200 && width < 300) || file.size <= 300 * 1000) {
       return '';
     }
+
+    compressionSizes.forEach((el) => {
+      if (
+        (height > el.height && width > el.width) ||
+        file.size >= el.width * 1000
+      ) {
+        const heightRatio = height / width;
+        const widthRatio = width / height;
+        file['path'] = file['path'].replace(`compressed`, `${el.width}`);
+        img.resize(el.width * widthRatio, jimp.AUTO).write(file['path']);
+        file['path'] = file['path'].replace(`${el.width}`, `compressed`);
+      }
+    });
+
     const heightRatio = height / width;
     const widthRatio = width / height;
-    file['path'] = file['path'].replace('compressed', `300`);
+    file['path'] = file['path'].replace(`compressed`, `300`);
     img.resize(300 * widthRatio, jimp.AUTO).write(file['path']);
   }
 }
