@@ -240,6 +240,11 @@ export class UsersService {
           },
         },
         {
+          $lookup : {
+
+          }
+        }
+        {
           $addFields: {
             id: '$_id',
           },
@@ -684,12 +689,12 @@ export class UsersService {
 
       const locObj = {
         merchantID: approveMerchantDto.userID,
-        streetAddress: approveMerchantDto.streetAddress,
-        zipCode: approveMerchantDto.zipCode,
-        city: approveMerchantDto.city,
-        googleMapPin: approveMerchantDto.googleMapPin,
-        province: approveMerchantDto.province,
-        phoneNumber: approveMerchantDto.phoneNumber,
+        // streetAddress: approveMerchantDto.streetAddress,
+        // zipCode: approveMerchantDto.zipCode,
+        // city: approveMerchantDto.city,
+        // googleMapPin: approveMerchantDto.googleMapPin,
+        // province: approveMerchantDto.province,
+        // phoneNumber: approveMerchantDto.phoneNumber,
       };
       if (userID) {
         await this._leadModel.updateOne(
@@ -697,7 +702,7 @@ export class UsersService {
           { deletedCheck: true },
         );
       }
-      const location = await new this._locationModel().save();
+      const location = await new this._locationModel(locObj).save();
 
       const emailDto: EmailDTO = {
         from: `"Divideals" <${process.env.EMAIL}>`,
