@@ -1,9 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-export class LocationDTO {
-  @ApiProperty()
-  merchantID: string;
-
+export class UpdateLocationDTO {
   @ApiProperty()
   tradeName: string;
 

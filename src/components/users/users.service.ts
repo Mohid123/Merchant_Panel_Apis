@@ -11,7 +11,10 @@ import * as bcrypt from 'bcrypt';
 import { UpdateHoursDto } from '../../dto/user/updatehours.dto';
 import { USERSTATUS } from '../../enum/user/userstatus.enum';
 import { UsersInterface } from '../../interface/user/users.interface';
-import { encodeImageToBlurhash, getDominantColor } from '../file-management/utils/utils';
+import {
+  encodeImageToBlurhash,
+  getDominantColor,
+} from '../file-management/utils/utils';
 import { EmailDTO } from 'src/dto/email/email.dto';
 import * as nodemailer from 'nodemailer';
 import axios from 'axios';
@@ -127,7 +130,6 @@ export class UsersService {
   }
 
   async completeKYC(merchantID, kycDto) {
-
     await this._userModel.updateOne({ _id: merchantID }, kycDto);
     await this._userModel.updateOne({ _id: merchantID }, { kycStatus: true });
 
@@ -136,11 +138,11 @@ export class UsersService {
     };
   }
 
-  async updateVoucherPinCode (merchantID, voucherPinCodeDto) {
-    await this._userModel.updateOne({_id: merchantID}, voucherPinCodeDto);
+  async updateVoucherPinCode(merchantID, voucherPinCodeDto) {
+    await this._userModel.updateOne({ _id: merchantID }, voucherPinCodeDto);
 
     return {
-      message: 'Voucher pin code has been updated successfully!'
+      message: 'Voucher pin code has been updated successfully!',
     };
   }
 
@@ -177,10 +179,12 @@ export class UsersService {
               urlMedia = mediaObj.captureFileURL;
             }
             mediaObj['blurHash'] = await encodeImageToBlurhash(urlMedia);
-            let data = mediaObj['backgroundColorHex'] = await getDominantColor(urlMedia);
+            let data = (mediaObj['backgroundColorHex'] = await getDominantColor(
+              urlMedia,
+            ));
             mediaObj['backgroundColorHex'] = data.hexCode;
-            
-            resolve({})
+
+            resolve({});
           } catch (err) {
             console.log('Error', err);
             reject(err);
@@ -652,7 +656,7 @@ export class UsersService {
         lowerCaseAlphabets: false,
         specialChars: false,
       });
-      
+
       delete approveMerchantDto.leadSource;
 
       approveMerchantDto.legalName = approveMerchantDto.companyName;
@@ -687,10 +691,13 @@ export class UsersService {
         province: approveMerchantDto.province,
         phoneNumber: approveMerchantDto.phoneNumber,
       };
-      if(userID){
-        await this._leadModel.updateOne({ _id: userID }, { deletedCheck: true });
+      if (userID) {
+        await this._leadModel.updateOne(
+          { _id: userID },
+          { deletedCheck: true },
+        );
       }
-      const location = await new this._locationModel(locObj).save();
+      const location = await new this._locationModel().save();
 
       const emailDto: EmailDTO = {
         from: `"Divideals" <${process.env.EMAIL}>`,

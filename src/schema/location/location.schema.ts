@@ -14,6 +14,7 @@ export const LocationSchema = new mongoose.Schema(
       coordinates: [Number],
     },
     merchantID: { type: String },
+    tradeName: { type: String },
     locationName: { type: String },
     streetAddress: { type: String },
     zipCode: { type: String },
