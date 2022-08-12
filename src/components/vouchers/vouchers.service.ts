@@ -1,8 +1,8 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { VoucherInterface } from 'src/interface/vouchers/vouchers.interface';
 import { SORT } from '../../enum/sort/sort.enum';
-import { VoucherInterface } from '../../interface/deal/deal.interface';
 import { VoucherCounterInterface } from '../../interface/vouchers/vouchersCounter.interface';
 
 @Injectable()

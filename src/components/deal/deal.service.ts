@@ -98,9 +98,9 @@ export class DealService {
         }
       }
 
-      if (dealDto.vouchers) {
+      if (dealDto.subDeals) {
         let num = 1;
-        dealDto.vouchers = dealDto.vouchers.map((el) => {
+        dealDto.subDeals = dealDto.subDeals.map((el) => {
           let startTime;
           let endTime;
           let calculateDiscountPercentage =
@@ -137,7 +137,7 @@ export class DealService {
         });
       }
 
-      let minVoucher = dealDto.vouchers?.sort((a,b)=>a?.dealPrice - b?.dealPrice)[0];
+      let minVoucher = dealDto.subDeals?.sort((a,b)=>a?.dealPrice - b?.dealPrice)[0];
       
       dealDto.minDealPrice = minVoucher?.dealPrice;
       dealDto.minOriginalPrice = minVoucher?.originalPrice;
@@ -201,20 +201,20 @@ export class DealService {
 
   async updateDeal(updateDealDto, dealID) {
     try {
-      updateDealDto.vouchers = [updateDealDto.vouchers];
+      updateDealDto.subDeals = [updateDealDto.subDeals];
       const deal = await this.dealModel.findById(dealID);
 
       let dealVouchers = 0;
 
-      deal.vouchers = deal.vouchers.map((element) => {
-        updateDealDto.vouchers.forEach((el) => {
+      deal.subDeals = deal.subDeals.map((element) => {
+        updateDealDto.subDeals.forEach((el) => {
           let calculateDiscountPercentage =
             ((el.originalPrice - el.dealPrice) / el.originalPrice) * 100;
           el.discountPercentage = calculateDiscountPercentage;
 
           if (el['voucherID'] === element['_id']) {
             element.numberOfVouchers = parseInt(el.numberOfVouchers);
-            element.subTitle = el.subTitle;
+            element.title = el.title;
             element.originalPrice = parseFloat(el.originalPrice);
             element.dealPrice = parseFloat(el.dealPrice);
             element.discountPercentage = calculateDiscountPercentage;
@@ -1144,7 +1144,6 @@ export class DealService {
               startDate: 0
             },
           },
-
           {
             $sort: {
               percent: -1,

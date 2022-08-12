@@ -18,8 +18,8 @@ export const DealSchema = new mongoose.Schema(
     mediaUrl: { type: Array },
     startDate: { type: Number },
     endDate: { type: Number },
-    vouchers: { type: Array },
-    availableVouchers: { type: Number },
+    subDeals: { type: Array },
+    availableVouchers: { type: Number, default: 0 },
     soldVouchers: { type: Number, default: 0 },
     aboutThisDeal: { type: String, default: '' },
     minDealPrice: { type: Number, default: 0 },
@@ -34,6 +34,7 @@ export const DealSchema = new mongoose.Schema(
     isDuplicate: { type: Boolean, default: false },
     isSpecialOffer: { type: Boolean, default: false },
     dealPreviewURL: { type: String },
+    editDealURL: { String },
     reviewMediaUrl: { type: Array },
     ratingsAverage: {
       type: Number,

@@ -6,11 +6,11 @@ export class UpdateDealDto {
     example:
       {
         voucherID: '',
-        subTitle: '',
+        title: '',
         originalPrice: 0,
         dealPrice: 0,
         numberOfVouchers: 0,
       },
   })
-  vouchers: any;
+  subDeals: any;
 }
