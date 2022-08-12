@@ -14,25 +14,29 @@ export class MediaUploadService {
 
     const compressionSizes = [
       {
-        height: 300,
-        width: 500,
+        height: 460,
+        width: 764,
       },
       {
-        height: 600,
-        width: 1000,
+        height: 170,
+        width: 281,
       },
       {
-        height: 900,
-        width: 1500,
+        height: 101,
+        width: 168,
+      },
+      {
+        height: 114,
+        width: 142,
       },
     ];
 
     const height = img.bitmap.height;
     const width = img.bitmap.width;
 
-    if ((height < 200 && width < 300) || file.size <= 300 * 1000) {
-      return '';
-    }
+    // if ((height < 200 && width < 300) || file.size <= 300 * 1000) {
+    //   return '';
+    // }
 
     compressionSizes.forEach((el) => {
       if (
@@ -47,9 +51,9 @@ export class MediaUploadService {
       }
     });
 
-    const heightRatio = height / width;
-    const widthRatio = width / height;
-    file['path'] = file['path'].replace(`compressed`, `300`);
-    img.resize(300 * widthRatio, jimp.AUTO).write(file['path']);
+    // const heightRatio = height / width;
+    // const widthRatio = width / height;
+    // file['path'] = file['path'].replace(`compressed`, `300`);
+    // img.resize(300 * widthRatio, jimp.AUTO).write(file['path']);
   }
 }
