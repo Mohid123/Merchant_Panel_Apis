@@ -136,9 +136,11 @@ export class DealService {
           return el;
         });
       }
-
-      let minVoucher = dealDto.subDeals?.sort((a,b)=>a?.dealPrice - b?.dealPrice)[0];
       
+      let minVoucher = dealDto.subDeals?.sort(
+        (a, b) => a?.dealPrice - b?.dealPrice,
+      )[0];
+
       dealDto.minDealPrice = minVoucher?.dealPrice;
       dealDto.minOriginalPrice = minVoucher?.originalPrice;
       dealDto.minDiscountPercentage = minVoucher?.discountPercentage;
@@ -170,10 +172,11 @@ export class DealService {
                 urlMedia = mediaObj.captureFileURL;
               }
               mediaObj['blurHash'] = await encodeImageToBlurhash(urlMedia);
-              let data = mediaObj['backgroundColorHex'] = await getDominantColor(urlMedia);
+              let data = (mediaObj['backgroundColorHex'] =
+                await getDominantColor(urlMedia));
               mediaObj['backgroundColorHex'] = data.hexCode;
-              
-              resolve({})
+
+              resolve({});
             } catch (err) {
               console.log('Error', err);
               reject(err);
@@ -404,7 +407,7 @@ export class DealService {
                   },
                 },
                 {
-                  $sort: sort
+                  $sort: sort,
                 },
                 {
                   $lookup: {
@@ -879,8 +882,8 @@ export class DealService {
             $addFields: {
               id: '$_id',
               mediaUrl: {
-                $slice: [ "$mediaUrl", 1 ]
-              }
+                $slice: ['$mediaUrl', 1],
+              },
             },
           },
           {
@@ -907,7 +910,7 @@ export class DealService {
               updatedAt: 0,
               __v: 0,
               endDate: 0,
-              startDate: 0
+              startDate: 0,
             },
           },
         ])
@@ -949,8 +952,8 @@ export class DealService {
             $addFields: {
               id: '$_id',
               mediaUrl: {
-                $slice: [ "$mediaUrl", 1 ]
-              }
+                $slice: ['$mediaUrl', 1],
+              },
             },
           },
           {
@@ -977,7 +980,7 @@ export class DealService {
               updatedAt: 0,
               __v: 0,
               endDate: 0,
-              startDate: 0
+              startDate: 0,
             },
           },
         ])
@@ -1002,7 +1005,7 @@ export class DealService {
       const totalCount = await this.dealModel.countDocuments({
         deletedCheck: false,
         dealStatus: DEALSTATUS.published,
-        vouchers: { $elemMatch: { discountPercentage: { $gte: percentage } } },
+        vouchers: { $elemMatch: { discountPercentage: { $lte: percentage } } },
       });
       let deals = await this.dealModel
         .aggregate([
@@ -1011,7 +1014,7 @@ export class DealService {
               deletedCheck: false,
               dealStatus: DEALSTATUS.published,
               vouchers: {
-                $elemMatch: { discountPercentage: { $gte: percentage } },
+                $elemMatch: { discountPercentage: { $lte: percentage } },
               },
             },
           },
@@ -1024,8 +1027,8 @@ export class DealService {
             $addFields: {
               id: '$_id',
               mediaUrl: {
-                $slice: [ "$mediaUrl", 1 ]
-              }
+                $slice: ['$mediaUrl', 1],
+              },
             },
           },
           {
@@ -1052,7 +1055,7 @@ export class DealService {
               updatedAt: 0,
               __v: 0,
               endDate: 0,
-              startDate: 0
+              startDate: 0,
             },
           },
         ])
@@ -1111,9 +1114,9 @@ export class DealService {
           {
             $addFields: {
               mediaUrl: {
-                $slice: [ "$mediaUrl", 1 ]
-              }
-            }
+                $slice: ['$mediaUrl', 1],
+              },
+            },
           },
           {
             $project: {
@@ -1141,7 +1144,7 @@ export class DealService {
               updatedAt: 0,
               __v: 0,
               endDate: 0,
-              startDate: 0
+              startDate: 0,
             },
           },
           {
@@ -1183,8 +1186,8 @@ export class DealService {
             $addFields: {
               id: '$_id',
               mediaUrl: {
-                $slice: [ "$mediaUrl", 1 ]
-              }
+                $slice: ['$mediaUrl', 1],
+              },
             },
           },
           {
@@ -1211,7 +1214,7 @@ export class DealService {
               updatedAt: 0,
               __v: 0,
               endDate: 0,
-              startDate: 0
+              startDate: 0,
             },
           },
           {
@@ -1253,16 +1256,16 @@ export class DealService {
           },
           {
             $sort: {
-              createdAt: -1
-            }
+              createdAt: -1,
+            },
           },
           {
             $addFields: {
               id: '$_id',
               mediaUrl: {
-                $slice: [ "$mediaUrl", 1 ]
-              }
-            }
+                $slice: ['$mediaUrl', 1],
+              },
+            },
           },
           {
             $project: {
@@ -1288,9 +1291,9 @@ export class DealService {
               updatedAt: 0,
               __v: 0,
               endDate: 0,
-              startDate: 0
+              startDate: 0,
             },
-          }
+          },
         ])
         .skip(parseInt(offset))
         .limit(parseInt(limit));
@@ -1390,8 +1393,8 @@ export class DealService {
             $addFields: {
               id: '$_id',
               mediaUrl: {
-                $slice: [ "$mediaUrl", 1 ]
-              }
+                $slice: ['$mediaUrl', 1],
+              },
             },
           },
           {
@@ -1418,7 +1421,7 @@ export class DealService {
               updatedAt: 0,
               __v: 0,
               endDate: 0,
-              startDate: 0
+              startDate: 0,
             },
           },
         ])
@@ -1434,7 +1437,7 @@ export class DealService {
     }
   }
 
-  async getSimilarDeals (categoryName, subCategoryName, offset, limit) {
+  async getSimilarDeals(categoryName, subCategoryName, offset, limit) {
     try {
       offset = parseInt(offset) < 0 ? 0 : offset;
       limit = parseInt(limit) < 1 ? 10 : limit;
@@ -1443,42 +1446,42 @@ export class DealService {
         deletedCheck: false,
         dealStatus: DEALSTATUS.published,
         categoryName: categoryName,
-        subCategory: subCategoryName
+        subCategory: subCategoryName,
       });
 
-      const similarDeals = await this.dealModel.aggregate([
-        {
-          $match: {
-            deletedCheck: false,
-            dealStatus: DEALSTATUS.published,
-            categoryName: categoryName,
-            subCategory: subCategoryName
-          }
-        },
-        {
-          $sort: {
-            ratingsAverage: -1
-          }
-        },
-        {
-          $addFields: {
-            id: '$_id'
-          }
-        },
-        {
-          $project: {
-            _id: 0
-          }
-        }
-      ])
-      .skip(parseInt(offset))
-      .limit(parseInt(limit));
+      const similarDeals = await this.dealModel
+        .aggregate([
+          {
+            $match: {
+              deletedCheck: false,
+              dealStatus: DEALSTATUS.published,
+              categoryName: categoryName,
+              subCategory: subCategoryName,
+            },
+          },
+          {
+            $sort: {
+              ratingsAverage: -1,
+            },
+          },
+          {
+            $addFields: {
+              id: '$_id',
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+            },
+          },
+        ])
+        .skip(parseInt(offset))
+        .limit(parseInt(limit));
 
       return {
         totalCount: totalCount,
-        deals: similarDeals
-      }
-
+        deals: similarDeals,
+      };
     } catch (err) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
     }
@@ -1684,24 +1687,29 @@ export class DealService {
 
   async changeMediaURL() {
     let deals = await this.dealModel.find();
-    deals = JSON.parse(JSON.stringify(deals))
-    
-    for await(let deal of deals){
-      let updatedMediaArr = [];
-      if(deal?.mediaUrl?.length){
-        for await(let mediaObj of deal?.mediaUrl){
-          if(typeof(mediaObj)=='string'){
-            let tempMediaObj:string = mediaObj  
-            let updatedMedia = tempMediaObj.replace('//dividealapi','//stagingdividealapi');
+    deals = JSON.parse(JSON.stringify(deals));
 
-            updatedMediaArr.push(updatedMedia)
+    for await (let deal of deals) {
+      let updatedMediaArr = [];
+      if (deal?.mediaUrl?.length) {
+        for await (let mediaObj of deal?.mediaUrl) {
+          if (typeof mediaObj == 'string') {
+            let tempMediaObj: string = mediaObj;
+            let updatedMedia = tempMediaObj.replace(
+              '//dividealapi',
+              '//stagingdividealapi',
+            );
+
+            updatedMediaArr.push(updatedMedia);
           }
         }
 
-        await this.dealModel.updateOne({_id:deal.id},{mediaUrl:updatedMediaArr})
-        console.log('deals changed',deal.id)
+        await this.dealModel.updateOne(
+          { _id: deal.id },
+          { mediaUrl: updatedMediaArr },
+        );
+        console.log('deals changed', deal.id);
       }
-
     }
   }
 }

@@ -64,8 +64,6 @@ export class DealController {
     return this.dealService.approveRejectDeal(dealID, dealStatusDto);
   }
 
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
   @Get('getDeal/:id')
   getDeal(@Param('id') id: string) {
     return this.dealService.getDeal(id);
@@ -176,7 +174,14 @@ export class DealController {
     @Query('offset') offset: number = 0,
     @Query('limit') limit: number = 10,
   ) {
-    return this.dealService.getDealReviews(offset, limit, rating, dealID, createdAt, totalRating);
+    return this.dealService.getDealReviews(
+      offset,
+      limit,
+      rating,
+      dealID,
+      createdAt,
+      totalRating,
+    );
   }
 
   @ApiBearerAuth()
@@ -236,11 +241,11 @@ export class DealController {
     return this.dealService.getNewFavouriteDeal(offset, limit);
   }
 
-  @Get('getNearByDeals/:lat/:lng/:distance')
+  @Get('getNearByDeals')
   getNearByDeals(
-    @Param('lat') lat: number,
-    @Param('lng') lng: number,
-    @Param('distance') distance: number,
+    @Query('lat') lat: number,
+    @Query('lng') lng: number,
+    @Query('distance') distance: number,
     @Query('offset') offset: number = 0,
     @Query('limit') limit: number = 10,
   ) {
@@ -248,22 +253,27 @@ export class DealController {
   }
 
   @Get('searchDeals')
-  searchDeals (
+  searchDeals(
     @Query('header') header: string = '',
     @Query('offset') offset: number = 0,
     @Query('limit') limit: number = 10,
   ) {
-    return this.dealService.searchDeals(header, offset, limit)
+    return this.dealService.searchDeals(header, offset, limit);
   }
 
   @Get('getSimilarDeals/:categoryName/:subCategoryName')
-  getSimilarDeals (
+  getSimilarDeals(
     @Param('categoryName') categoryName: string,
     @Param('subCategoryName') subCategoryName: string,
     @Query('offset') offset: number = 0,
     @Query('limit') limit: number = 10,
   ) {
-    return this.dealService.getSimilarDeals(categoryName, subCategoryName, offset, limit)
+    return this.dealService.getSimilarDeals(
+      categoryName,
+      subCategoryName,
+      offset,
+      limit,
+    );
   }
 
   // @Get('changeMediaURL')
@@ -271,6 +281,4 @@ export class DealController {
   // ) {
   //   return this.dealService.changeMediaURL()
   // }
-
-  
 }
