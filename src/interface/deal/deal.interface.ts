@@ -1,9 +1,9 @@
 import { Document } from 'mongoose';
 
-export interface VoucherInterface {
+export interface SubDealInterface {
   id: string;
   subDealID: string;
-  subTitle: string;
+  title: string;
   originalPrice: number;
   dealPrice: number;
   discountPercentage: number;
@@ -41,7 +41,7 @@ export interface DealInterface extends Document {
   mediaUrl: MedialUrl[];
   startDate: Date;
   endDate: Date;
-  vouchers: VoucherInterface[];
+  subDeals: SubDealInterface[];
   availableVouchers: number;
   soldVouchers: number;
   minDealPrice: number;
@@ -59,4 +59,5 @@ export interface DealInterface extends Document {
   isDuplicate: boolean;
   isSpecialOffer: boolean;
   dealPreviewURL: string;
+  editDealURL: string;
 }
