@@ -240,10 +240,13 @@ export class UsersService {
           },
         },
         {
-          $lookup : {
-
-          }
-        }
+          $lookup: {
+            from: 'locations',
+            as: 'personalDetail',
+            localField: 'userID',
+            foreignField: 'merchantID',
+          },
+        },
         {
           $addFields: {
             id: '$_id',
