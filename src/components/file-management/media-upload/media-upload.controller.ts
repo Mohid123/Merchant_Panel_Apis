@@ -152,7 +152,7 @@ export class MediaUploadController {
     @Query('size') size: string = 'original',
   ): Promise<any> {
     req.setTimeout(10 * 60 * 1000);
-    const sizeArray = ['original', 'compressed'];
+    const sizeArray = ['original', 'compressed', '142', '168', '281', '764'];
     size = sizeArray.includes(size) ? size : 'original';
     folderName = folderName.toLowerCase();
     if (size == 'original') {
