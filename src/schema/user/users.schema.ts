@@ -7,7 +7,7 @@ import * as bcrypt from 'bcrypt';
 export const UsersSchema = new mongoose.Schema(
   {
     _id: { type: String, default: generateStringId },
-    userID: { type: String },
+    userID: { type: String, default: '' },
     email: { type: String, default: '' },
     password: { type: String, default: '' },
     firstName: { type: String, default: '' },

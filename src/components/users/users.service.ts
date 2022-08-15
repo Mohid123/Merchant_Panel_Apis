@@ -248,6 +248,9 @@ export class UsersService {
           },
         },
         {
+          $unwind: '$personalDetail'
+        },
+        {
           $addFields: {
             id: '$_id',
           },
@@ -644,6 +647,7 @@ export class UsersService {
           status: status,
           password: hashedPassword,
           voucherPinCode: pinCode,
+          userID: await this.generateMerchantId('merchantID')
         },
       );
 

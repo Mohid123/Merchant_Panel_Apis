@@ -114,7 +114,8 @@ export class UsersController {
     return this._usersService.resetPassword(resetPasswordDto, req);
   }
 
-  @UseGuards(JwtAdminAuthGuard)
+  // @UseGuards(JwtAdminAuthGuard)
+  // @ApiBearerAuth()
   @Get('getPendingUsers')
   getPendingUsers(
     @Query('offset') offset: number = 0,
@@ -123,7 +124,8 @@ export class UsersController {
     return this._usersService.getPendingUsers(offset, limit);
   }
 
-  @UseGuards(JwtAdminAuthGuard)
+  // @UseGuards(JwtAdminAuthGuard)
+  // @ApiBearerAuth()
   @ApiQuery({ name: 'status', enum: USERSTATUS, required: false })
   @Get('approvePendingUsers/:userID')
   approvePendingUsers(
