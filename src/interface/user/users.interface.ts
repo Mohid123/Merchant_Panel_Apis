@@ -68,4 +68,5 @@ export interface UsersInterface {
   totalReviews: number;
   maxRating: number;
   minRating: number;
+  isSubscribed: boolean;
 }

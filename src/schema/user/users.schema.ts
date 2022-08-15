@@ -71,6 +71,7 @@ export const UsersSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    isSubscribed: { type: Boolean, default: false }
   },
   {
     collection: 'users',

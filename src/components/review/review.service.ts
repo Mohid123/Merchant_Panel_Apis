@@ -148,7 +148,7 @@ export class ReviewService {
       await this.reviewTextModel.findOneAndUpdate(
         {
           reviewID: reviewTextDto.reviewID,
-          merchantID: reviewTextDto.merchantID,
+          merchantMongoID: reviewTextDto.merchantID,
         },
         {
           ...reviewTextDto,
@@ -160,7 +160,7 @@ export class ReviewService {
 
       return await this.reviewTextModel.findOne({
         reviewID: reviewTextDto.reviewID,
-        merchantID: reviewTextDto.merchantID,
+        merchantMongoID: reviewTextDto.merchantID,
       });
     } catch (err) {
       throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
@@ -172,7 +172,7 @@ export class ReviewService {
       let merchantReply = await this.reviewTextModel.aggregate([
         {
           $match: {
-            merchantID: merchantID,
+            merchantMongoID: merchantID,
             reviewID: reviewID,
             deletedCheck: false,
           },
@@ -246,14 +246,14 @@ export class ReviewService {
       limit = parseInt(limit) < 1 ? 10 : limit;
 
       const totalCount = await this.reviewModel.countDocuments({
-        merchantID: merchantId,
+        merchantMongoID: merchantId,
       });
 
       const reviews = await this.reviewModel
         .aggregate([
           {
             $match: {
-              merchantID: merchantId,
+              merchantMongoID: merchantId,
             },
           },
           {
@@ -305,7 +305,7 @@ export class ReviewService {
       limit = parseInt(limit) < 1 ? 10 : limit;
 
       const totalCount = await this.reviewModel.countDocuments({
-        merchantID: merchantId,
+        merchantMongoID: merchantId,
         isViewed: false,
       });
 
@@ -313,7 +313,7 @@ export class ReviewService {
         .aggregate([
           {
             $match: {
-              merchantID: merchantId,
+              merchantMongoID: merchantId,
               isViewed: false,
             },
           },

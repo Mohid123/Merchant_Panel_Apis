@@ -84,7 +84,8 @@ export class DealService {
       if (!savedDeal) {
         dealDto.dealHeader = dealDto?.dealHeader;
 
-        dealDto.merchantID = req.user.id;
+        dealDto.merchantID = req.user.userID;
+        dealDto.merchantMongoID = req.user.id;
 
         if (dealDto.dealStatus) {
           dealDto.dealStatus = DEALSTATUS.inReview;
@@ -311,11 +312,15 @@ export class DealService {
 
   async getDeal(id) {
     try {
-      const deals = await this.dealModel.findOne({
+      const deal = await this.dealModel.findOne({
         _id: id,
         deletedCheck: false,
+        dealStatus: DEALSTATUS.published
       });
-      return deals;
+      if (!deal) {
+        throw new HttpException('Deal not found!', HttpStatus.BAD_REQUEST);
+      }
+      return deal;
     } catch (err) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
     }
@@ -532,14 +537,14 @@ export class DealService {
       }
 
       const totalCount = await this.dealModel.countDocuments({
-        merchantID: id,
+        merchantMongoID: id,
         deletedCheck: false,
         // ...matchFilter,
         // ...filters,
       });
 
       const filteredDealCount = await this.dealModel.countDocuments({
-        merchantID: id,
+        merchantMongoID: id,
         deletedCheck: false,
         ...matchFilter,
         ...filters,
@@ -549,7 +554,7 @@ export class DealService {
         .aggregate([
           {
             $match: {
-              merchantID: id,
+              merchantMongoID: id,
               deletedCheck: false,
               ...matchFilter,
               ...filters,
@@ -573,7 +578,7 @@ export class DealService {
       const totalMerchantReviews = await this.dealModel.aggregate([
         {
           $match: {
-            merchantID: id,
+            merchantMongoID: id,
             deletedCheck: false,
             ...matchFilter,
           },
@@ -787,7 +792,7 @@ export class DealService {
       console.log(matchFilter);
 
       const totalCount = await this.dealModel.countDocuments({
-        merchantID: merchantID,
+        merchantMongoID: merchantID,
         deletedCheck: false,
         ...matchFilter,
         // ...filters,
@@ -797,7 +802,7 @@ export class DealService {
         .aggregate([
           {
             $match: {
-              merchantID: merchantID,
+              merchantMongoID: merchantID,
               deletedCheck: false,
               ...matchFilter,
               ...filters,
@@ -835,7 +840,7 @@ export class DealService {
         .aggregate([
           {
             $match: {
-              merchantID: merchantID,
+              merchantMongoID: merchantID,
             },
           },
           {
@@ -890,6 +895,7 @@ export class DealService {
             $project: {
               _id: 0,
               dealID: 0,
+              merchantMongoID: 0,
               merchantID: 0,
               subTitle: 0,
               categoryName: 0,
@@ -960,6 +966,7 @@ export class DealService {
             $project: {
               _id: 0,
               dealID: 0,
+              merchantMongoID: 0,
               merchantID: 0,
               subTitle: 0,
               categoryName: 0,
@@ -1035,6 +1042,7 @@ export class DealService {
             $project: {
               _id: 0,
               dealID: 0,
+              merchantMongoID: 0,
               merchantID: 0,
               subTitle: 0,
               categoryName: 0,
@@ -1124,6 +1132,7 @@ export class DealService {
               added: 0,
               divided: 0,
               dealID: 0,
+              merchantMongoID: 0,
               merchantID: 0,
               subTitle: 0,
               categoryName: 0,
@@ -1194,6 +1203,7 @@ export class DealService {
             $project: {
               _id: 0,
               dealID: 0,
+              merchantMongoID: 0,
               merchantID: 0,
               subTitle: 0,
               categoryName: 0,
@@ -1271,6 +1281,7 @@ export class DealService {
             $project: {
               _id: 0,
               dealID: 0,
+              merchantMongoID: 0,
               merchantID: 0,
               subTitle: 0,
               categoryName: 0,
@@ -1401,6 +1412,7 @@ export class DealService {
             $project: {
               _id: 0,
               dealID: 0,
+              merchantMongoID: 0,
               merchantID: 0,
               subTitle: 0,
               categoryName: 0,
@@ -1472,6 +1484,29 @@ export class DealService {
           {
             $project: {
               _id: 0,
+              dealID: 0,
+              merchantMongoID: 0,
+              merchantID: 0,
+              subTitle: 0,
+              categoryName: 0,
+              subCategoryID: 0,
+              subCategory: 0,
+              vouchers: 0,
+              availableVouchers: 0,
+              aboutThisDeal: 0,
+              readMore: 0,
+              finePrints: 0,
+              netEarnings: 0,
+              isCollapsed: 0,
+              isDuplicate: 0,
+              totalReviews: 0,
+              maxRating: 0,
+              minRating: 0,
+              pageNumber: 0,
+              updatedAt: 0,
+              __v: 0,
+              endDate: 0,
+              startDate: 0,
             },
           },
         ])
