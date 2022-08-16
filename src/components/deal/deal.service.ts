@@ -213,6 +213,16 @@ export class DealService {
 
   async getDealByID(dealID) {
     try {
+      let statuses = {
+        Draf: 'Draft',
+        'In review': 'Review Required',
+        'Needs attention': 'Merchant Action Requested',
+        Scheduled: 'Scheduled',
+        Published: 'Published',
+        'Rejected ': 'Rejected ',
+        'Expired ': 'Expired ',
+      };
+
       let deal: any = await this.dealModel.findOne({ dealID: dealID });
 
       deal = JSON.parse(JSON.stringify(deal));
@@ -230,6 +240,7 @@ export class DealService {
       deal.publishStartDate = deal.startDate;
       deal.publishEndDate = deal.endDate;
       deal.coverImageUrl = coverImageUrl;
+      deal.dealStatus = statuses[deal.dealStatus];
 
       delete deal.mediaUrl;
       delete deal.merchantMongoID;
@@ -267,6 +278,11 @@ export class DealService {
         el.voucherTitle = el.title;
         delete el.title;
         el.availableVouchers = el.numberOfVouchers;
+        el.originalPrice = el.originalPrice.toString().replace('.', ',');
+        el.dealPrice = el.dealPrice.toString().replace('.', ',');
+        el.discountPercentage = el.discountPercentage
+          .toString()
+          .replace('.', ',');
         delete el.numberOfVouchers;
         delete el.grossEarning;
         delete el.netEarning;
@@ -911,7 +927,7 @@ export class DealService {
     }
   }
 
-  async getDealsByMerchantIDForCustomerPanel (merchantID, offset, limit) {
+  async getDealsByMerchantIDForCustomerPanel(merchantID, offset, limit) {
     try {
       offset = parseInt(offset) < 0 ? 0 : offset;
       limit = parseInt(limit) < 1 ? 10 : limit;
@@ -919,80 +935,78 @@ export class DealService {
       const totalCount = await this.dealModel.countDocuments({
         merchantMongoID: merchantID,
         deletedCheck: false,
-        dealStatus: DEALSTATUS.published
+        dealStatus: DEALSTATUS.published,
       });
 
-      const mercahntDeals = await this.dealModel.aggregate([
-        {
-          $match: {
-            merchantMongoID: merchantID,
-            deletedCheck: false,
-            dealStatus: DEALSTATUS.published
-          }
-        },
-        {
-          $sort: {
-            createdAt: -1
-          }
-        },
-        {
-          $addFields: {
-            id: '$_id',
-            mediaUrl: {
-              $slice: [
-                {
-                  $filter: {
-                    input: '$mediaUrl',
-                    as: 'mediaUrl',
-                    cond: {
-                      $eq: [
-                        '$$mediaUrl.type', 'Image'
-                      ]
+      const mercahntDeals = await this.dealModel
+        .aggregate([
+          {
+            $match: {
+              merchantMongoID: merchantID,
+              deletedCheck: false,
+              dealStatus: DEALSTATUS.published,
+            },
+          },
+          {
+            $sort: {
+              createdAt: -1,
+            },
+          },
+          {
+            $addFields: {
+              id: '$_id',
+              mediaUrl: {
+                $slice: [
+                  {
+                    $filter: {
+                      input: '$mediaUrl',
+                      as: 'mediaUrl',
+                      cond: {
+                        $eq: ['$$mediaUrl.type', 'Image'],
+                      },
                     },
                   },
-                },
-                1
-              ],
+                  1,
+                ],
+              },
             },
-          }
-        },
-        {
-          $project: {
-            _id: 0,
-            dealID: 0,
-            merchantMongoID: 0,
-            merchantID: 0,
-            subTitle: 0,
-            categoryName: 0,
-            subCategoryID: 0,
-            subCategory: 0,
-            subDeals: 0,
-            availableVouchers: 0,
-            aboutThisDeal: 0,
-            readMore: 0,
-            finePrints: 0,
-            netEarnings: 0,
-            isCollapsed: 0,
-            isDuplicate: 0,
-            totalReviews: 0,
-            maxRating: 0,
-            minRating: 0,
-            pageNumber: 0,
-            updatedAt: 0,
-            __v: 0,
-            endDate: 0,              
-            startDate: 0,
-          }
-        }
-      ])
-      .skip(parseInt(offset))
-      .limit(parseInt(limit));
+          },
+          {
+            $project: {
+              _id: 0,
+              dealID: 0,
+              merchantMongoID: 0,
+              merchantID: 0,
+              subTitle: 0,
+              categoryName: 0,
+              subCategoryID: 0,
+              subCategory: 0,
+              subDeals: 0,
+              availableVouchers: 0,
+              aboutThisDeal: 0,
+              readMore: 0,
+              finePrints: 0,
+              netEarnings: 0,
+              isCollapsed: 0,
+              isDuplicate: 0,
+              totalReviews: 0,
+              maxRating: 0,
+              minRating: 0,
+              pageNumber: 0,
+              updatedAt: 0,
+              __v: 0,
+              endDate: 0,
+              startDate: 0,
+            },
+          },
+        ])
+        .skip(parseInt(offset))
+        .limit(parseInt(limit));
 
       return {
         totalCount: totalCount,
-        data: mercahntDeals
-      }
-
+        data: mercahntDeals,
+      };
     } catch (err) {
       throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
@@ -1057,13 +1071,11 @@ export class DealService {
                       input: '$mediaUrl',
                       as: 'mediaUrl',
                       cond: {
-                        $eq: [
-                          '$$mediaUrl.type', 'Image'
-                        ]
+                        $eq: ['$$mediaUrl.type', 'Image'],
                       },
                     },
                   },
-                  1
+                  1,
                 ],
               },
             },
@@ -1141,13 +1153,11 @@ export class DealService {
                       input: '$mediaUrl',
                       as: 'mediaUrl',
                       cond: {
-                        $eq: [
-                          '$$mediaUrl.type', 'Image'
-                        ]
+                        $eq: ['$$mediaUrl.type', 'Image'],
                       },
                     },
                   },
-                  1
+                  1,
                 ],
               },
             },
@@ -1230,13 +1240,11 @@ export class DealService {
                       input: '$mediaUrl',
                       as: 'mediaUrl',
                       cond: {
-                        $eq: [
-                          '$$mediaUrl.type', 'Image'
-                        ]
+                        $eq: ['$$mediaUrl.type', 'Image'],
                       },
                     },
                   },
-                  1
+                  1,
                 ],
               },
             },
@@ -1331,13 +1339,11 @@ export class DealService {
                       input: '$mediaUrl',
                       as: 'mediaUrl',
                       cond: {
-                        $eq: [
-                          '$$mediaUrl.type', 'Image'
-                        ]
+                        $eq: ['$$mediaUrl.type', 'Image'],
                       },
                     },
                   },
-                  1
+                  1,
                 ],
               },
             },
@@ -1417,13 +1423,11 @@ export class DealService {
                       input: '$mediaUrl',
                       as: 'mediaUrl',
                       cond: {
-                        $eq: [
-                          '$$mediaUrl.type', 'Image'
-                        ]
+                        $eq: ['$$mediaUrl.type', 'Image'],
                       },
                     },
                   },
-                  1
+                  1,
                 ],
               },
             },
@@ -1508,13 +1512,11 @@ export class DealService {
                       input: '$mediaUrl',
                       as: 'mediaUrl',
                       cond: {
-                        $eq: [
-                          '$$mediaUrl.type', 'Image'
-                        ]
+                        $eq: ['$$mediaUrl.type', 'Image'],
                       },
                     },
                   },
-                  1
+                  1,
                 ],
               },
             },
@@ -1652,13 +1654,11 @@ export class DealService {
                       input: '$mediaUrl',
                       as: 'mediaUrl',
                       cond: {
-                        $eq: [
-                          '$$mediaUrl.type', 'Image'
-                        ]
+                        $eq: ['$$mediaUrl.type', 'Image'],
                       },
                     },
                   },
-                  1
+                  1,
                 ],
               },
             },
@@ -1741,13 +1741,11 @@ export class DealService {
                       input: '$mediaUrl',
                       as: 'mediaUrl',
                       cond: {
-                        $eq: [
-                          '$$mediaUrl.type', 'Image'
-                        ]
+                        $eq: ['$$mediaUrl.type', 'Image'],
                       },
                     },
                   },
-                  1
+                  1,
                 ],
               },
             },
