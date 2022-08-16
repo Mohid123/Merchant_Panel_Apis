@@ -6,4 +6,7 @@ export declare class LocationService {
     createLocation(locationDto: any): Promise<Location & {
         _id: string;
     }>;
+    updateLocation(locationDto: any, merchantID: any): Promise<{
+        message: string;
+    }>;
 }

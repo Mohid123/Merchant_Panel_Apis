@@ -147,13 +147,13 @@ let InvoicesService = class InvoicesService {
                 };
             }
             const totalCount = await this._invoicesModel.countDocuments({
-                merchantID: merchantID,
+                merchantMongoID: merchantID,
             });
-            const filteredCount = await this._invoicesModel.countDocuments(Object.assign(Object.assign({ merchantID: merchantID }, matchFilter), filters));
+            const filteredCount = await this._invoicesModel.countDocuments(Object.assign(Object.assign({ merchantMongoID: merchantID }, matchFilter), filters));
             let invoices = await this._invoicesModel
                 .aggregate([
                 {
-                    $match: Object.assign(Object.assign({ merchantID: merchantID }, matchFilter), filters),
+                    $match: Object.assign(Object.assign({ merchantMongoID: merchantID }, matchFilter), filters),
                 },
                 {
                     $sort: Object.assign({}, sortFilters),

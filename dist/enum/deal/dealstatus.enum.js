@@ -9,5 +9,6 @@ var DEALSTATUS;
     DEALSTATUS["needsAttention"] = "Needs attention";
     DEALSTATUS["published"] = "Published";
     DEALSTATUS["expired"] = "Expired";
+    DEALSTATUS["rejected"] = "Rejected";
 })(DEALSTATUS = exports.DEALSTATUS || (exports.DEALSTATUS = {}));
 //# sourceMappingURL=dealstatus.enum.js.map

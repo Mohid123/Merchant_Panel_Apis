@@ -20,6 +20,10 @@ __decorate([
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
+], LocationDTO.prototype, "tradeName", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
 ], LocationDTO.prototype, "locationName", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),

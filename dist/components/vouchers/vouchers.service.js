@@ -33,7 +33,7 @@ let VouchersService = class VouchersService {
     }
     async createVoucher(voucherDto) {
         try {
-            let timeStamp = new Date(voucherDto.boughtDate).getTime();
+            let timeStamp = new Date().getTime();
             voucherDto.boughtDate = timeStamp;
             voucherDto.voucherID = await this.generateVoucherId('voucherID');
             const voucher = new this.voucherModel(voucherDto);
@@ -161,14 +161,14 @@ let VouchersService = class VouchersService {
             }
             console.log(sort);
             console.log(matchFilter);
-            const totalCount = await this.voucherModel.countDocuments(Object.assign(Object.assign({ merchantID: merchantId }, matchFilter), filters));
+            const totalCount = await this.voucherModel.countDocuments(Object.assign(Object.assign({ merchantMongoID: merchantId }, matchFilter), filters));
             const filteredCount = await this.voucherModel.countDocuments({
-                merchantID: merchantId,
+                merchantMongoID: merchantId,
             });
             let vouchers = await this.voucherModel
                 .aggregate([
                 {
-                    $match: Object.assign(Object.assign({ merchantID: merchantId }, matchFilter), filters),
+                    $match: Object.assign(Object.assign({ merchantMongoID: merchantId }, matchFilter), filters),
                 },
                 {
                     $sort: sort,

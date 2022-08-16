@@ -11,11 +11,19 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
+var __asyncValues = (this && this.__asyncValues) || function (o) {
+    if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
+    var m = o[Symbol.asyncIterator], i;
+    return m ? m.call(o) : (o = typeof __values === "function" ? __values(o) : o[Symbol.iterator](), i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () { return this; }, i);
+    function verb(n) { i[n] = o[n] && function (v) { return new Promise(function (resolve, reject) { v = o[n](v), settle(resolve, reject, v.done, v.value); }); }; }
+    function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ReviewService = void 0;
 const common_1 = require("@nestjs/common");
 const mongoose_1 = require("@nestjs/mongoose");
 const mongoose_2 = require("mongoose");
+const utils_1 = require("../file-management/utils/utils");
 let ReviewService = class ReviewService {
     constructor(reviewModel, reviewTextModel, dealModel, userModel) {
         this.reviewModel = reviewModel;
@@ -24,7 +32,8 @@ let ReviewService = class ReviewService {
         this.userModel = userModel;
     }
     async createReview(reviewDto) {
-        var _a;
+        var e_1, _a;
+        var _b;
         try {
             const reviewAlreadyGiven = await this.reviewModel.findOne().and([
                 { dealMongoID: reviewDto.dealMongoID },
@@ -37,7 +46,47 @@ let ReviewService = class ReviewService {
             reviewDto.totalRating =
                 reviewDto.multipleRating.reduce((a, b) => {
                     return a + (b === null || b === void 0 ? void 0 : b.ratingScore);
-                }, 0) / ((_a = reviewDto.multipleRating) === null || _a === void 0 ? void 0 : _a.length);
+                }, 0) / ((_b = reviewDto.multipleRating) === null || _b === void 0 ? void 0 : _b.length);
+            if (reviewDto.mediaUrl && reviewDto.mediaUrl.length) {
+                reviewDto['type'] = reviewDto.mediaUrl[0].type;
+                reviewDto['captureFileURL'] = reviewDto.mediaUrl[0].captureFileURL;
+                reviewDto['path'] = reviewDto.mediaUrl[0].path;
+                if (reviewDto['type'] == 'Video') {
+                    reviewDto['thumbnailURL'] = reviewDto.mediaUrl[0].thumbnailURL;
+                    reviewDto['thumbnailPath'] = reviewDto.mediaUrl[0].thumbnailPath;
+                }
+                try {
+                    for (var _c = __asyncValues(reviewDto.mediaUrl), _d; _d = await _c.next(), !_d.done;) {
+                        let mediaObj = _d.value;
+                        await new Promise(async (resolve, reject) => {
+                            try {
+                                let urlMedia = '';
+                                if (mediaObj.type == 'Video') {
+                                    urlMedia = mediaObj.thumbnailURL;
+                                }
+                                else {
+                                    urlMedia = mediaObj.captureFileURL;
+                                }
+                                mediaObj['blurHash'] = await (0, utils_1.encodeImageToBlurhash)(urlMedia);
+                                let data = mediaObj['backgroundColorHex'] = await (0, utils_1.getDominantColor)(urlMedia);
+                                mediaObj['backgroundColorHex'] = data.hexCode;
+                                resolve({});
+                            }
+                            catch (err) {
+                                console.log('Error', err);
+                                reject(err);
+                            }
+                        });
+                    }
+                }
+                catch (e_1_1) { e_1 = { error: e_1_1 }; }
+                finally {
+                    try {
+                        if (_d && !_d.done && (_a = _c.return)) await _a.call(_c);
+                    }
+                    finally { if (e_1) throw e_1.error; }
+                }
+            }
             const review = await this.reviewModel.create(reviewDto);
             const reviewStats = await this.reviewModel.aggregate([
                 {
@@ -66,12 +115,12 @@ let ReviewService = class ReviewService {
             const userStats = await this.reviewModel.aggregate([
                 {
                     $match: {
-                        merchantID: reviewDto.merchantID,
+                        merchantMongoID: reviewDto.merchantMongoID,
                     },
                 },
                 {
                     $group: {
-                        _id: '$merchantID',
+                        _id: '$merchantMongoID',
                         nRating: { $sum: 1 },
                         avgRating: { $avg: '$totalRating' },
                         minRating: { $min: '$totalRating' },
@@ -80,7 +129,7 @@ let ReviewService = class ReviewService {
                 },
             ]);
             if (userStats.length > 0) {
-                await this.userModel.findByIdAndUpdate(reviewDto.merchantID, {
+                await this.userModel.findByIdAndUpdate(reviewDto.merchantMongoID, {
                     ratingsAverage: userStats[0].avgRating,
                     totalReviews: userStats[0].nRating,
                     minRating: userStats[0].minRating,
@@ -88,10 +137,18 @@ let ReviewService = class ReviewService {
                 });
             }
             else {
-                await this.userModel.findByIdAndUpdate(reviewDto.merchantID, {
+                await this.userModel.findByIdAndUpdate(reviewDto.merchantMongoID, {
                     ratingsAverage: 0,
                     ratingsQuantity: 0,
                 });
+            }
+            if (reviewDto.mediaUrl && reviewDto.mediaUrl.length) {
+                let deal = await this.dealModel.findOne({ _id: reviewDto.dealMongoID });
+                if (deal) {
+                    deal.reviewMediaUrl.unshift(...reviewDto.mediaUrl);
+                    deal.reviewMediaUrl = deal.reviewMediaUrl.slice(0, 50);
+                    await this.dealModel.updateOne({ _id: reviewDto.dealMongoID }, { $set: { reviewMediaUrl: deal.reviewMediaUrl } });
+                }
             }
             return review;
         }
@@ -103,13 +160,13 @@ let ReviewService = class ReviewService {
         try {
             await this.reviewTextModel.findOneAndUpdate({
                 reviewID: reviewTextDto.reviewID,
-                merchantID: reviewTextDto.merchantID,
+                merchantMongoID: reviewTextDto.merchantID,
             }, Object.assign({}, reviewTextDto), {
                 upsert: true,
             });
             return await this.reviewTextModel.findOne({
                 reviewID: reviewTextDto.reviewID,
-                merchantID: reviewTextDto.merchantID,
+                merchantMongoID: reviewTextDto.merchantID,
             });
         }
         catch (err) {
@@ -121,7 +178,7 @@ let ReviewService = class ReviewService {
             let merchantReply = await this.reviewTextModel.aggregate([
                 {
                     $match: {
-                        merchantID: merchantID,
+                        merchantMongoID: merchantID,
                         reviewID: reviewID,
                         deletedCheck: false,
                     },
@@ -190,13 +247,13 @@ let ReviewService = class ReviewService {
             offset = parseInt(offset) < 0 ? 0 : offset;
             limit = parseInt(limit) < 1 ? 10 : limit;
             const totalCount = await this.reviewModel.countDocuments({
-                merchantID: merchantId,
+                merchantMongoID: merchantId,
             });
             const reviews = await this.reviewModel
                 .aggregate([
                 {
                     $match: {
-                        merchantID: merchantId,
+                        merchantMongoID: merchantId,
                     },
                 },
                 {
@@ -245,14 +302,14 @@ let ReviewService = class ReviewService {
             offset = parseInt(offset) < 0 ? 0 : offset;
             limit = parseInt(limit) < 1 ? 10 : limit;
             const totalCount = await this.reviewModel.countDocuments({
-                merchantID: merchantId,
+                merchantMongoID: merchantId,
                 isViewed: false,
             });
             const reviews = await this.reviewModel
                 .aggregate([
                 {
                     $match: {
-                        merchantID: merchantId,
+                        merchantMongoID: merchantId,
                         isViewed: false,
                     },
                 },

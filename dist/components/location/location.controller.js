@@ -16,6 +16,7 @@ exports.LocationController = void 0;
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const location_dto_1 = require("../../dto/location/location.dto");
+const updateLocation_dto_1 = require("../../dto/location/updateLocation.dto");
 const jwt_auth_guard_1 = require("../auth/jwt-auth.guard");
 const jwt_merchant_auth_guard_1 = require("../auth/jwt-merchant-auth.guard");
 const location_service_1 = require("./location.service");
@@ -26,6 +27,9 @@ let LocationController = class LocationController {
     createDeal(locationDto) {
         return this._locationService.createLocation(locationDto);
     }
+    updateLocation(updateLocationDto, merchantID) {
+        return this._locationService.updateLocation(updateLocationDto, merchantID);
+    }
 };
 __decorate([
     (0, common_1.UseGuards)(jwt_merchant_auth_guard_1.JwtMerchantAuthGuard),
@@ -35,6 +39,15 @@ __decorate([
     __metadata("design:paramtypes", [location_dto_1.LocationDTO]),
     __metadata("design:returntype", void 0)
 ], LocationController.prototype, "createDeal", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_merchant_auth_guard_1.JwtMerchantAuthGuard),
+    (0, common_1.Post)('updateLocation/:merchantID'),
+    __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.Param)('merchantID')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [updateLocation_dto_1.UpdateLocationDTO, String]),
+    __metadata("design:returntype", void 0)
+], LocationController.prototype, "updateLocation", null);
 LocationController = __decorate([
     (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),

@@ -21,6 +21,9 @@ export declare class UsersService {
     completeKYC(merchantID: any, kycDto: any): Promise<{
         message: string;
     }>;
+    updateVoucherPinCode(merchantID: any, voucherPinCodeDto: any): Promise<{
+        message: string;
+    }>;
     updateMerchantprofile(merchantID: any, usersDto: any): Promise<{
         message: string;
     }>;

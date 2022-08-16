@@ -1,7 +1,8 @@
-import { MedialUrl, VoucherInterface } from '../../interface/deal/deal.interface';
+import { MedialUrl, SubDealInterface } from '../../interface/deal/deal.interface';
 export declare class DealDto {
     id: string;
     dealID: string;
+    merchantMongoID: string;
     merchantID: string;
     dealHeader: string;
     subTitle: string;
@@ -13,7 +14,7 @@ export declare class DealDto {
     mediaUrl: MedialUrl[];
     startDate: Date;
     endDate: Date;
-    vouchers: VoucherInterface[];
+    subDeals: SubDealInterface[];
     aboutThisDeal: string;
     soldVouchers: number;
     availableVouchers: number;
@@ -29,4 +30,5 @@ export declare class DealDto {
     isDuplicate: boolean;
     isSpecialOffer: boolean;
     dealPreviewURL: string;
+    editDealURL: string;
 }

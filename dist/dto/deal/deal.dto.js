@@ -24,6 +24,10 @@ __decorate([
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
+], DealDto.prototype, "merchantMongoID", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
 ], DealDto.prototype, "merchantID", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
@@ -57,9 +61,14 @@ __decorate([
     (0, swagger_1.ApiProperty)({
         example: [
             {
-                mediaUrl: '',
                 type: '',
-            }
+                captureFileURL: '',
+                path: '',
+                thumbnailURL: '',
+                thumbnailPath: '',
+                blurHash: '',
+                backgroundColorHex: '',
+            },
         ],
     }),
     __metadata("design:type", Array)
@@ -76,7 +85,7 @@ __decorate([
     (0, swagger_1.ApiProperty)({
         example: [
             {
-                subTitle: '',
+                title: '',
                 originalPrice: 0,
                 dealPrice: 0,
                 discountPercentage: 0,
@@ -85,13 +94,13 @@ __decorate([
                 grossEarning: 0,
                 netEarning: 0,
                 voucherValidity: 0,
-                voucherStartDate: new Date(),
-                voucherEndDate: new Date(),
+                voucherStartDate: 0,
+                voucherEndDate: 0,
             },
         ],
     }),
     __metadata("design:type", Array)
-], DealDto.prototype, "vouchers", void 0);
+], DealDto.prototype, "subDeals", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
@@ -152,5 +161,9 @@ __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
 ], DealDto.prototype, "dealPreviewURL", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
+], DealDto.prototype, "editDealURL", void 0);
 exports.DealDto = DealDto;
 //# sourceMappingURL=deal.dto.js.map

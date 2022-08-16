@@ -46,6 +46,10 @@ __decorate([
 ], SignUpDTO.prototype, "status", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
+], SignUpDTO.prototype, "vatNumber", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
     __metadata("design:type", Array)
 ], SignUpDTO.prototype, "businessType", void 0);
 __decorate([

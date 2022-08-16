@@ -9,25 +9,16 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.KycDto = void 0;
+exports.VoucherPinCodeDto = void 0;
 const swagger_1 = require("@nestjs/swagger");
-class KycDto {
+const class_validator_1 = require("class-validator");
+class VoucherPinCodeDto {
 }
 __decorate([
     (0, swagger_1.ApiProperty)(),
-    __metadata("design:type", String)
-], KycDto.prototype, "iban", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)(),
-    __metadata("design:type", String)
-], KycDto.prototype, "bic_swiftCode", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)(),
-    __metadata("design:type", String)
-], KycDto.prototype, "accountHolder", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)(),
-    __metadata("design:type", String)
-], KycDto.prototype, "bankName", void 0);
-exports.KycDto = KycDto;
-//# sourceMappingURL=kyc.dto.js.map
+    (0, class_validator_1.MaxLength)(4),
+    (0, class_validator_1.IsNumber)(),
+    __metadata("design:type", Number)
+], VoucherPinCodeDto.prototype, "voucherPinCode", void 0);
+exports.VoucherPinCodeDto = VoucherPinCodeDto;
+//# sourceMappingURL=voucherpincode.dto.js.map

@@ -5,7 +5,7 @@ const mongoose = require("mongoose");
 const utils_1 = require("../../components/file-management/utils/utils");
 exports.UsersSchema = new mongoose.Schema({
     _id: { type: String, default: utils_1.generateStringId },
-    userID: { type: String },
+    userID: { type: String, default: '' },
     email: { type: String, default: '' },
     password: { type: String, default: '' },
     firstName: { type: String, default: '' },
@@ -20,6 +20,8 @@ exports.UsersSchema = new mongoose.Schema({
     city: { type: String, default: '' },
     vatNumber: { type: String, default: '' },
     iban: { type: String, default: '' },
+    bic_swiftCode: { type: String, default: '' },
+    accountHolder: { type: String, default: '' },
     bankName: { type: String, default: '' },
     kycStatus: { type: Boolean, default: false },
     province: { type: String, default: '' },
@@ -30,7 +32,7 @@ exports.UsersSchema = new mongoose.Schema({
     aboutUs: { type: String, default: '' },
     profilePicURL: { type: String, default: '' },
     profilePicBlurHash: { type: String, default: '' },
-    gallery: { type: [String] },
+    gallery: { type: Array },
     voucherPinCode: { type: Number },
     deletedCheck: { type: Boolean, default: false },
     status: { type: String, default: '' },
@@ -64,6 +66,7 @@ exports.UsersSchema = new mongoose.Schema({
         type: Number,
         default: 0,
     },
+    isSubscribed: { type: Boolean, default: false }
 }, {
     collection: 'users',
 });

@@ -37,5 +37,9 @@ __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
 ], InvoiceDTO.prototype, "merchantID", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
+], InvoiceDTO.prototype, "merchantMongoID", void 0);
 exports.InvoiceDTO = InvoiceDTO;
 //# sourceMappingURL=invoices.dto.js.map

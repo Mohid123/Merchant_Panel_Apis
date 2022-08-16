@@ -26,6 +26,7 @@ const dealstatus_enum_1 = require("../../enum/deal/dealstatus.enum");
 const updatedeal_dto_1 = require("../../dto/deal/updatedeal.dto");
 const multipledeals_dto_1 = require("../../dto/deal/multipledeals.dto");
 const multiplereviews_dto_1 = require("../../dto/review/multiplereviews.dto");
+const jwt_manager_auth_guard_1 = require("../auth/jwt-manager-auth.guard");
 let DealController = class DealController {
     constructor(dealService) {
         this.dealService = dealService;
@@ -54,11 +55,14 @@ let DealController = class DealController {
     getDealsByMerchantID(merchantID, dealHeader, price, startDate, endDate, availableVoucher, soldVoucher, status, dateFrom, dateTo, dealID = '', header = '', dealStatus = '', offset = 0, limit = 10, multipleDealsDto) {
         return this.dealService.getDealsByMerchantID(merchantID, dealHeader, price, startDate, endDate, availableVoucher, soldVoucher, status, dateFrom, dateTo, dealID, header, dealStatus, offset, limit, multipleDealsDto);
     }
+    getDealsByMerchantIDForCustomerPanel(merchantID, offset = 0, limit = 10) {
+        return this.dealService.getDealsByMerchantIDForCustomerPanel(merchantID, offset, limit);
+    }
     getSalesStatistics(req) {
         return this.dealService.getSalesStatistics(req);
     }
-    getDealReviews(dealID, rating, offset = 0, limit = 10) {
-        return this.dealService.getDealReviews(offset, limit, rating, dealID);
+    getDealReviews(dealID, createdAt, totalRating, rating, offset = 0, limit = 10) {
+        return this.dealService.getDealReviews(offset, limit, rating, dealID, createdAt, totalRating);
     }
     getTopRatedDeals(merchantID) {
         return this.dealService.getTopRatedDeals(merchantID);
@@ -86,6 +90,12 @@ let DealController = class DealController {
     }
     searchDeals(header = '', offset = 0, limit = 10) {
         return this.dealService.searchDeals(header, offset, limit);
+    }
+    getSimilarDeals(categoryName, subCategoryName, offset = 0, limit = 10) {
+        return this.dealService.getSimilarDeals(categoryName, subCategoryName, offset, limit);
+    }
+    getDealByID(dealID) {
+        return this.dealService.getDealByID(dealID);
     }
 };
 __decorate([
@@ -132,8 +142,6 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], DealController.prototype, "approveRejectDeal", null);
 __decorate([
-    (0, swagger_1.ApiBearerAuth)(),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Get)('getDeal/:id'),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
@@ -198,6 +206,15 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], DealController.prototype, "getDealsByMerchantID", null);
 __decorate([
+    (0, common_1.Get)('getDealsByMerchantIDForCustomerPanel/:merchantID'),
+    __param(0, (0, common_1.Param)('merchantID')),
+    __param(1, (0, common_1.Query)('offset')),
+    __param(2, (0, common_1.Query)('limit')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Number, Number]),
+    __metadata("design:returntype", void 0)
+], DealController.prototype, "getDealsByMerchantIDForCustomerPanel", null);
+__decorate([
     (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Get)('getSalesStatistics'),
@@ -207,16 +224,18 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], DealController.prototype, "getSalesStatistics", null);
 __decorate([
-    (0, swagger_1.ApiBearerAuth)(),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiQuery)({ name: 'createdAt', enum: sort_enum_1.SORT, required: false }),
+    (0, swagger_1.ApiQuery)({ name: 'totalRating', enum: sort_enum_1.SORT, required: false }),
     (0, swagger_1.ApiQuery)({ name: 'rating', required: false }),
     (0, common_1.Get)('getDealReviews/:dealID'),
     __param(0, (0, common_1.Param)('dealID')),
-    __param(1, (0, common_1.Query)('rating')),
-    __param(2, (0, common_1.Query)('offset')),
-    __param(3, (0, common_1.Query)('limit')),
+    __param(1, (0, common_1.Query)('createdAt')),
+    __param(2, (0, common_1.Query)('totalRating')),
+    __param(3, (0, common_1.Query)('rating')),
+    __param(4, (0, common_1.Query)('offset')),
+    __param(5, (0, common_1.Query)('limit')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Number, Number, Number]),
+    __metadata("design:paramtypes", [String, String, String, Number, Number, Number]),
     __metadata("design:returntype", void 0)
 ], DealController.prototype, "getDealReviews", null);
 __decorate([
@@ -279,10 +298,10 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], DealController.prototype, "getNewFavouriteDeal", null);
 __decorate([
-    (0, common_1.Get)('getNearByDeals/:lat/:lng/:distance'),
-    __param(0, (0, common_1.Param)('lat')),
-    __param(1, (0, common_1.Param)('lng')),
-    __param(2, (0, common_1.Param)('distance')),
+    (0, common_1.Get)('getNearByDeals'),
+    __param(0, (0, common_1.Query)('lat')),
+    __param(1, (0, common_1.Query)('lng')),
+    __param(2, (0, common_1.Query)('distance')),
     __param(3, (0, common_1.Query)('offset')),
     __param(4, (0, common_1.Query)('limit')),
     __metadata("design:type", Function),
@@ -298,6 +317,26 @@ __decorate([
     __metadata("design:paramtypes", [String, Number, Number]),
     __metadata("design:returntype", void 0)
 ], DealController.prototype, "searchDeals", null);
+__decorate([
+    (0, common_1.Get)('getSimilarDeals/:categoryName/:subCategoryName'),
+    __param(0, (0, common_1.Param)('categoryName')),
+    __param(1, (0, common_1.Param)('subCategoryName')),
+    __param(2, (0, common_1.Query)('offset')),
+    __param(3, (0, common_1.Query)('limit')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, Number, Number]),
+    __metadata("design:returntype", void 0)
+], DealController.prototype, "getSimilarDeals", null);
+__decorate([
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)(jwt_manager_auth_guard_1.JwtManagerAuthGuard),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Get)('getDealByID/:dealID'),
+    __param(0, (0, common_1.Param)('dealID')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], DealController.prototype, "getDealByID", null);
 DealController = __decorate([
     (0, swagger_1.ApiTags)('Deal'),
     (0, common_1.Controller)('deal'),

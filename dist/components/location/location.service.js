@@ -30,6 +30,15 @@ let LocationService = class LocationService {
             } });
         return await new this._locationModel(locationObj).save();
     }
+    async updateLocation(locationDto, merchantID) {
+        try {
+            const location = await this._locationModel.updateOne({ merchantID: merchantID }, Object.assign({}, locationDto));
+            return { message: 'Location updated successfully!' };
+        }
+        catch (err) {
+            throw new common_1.HttpException(err.message, common_1.HttpStatus.BAD_REQUEST);
+        }
+    }
 };
 LocationService = __decorate([
     (0, common_1.Injectable)(),

@@ -9,25 +9,45 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.KycDto = void 0;
+exports.UpdateLocationDTO = void 0;
 const swagger_1 = require("@nestjs/swagger");
-class KycDto {
+class UpdateLocationDTO {
 }
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
-], KycDto.prototype, "iban", void 0);
+], UpdateLocationDTO.prototype, "tradeName", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
-], KycDto.prototype, "bic_swiftCode", void 0);
+], UpdateLocationDTO.prototype, "locationName", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
-], KycDto.prototype, "accountHolder", void 0);
+], UpdateLocationDTO.prototype, "streetAddress", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
-], KycDto.prototype, "bankName", void 0);
-exports.KycDto = KycDto;
-//# sourceMappingURL=kyc.dto.js.map
+], UpdateLocationDTO.prototype, "zipCode", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
+], UpdateLocationDTO.prototype, "city", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
+], UpdateLocationDTO.prototype, "googleMapPin", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
+], UpdateLocationDTO.prototype, "province", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
+], UpdateLocationDTO.prototype, "phoneNumber", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
+], UpdateLocationDTO.prototype, "plusCode", void 0);
+exports.UpdateLocationDTO = UpdateLocationDTO;
+//# sourceMappingURL=updateLocation.dto.js.map

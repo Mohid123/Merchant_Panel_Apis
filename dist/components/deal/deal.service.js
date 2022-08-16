@@ -11,6 +11,13 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
+var __asyncValues = (this && this.__asyncValues) || function (o) {
+    if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
+    var m = o[Symbol.asyncIterator], i;
+    return m ? m.call(o) : (o = typeof __values === "function" ? __values(o) : o[Symbol.iterator](), i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () { return this; }, i);
+    function verb(n) { i[n] = o[n] && function (v) { return new Promise(function (resolve, reject) { v = o[n](v), settle(resolve, reject, v.done, v.value); }); }; }
+    function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DealService = void 0;
 const common_1 = require("@nestjs/common");
@@ -20,6 +27,7 @@ const dealstatus_enum_1 = require("../../enum/deal/dealstatus.enum");
 const utils_1 = require("../file-management/utils/utils");
 const sort_enum_1 = require("../../enum/sort/sort.enum");
 const ratingValue_enum_1 = require("../../enum/review/ratingValue.enum");
+const axios_1 = require("axios");
 let DealService = class DealService {
     constructor(dealModel, categorymodel, voucherCounterModel, subCategoryModel, _userModel) {
         this.dealModel = dealModel;
@@ -38,7 +46,8 @@ let DealService = class DealService {
         return `DBE${year}${sequenceDocument.sequenceValue < 100000 ? '0' : ''}${sequenceDocument.sequenceValue < 10000 ? '0' : ''}${sequenceDocument.sequenceValue}`;
     }
     async createDeal(dealDto, req) {
-        var _a, _b;
+        var e_1, _a;
+        var _b;
         try {
             var dealVouchers = 0;
             var dealSoldVouchers = 0;
@@ -63,8 +72,9 @@ let DealService = class DealService {
                 dealDto.endDate = stamp;
             }
             if (!savedDeal) {
-                dealDto.dealHeader = (_a = dealDto === null || dealDto === void 0 ? void 0 : dealDto.dealHeader) === null || _a === void 0 ? void 0 : _a.toUpperCase();
-                dealDto.merchantID = req.user.id;
+                dealDto.dealHeader = dealDto === null || dealDto === void 0 ? void 0 : dealDto.dealHeader;
+                dealDto.merchantID = req.user.userID;
+                dealDto.merchantMongoID = req.user.id;
                 if (dealDto.dealStatus) {
                     dealDto.dealStatus = dealstatus_enum_1.DEALSTATUS.inReview;
                 }
@@ -75,8 +85,9 @@ let DealService = class DealService {
                     dealDto.dealStatus = dealstatus_enum_1.DEALSTATUS.draft;
                 }
             }
-            if (dealDto.vouchers) {
-                dealDto.vouchers = dealDto.vouchers.map((el) => {
+            if (dealDto.subDeals) {
+                let num = 1;
+                dealDto.subDeals = dealDto.subDeals.map((el) => {
                     let startTime;
                     let endTime;
                     let calculateDiscountPercentage = ((el.originalPrice - el.dealPrice) / el.originalPrice) * 100;
@@ -87,7 +98,10 @@ let DealService = class DealService {
                     el.netEarning = 0;
                     if (el.voucherValidity > 0) {
                         startTime = 0;
-                        endTime = 0;
+                        let today = new Date();
+                        let tomorrow = new Date();
+                        let newDay = tomorrow.setDate(today.getDate() + el.voucherValidity);
+                        endTime = new Date(newDay).getTime();
                     }
                     else {
                         startTime = new Date(el.voucherStartDate).getTime();
@@ -97,22 +111,64 @@ let DealService = class DealService {
                     el.dealPrice = parseFloat(el.dealPrice);
                     el.numberOfVouchers = parseInt(el.numberOfVouchers);
                     el._id = (0, utils_1.generateStringId)();
+                    el.subDealID = dealDto.dealID + '-' + num++;
                     el.voucherStartDate = startTime;
                     el.voucherEndDate = endTime;
                     return el;
                 });
             }
-            let minVoucher = (_b = dealDto.vouchers) === null || _b === void 0 ? void 0 : _b.sort((a, b) => (a === null || a === void 0 ? void 0 : a.dealPrice) - (b === null || b === void 0 ? void 0 : b.dealPrice))[0];
+            let minVoucher = (_b = dealDto.subDeals) === null || _b === void 0 ? void 0 : _b.sort((a, b) => (a === null || a === void 0 ? void 0 : a.dealPrice) - (b === null || b === void 0 ? void 0 : b.dealPrice))[0];
             dealDto.minDealPrice = minVoucher === null || minVoucher === void 0 ? void 0 : minVoucher.dealPrice;
             dealDto.minOriginalPrice = minVoucher === null || minVoucher === void 0 ? void 0 : minVoucher.originalPrice;
             dealDto.minDiscountPercentage = minVoucher === null || minVoucher === void 0 ? void 0 : minVoucher.discountPercentage;
-            if (dealDto.mediaUrl) {
-                for (let i = 0; i < dealDto.mediaUrl.length; i++) {
-                    if (dealDto.mediaUrl[i].type == 'Video') {
-                        console.log('Inside if');
-                        var item = dealDto.mediaUrl.splice(i, 1);
-                        dealDto.mediaUrl.splice(0, 0, item[0]);
+            if (dealDto.mediaUrl && dealDto.mediaUrl.length) {
+                dealDto['type'] = dealDto.mediaUrl[0].type;
+                dealDto['captureFileURL'] = dealDto.mediaUrl[0].captureFileURL;
+                dealDto['path'] = dealDto.mediaUrl[0].path;
+                if (dealDto['type'] == 'Video') {
+                    dealDto['thumbnailURL'] = dealDto.mediaUrl[0].thumbnailURL;
+                    dealDto['thumbnailPath'] = dealDto.mediaUrl[0].thumbnailPath;
+                }
+                if (dealDto.mediaUrl) {
+                    for (let i = 0; i < dealDto.mediaUrl.length; i++) {
+                        if (dealDto.mediaUrl[i].type == 'Video') {
+                            console.log('Inside if');
+                            var item = dealDto.mediaUrl.splice(i, 1);
+                            dealDto.mediaUrl.splice(0, 0, item[0]);
+                        }
                     }
+                }
+                try {
+                    for (var _c = __asyncValues(dealDto.mediaUrl), _d; _d = await _c.next(), !_d.done;) {
+                        let mediaObj = _d.value;
+                        await new Promise(async (resolve, reject) => {
+                            try {
+                                let urlMedia = '';
+                                if (mediaObj.type == 'Video') {
+                                    urlMedia = mediaObj.thumbnailURL;
+                                }
+                                else {
+                                    urlMedia = mediaObj.captureFileURL;
+                                }
+                                mediaObj['blurHash'] = await (0, utils_1.encodeImageToBlurhash)(urlMedia);
+                                let data = (mediaObj['backgroundColorHex'] =
+                                    await (0, utils_1.getDominantColor)(urlMedia));
+                                mediaObj['backgroundColorHex'] = data.hexCode;
+                                resolve({});
+                            }
+                            catch (err) {
+                                console.log('Error', err);
+                                reject(err);
+                            }
+                        });
+                    }
+                }
+                catch (e_1_1) { e_1 = { error: e_1_1 }; }
+                finally {
+                    try {
+                        if (_d && !_d.done && (_a = _c.return)) await _a.call(_c);
+                    }
+                    finally { if (e_1) throw e_1.error; }
                 }
             }
             dealDto.availableVouchers = dealVouchers;
@@ -123,7 +179,73 @@ let DealService = class DealService {
                 return deal;
             }
             await this.dealModel.updateOne({ _id: dealDto.id }, dealDto);
-            return this.dealModel.findOne({ _id: dealDto.id });
+            let returnedDeal = await this.dealModel.findOne({ _id: dealDto.id });
+            const res = await axios_1.default.get(`https://www.zohoapis.eu/crm/v2/functions/createdraftdeal/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&dealid=${returnedDeal.dealID}`);
+            return returnedDeal;
+        }
+        catch (err) {
+            throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
+        }
+    }
+    async getDealByID(dealID) {
+        try {
+            let deal = await this.dealModel.findOne({ dealID: dealID });
+            deal = JSON.parse(JSON.stringify(deal));
+            let coverImageUrl = '';
+            deal.mediaUrl.forEach((el) => {
+                if (el.type == 'Image' && coverImageUrl == '') {
+                    coverImageUrl = el.captureFileURL;
+                }
+            });
+            deal.voucherValidity = deal.subDeals[0].voucherValidity;
+            deal.voucherStartDate = deal.subDeals[0].voucherStartDate;
+            deal.voucherEndDate = deal.subDeals[0].voucherEndDate;
+            deal.publishStartDate = deal.startDate;
+            deal.publishEndDate = deal.endDate;
+            deal.coverImageUrl = coverImageUrl;
+            delete deal.mediaUrl;
+            delete deal.merchantMongoID;
+            delete deal.categoryID;
+            delete deal.subCategoryID;
+            delete deal.highlights;
+            delete deal.reviewMediaUrl;
+            delete deal.ratingsAverage;
+            delete deal.totalReviews;
+            delete deal.maxRating;
+            delete deal.minRating;
+            delete deal.pageNumber;
+            delete deal.deletedCheck;
+            delete deal.isCollapsed;
+            delete deal.isDuplicate;
+            delete deal.isSpecialOffer;
+            delete deal.netEarnings;
+            delete deal.finePrints;
+            delete deal.readMore;
+            delete deal.minDiscountPercentage;
+            delete deal.minOriginalPrice;
+            delete deal.minDealPrice;
+            delete deal.aboutThisDeal;
+            delete deal.id;
+            delete deal.createdAt;
+            delete deal.updatedAt;
+            delete deal.endDate;
+            delete deal.startDate;
+            deal.subDeals.forEach((el) => {
+                delete el._id;
+                el.publishStartDate = deal.publishStartDate;
+                el.publishEndDate = deal.publishEndDate;
+                el.subCategory = deal.subCategory;
+                el.categoryName = deal.categoryName;
+                el.voucherTitle = el.title;
+                delete el.title;
+                el.availableVouchers = el.numberOfVouchers;
+                delete el.numberOfVouchers;
+                delete el.grossEarning;
+                delete el.netEarning;
+            });
+            delete deal.availableVouchers;
+            delete deal.soldVouchers;
+            return deal;
         }
         catch (err) {
             throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
@@ -131,16 +253,16 @@ let DealService = class DealService {
     }
     async updateDeal(updateDealDto, dealID) {
         try {
-            updateDealDto.vouchers = [updateDealDto.vouchers];
+            updateDealDto.subDeals = [updateDealDto.subDeals];
             const deal = await this.dealModel.findById(dealID);
             let dealVouchers = 0;
-            deal.vouchers = deal.vouchers.map((element) => {
-                updateDealDto.vouchers.forEach((el) => {
+            deal.subDeals = deal.subDeals.map((element) => {
+                updateDealDto.subDeals.forEach((el) => {
                     let calculateDiscountPercentage = ((el.originalPrice - el.dealPrice) / el.originalPrice) * 100;
                     el.discountPercentage = calculateDiscountPercentage;
                     if (el['voucherID'] === element['_id']) {
                         element.numberOfVouchers = parseInt(el.numberOfVouchers);
-                        element.subTitle = el.subTitle;
+                        element.title = el.title;
                         element.originalPrice = parseFloat(el.originalPrice);
                         element.dealPrice = parseFloat(el.dealPrice);
                         element.discountPercentage = calculateDiscountPercentage;
@@ -220,17 +342,21 @@ let DealService = class DealService {
     }
     async getDeal(id) {
         try {
-            const deals = await this.dealModel.findOne({
+            const deal = await this.dealModel.findOne({
                 _id: id,
                 deletedCheck: false,
+                dealStatus: dealstatus_enum_1.DEALSTATUS.published,
             });
-            return deals;
+            if (!deal) {
+                throw new common_1.HttpException('Deal not found!', common_1.HttpStatus.BAD_REQUEST);
+            }
+            return deal;
         }
         catch (err) {
             throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
         }
     }
-    async getDealReviews(offset, limit, rating, id) {
+    async getDealReviews(offset, limit, rating, id, createdAt, totalRating) {
         try {
             offset = parseInt(offset) < 0 ? 0 : offset;
             limit = parseInt(limit) < 1 ? 10 : limit;
@@ -242,6 +368,22 @@ let DealService = class DealService {
             }
             else {
                 ratingFilter = Object.assign(Object.assign({}, ratingFilter), { eq: ['', ''] });
+            }
+            let sort = {};
+            if (createdAt) {
+                let sortCreatedAt = createdAt == sort_enum_1.SORT.ASC ? 1 : -1;
+                console.log('createdAt');
+                sort = Object.assign(Object.assign({}, sort), { createdAt: sortCreatedAt });
+            }
+            if (totalRating) {
+                let sortRating = totalRating == sort_enum_1.SORT.ASC ? 1 : -1;
+                console.log('totalRating');
+                sort = Object.assign(Object.assign({}, sort), { totalRating: sortRating });
+            }
+            if (Object.keys(sort).length === 0 && sort.constructor === Object) {
+                sort = {
+                    createdAt: -1,
+                };
             }
             console.log(ratingFilter['eq']);
             const deal = await this.dealModel
@@ -283,6 +425,9 @@ let DealService = class DealService {
                                     },
                                     isViewed: true,
                                 },
+                            },
+                            {
+                                $sort: sort,
                             },
                             {
                                 $lookup: {
@@ -373,14 +518,14 @@ let DealService = class DealService {
                 filters = Object.assign(Object.assign({}, filters), { dealID: { $in: multipleReviewsDto.dealIDsArray } });
             }
             const totalCount = await this.dealModel.countDocuments({
-                merchantID: id,
+                merchantMongoID: id,
                 deletedCheck: false,
             });
-            const filteredDealCount = await this.dealModel.countDocuments(Object.assign(Object.assign({ merchantID: id, deletedCheck: false }, matchFilter), filters));
+            const filteredDealCount = await this.dealModel.countDocuments(Object.assign(Object.assign({ merchantMongoID: id, deletedCheck: false }, matchFilter), filters));
             const deals = await this.dealModel
                 .aggregate([
                 {
-                    $match: Object.assign(Object.assign(Object.assign({ merchantID: id, deletedCheck: false }, matchFilter), filters), { totalReviews: { $gt: 0 } }),
+                    $match: Object.assign(Object.assign(Object.assign({ merchantMongoID: id, deletedCheck: false }, matchFilter), filters), { totalReviews: { $gt: 0 } }),
                 },
                 {
                     $project: {
@@ -397,7 +542,7 @@ let DealService = class DealService {
                 .limit(parseInt(limit));
             const totalMerchantReviews = await this.dealModel.aggregate([
                 {
-                    $match: Object.assign({ merchantID: id, deletedCheck: false }, matchFilter),
+                    $match: Object.assign({ merchantMongoID: id, deletedCheck: false }, matchFilter),
                 },
                 {
                     $group: {
@@ -512,11 +657,11 @@ let DealService = class DealService {
             }
             console.log(sort);
             console.log(matchFilter);
-            const totalCount = await this.dealModel.countDocuments(Object.assign({ merchantID: merchantID, deletedCheck: false }, matchFilter));
+            const totalCount = await this.dealModel.countDocuments(Object.assign({ merchantMongoID: merchantID, deletedCheck: false }, matchFilter));
             const deals = await this.dealModel
                 .aggregate([
                 {
-                    $match: Object.assign(Object.assign({ merchantID: merchantID, deletedCheck: false }, matchFilter), filters),
+                    $match: Object.assign(Object.assign({ merchantMongoID: merchantID, deletedCheck: false }, matchFilter), filters),
                 },
                 {
                     $sort: sort,
@@ -543,13 +688,95 @@ let DealService = class DealService {
             throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
         }
     }
+    async getDealsByMerchantIDForCustomerPanel(merchantID, offset, limit) {
+        try {
+            offset = parseInt(offset) < 0 ? 0 : offset;
+            limit = parseInt(limit) < 1 ? 10 : limit;
+            const totalCount = await this.dealModel.countDocuments({
+                merchantMongoID: merchantID,
+                deletedCheck: false,
+                dealStatus: dealstatus_enum_1.DEALSTATUS.published,
+            });
+            const mercahntDeals = await this.dealModel
+                .aggregate([
+                {
+                    $match: {
+                        merchantMongoID: merchantID,
+                        deletedCheck: false,
+                        dealStatus: dealstatus_enum_1.DEALSTATUS.published,
+                    },
+                },
+                {
+                    $sort: {
+                        createdAt: -1,
+                    },
+                },
+                {
+                    $addFields: {
+                        id: '$_id',
+                        mediaUrl: {
+                            $slice: [
+                                {
+                                    $filter: {
+                                        input: '$mediaUrl',
+                                        as: 'mediaUrl',
+                                        cond: {
+                                            $eq: ['$$mediaUrl.type', 'Image'],
+                                        },
+                                    },
+                                },
+                                1,
+                            ],
+                        },
+                    },
+                },
+                {
+                    $project: {
+                        _id: 0,
+                        dealID: 0,
+                        merchantMongoID: 0,
+                        merchantID: 0,
+                        subTitle: 0,
+                        categoryName: 0,
+                        subCategoryID: 0,
+                        subCategory: 0,
+                        subDeals: 0,
+                        availableVouchers: 0,
+                        aboutThisDeal: 0,
+                        readMore: 0,
+                        finePrints: 0,
+                        netEarnings: 0,
+                        isCollapsed: 0,
+                        isDuplicate: 0,
+                        totalReviews: 0,
+                        maxRating: 0,
+                        minRating: 0,
+                        pageNumber: 0,
+                        updatedAt: 0,
+                        __v: 0,
+                        endDate: 0,
+                        startDate: 0,
+                    },
+                },
+            ])
+                .skip(parseInt(offset))
+                .limit(parseInt(limit));
+            return {
+                totalCount: totalCount,
+                data: mercahntDeals,
+            };
+        }
+        catch (err) {
+            throw new common_1.HttpException(err.message, common_1.HttpStatus.BAD_REQUEST);
+        }
+    }
     async getTopRatedDeals(merchantID) {
         try {
             const deals = this.dealModel
                 .aggregate([
                 {
                     $match: {
-                        merchantID: merchantID,
+                        merchantMongoID: merchantID,
                     },
                 },
                 {
@@ -595,7 +822,18 @@ let DealService = class DealService {
                     $addFields: {
                         id: '$_id',
                         mediaUrl: {
-                            $slice: ['$mediaUrl', 1],
+                            $slice: [
+                                {
+                                    $filter: {
+                                        input: '$mediaUrl',
+                                        as: 'mediaUrl',
+                                        cond: {
+                                            $eq: ['$$mediaUrl.type', 'Image'],
+                                        },
+                                    },
+                                },
+                                1,
+                            ],
                         },
                     },
                 },
@@ -603,12 +841,13 @@ let DealService = class DealService {
                     $project: {
                         _id: 0,
                         dealID: 0,
+                        merchantMongoID: 0,
                         merchantID: 0,
                         subTitle: 0,
                         categoryName: 0,
                         subCategoryID: 0,
                         subCategory: 0,
-                        vouchers: 0,
+                        subDeals: 0,
                         availableVouchers: 0,
                         aboutThisDeal: 0,
                         readMore: 0,
@@ -663,7 +902,18 @@ let DealService = class DealService {
                     $addFields: {
                         id: '$_id',
                         mediaUrl: {
-                            $slice: ['$mediaUrl', 1],
+                            $slice: [
+                                {
+                                    $filter: {
+                                        input: '$mediaUrl',
+                                        as: 'mediaUrl',
+                                        cond: {
+                                            $eq: ['$$mediaUrl.type', 'Image'],
+                                        },
+                                    },
+                                },
+                                1,
+                            ],
                         },
                     },
                 },
@@ -671,12 +921,13 @@ let DealService = class DealService {
                     $project: {
                         _id: 0,
                         dealID: 0,
+                        merchantMongoID: 0,
                         merchantID: 0,
                         subTitle: 0,
                         categoryName: 0,
                         subCategoryID: 0,
                         subCategory: 0,
-                        vouchers: 0,
+                        subDeals: 0,
                         availableVouchers: 0,
                         aboutThisDeal: 0,
                         readMore: 0,
@@ -714,7 +965,7 @@ let DealService = class DealService {
             const totalCount = await this.dealModel.countDocuments({
                 deletedCheck: false,
                 dealStatus: dealstatus_enum_1.DEALSTATUS.published,
-                vouchers: { $elemMatch: { discountPercentage: { $gte: percentage } } },
+                vouchers: { $elemMatch: { discountPercentage: { $lte: percentage } } },
             });
             let deals = await this.dealModel
                 .aggregate([
@@ -723,7 +974,7 @@ let DealService = class DealService {
                         deletedCheck: false,
                         dealStatus: dealstatus_enum_1.DEALSTATUS.published,
                         vouchers: {
-                            $elemMatch: { discountPercentage: { $gte: percentage } },
+                            $elemMatch: { discountPercentage: { $lte: percentage } },
                         },
                     },
                 },
@@ -736,7 +987,18 @@ let DealService = class DealService {
                     $addFields: {
                         id: '$_id',
                         mediaUrl: {
-                            $slice: ['$mediaUrl', 1],
+                            $slice: [
+                                {
+                                    $filter: {
+                                        input: '$mediaUrl',
+                                        as: 'mediaUrl',
+                                        cond: {
+                                            $eq: ['$$mediaUrl.type', 'Image'],
+                                        },
+                                    },
+                                },
+                                1,
+                            ],
                         },
                     },
                 },
@@ -744,12 +1006,13 @@ let DealService = class DealService {
                     $project: {
                         _id: 0,
                         dealID: 0,
+                        merchantMongoID: 0,
                         merchantID: 0,
                         subTitle: 0,
                         categoryName: 0,
                         subCategoryID: 0,
                         subCategory: 0,
-                        vouchers: 0,
+                        subDeals: 0,
                         availableVouchers: 0,
                         aboutThisDeal: 0,
                         readMore: 0,
@@ -823,7 +1086,18 @@ let DealService = class DealService {
                 {
                     $addFields: {
                         mediaUrl: {
-                            $slice: ['$mediaUrl', 1],
+                            $slice: [
+                                {
+                                    $filter: {
+                                        input: '$mediaUrl',
+                                        as: 'mediaUrl',
+                                        cond: {
+                                            $eq: ['$$mediaUrl.type', 'Image'],
+                                        },
+                                    },
+                                },
+                                1,
+                            ],
                         },
                     },
                 },
@@ -833,12 +1107,13 @@ let DealService = class DealService {
                         added: 0,
                         divided: 0,
                         dealID: 0,
+                        merchantMongoID: 0,
                         merchantID: 0,
                         subTitle: 0,
                         categoryName: 0,
                         subCategoryID: 0,
                         subCategory: 0,
-                        vouchers: 0,
+                        subDeals: 0,
                         availableVouchers: 0,
                         aboutThisDeal: 0,
                         readMore: 0,
@@ -895,7 +1170,18 @@ let DealService = class DealService {
                     $addFields: {
                         id: '$_id',
                         mediaUrl: {
-                            $slice: ['$mediaUrl', 1],
+                            $slice: [
+                                {
+                                    $filter: {
+                                        input: '$mediaUrl',
+                                        as: 'mediaUrl',
+                                        cond: {
+                                            $eq: ['$$mediaUrl.type', 'Image'],
+                                        },
+                                    },
+                                },
+                                1,
+                            ],
                         },
                     },
                 },
@@ -903,12 +1189,13 @@ let DealService = class DealService {
                     $project: {
                         _id: 0,
                         dealID: 0,
+                        merchantMongoID: 0,
                         merchantID: 0,
                         subTitle: 0,
                         categoryName: 0,
                         subCategoryID: 0,
                         subCategory: 0,
-                        vouchers: 0,
+                        subDeals: 0,
                         availableVouchers: 0,
                         aboutThisDeal: 0,
                         readMore: 0,
@@ -971,7 +1258,18 @@ let DealService = class DealService {
                     $addFields: {
                         id: '$_id',
                         mediaUrl: {
-                            $slice: ['$mediaUrl', 1],
+                            $slice: [
+                                {
+                                    $filter: {
+                                        input: '$mediaUrl',
+                                        as: 'mediaUrl',
+                                        cond: {
+                                            $eq: ['$$mediaUrl.type', 'Image'],
+                                        },
+                                    },
+                                },
+                                1,
+                            ],
                         },
                     },
                 },
@@ -979,12 +1277,13 @@ let DealService = class DealService {
                     $project: {
                         _id: 0,
                         dealID: 0,
+                        merchantMongoID: 0,
                         merchantID: 0,
                         subTitle: 0,
                         categoryName: 0,
                         subCategoryID: 0,
                         subCategory: 0,
-                        vouchers: 0,
+                        subDeals: 0,
                         availableVouchers: 0,
                         aboutThisDeal: 0,
                         readMore: 0,
@@ -1084,7 +1383,18 @@ let DealService = class DealService {
                     $addFields: {
                         id: '$_id',
                         mediaUrl: {
-                            $slice: ['$mediaUrl', 1],
+                            $slice: [
+                                {
+                                    $filter: {
+                                        input: '$mediaUrl',
+                                        as: 'mediaUrl',
+                                        cond: {
+                                            $eq: ['$$mediaUrl.type', 'Image'],
+                                        },
+                                    },
+                                },
+                                1,
+                            ],
                         },
                     },
                 },
@@ -1092,12 +1402,13 @@ let DealService = class DealService {
                     $project: {
                         _id: 0,
                         dealID: 0,
+                        merchantMongoID: 0,
                         merchantID: 0,
                         subTitle: 0,
                         categoryName: 0,
                         subCategoryID: 0,
                         subCategory: 0,
-                        vouchers: 0,
+                        subDeals: 0,
                         availableVouchers: 0,
                         aboutThisDeal: 0,
                         readMore: 0,
@@ -1121,6 +1432,90 @@ let DealService = class DealService {
             return {
                 totalDeals: totalCount,
                 data: deals,
+            };
+        }
+        catch (err) {
+            throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
+        }
+    }
+    async getSimilarDeals(categoryName, subCategoryName, offset, limit) {
+        try {
+            offset = parseInt(offset) < 0 ? 0 : offset;
+            limit = parseInt(limit) < 1 ? 10 : limit;
+            const totalCount = await this.dealModel.countDocuments({
+                deletedCheck: false,
+                dealStatus: dealstatus_enum_1.DEALSTATUS.published,
+                categoryName: categoryName,
+                subCategory: subCategoryName,
+            });
+            const similarDeals = await this.dealModel
+                .aggregate([
+                {
+                    $match: {
+                        deletedCheck: false,
+                        dealStatus: dealstatus_enum_1.DEALSTATUS.published,
+                        categoryName: categoryName,
+                        subCategory: subCategoryName,
+                    },
+                },
+                {
+                    $sort: {
+                        ratingsAverage: -1,
+                    },
+                },
+                {
+                    $addFields: {
+                        id: '$_id',
+                        mediaUrl: {
+                            $slice: [
+                                {
+                                    $filter: {
+                                        input: '$mediaUrl',
+                                        as: 'mediaUrl',
+                                        cond: {
+                                            $eq: ['$$mediaUrl.type', 'Image'],
+                                        },
+                                    },
+                                },
+                                1,
+                            ],
+                        },
+                    },
+                },
+                {
+                    $project: {
+                        _id: 0,
+                        dealID: 0,
+                        merchantMongoID: 0,
+                        merchantID: 0,
+                        subTitle: 0,
+                        categoryName: 0,
+                        subCategoryID: 0,
+                        subCategory: 0,
+                        subDeals: 0,
+                        availableVouchers: 0,
+                        aboutThisDeal: 0,
+                        readMore: 0,
+                        finePrints: 0,
+                        netEarnings: 0,
+                        isCollapsed: 0,
+                        isDuplicate: 0,
+                        totalReviews: 0,
+                        maxRating: 0,
+                        minRating: 0,
+                        pageNumber: 0,
+                        updatedAt: 0,
+                        __v: 0,
+                        endDate: 0,
+                        startDate: 0,
+                    },
+                },
+            ])
+                .skip(parseInt(offset))
+                .limit(parseInt(limit));
+            return {
+                totalCount: totalCount,
+                deals: similarDeals,
             };
         }
         catch (err) {
@@ -1294,6 +1689,46 @@ let DealService = class DealService {
         }
         catch (err) {
             throw new common_1.HttpException(err.message, common_1.HttpStatus.BAD_REQUEST);
+        }
+    }
+    async changeMediaURL() {
+        var e_2, _a, e_3, _b;
+        var _c;
+        let deals = await this.dealModel.find();
+        deals = JSON.parse(JSON.stringify(deals));
+        try {
+            for (var deals_1 = __asyncValues(deals), deals_1_1; deals_1_1 = await deals_1.next(), !deals_1_1.done;) {
+                let deal = deals_1_1.value;
+                let updatedMediaArr = [];
+                if ((_c = deal === null || deal === void 0 ? void 0 : deal.mediaUrl) === null || _c === void 0 ? void 0 : _c.length) {
+                    try {
+                        for (var _d = (e_3 = void 0, __asyncValues(deal === null || deal === void 0 ? void 0 : deal.mediaUrl)), _e; _e = await _d.next(), !_e.done;) {
+                            let mediaObj = _e.value;
+                            if (typeof mediaObj == 'string') {
+                                let tempMediaObj = mediaObj;
+                                let updatedMedia = tempMediaObj.replace('//dividealapi', '//stagingdividealapi');
+                                updatedMediaArr.push(updatedMedia);
+                            }
+                        }
+                    }
+                    catch (e_3_1) { e_3 = { error: e_3_1 }; }
+                    finally {
+                        try {
+                            if (_e && !_e.done && (_b = _d.return)) await _b.call(_d);
+                        }
+                        finally { if (e_3) throw e_3.error; }
+                    }
+                    await this.dealModel.updateOne({ _id: deal.id }, { mediaUrl: updatedMediaArr });
+                    console.log('deals changed', deal.id);
+                }
+            }
+        }
+        catch (e_2_1) { e_2 = { error: e_2_1 }; }
+        finally {
+            try {
+                if (deals_1_1 && !deals_1_1.done && (_a = deals_1.return)) await _a.call(deals_1);
+            }
+            finally { if (e_2) throw e_2.error; }
         }
     }
 };

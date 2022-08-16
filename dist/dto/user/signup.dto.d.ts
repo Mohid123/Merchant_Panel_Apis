@@ -6,6 +6,7 @@ export declare class SignUpDTO {
     phoneNumber: string;
     role: string;
     status: string;
+    vatNumber: string;
     businessType: string[];
     companyName: string;
     streetAddress: string;

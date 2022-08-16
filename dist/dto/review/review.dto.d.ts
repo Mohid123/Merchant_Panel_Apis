@@ -1,4 +1,4 @@
-import { multipleRatings } from 'src/interface/review/review.interface';
+import { MedialUrl, multipleRatings } from 'src/interface/review/review.interface';
 export declare class ReviewDto {
     id: string;
     dealMongoID: string;
@@ -8,8 +8,10 @@ export declare class ReviewDto {
     voucherMongoID: string;
     voucherID: string;
     customerID: string;
+    merchantMongoID: string;
     merchantID: string;
     text: string;
+    mediaUrl: MedialUrl[];
     totalRating: number;
     multipleRating: multipleRatings[];
     customerEmail: string;

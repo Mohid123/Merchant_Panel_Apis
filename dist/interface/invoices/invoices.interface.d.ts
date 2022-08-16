@@ -6,4 +6,5 @@ export interface InvoiceInterface {
     status: string;
     invoiceURL: string;
     merchantID: string;
+    merchantMongoID: string;
 }

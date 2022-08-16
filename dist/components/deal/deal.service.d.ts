@@ -15,6 +15,7 @@ export declare class DealService {
     createDeal(dealDto: any, req: any): Promise<DealInterface & {
         _id: any;
     }>;
+    getDealByID(dealID: any): Promise<any>;
     updateDeal(updateDealDto: any, dealID: any): Promise<{
         message: string;
     }>;
@@ -26,7 +27,7 @@ export declare class DealService {
     getDeal(id: any): Promise<DealInterface & {
         _id: any;
     }>;
-    getDealReviews(offset: any, limit: any, rating: any, id: any): Promise<any>;
+    getDealReviews(offset: any, limit: any, rating: any, id: any, createdAt: any, totalRating: any): Promise<any>;
     deleteDeal(dealID: any): Promise<{
         status: string;
         message: string;
@@ -40,6 +41,10 @@ export declare class DealService {
     }>;
     getDealsByMerchantID(merchantID: any, dealHeader: any, price: any, startDate: any, endDate: any, availableVoucher: any, soldVoucher: any, status: any, dateFrom: any, dateTo: any, dealID: any, header: any, dealStatus: any, offset: any, limit: any, multipleDealsDto: any): Promise<{
         totalDeals: number;
+        data: any[];
+    }>;
+    getDealsByMerchantIDForCustomerPanel(merchantID: any, offset: any, limit: any): Promise<{
+        totalCount: number;
         data: any[];
     }>;
     getTopRatedDeals(merchantID: any): Promise<any[]>;
@@ -72,6 +77,10 @@ export declare class DealService {
         totalDeals: number;
         data: any[];
     }>;
+    getSimilarDeals(categoryName: any, subCategoryName: any, offset: any, limit: any): Promise<{
+        totalCount: number;
+        deals: any[];
+    }>;
     getSalesStatistics(req: any): Promise<{
         monthlyStats: {
             totalDeals: number;
@@ -92,4 +101,5 @@ export declare class DealService {
             publishedDeals: number;
         };
     }>;
+    changeMediaURL(): Promise<void>;
 }

@@ -10,7 +10,8 @@ exports.InvoiceSchema = new mongoose.Schema({
     invoiceAmount: { type: Number, default: 0 },
     status: { type: String, default: '' },
     invoiceURL: { type: String, default: '' },
-    merchantID: { type: String, default: '' }
+    merchantID: { type: String, default: '' },
+    merchantMongoID: { type: String, default: '' }
 }, {
     collection: 'invoices'
 });

@@ -11,6 +11,13 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
+var __asyncValues = (this && this.__asyncValues) || function (o) {
+    if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
+    var m = o[Symbol.asyncIterator], i;
+    return m ? m.call(o) : (o = typeof __values === "function" ? __values(o) : o[Symbol.iterator](), i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () { return this; }, i);
+    function verb(n) { i[n] = o[n] && function (v) { return new Promise(function (resolve, reject) { v = o[n](v), settle(resolve, reject, v.done, v.value); }); }; }
+    function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UsersService = void 0;
 const common_1 = require("@nestjs/common");
@@ -86,13 +93,66 @@ let UsersService = class UsersService {
             message: 'KYC has been updated successfully!',
         };
     }
+    async updateVoucherPinCode(merchantID, voucherPinCodeDto) {
+        await this._userModel.updateOne({ _id: merchantID }, voucherPinCodeDto);
+        return {
+            message: 'Voucher pin code has been updated successfully!',
+        };
+    }
     async updateMerchantprofile(merchantID, usersDto) {
+        var e_1, _a;
         let user = await this._userModel.findOne({ _id: merchantID });
         if (!user) {
             throw new common_1.HttpException('User not found', common_1.HttpStatus.NOT_FOUND);
         }
-        if (usersDto === null || usersDto === void 0 ? void 0 : usersDto.profilePicURL) {
-            usersDto.profilePicBlurHash = await (0, utils_1.encodeImageToBlurhash)(usersDto.profilePicURL);
+        if (usersDto.gallery && usersDto.gallery.length) {
+            usersDto['type'] = usersDto.gallery[0].type;
+            usersDto['captureFileURL'] = usersDto.gallery[0].captureFileURL;
+            usersDto['path'] = usersDto.gallery[0].path;
+            if (usersDto['type'] == 'Video') {
+                usersDto['thumbnailURL'] = usersDto.gallery[0].thumbnailURL;
+                usersDto['thumbnailPath'] = usersDto.gallery[0].thumbnailPath;
+            }
+            if (usersDto.gallery) {
+                for (let i = 0; i < usersDto.gallery.length; i++) {
+                    if (usersDto.gallery[i].type == 'Video') {
+                        console.log('Inside if');
+                        var item = usersDto.gallery.splice(i, 1);
+                        usersDto.gallery.splice(0, 0, item[0]);
+                    }
+                }
+            }
+            try {
+                for (var _b = __asyncValues(usersDto.gallery), _c; _c = await _b.next(), !_c.done;) {
+                    let mediaObj = _c.value;
+                    await new Promise(async (resolve, reject) => {
+                        try {
+                            let urlMedia = '';
+                            if (mediaObj.type == 'Video') {
+                                urlMedia = mediaObj.thumbnailURL;
+                            }
+                            else {
+                                urlMedia = mediaObj.captureFileURL;
+                            }
+                            mediaObj['blurHash'] = await (0, utils_1.encodeImageToBlurhash)(urlMedia);
+                            let data = (mediaObj['backgroundColorHex'] = await (0, utils_1.getDominantColor)(urlMedia));
+                            mediaObj['backgroundColorHex'] = data.hexCode;
+                            resolve({});
+                        }
+                        catch (err) {
+                            console.log('Error', err);
+                            reject(err);
+                        }
+                    });
+                }
+            }
+            catch (e_1_1) { e_1 = { error: e_1_1 }; }
+            finally {
+                try {
+                    if (_c && !_c.done && (_a = _b.return)) await _a.call(_b);
+                }
+                finally { if (e_1) throw e_1.error; }
+            }
         }
         await this._userModel.updateOne({ _id: merchantID }, usersDto);
         return {
@@ -124,6 +184,17 @@ let UsersService = class UsersService {
                     deletedCheck: false,
                     status: userstatus_enum_1.USERSTATUS.approved,
                 },
+            },
+            {
+                $lookup: {
+                    from: 'locations',
+                    as: 'personalDetail',
+                    localField: 'userID',
+                    foreignField: 'merchantID',
+                },
+            },
+            {
+                $unwind: '$personalDetail',
             },
             {
                 $addFields: {
@@ -300,6 +371,7 @@ let UsersService = class UsersService {
             if (!user) {
                 throw new common_1.HttpException('User not found', common_1.HttpStatus.NOT_FOUND);
             }
+            let generatedUserID = await this.generateMerchantId('merchantID');
             let generatedPassword = await this.generatePassword();
             const salt = await bcrypt.genSalt();
             let hashedPassword = await bcrypt.hash(generatedPassword, salt);
@@ -322,6 +394,19 @@ let UsersService = class UsersService {
                 province: user.province,
                 zipCode: user.zipCode,
             };
+            const locObj = {
+                merchantID: generatedUserID,
+                streetAddress: user.streetAddress,
+                zipCode: user.zipCode,
+                city: user.city,
+                googleMapPin: user.googleMapPin,
+                province: user.province,
+                phoneNumber: user.phoneNumber,
+            };
+            if (userID) {
+                await this._leadModel.updateOne({ _id: userID }, { deletedCheck: true });
+            }
+            const location = await new this._locationModel(locObj).save();
             const emailDto = {
                 from: `"Divideals" <${process.env.EMAIL}>`,
                 to: userObj.email,
@@ -488,6 +573,7 @@ let UsersService = class UsersService {
                 status: status,
                 password: hashedPassword,
                 voucherPinCode: pinCode,
+                userID: generatedUserID,
             });
             return { message: 'Merchant Approved Successfully!' };
         }
@@ -506,6 +592,7 @@ let UsersService = class UsersService {
                 lowerCaseAlphabets: false,
                 specialChars: false,
             });
+            delete approveMerchantDto.leadSource;
             approveMerchantDto.legalName = approveMerchantDto.companyName;
             approveMerchantDto.businessType = approveMerchantDto.categoryType;
             approveMerchantDto.voucherPinCode = pinCode;

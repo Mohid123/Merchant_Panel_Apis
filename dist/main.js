@@ -22,7 +22,7 @@ async function bootstrap() {
         .build();
     const document = swagger_1.SwaggerModule.createDocument(app, config);
     swagger_1.SwaggerModule.setup('swagger', app, document);
-    const port = 5200;
+    const port = 5300;
     await app.listen(port);
     console.warn(`API is running on ${port}`);
 }

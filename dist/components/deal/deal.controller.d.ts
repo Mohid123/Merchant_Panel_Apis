@@ -38,6 +38,10 @@ export declare class DealController {
         totalDeals: number;
         data: any[];
     }>;
+    getDealsByMerchantIDForCustomerPanel(merchantID: string, offset?: number, limit?: number): Promise<{
+        totalCount: number;
+        data: any[];
+    }>;
     getSalesStatistics(req: any): Promise<{
         monthlyStats: {
             totalDeals: number;
@@ -58,7 +62,7 @@ export declare class DealController {
             publishedDeals: number;
         };
     }>;
-    getDealReviews(dealID: string, rating: number, offset?: number, limit?: number): Promise<any>;
+    getDealReviews(dealID: string, createdAt: SORT, totalRating: SORT, rating: number, offset?: number, limit?: number): Promise<any>;
     getTopRatedDeals(merchantID: string): Promise<any[]>;
     getNewDeals(offset?: number, limit?: number): Promise<{
         totalCount: number;
@@ -89,4 +93,9 @@ export declare class DealController {
         totalDeals: number;
         data: any[];
     }>;
+    getSimilarDeals(categoryName: string, subCategoryName: string, offset?: number, limit?: number): Promise<{
+        totalCount: number;
+        deals: any[];
+    }>;
+    getDealByID(dealID: string): Promise<any>;
 }

@@ -6,8 +6,13 @@ export interface businessHour {
     secondEndTime: string;
 }
 export interface Gallery {
-    pictureUrl: string;
-    pictureBlurHash: string;
+    type: string;
+    captureFileURL: string;
+    path: string;
+    thumbnailURL: string;
+    thumbnailPath: string;
+    blurHash: string;
+    backgroundColorHex: string;
 }
 export interface UsersInterface {
     _id: string;
@@ -26,6 +31,8 @@ export interface UsersInterface {
     city: string;
     vatNumber: string;
     iban: string;
+    bic_swiftCode: string;
+    accountHolder: string;
     bankName: string;
     kycStatus: boolean;
     province: string;
@@ -36,7 +43,7 @@ export interface UsersInterface {
     aboutUs: string;
     profilePicURL: string;
     profilePicBlurHash: string;
-    gallery: [string];
+    gallery: Gallery[];
     voucherPinCode: number;
     deletedCheck: boolean;
     status: string;
@@ -58,4 +65,5 @@ export interface UsersInterface {
     totalReviews: number;
     maxRating: number;
     minRating: number;
+    isSubscribed: boolean;
 }

@@ -17,13 +17,13 @@ __decorate([
     (0, swagger_1.ApiProperty)({
         example: {
             voucherID: '',
-            subTitle: '',
+            title: '',
             originalPrice: 0,
             dealPrice: 0,
             numberOfVouchers: 0,
         },
     }),
     __metadata("design:type", Object)
-], UpdateDealDto.prototype, "vouchers", void 0);
+], UpdateDealDto.prototype, "subDeals", void 0);
 exports.UpdateDealDto = UpdateDealDto;
 //# sourceMappingURL=updatedeal.dto.js.map

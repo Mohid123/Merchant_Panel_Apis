@@ -4,5 +4,6 @@ export declare enum DEALSTATUS {
     scheduled = "Scheduled",
     needsAttention = "Needs attention",
     published = "Published",
-    expired = "Expired"
+    expired = "Expired",
+    rejected = "Rejected"
 }

@@ -1,3 +1,4 @@
+import { Gallery } from 'src/interface/user/users.interface';
 export declare class UpdateMerchantProfileDto {
     firstName: string;
     lastName: string;
@@ -12,7 +13,7 @@ export declare class UpdateMerchantProfileDto {
     profilePicURL: string;
     profilePicBlurHash: string;
     website_socialAppLink: string;
-    gallery: [string];
+    gallery: Gallery[];
     aboutUs: string;
     finePrint: string;
 }

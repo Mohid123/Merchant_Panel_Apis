@@ -48,11 +48,31 @@ __decorate([
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
+], ReviewDto.prototype, "merchantMongoID", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
 ], ReviewDto.prototype, "merchantID", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
 ], ReviewDto.prototype, "text", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        example: [
+            {
+                type: '',
+                captureFileURL: '',
+                path: '',
+                thumbnailURL: '',
+                thumbnailPath: '',
+                blurHash: '',
+                backgroundColorHex: '',
+            }
+        ],
+    }),
+    __metadata("design:type", Array)
+], ReviewDto.prototype, "mediaUrl", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", Number)

@@ -1,7 +1,4 @@
-import { Document } from 'mongoose';
-export interface Location extends Document {
-    _id: string;
-    merchantID: string;
+export declare class UpdateLocationDTO {
     tradeName: string;
     locationName: string;
     streetAddress: string;

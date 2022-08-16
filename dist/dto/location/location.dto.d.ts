@@ -1,5 +1,6 @@
 export declare class LocationDTO {
     merchantID: string;
+    tradeName: string;
     locationName: string;
     streetAddress: string;
     zipCode: string;

@@ -10,6 +10,6 @@ export declare class VoucherDto {
     paymentStatus: string;
     merchantID: string;
     customerID: string;
-    boughtDate: Date;
+    boughtDate: number;
     deletedCheck: boolean;
 }

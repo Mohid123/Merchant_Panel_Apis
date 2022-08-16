@@ -2,6 +2,7 @@
 import { ResetPasswordDto } from 'src/dto/resetPasswordDto/resetPassword.dto';
 import { ApproveMerchantDTO } from 'src/dto/user/approveMerchant.dto';
 import { UpdatePasswordDto } from 'src/dto/user/updatepassword.dto';
+import { VoucherPinCodeDto } from 'src/dto/user/voucherpincode.dto';
 import { USERSTATUS } from 'src/enum/user/userstatus.enum';
 import { KycDto } from '../../dto/user/kyc.dto';
 import { UpdateHoursDto } from '../../dto/user/updatehours.dto';
@@ -16,6 +17,9 @@ export declare class UsersController {
     }>;
     changePassword(id: string, updatepasswordDto: UpdatePasswordDto): Promise<import("mongodb").UpdateResult>;
     completeKYC(merchantID: string, kycDto: KycDto): Promise<{
+        message: string;
+    }>;
+    updateVoucherPinCode(merchantID: string, voucherPinCodeDto: VoucherPinCodeDto): Promise<{
         message: string;
     }>;
     updateMerchantprofile(merchantID: string, usersDto: UpdateMerchantProfileDto): Promise<{
