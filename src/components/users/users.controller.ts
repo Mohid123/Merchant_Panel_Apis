@@ -12,6 +12,7 @@ import { ApiBearerAuth, ApiTags, ApiQuery } from '@nestjs/swagger';
 import { ResetPasswordDto } from 'src/dto/resetPasswordDto/resetPassword.dto';
 import { ApproveMerchantDTO } from 'src/dto/user/approveMerchant.dto';
 import { UpdatePasswordDto } from 'src/dto/user/updatepassword.dto';
+import { VoucherPinCodeDto } from 'src/dto/user/voucherpincode.dto';
 import { USERSTATUS } from 'src/enum/user/userstatus.enum';
 import { KycDto } from '../../dto/user/kyc.dto';
 import { UpdateHoursDto } from '../../dto/user/updatehours.dto';
@@ -49,6 +50,15 @@ export class UsersController {
   @Post('completeKYC/:merchantID')
   completeKYC(@Param('merchantID') merchantID: string, @Body() kycDto: KycDto) {
     return this._usersService.completeKYC(merchantID, kycDto);
+  }
+
+
+  @Post('updateVoucherPinCode/:merchantID')
+  updateVoucherPinCode (
+    @Param('merchantID') merchantID: string,
+    @Body() voucherPinCodeDto: VoucherPinCodeDto
+  ) {
+    return this._usersService.updateVoucherPinCode(merchantID, voucherPinCodeDto);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -104,7 +114,8 @@ export class UsersController {
     return this._usersService.resetPassword(resetPasswordDto, req);
   }
 
-  @UseGuards(JwtAdminAuthGuard)
+  // @UseGuards(JwtAdminAuthGuard)
+  // @ApiBearerAuth()
   @Get('getPendingUsers')
   getPendingUsers(
     @Query('offset') offset: number = 0,
@@ -113,7 +124,8 @@ export class UsersController {
     return this._usersService.getPendingUsers(offset, limit);
   }
 
-  @UseGuards(JwtAdminAuthGuard)
+  // @UseGuards(JwtAdminAuthGuard)
+  // @ApiBearerAuth()
   @ApiQuery({ name: 'status', enum: USERSTATUS, required: false })
   @Get('approvePendingUsers/:userID')
   approvePendingUsers(

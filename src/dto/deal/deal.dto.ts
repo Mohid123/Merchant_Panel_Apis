@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
   MedialUrl,
-  VoucherInterface,
+  SubDealInterface,
 } from '../../interface/deal/deal.interface';
 
 export class DealDto {
@@ -10,6 +10,9 @@ export class DealDto {
 
   @ApiProperty()
   dealID: string;
+
+  @ApiProperty()
+  merchantMongoID: string;
 
   @ApiProperty()
   merchantID: string;
@@ -59,7 +62,7 @@ export class DealDto {
   @ApiProperty({
     example: [
       {
-        subTitle: '',
+        title: '',
         originalPrice: 0,
         dealPrice: 0,
         discountPercentage: 0,
@@ -68,12 +71,12 @@ export class DealDto {
         grossEarning: 0,
         netEarning: 0,
         voucherValidity: 0,
-        voucherStartDate: new Date(),
-        voucherEndDate: new Date(),
+        voucherStartDate: 0,
+        voucherEndDate: 0,
       },
     ],
   })
-  vouchers: VoucherInterface[];
+  subDeals: SubDealInterface[];
 
   @ApiProperty()
   aboutThisDeal: string;
@@ -119,4 +122,7 @@ export class DealDto {
 
   @ApiProperty()
   dealPreviewURL: string;
+
+  @ApiProperty()
+  editDealURL: string;
 }

@@ -31,6 +31,9 @@ export class SignUpDTO {
   // Business Details
 
   @ApiProperty()
+  vatNumber: string;
+
+  @ApiProperty()
   businessType: string[];
 
   @ApiProperty()

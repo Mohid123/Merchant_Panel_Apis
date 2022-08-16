@@ -11,7 +11,10 @@ import * as bcrypt from 'bcrypt';
 import { UpdateHoursDto } from '../../dto/user/updatehours.dto';
 import { USERSTATUS } from '../../enum/user/userstatus.enum';
 import { UsersInterface } from '../../interface/user/users.interface';
-import { encodeImageToBlurhash } from '../file-management/utils/utils';
+import {
+  encodeImageToBlurhash,
+  getDominantColor,
+} from '../file-management/utils/utils';
 import { EmailDTO } from 'src/dto/email/email.dto';
 import * as nodemailer from 'nodemailer';
 import axios from 'axios';
@@ -127,16 +130,19 @@ export class UsersService {
   }
 
   async completeKYC(merchantID, kycDto) {
-    // let validation:any = await this.validateVatNumber(kycDto.vatNumber);
-    // if (validation.success == 0) {
-    //   throw new UnauthorizedException('Wrong Vatnumber!');
-    // }
-
     await this._userModel.updateOne({ _id: merchantID }, kycDto);
     await this._userModel.updateOne({ _id: merchantID }, { kycStatus: true });
 
     return {
       message: 'KYC has been updated successfully!',
+    };
+  }
+
+  async updateVoucherPinCode(merchantID, voucherPinCodeDto) {
+    await this._userModel.updateOne({ _id: merchantID }, voucherPinCodeDto);
+
+    return {
+      message: 'Voucher pin code has been updated successfully!',
     };
   }
 
@@ -146,10 +152,45 @@ export class UsersService {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
 
-    if (usersDto?.profilePicURL) {
-      usersDto.profilePicBlurHash = await encodeImageToBlurhash(
-        usersDto.profilePicURL,
-      );
+    if (usersDto.gallery && usersDto.gallery.length) {
+      usersDto['type'] = usersDto.gallery[0].type;
+      usersDto['captureFileURL'] = usersDto.gallery[0].captureFileURL;
+      usersDto['path'] = usersDto.gallery[0].path;
+      if (usersDto['type'] == 'Video') {
+        usersDto['thumbnailURL'] = usersDto.gallery[0].thumbnailURL;
+        usersDto['thumbnailPath'] = usersDto.gallery[0].thumbnailPath;
+      }
+      if (usersDto.gallery) {
+        for (let i = 0; i < usersDto.gallery.length; i++) {
+          if (usersDto.gallery[i].type == 'Video') {
+            console.log('Inside if');
+            var item = usersDto.gallery.splice(i, 1);
+            usersDto.gallery.splice(0, 0, item[0]);
+          }
+        }
+      }
+      for await (let mediaObj of usersDto.gallery) {
+        await new Promise(async (resolve, reject) => {
+          try {
+            let urlMedia = '';
+            if (mediaObj.type == 'Video') {
+              urlMedia = mediaObj.thumbnailURL;
+            } else {
+              urlMedia = mediaObj.captureFileURL;
+            }
+            mediaObj['blurHash'] = await encodeImageToBlurhash(urlMedia);
+            let data = (mediaObj['backgroundColorHex'] = await getDominantColor(
+              urlMedia,
+            ));
+            mediaObj['backgroundColorHex'] = data.hexCode;
+
+            resolve({});
+          } catch (err) {
+            console.log('Error', err);
+            reject(err);
+          }
+        });
+      }
     }
 
     await this._userModel.updateOne({ _id: merchantID }, usersDto);
@@ -197,6 +238,17 @@ export class UsersService {
             deletedCheck: false,
             status: USERSTATUS.approved,
           },
+        },
+        {
+          $lookup: {
+            from: 'locations',
+            as: 'personalDetail',
+            localField: 'userID',
+            foreignField: 'merchantID',
+          },
+        },
+        {
+          $unwind: '$personalDetail',
         },
         {
           $addFields: {
@@ -394,6 +446,8 @@ export class UsersService {
         throw new HttpException('User not found', HttpStatus.NOT_FOUND);
       }
 
+      let generatedUserID = await this.generateMerchantId('merchantID');
+
       let generatedPassword = await this.generatePassword();
       const salt = await bcrypt.genSalt();
       let hashedPassword = await bcrypt.hash(generatedPassword, salt);
@@ -418,6 +472,23 @@ export class UsersService {
         province: user.province,
         zipCode: user.zipCode,
       };
+
+      const locObj = {
+        merchantID: generatedUserID,
+        streetAddress: user.streetAddress,
+        zipCode: user.zipCode,
+        city: user.city,
+        googleMapPin: user.googleMapPin,
+        province: user.province,
+        phoneNumber: user.phoneNumber,
+      };
+      if (userID) {
+        await this._leadModel.updateOne(
+          { _id: userID },
+          { deletedCheck: true },
+        );
+      }
+      const location = await new this._locationModel(locObj).save();
 
       const emailDto: EmailDTO = {
         from: `"Divideals" <${process.env.EMAIL}>`,
@@ -595,6 +666,7 @@ export class UsersService {
           status: status,
           password: hashedPassword,
           voucherPinCode: pinCode,
+          userID: generatedUserID,
         },
       );
 
@@ -606,7 +678,7 @@ export class UsersService {
 
   async approveMerchant(userID, approveMerchantDto) {
     try {
-      console.log('Approve Merchant body',approveMerchantDto)
+      console.log('Approve Merchant body', approveMerchantDto);
       let generatedPassword = await this.generatePassword();
       const salt = await bcrypt.genSalt();
       let hashedPassword = await bcrypt.hash(generatedPassword, salt);
@@ -616,7 +688,7 @@ export class UsersService {
         lowerCaseAlphabets: false,
         specialChars: false,
       });
-      
+
       delete approveMerchantDto.leadSource;
 
       approveMerchantDto.legalName = approveMerchantDto.companyName;
@@ -651,8 +723,11 @@ export class UsersService {
         province: approveMerchantDto.province,
         phoneNumber: approveMerchantDto.phoneNumber,
       };
-      if(userID){
-        await this._leadModel.updateOne({ _id: userID }, { deletedCheck: true });
+      if (userID) {
+        await this._leadModel.updateOne(
+          { _id: userID },
+          { deletedCheck: true },
+        );
       }
       const location = await new this._locationModel(locObj).save();
 
