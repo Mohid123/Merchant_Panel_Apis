@@ -213,70 +213,98 @@ export class DealService {
 
   async getDealByID(dealID) {
     try {
+      let statuses = {
+        Draf: 'Draft',
+        'In review': 'Review Required',
+        'Needs attention': 'Merchant Action Requested',
+        Scheduled: 'Scheduled',
+        Published: 'Published',
+        'Rejected ': 'Rejected ',
+        'Expired ': 'Expired ',
+      };
+
       let deal: any = await this.dealModel.findOne({ dealID: dealID });
+
+      if (!deal) {
+        throw new Error('No deal Found!');
+      }
 
       deal = JSON.parse(JSON.stringify(deal));
 
       let coverImageUrl = '';
-      deal.mediaUrl.forEach((el) => {
+      deal?.mediaUrl.forEach((el) => {
         if (el.type == 'Image' && coverImageUrl == '') {
           coverImageUrl = el.captureFileURL;
         }
       });
 
-      deal.voucherValidity = deal.subDeals[0].voucherValidity;
-      deal.voucherStartDate = deal.subDeals[0].voucherStartDate;
-      deal.voucherEndDate = deal.subDeals[0].voucherEndDate;
-      deal.publishStartDate = deal.startDate;
-      deal.publishEndDate = deal.endDate;
+      deal.voucherValidity = deal?.subDeals[0].voucherValidity;
+      deal.voucherStartDate = deal?.subDeals[0].voucherStartDate;
+      deal.voucherEndDate = deal?.subDeals[0].voucherEndDate;
+      deal.publishStartDate = deal?.startDate;
+      deal.publishEndDate = deal?.endDate;
       deal.coverImageUrl = coverImageUrl;
+      deal.dealStatus = statuses[deal.dealStatus];
 
-      delete deal.mediaUrl;
-      delete deal.merchantMongoID;
-      delete deal.categoryID;
-      delete deal.subCategoryID;
-      delete deal.highlights;
-      delete deal.reviewMediaUrl;
-      delete deal.ratingsAverage;
-      delete deal.totalReviews;
-      delete deal.maxRating;
-      delete deal.minRating;
-      delete deal.pageNumber;
-      delete deal.deletedCheck;
-      delete deal.isCollapsed;
-      delete deal.isDuplicate;
-      delete deal.isSpecialOffer;
-      delete deal.netEarnings;
-      delete deal.finePrints;
-      delete deal.readMore;
-      delete deal.minDiscountPercentage;
-      delete deal.minOriginalPrice;
-      delete deal.minDealPrice;
-      delete deal.aboutThisDeal;
-      delete deal.id;
-      delete deal.createdAt;
-      delete deal.updatedAt;
-      delete deal.endDate;
-      delete deal.startDate;
-      deal.subDeals.forEach((el) => {
+      delete deal?.mediaUrl;
+      delete deal?.merchantMongoID;
+      delete deal?.categoryID;
+      delete deal?.subCategoryID;
+      delete deal?.highlights;
+      delete deal?.reviewMediaUrl;
+      delete deal?.ratingsAverage;
+      delete deal?.totalReviews;
+      delete deal?.maxRating;
+      delete deal?.minRating;
+      delete deal?.pageNumber;
+      delete deal?.deletedCheck;
+      delete deal?.isCollapsed;
+      delete deal?.isDuplicate;
+      delete deal?.isSpecialOffer;
+      delete deal?.netEarnings;
+      delete deal?.finePrints;
+      delete deal?.readMore;
+      delete deal?.minDiscountPercentage;
+      delete deal?.minOriginalPrice;
+      delete deal?.minDealPrice;
+      delete deal?.aboutThisDeal;
+      delete deal?.id;
+      delete deal?.createdAt;
+      delete deal?.updatedAt;
+      delete deal?.endDate;
+      delete deal?.startDate;
+      deal?.subDeals.forEach((el) => {
         delete el._id;
-        el.publishStartDate = deal.publishStartDate;
-        el.publishEndDate = deal.publishEndDate;
-        el.subCategory = deal.subCategory;
-        el.categoryName = deal.categoryName;
-        el.voucherTitle = el.title;
+        el.publishStartDate = deal?.publishStartDate;
+        el.publishEndDate = deal?.publishEndDate;
+        el.subCategory = deal?.subCategory;
+        el.categoryName = deal?.categoryName;
+        el.voucherTitle = el?.title;
         delete el.title;
         el.availableVouchers = el.numberOfVouchers;
-        delete el.numberOfVouchers;
-        delete el.grossEarning;
-        delete el.netEarning;
+        el.originalPrice = el.originalPrice.toFixed(2).replace('.', ',');
+        el.dealPrice = el.dealPrice.toFixed(2).replace('.', ',');
+        el.discountPercentage = el.discountPercentage
+          .toFixed(2)
+          .replace('.', ',');
+        delete el?.numberOfVouchers;
+        delete el?.grossEarning;
+        delete el?.netEarning;
       });
-      delete deal.availableVouchers;
-      delete deal.soldVouchers;
+      delete deal?.availableVouchers;
+      delete deal?.soldVouchers;
+
+      if (!deal.dealPreviewURL) {
+        deal.dealPreviewURL = '';
+      }
+
+      if (!deal.editDealURL) {
+        deal.editDealURL = '';
+      }
 
       return deal;
     } catch (err) {
-      throw new HttpException(err, HttpStatus.BAD_REQUEST);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
