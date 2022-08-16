@@ -264,7 +264,7 @@ export class DealService {
         el.publishEndDate = deal.publishEndDate;
         el.subCategory = deal.subCategory;
         el.categoryName = deal.categoryName;
-        el.subTitle = el.title;
+        el.voucherTitle = el.title;
         delete el.title;
         el.availableVouchers = el.numberOfVouchers;
         delete el.numberOfVouchers;
