@@ -228,7 +228,7 @@ export class DealService {
       deal = JSON.parse(JSON.stringify(deal));
 
       let coverImageUrl = '';
-      deal.mediaUrl.forEach((el) => {
+      deal?.mediaUrl.forEach((el) => {
         if (el.type == 'Image' && coverImageUrl == '') {
           coverImageUrl = el.captureFileURL;
         }
@@ -242,33 +242,33 @@ export class DealService {
       deal.coverImageUrl = coverImageUrl;
       deal.dealStatus = statuses[deal.dealStatus];
 
-      delete deal.mediaUrl;
-      delete deal.merchantMongoID;
-      delete deal.categoryID;
-      delete deal.subCategoryID;
-      delete deal.highlights;
-      delete deal.reviewMediaUrl;
-      delete deal.ratingsAverage;
-      delete deal.totalReviews;
-      delete deal.maxRating;
-      delete deal.minRating;
-      delete deal.pageNumber;
-      delete deal.deletedCheck;
-      delete deal.isCollapsed;
-      delete deal.isDuplicate;
-      delete deal.isSpecialOffer;
-      delete deal.netEarnings;
-      delete deal.finePrints;
-      delete deal.readMore;
-      delete deal.minDiscountPercentage;
-      delete deal.minOriginalPrice;
-      delete deal.minDealPrice;
-      delete deal.aboutThisDeal;
-      delete deal.id;
-      delete deal.createdAt;
-      delete deal.updatedAt;
-      delete deal.endDate;
-      delete deal.startDate;
+      delete deal?.mediaUrl;
+      delete deal?.merchantMongoID;
+      delete deal?.categoryID;
+      delete deal?.subCategoryID;
+      delete deal?.highlights;
+      delete deal?.reviewMediaUrl;
+      delete deal?.ratingsAverage;
+      delete deal?.totalReviews;
+      delete deal?.maxRating;
+      delete deal?.minRating;
+      delete deal?.pageNumber;
+      delete deal?.deletedCheck;
+      delete deal?.isCollapsed;
+      delete deal?.isDuplicate;
+      delete deal?.isSpecialOffer;
+      delete deal?.netEarnings;
+      delete deal?.finePrints;
+      delete deal?.readMore;
+      delete deal?.minDiscountPercentage;
+      delete deal?.minOriginalPrice;
+      delete deal?.minDealPrice;
+      delete deal?.aboutThisDeal;
+      delete deal?.id;
+      delete deal?.createdAt;
+      delete deal?.updatedAt;
+      delete deal?.endDate;
+      delete deal?.startDate;
       deal.subDeals.forEach((el) => {
         delete el._id;
         el.publishStartDate = deal.publishStartDate;
@@ -278,10 +278,10 @@ export class DealService {
         el.voucherTitle = el.title;
         delete el.title;
         el.availableVouchers = el.numberOfVouchers;
-        el.originalPrice = el.originalPrice.toString().replace('.', ',');
-        el.dealPrice = el.dealPrice.toString().replace('.', ',');
+        el.originalPrice = el.originalPrice.toFixed(2).replace('.', ',');
+        el.dealPrice = el.dealPrice.toFixed(2).replace('.', ',');
         el.discountPercentage = el.discountPercentage
-          .toString()
+          .toFixed(2)
           .replace('.', ',');
         delete el.numberOfVouchers;
         delete el.grossEarning;
