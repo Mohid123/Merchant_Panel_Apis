@@ -225,6 +225,10 @@ export class DealService {
 
       let deal: any = await this.dealModel.findOne({ dealID: dealID });
 
+      if (!deal) {
+        throw new Error('No deal Found!');
+      }
+
       deal = JSON.parse(JSON.stringify(deal));
 
       let coverImageUrl = '';
