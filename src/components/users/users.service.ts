@@ -446,6 +446,8 @@ export class UsersService {
         throw new HttpException('User not found', HttpStatus.NOT_FOUND);
       }
 
+      let generatedUserID = await this.generateMerchantId('merchantID');
+
       let generatedPassword = await this.generatePassword();
       const salt = await bcrypt.genSalt();
       let hashedPassword = await bcrypt.hash(generatedPassword, salt);
@@ -470,6 +472,23 @@ export class UsersService {
         province: user.province,
         zipCode: user.zipCode,
       };
+
+      const locObj = {
+        merchantID: generatedUserID,
+        streetAddress: user.streetAddress,
+        zipCode: user.zipCode,
+        city: user.city,
+        googleMapPin: user.googleMapPin,
+        province: user.province,
+        phoneNumber: user.phoneNumber,
+      };
+      if (userID) {
+        await this._leadModel.updateOne(
+          { _id: userID },
+          { deletedCheck: true },
+        );
+      }
+      const location = await new this._locationModel(locObj).save();
 
       const emailDto: EmailDTO = {
         from: `"Divideals" <${process.env.EMAIL}>`,
@@ -647,7 +666,7 @@ export class UsersService {
           status: status,
           password: hashedPassword,
           voucherPinCode: pinCode,
-          userID: await this.generateMerchantId('merchantID'),
+          userID: generatedUserID,
         },
       );
 
