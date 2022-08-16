@@ -271,6 +271,8 @@ export class DealService {
         delete el.grossEarning;
         delete el.netEarning;
       });
+      delete deal.availableVouchers;
+      delete deal.soldVouchers;
 
       return deal;
     } catch (err) {
