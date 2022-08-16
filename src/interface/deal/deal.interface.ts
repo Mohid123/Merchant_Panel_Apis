@@ -1,8 +1,9 @@
 import { Document } from 'mongoose';
 
-export interface VoucherInterface {
+export interface SubDealInterface {
   id: string;
-  subTitle: string;
+  subDealID: string;
+  title: string;
   originalPrice: number;
   dealPrice: number;
   discountPercentage: number;
@@ -16,19 +17,19 @@ export interface VoucherInterface {
 }
 
 export interface MedialUrl {
-  merdiaUrl: string;
   type: string;
-  // captureFileURL: string,
-  // path: string,
-  // thumbnailURL: string,
-  // thumbnailPath: string,
-  // blurHash: string,
-  // backgroundColorHex: string,
+  captureFileURL: string;
+  path: string;
+  thumbnailURL: string;
+  thumbnailPath: string;
+  blurHash: string;
+  backgroundColorHex: string;
 }
 
 export interface DealInterface extends Document {
   id: string;
   dealID: string;
+  merchantMongoID: string;
   merchantID: string;
   dealHeader: string;
   subTitle: string;
@@ -40,7 +41,7 @@ export interface DealInterface extends Document {
   mediaUrl: MedialUrl[];
   startDate: Date;
   endDate: Date;
-  vouchers: VoucherInterface[];
+  subDeals: SubDealInterface[];
   availableVouchers: number;
   soldVouchers: number;
   minDealPrice: number;
@@ -52,9 +53,11 @@ export interface DealInterface extends Document {
   dealStatus: string;
   netEarnings: number;
   deletedCheck: boolean;
+  reviewMediaUrl: MedialUrl[];
   pageNumber: number;
   isCollapsed: boolean;
   isDuplicate: boolean;
   isSpecialOffer: boolean;
   dealPreviewURL: string;
+  editDealURL: string;
 }

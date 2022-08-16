@@ -18,4 +18,7 @@ export class InvoiceDTO {
 
     @ApiProperty()
     merchantID: string;
+
+    @ApiProperty()
+    merchantMongoID: string;
 }

@@ -18,9 +18,9 @@ import { DealStatusDto } from '../../dto/deal/updatedealstatus.dto';
 import { SORT } from '../../enum/sort/sort.enum';
 import { DEALSTATUS } from '../../enum/deal/dealstatus.enum';
 import { UpdateDealDto } from '../../dto/deal/updatedeal.dto';
-import { RATINGENUM } from 'src/enum/review/ratingValue.enum';
 import { MultipleDealsDto } from 'src/dto/deal/multipledeals.dto';
 import { MultipleReviewsDto } from 'src/dto/review/multiplereviews.dto';
+import { JwtManagerAuthGuard } from '../auth/jwt-manager-auth.guard';
 
 @ApiTags('Deal')
 @Controller('deal')
@@ -65,8 +65,6 @@ export class DealController {
     return this.dealService.approveRejectDeal(dealID, dealStatusDto);
   }
 
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
   @Get('getDeal/:id')
   getDeal(@Param('id') id: string) {
     return this.dealService.getDeal(id);
@@ -156,6 +154,15 @@ export class DealController {
     );
   }
 
+  @Get('getDealsByMerchantIDForCustomerPanel/:merchantID')
+  getDealsByMerchantIDForCustomerPanel (
+    @Param('merchantID') merchantID: string,
+    @Query('offset') offset: number = 0,
+    @Query('limit') limit: number = 10,
+  ) {
+    return this.dealService.getDealsByMerchantIDForCustomerPanel(merchantID, offset, limit);
+  }
+
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Get('getSalesStatistics')
@@ -163,17 +170,28 @@ export class DealController {
     return this.dealService.getSalesStatistics(req);
   }
 
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
+  @ApiQuery({ name: 'createdAt', enum: SORT, required: false })
+  @ApiQuery({ name: 'totalRating', enum: SORT, required: false })
+  // @ApiBearerAuth()
+  // @UseGuards(JwtAuthGuard)
   @ApiQuery({ name: 'rating', required: false })
   @Get('getDealReviews/:dealID')
   getDealReviews(
     @Param('dealID') dealID: string,
+    @Query('createdAt') createdAt: SORT,
+    @Query('totalRating') totalRating: SORT,
     @Query('rating') rating: number,
     @Query('offset') offset: number = 0,
     @Query('limit') limit: number = 10,
   ) {
-    return this.dealService.getDealReviews(offset, limit, rating, dealID);
+    return this.dealService.getDealReviews(
+      offset,
+      limit,
+      rating,
+      dealID,
+      createdAt,
+      totalRating,
+    );
   }
 
   @ApiBearerAuth()
@@ -233,11 +251,11 @@ export class DealController {
     return this.dealService.getNewFavouriteDeal(offset, limit);
   }
 
-  @Get('getNearByDeals/:lat/:lng/:distance')
+  @Get('getNearByDeals')
   getNearByDeals(
-    @Param('lat') lat: number,
-    @Param('lng') lng: number,
-    @Param('distance') distance: number,
+    @Query('lat') lat: number,
+    @Query('lng') lng: number,
+    @Query('distance') distance: number,
     @Query('offset') offset: number = 0,
     @Query('limit') limit: number = 10,
   ) {
@@ -245,11 +263,40 @@ export class DealController {
   }
 
   @Get('searchDeals')
-  searchDeals (
+  searchDeals(
     @Query('header') header: string = '',
     @Query('offset') offset: number = 0,
     @Query('limit') limit: number = 10,
   ) {
-    return this.dealService.searchDeals(header, offset, limit)
+    return this.dealService.searchDeals(header, offset, limit);
   }
+
+  @Get('getSimilarDeals/:categoryName/:subCategoryName')
+  getSimilarDeals(
+    @Param('categoryName') categoryName: string,
+    @Param('subCategoryName') subCategoryName: string,
+    @Query('offset') offset: number = 0,
+    @Query('limit') limit: number = 10,
+  ) {
+    return this.dealService.getSimilarDeals(
+      categoryName,
+      subCategoryName,
+      offset,
+      limit,
+    );
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtManagerAuthGuard)
+  @UseGuards(JwtAuthGuard)
+  @Get('getDealByID/:dealID')
+  getDealByID(@Param('dealID') dealID: string) {
+    return this.dealService.getDealByID(dealID);
+  }
+
+  // @Get('changeMediaURL')
+  // changeMediaURL (
+  // ) {
+  //   return this.dealService.changeMediaURL()
+  // }
 }

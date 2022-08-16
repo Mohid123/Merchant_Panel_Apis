@@ -12,9 +12,10 @@ import {
 import { SORT } from '../../enum/sort/sort.enum';
 import { VoucherCounterInterface } from '../../interface/vouchers/vouchersCounter.interface';
 import { SubCategoryInterface } from '../../interface/category/subcategory.interface';
-import { arrayBuffer } from 'stream/consumers';
 import { RATINGENUM } from 'src/enum/review/ratingValue.enum';
 import { UsersInterface } from 'src/interface/user/users.interface';
+import axios from 'axios';
+import { delay } from 'rxjs';
 
 @Injectable()
 export class DealService {
@@ -83,9 +84,10 @@ export class DealService {
         dealDto.endDate = stamp;
       }
       if (!savedDeal) {
-        dealDto.dealHeader = dealDto?.dealHeader?.toUpperCase();
+        dealDto.dealHeader = dealDto?.dealHeader;
 
-        dealDto.merchantID = req.user.id;
+        dealDto.merchantID = req.user.userID;
+        dealDto.merchantMongoID = req.user.id;
 
         if (dealDto.dealStatus) {
           dealDto.dealStatus = DEALSTATUS.inReview;
@@ -99,8 +101,9 @@ export class DealService {
         }
       }
 
-      if (dealDto.vouchers) {
-        dealDto.vouchers = dealDto.vouchers.map((el) => {
+      if (dealDto.subDeals) {
+        let num = 1;
+        dealDto.subDeals = dealDto.subDeals.map((el) => {
           let startTime;
           let endTime;
           let calculateDiscountPercentage =
@@ -115,7 +118,11 @@ export class DealService {
 
           if (el.voucherValidity > 0) {
             startTime = 0;
-            endTime = 0;
+
+            let today = new Date();
+            let tomorrow = new Date();
+            let newDay = tomorrow.setDate(today.getDate() + el.voucherValidity);
+            endTime = new Date(newDay).getTime();
           } else {
             startTime = new Date(el.voucherStartDate).getTime();
             endTime = new Date(el.voucherEndDate).getTime();
@@ -125,6 +132,7 @@ export class DealService {
           el.dealPrice = parseFloat(el.dealPrice);
           el.numberOfVouchers = parseInt(el.numberOfVouchers);
           el._id = generateStringId();
+          el.subDealID = dealDto.dealID + '-' + num++;
           el.voucherStartDate = startTime;
           el.voucherEndDate = endTime;
 
@@ -132,7 +140,7 @@ export class DealService {
         });
       }
 
-      let minVoucher = dealDto.vouchers?.sort(
+      let minVoucher = dealDto.subDeals?.sort(
         (a, b) => a?.dealPrice - b?.dealPrice,
       )[0];
 
@@ -140,55 +148,45 @@ export class DealService {
       dealDto.minOriginalPrice = minVoucher?.originalPrice;
       dealDto.minDiscountPercentage = minVoucher?.discountPercentage;
 
-      if (dealDto.mediaUrl) {
-        for (let i = 0; i < dealDto.mediaUrl.length; i++) {
-          if (dealDto.mediaUrl[i].type == 'Video') {
-            console.log('Inside if');
-            var item = dealDto.mediaUrl.splice(i, 1);
-            dealDto.mediaUrl.splice(0, 0, item[0]);
+      if (dealDto.mediaUrl && dealDto.mediaUrl.length) {
+        dealDto['type'] = dealDto.mediaUrl[0].type;
+        dealDto['captureFileURL'] = dealDto.mediaUrl[0].captureFileURL;
+        dealDto['path'] = dealDto.mediaUrl[0].path;
+        if (dealDto['type'] == 'Video') {
+          dealDto['thumbnailURL'] = dealDto.mediaUrl[0].thumbnailURL;
+          dealDto['thumbnailPath'] = dealDto.mediaUrl[0].thumbnailPath;
+        }
+        if (dealDto.mediaUrl) {
+          for (let i = 0; i < dealDto.mediaUrl.length; i++) {
+            if (dealDto.mediaUrl[i].type == 'Video') {
+              console.log('Inside if');
+              var item = dealDto.mediaUrl.splice(i, 1);
+              dealDto.mediaUrl.splice(0, 0, item[0]);
+            }
           }
         }
+        for await (let mediaObj of dealDto.mediaUrl) {
+          await new Promise(async (resolve, reject) => {
+            try {
+              let urlMedia = '';
+              if (mediaObj.type == 'Video') {
+                urlMedia = mediaObj.thumbnailURL;
+              } else {
+                urlMedia = mediaObj.captureFileURL;
+              }
+              mediaObj['blurHash'] = await encodeImageToBlurhash(urlMedia);
+              let data = (mediaObj['backgroundColorHex'] =
+                await getDominantColor(urlMedia));
+              mediaObj['backgroundColorHex'] = data.hexCode;
+
+              resolve({});
+            } catch (err) {
+              console.log('Error', err);
+              reject(err);
+            }
+          });
+        }
       }
-
-      //   if (dealDto.mediaUrl && dealDto.mediaUrl.length) {
-      //     dealDto['type'] = dealDto.mediaUrl[0].type;
-      //     dealDto['captureFileURL'] = dealDto.mediaUrl[0].captureFileURL;
-      //     dealDto['path'] = dealDto.mediaUrl[0].path;
-      //     if(dealDto['type']=='Video'){
-      //       dealDto['thumbnailURL'] = dealDto.mediaUrl[0].thumbnailURL;
-      //       dealDto['thumbnailPath'] = dealDto.mediaUrl[0].thumbnailPath;
-      //     }
-      //     if (dealDto.mediaUrl) {
-      //       for (let i = 0; i < dealDto.mediaUrl.length; i++) {
-      //         if (dealDto.mediaUrl[i].type == 'Video') {
-      //           console.log('Inside if');
-      //           var item = dealDto.mediaUrl.splice(i, 1);
-      //           dealDto.mediaUrl.splice(0, 0, item[0]);
-      //         }
-      //       }
-      //     }
-      //     for await (let mediaObj of dealDto.mediaUrl) {
-      //       await new Promise(async (resolve, reject) => {
-      //         try {
-      //           let urlMedia = ''
-      //           if (mediaObj.type == 'Video') {
-      //             urlMedia = mediaObj.thumbnailURL;
-      //           } else {
-      //             urlMedia = mediaObj.captureFileURL;
-      //           }
-      //           mediaObj['blurHash'] = await encodeImageToBlurhash(urlMedia);
-      //           let data = mediaObj['backgroundColorHex'] = await getDominantColor(urlMedia);
-      //           mediaObj['backgroundColorHex'] = data.hexCode;
-
-      //           resolve({})
-      //         } catch (err) {
-      //           console.log("Error", err);
-      //           reject(err)
-      //         }
-      //       })
-
-      //     }
-      // }
 
       dealDto.availableVouchers = dealVouchers;
       dealDto.soldVouchers = dealSoldVouchers;
@@ -201,7 +199,82 @@ export class DealService {
 
       await this.dealModel.updateOne({ _id: dealDto.id }, dealDto);
 
-      return this.dealModel.findOne({ _id: dealDto.id });
+      let returnedDeal = await this.dealModel.findOne({ _id: dealDto.id });
+
+      const res = await axios.get(
+        `https://www.zohoapis.eu/crm/v2/functions/createdraftdeal/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&dealid=${returnedDeal.dealID}`,
+      );
+
+      return returnedDeal;
+    } catch (err) {
+      throw new HttpException(err, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async getDealByID(dealID) {
+    try {
+      let deal: any = await this.dealModel.findOne({ dealID: dealID });
+
+      deal = JSON.parse(JSON.stringify(deal));
+
+      let coverImageUrl = '';
+      deal.mediaUrl.forEach((el) => {
+        if (el.type == 'Image' && coverImageUrl == '') {
+          coverImageUrl = el.captureFileURL;
+        }
+      });
+
+      deal.voucherValidity = deal.subDeals[0].voucherValidity;
+      deal.voucherStartDate = deal.subDeals[0].voucherStartDate;
+      deal.voucherEndDate = deal.subDeals[0].voucherEndDate;
+      deal.publishStartDate = deal.startDate;
+      deal.publishEndDate = deal.endDate;
+      deal.coverImageUrl = coverImageUrl;
+
+      delete deal.mediaUrl;
+      delete deal.merchantMongoID;
+      delete deal.categoryID;
+      delete deal.subCategoryID;
+      delete deal.highlights;
+      delete deal.reviewMediaUrl;
+      delete deal.ratingsAverage;
+      delete deal.totalReviews;
+      delete deal.maxRating;
+      delete deal.minRating;
+      delete deal.pageNumber;
+      delete deal.deletedCheck;
+      delete deal.isCollapsed;
+      delete deal.isDuplicate;
+      delete deal.isSpecialOffer;
+      delete deal.netEarnings;
+      delete deal.finePrints;
+      delete deal.readMore;
+      delete deal.minDiscountPercentage;
+      delete deal.minOriginalPrice;
+      delete deal.minDealPrice;
+      delete deal.aboutThisDeal;
+      delete deal.id;
+      delete deal.createdAt;
+      delete deal.updatedAt;
+      delete deal.endDate;
+      delete deal.startDate;
+      deal.subDeals.forEach((el) => {
+        delete el._id;
+        el.publishStartDate = deal.publishStartDate;
+        el.publishEndDate = deal.publishEndDate;
+        el.subCategory = deal.subCategory;
+        el.categoryName = deal.categoryName;
+        el.voucherTitle = el.title;
+        delete el.title;
+        el.availableVouchers = el.numberOfVouchers;
+        delete el.numberOfVouchers;
+        delete el.grossEarning;
+        delete el.netEarning;
+      });
+      delete deal.availableVouchers;
+      delete deal.soldVouchers;
+
+      return deal;
     } catch (err) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
     }
@@ -209,20 +282,20 @@ export class DealService {
 
   async updateDeal(updateDealDto, dealID) {
     try {
-      updateDealDto.vouchers = [updateDealDto.vouchers];
+      updateDealDto.subDeals = [updateDealDto.subDeals];
       const deal = await this.dealModel.findById(dealID);
 
       let dealVouchers = 0;
 
-      deal.vouchers = deal.vouchers.map((element) => {
-        updateDealDto.vouchers.forEach((el) => {
+      deal.subDeals = deal.subDeals.map((element) => {
+        updateDealDto.subDeals.forEach((el) => {
           let calculateDiscountPercentage =
             ((el.originalPrice - el.dealPrice) / el.originalPrice) * 100;
           el.discountPercentage = calculateDiscountPercentage;
 
           if (el['voucherID'] === element['_id']) {
             element.numberOfVouchers = parseInt(el.numberOfVouchers);
-            element.subTitle = el.subTitle;
+            element.title = el.title;
             element.originalPrice = parseFloat(el.originalPrice);
             element.dealPrice = parseFloat(el.dealPrice);
             element.discountPercentage = calculateDiscountPercentage;
@@ -316,17 +389,21 @@ export class DealService {
 
   async getDeal(id) {
     try {
-      const deals = await this.dealModel.findOne({
+      const deal = await this.dealModel.findOne({
         _id: id,
         deletedCheck: false,
+        dealStatus: DEALSTATUS.published,
       });
-      return deals;
+      if (!deal) {
+        throw new HttpException('Deal not found!', HttpStatus.BAD_REQUEST);
+      }
+      return deal;
     } catch (err) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
     }
   }
 
-  async getDealReviews(offset, limit, rating, id) {
+  async getDealReviews(offset, limit, rating, id, createdAt, totalRating) {
     try {
       offset = parseInt(offset) < 0 ? 0 : offset;
       limit = parseInt(limit) < 1 ? 10 : limit;
@@ -343,6 +420,33 @@ export class DealService {
           eq: ['', ''],
         };
       }
+
+      let sort = {};
+
+      if (createdAt) {
+        let sortCreatedAt = createdAt == SORT.ASC ? 1 : -1;
+        console.log('createdAt');
+        sort = {
+          ...sort,
+          createdAt: sortCreatedAt,
+        };
+      }
+
+      if (totalRating) {
+        let sortRating = totalRating == SORT.ASC ? 1 : -1;
+        console.log('totalRating');
+        sort = {
+          ...sort,
+          totalRating: sortRating,
+        };
+      }
+
+      if (Object.keys(sort).length === 0 && sort.constructor === Object) {
+        sort = {
+          createdAt: -1,
+        };
+      }
+
       console.log(ratingFilter['eq']);
       const deal = await this.dealModel
         .aggregate([
@@ -383,6 +487,9 @@ export class DealService {
                     },
                     isViewed: true,
                   },
+                },
+                {
+                  $sort: sort,
                 },
                 {
                   $lookup: {
@@ -507,14 +614,14 @@ export class DealService {
       }
 
       const totalCount = await this.dealModel.countDocuments({
-        merchantID: id,
+        merchantMongoID: id,
         deletedCheck: false,
         // ...matchFilter,
         // ...filters,
       });
 
       const filteredDealCount = await this.dealModel.countDocuments({
-        merchantID: id,
+        merchantMongoID: id,
         deletedCheck: false,
         ...matchFilter,
         ...filters,
@@ -524,7 +631,7 @@ export class DealService {
         .aggregate([
           {
             $match: {
-              merchantID: id,
+              merchantMongoID: id,
               deletedCheck: false,
               ...matchFilter,
               ...filters,
@@ -548,7 +655,7 @@ export class DealService {
       const totalMerchantReviews = await this.dealModel.aggregate([
         {
           $match: {
-            merchantID: id,
+            merchantMongoID: id,
             deletedCheck: false,
             ...matchFilter,
           },
@@ -762,7 +869,7 @@ export class DealService {
       console.log(matchFilter);
 
       const totalCount = await this.dealModel.countDocuments({
-        merchantID: merchantID,
+        merchantMongoID: merchantID,
         deletedCheck: false,
         ...matchFilter,
         // ...filters,
@@ -772,7 +879,7 @@ export class DealService {
         .aggregate([
           {
             $match: {
-              merchantID: merchantID,
+              merchantMongoID: merchantID,
               deletedCheck: false,
               ...matchFilter,
               ...filters,
@@ -804,13 +911,98 @@ export class DealService {
     }
   }
 
+  async getDealsByMerchantIDForCustomerPanel(merchantID, offset, limit) {
+    try {
+      offset = parseInt(offset) < 0 ? 0 : offset;
+      limit = parseInt(limit) < 1 ? 10 : limit;
+
+      const totalCount = await this.dealModel.countDocuments({
+        merchantMongoID: merchantID,
+        deletedCheck: false,
+        dealStatus: DEALSTATUS.published,
+      });
+
+      const mercahntDeals = await this.dealModel
+        .aggregate([
+          {
+            $match: {
+              merchantMongoID: merchantID,
+              deletedCheck: false,
+              dealStatus: DEALSTATUS.published,
+            },
+          },
+          {
+            $sort: {
+              createdAt: -1,
+            },
+          },
+          {
+            $addFields: {
+              id: '$_id',
+              mediaUrl: {
+                $slice: [
+                  {
+                    $filter: {
+                      input: '$mediaUrl',
+                      as: 'mediaUrl',
+                      cond: {
+                        $eq: ['$$mediaUrl.type', 'Image'],
+                      },
+                    },
+                  },
+                  1,
+                ],
+              },
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+              dealID: 0,
+              merchantMongoID: 0,
+              merchantID: 0,
+              subTitle: 0,
+              categoryName: 0,
+              subCategoryID: 0,
+              subCategory: 0,
+              subDeals: 0,
+              availableVouchers: 0,
+              aboutThisDeal: 0,
+              readMore: 0,
+              finePrints: 0,
+              netEarnings: 0,
+              isCollapsed: 0,
+              isDuplicate: 0,
+              totalReviews: 0,
+              maxRating: 0,
+              minRating: 0,
+              pageNumber: 0,
+              updatedAt: 0,
+              __v: 0,
+              endDate: 0,
+              startDate: 0,
+            },
+          },
+        ])
+        .skip(parseInt(offset))
+        .limit(parseInt(limit));
+
+      return {
+        totalCount: totalCount,
+        data: mercahntDeals,
+      };
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
   async getTopRatedDeals(merchantID) {
     try {
       const deals = this.dealModel
         .aggregate([
           {
             $match: {
-              merchantID: merchantID,
+              merchantMongoID: merchantID,
             },
           },
           {
@@ -857,7 +1049,18 @@ export class DealService {
             $addFields: {
               id: '$_id',
               mediaUrl: {
-                $slice: ['$mediaUrl', 1],
+                $slice: [
+                  {
+                    $filter: {
+                      input: '$mediaUrl',
+                      as: 'mediaUrl',
+                      cond: {
+                        $eq: ['$$mediaUrl.type', 'Image'],
+                      },
+                    },
+                  },
+                  1,
+                ],
               },
             },
           },
@@ -865,12 +1068,13 @@ export class DealService {
             $project: {
               _id: 0,
               dealID: 0,
+              merchantMongoID: 0,
               merchantID: 0,
               subTitle: 0,
               categoryName: 0,
               subCategoryID: 0,
               subCategory: 0,
-              vouchers: 0,
+              subDeals: 0,
               availableVouchers: 0,
               aboutThisDeal: 0,
               readMore: 0,
@@ -927,7 +1131,18 @@ export class DealService {
             $addFields: {
               id: '$_id',
               mediaUrl: {
-                $slice: ['$mediaUrl', 1],
+                $slice: [
+                  {
+                    $filter: {
+                      input: '$mediaUrl',
+                      as: 'mediaUrl',
+                      cond: {
+                        $eq: ['$$mediaUrl.type', 'Image'],
+                      },
+                    },
+                  },
+                  1,
+                ],
               },
             },
           },
@@ -935,12 +1150,13 @@ export class DealService {
             $project: {
               _id: 0,
               dealID: 0,
+              merchantMongoID: 0,
               merchantID: 0,
               subTitle: 0,
               categoryName: 0,
               subCategoryID: 0,
               subCategory: 0,
-              vouchers: 0,
+              subDeals: 0,
               availableVouchers: 0,
               aboutThisDeal: 0,
               readMore: 0,
@@ -980,7 +1196,7 @@ export class DealService {
       const totalCount = await this.dealModel.countDocuments({
         deletedCheck: false,
         dealStatus: DEALSTATUS.published,
-        vouchers: { $elemMatch: { discountPercentage: { $gte: percentage } } },
+        vouchers: { $elemMatch: { discountPercentage: { $lte: percentage } } },
       });
       let deals = await this.dealModel
         .aggregate([
@@ -989,7 +1205,7 @@ export class DealService {
               deletedCheck: false,
               dealStatus: DEALSTATUS.published,
               vouchers: {
-                $elemMatch: { discountPercentage: { $gte: percentage } },
+                $elemMatch: { discountPercentage: { $lte: percentage } },
               },
             },
           },
@@ -1002,7 +1218,18 @@ export class DealService {
             $addFields: {
               id: '$_id',
               mediaUrl: {
-                $slice: ['$mediaUrl', 1],
+                $slice: [
+                  {
+                    $filter: {
+                      input: '$mediaUrl',
+                      as: 'mediaUrl',
+                      cond: {
+                        $eq: ['$$mediaUrl.type', 'Image'],
+                      },
+                    },
+                  },
+                  1,
+                ],
               },
             },
           },
@@ -1010,12 +1237,13 @@ export class DealService {
             $project: {
               _id: 0,
               dealID: 0,
+              merchantMongoID: 0,
               merchantID: 0,
               subTitle: 0,
               categoryName: 0,
               subCategoryID: 0,
               subCategory: 0,
-              vouchers: 0,
+              subDeals: 0,
               availableVouchers: 0,
               aboutThisDeal: 0,
               readMore: 0,
@@ -1089,7 +1317,18 @@ export class DealService {
           {
             $addFields: {
               mediaUrl: {
-                $slice: ['$mediaUrl', 1],
+                $slice: [
+                  {
+                    $filter: {
+                      input: '$mediaUrl',
+                      as: 'mediaUrl',
+                      cond: {
+                        $eq: ['$$mediaUrl.type', 'Image'],
+                      },
+                    },
+                  },
+                  1,
+                ],
               },
             },
           },
@@ -1099,12 +1338,13 @@ export class DealService {
               added: 0,
               divided: 0,
               dealID: 0,
+              merchantMongoID: 0,
               merchantID: 0,
               subTitle: 0,
               categoryName: 0,
               subCategoryID: 0,
               subCategory: 0,
-              vouchers: 0,
+              subDeals: 0,
               availableVouchers: 0,
               aboutThisDeal: 0,
               readMore: 0,
@@ -1122,7 +1362,6 @@ export class DealService {
               startDate: 0,
             },
           },
-
           {
             $sort: {
               percent: -1,
@@ -1162,7 +1401,18 @@ export class DealService {
             $addFields: {
               id: '$_id',
               mediaUrl: {
-                $slice: ['$mediaUrl', 1],
+                $slice: [
+                  {
+                    $filter: {
+                      input: '$mediaUrl',
+                      as: 'mediaUrl',
+                      cond: {
+                        $eq: ['$$mediaUrl.type', 'Image'],
+                      },
+                    },
+                  },
+                  1,
+                ],
               },
             },
           },
@@ -1170,12 +1420,13 @@ export class DealService {
             $project: {
               _id: 0,
               dealID: 0,
+              merchantMongoID: 0,
               merchantID: 0,
               subTitle: 0,
               categoryName: 0,
               subCategoryID: 0,
               subCategory: 0,
-              vouchers: 0,
+              subDeals: 0,
               availableVouchers: 0,
               aboutThisDeal: 0,
               readMore: 0,
@@ -1239,7 +1490,18 @@ export class DealService {
             $addFields: {
               id: '$_id',
               mediaUrl: {
-                $slice: ['$mediaUrl', 1],
+                $slice: [
+                  {
+                    $filter: {
+                      input: '$mediaUrl',
+                      as: 'mediaUrl',
+                      cond: {
+                        $eq: ['$$mediaUrl.type', 'Image'],
+                      },
+                    },
+                  },
+                  1,
+                ],
               },
             },
           },
@@ -1247,12 +1509,13 @@ export class DealService {
             $project: {
               _id: 0,
               dealID: 0,
+              merchantMongoID: 0,
               merchantID: 0,
               subTitle: 0,
               categoryName: 0,
               subCategoryID: 0,
               subCategory: 0,
-              vouchers: 0,
+              subDeals: 0,
               availableVouchers: 0,
               aboutThisDeal: 0,
               readMore: 0,
@@ -1369,7 +1632,18 @@ export class DealService {
             $addFields: {
               id: '$_id',
               mediaUrl: {
-                $slice: ['$mediaUrl', 1],
+                $slice: [
+                  {
+                    $filter: {
+                      input: '$mediaUrl',
+                      as: 'mediaUrl',
+                      cond: {
+                        $eq: ['$$mediaUrl.type', 'Image'],
+                      },
+                    },
+                  },
+                  1,
+                ],
               },
             },
           },
@@ -1377,12 +1651,13 @@ export class DealService {
             $project: {
               _id: 0,
               dealID: 0,
+              merchantMongoID: 0,
               merchantID: 0,
               subTitle: 0,
               categoryName: 0,
               subCategoryID: 0,
               subCategory: 0,
-              vouchers: 0,
+              subDeals: 0,
               availableVouchers: 0,
               aboutThisDeal: 0,
               readMore: 0,
@@ -1407,6 +1682,93 @@ export class DealService {
       return {
         totalDeals: totalCount,
         data: deals,
+      };
+    } catch (err) {
+      throw new HttpException(err, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async getSimilarDeals(categoryName, subCategoryName, offset, limit) {
+    try {
+      offset = parseInt(offset) < 0 ? 0 : offset;
+      limit = parseInt(limit) < 1 ? 10 : limit;
+
+      const totalCount = await this.dealModel.countDocuments({
+        deletedCheck: false,
+        dealStatus: DEALSTATUS.published,
+        categoryName: categoryName,
+        subCategory: subCategoryName,
+      });
+
+      const similarDeals = await this.dealModel
+        .aggregate([
+          {
+            $match: {
+              deletedCheck: false,
+              dealStatus: DEALSTATUS.published,
+              categoryName: categoryName,
+              subCategory: subCategoryName,
+            },
+          },
+          {
+            $sort: {
+              ratingsAverage: -1,
+            },
+          },
+          {
+            $addFields: {
+              id: '$_id',
+              mediaUrl: {
+                $slice: [
+                  {
+                    $filter: {
+                      input: '$mediaUrl',
+                      as: 'mediaUrl',
+                      cond: {
+                        $eq: ['$$mediaUrl.type', 'Image'],
+                      },
+                    },
+                  },
+                  1,
+                ],
+              },
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+              dealID: 0,
+              merchantMongoID: 0,
+              merchantID: 0,
+              subTitle: 0,
+              categoryName: 0,
+              subCategoryID: 0,
+              subCategory: 0,
+              subDeals: 0,
+              availableVouchers: 0,
+              aboutThisDeal: 0,
+              readMore: 0,
+              finePrints: 0,
+              netEarnings: 0,
+              isCollapsed: 0,
+              isDuplicate: 0,
+              totalReviews: 0,
+              maxRating: 0,
+              minRating: 0,
+              pageNumber: 0,
+              updatedAt: 0,
+              __v: 0,
+              endDate: 0,
+              startDate: 0,
+            },
+          },
+        ])
+        .skip(parseInt(offset))
+        .limit(parseInt(limit));
+
+      return {
+        totalCount: totalCount,
+        deals: similarDeals,
       };
     } catch (err) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
@@ -1608,6 +1970,34 @@ export class DealService {
       };
     } catch (err) {
       throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async changeMediaURL() {
+    let deals = await this.dealModel.find();
+    deals = JSON.parse(JSON.stringify(deals));
+
+    for await (let deal of deals) {
+      let updatedMediaArr = [];
+      if (deal?.mediaUrl?.length) {
+        for await (let mediaObj of deal?.mediaUrl) {
+          if (typeof mediaObj == 'string') {
+            let tempMediaObj: string = mediaObj;
+            let updatedMedia = tempMediaObj.replace(
+              '//dividealapi',
+              '//stagingdividealapi',
+            );
+
+            updatedMediaArr.push(updatedMedia);
+          }
+        }
+
+        await this.dealModel.updateOne(
+          { _id: deal.id },
+          { mediaUrl: updatedMediaArr },
+        );
+        console.log('deals changed', deal.id);
+      }
     }
   }
 }

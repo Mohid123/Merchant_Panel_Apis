@@ -254,9 +254,11 @@ export class AuthService {
   async isEmailExists(email) {
     const user = await this._usersService.findOne({
       email: email?.toLowerCase(),
+      deletedCheck: false
     });
     const lead = await this._leadModel.findOne({
       email:email?.toLowerCase(),
+      deletedCheck: false
     })
 
     return user || lead ? true : false;

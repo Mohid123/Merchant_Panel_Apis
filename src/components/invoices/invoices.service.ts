@@ -206,13 +206,13 @@ export class InvoicesService {
       }
 
       const totalCount = await this._invoicesModel.countDocuments({
-        merchantID: merchantID,
+        merchantMongoID: merchantID,
         // ...matchFilter,
         // ...filters,
       });
 
       const filteredCount = await this._invoicesModel.countDocuments({
-        merchantID: merchantID,
+        merchantMongoID: merchantID,
         ...matchFilter,
         ...filters,
       });
@@ -221,7 +221,7 @@ export class InvoicesService {
         .aggregate([
           {
             $match: {
-              merchantID: merchantID,
+              merchantMongoID: merchantID,
               ...matchFilter,
               ...filters,
             },

@@ -1,8 +1,9 @@
 export enum DEALSTATUS {
-    draft = 'Draft',
-    inReview = 'In review',
-    scheduled = 'Scheduled',
-    needsAttention = 'Needs attention',
-    published = 'Published',
-    expired = 'Expired' 
+  draft = 'Draft',
+  inReview = 'In review',
+  scheduled = 'Scheduled',
+  needsAttention = 'Needs attention',
+  published = 'Published',
+  expired = 'Expired',
+  rejected = 'Rejected',
 }

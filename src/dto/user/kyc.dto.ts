@@ -6,8 +6,11 @@ export class KycDto {
     @ApiProperty()
     iban: string;
 
-    // @ApiProperty()
-    // vatNumber: string;
+    @ApiProperty()
+    bic_swiftCode: string;
+
+    @ApiProperty()
+    accountHolder: string;
 
     @ApiProperty()
     bankName: string;

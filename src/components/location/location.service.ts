@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Location } from 'src/interface/location/location.interface';
@@ -23,5 +23,18 @@ export class LocationService {
     };
 
     return await new this._locationModel(locationObj).save();
+  }
+
+  async updateLocation(locationDto, merchantID) {
+    try {
+      const location = await this._locationModel.updateOne(
+        { merchantID: merchantID },
+        { ...locationDto },
+      );
+
+      return { message: 'Location updated successfully!' };
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
   }
 }
