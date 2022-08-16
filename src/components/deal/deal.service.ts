@@ -234,11 +234,11 @@ export class DealService {
         }
       });
 
-      deal.voucherValidity = deal.subDeals[0].voucherValidity;
-      deal.voucherStartDate = deal.subDeals[0].voucherStartDate;
-      deal.voucherEndDate = deal.subDeals[0].voucherEndDate;
-      deal.publishStartDate = deal.startDate;
-      deal.publishEndDate = deal.endDate;
+      deal.voucherValidity = deal?.subDeals[0].voucherValidity;
+      deal.voucherStartDate = deal?.subDeals[0].voucherStartDate;
+      deal.voucherEndDate = deal?.subDeals[0].voucherEndDate;
+      deal.publishStartDate = deal?.startDate;
+      deal.publishEndDate = deal?.endDate;
       deal.coverImageUrl = coverImageUrl;
       deal.dealStatus = statuses[deal.dealStatus];
 
@@ -269,13 +269,13 @@ export class DealService {
       delete deal?.updatedAt;
       delete deal?.endDate;
       delete deal?.startDate;
-      deal.subDeals.forEach((el) => {
+      deal?.subDeals.forEach((el) => {
         delete el._id;
-        el.publishStartDate = deal.publishStartDate;
-        el.publishEndDate = deal.publishEndDate;
-        el.subCategory = deal.subCategory;
-        el.categoryName = deal.categoryName;
-        el.voucherTitle = el.title;
+        el.publishStartDate = deal?.publishStartDate;
+        el.publishEndDate = deal?.publishEndDate;
+        el.subCategory = deal?.subCategory;
+        el.categoryName = deal?.categoryName;
+        el.voucherTitle = el?.title;
         delete el.title;
         el.availableVouchers = el.numberOfVouchers;
         el.originalPrice = el.originalPrice.toFixed(2).replace('.', ',');
@@ -283,16 +283,24 @@ export class DealService {
         el.discountPercentage = el.discountPercentage
           .toFixed(2)
           .replace('.', ',');
-        delete el.numberOfVouchers;
-        delete el.grossEarning;
-        delete el.netEarning;
+        delete el?.numberOfVouchers;
+        delete el?.grossEarning;
+        delete el?.netEarning;
       });
-      delete deal.availableVouchers;
-      delete deal.soldVouchers;
+      delete deal?.availableVouchers;
+      delete deal?.soldVouchers;
+
+      if (!deal.dealPreviewURL) {
+        deal.dealPreviewURL = '';
+      }
+
+      if (!deal.editDealURL) {
+        deal.editDealURL = '';
+      }
 
       return deal;
     } catch (err) {
-      throw new HttpException(err, HttpStatus.BAD_REQUEST);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
