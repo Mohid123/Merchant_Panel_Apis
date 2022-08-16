@@ -28,9 +28,11 @@ export class LocationService {
   async updateLocation(locationDto, merchantID) {
     try {
       const location = await this._locationModel.updateOne(
-        merchantID,
-        locationDto,
+        { merchantID: merchantID },
+        { ...locationDto },
       );
+
+      return { message: 'Location updated successfully!' };
     } catch (err) {
       throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
