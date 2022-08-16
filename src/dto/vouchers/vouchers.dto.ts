@@ -35,7 +35,7 @@ export class VoucherDto {
   customerID: string;
 
   @ApiProperty()
-  boughtDate: Date;
+  boughtDate: number;
 
   @ApiProperty()
   deletedCheck: boolean;

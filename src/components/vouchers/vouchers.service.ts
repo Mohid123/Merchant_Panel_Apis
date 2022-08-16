@@ -34,7 +34,7 @@ export class VouchersService {
 
   async createVoucher(voucherDto) {
     try {
-      let timeStamp = new Date(voucherDto.boughtDate).getTime();
+      let timeStamp = new Date().getTime();
       voucherDto.boughtDate = timeStamp;
       voucherDto.voucherID = await this.generateVoucherId('voucherID');
       const voucher = new this.voucherModel(voucherDto);

@@ -153,6 +153,15 @@ export class DealController {
     );
   }
 
+  @Get('getDealsByMerchantIDForCustomerPanel/:merchantID')
+  getDealsByMerchantIDForCustomerPanel (
+    @Param('merchantID') merchantID: string,
+    @Query('offset') offset: number = 0,
+    @Query('limit') limit: number = 10,
+  ) {
+    return this.dealService.getDealsByMerchantIDForCustomerPanel(merchantID, offset, limit);
+  }
+
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Get('getSalesStatistics')
