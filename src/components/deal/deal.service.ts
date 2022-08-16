@@ -14,6 +14,8 @@ import { VoucherCounterInterface } from '../../interface/vouchers/vouchersCounte
 import { SubCategoryInterface } from '../../interface/category/subcategory.interface';
 import { RATINGENUM } from 'src/enum/review/ratingValue.enum';
 import { UsersInterface } from 'src/interface/user/users.interface';
+import axios from 'axios';
+import { delay } from 'rxjs';
 
 @Injectable()
 export class DealService {
@@ -137,7 +139,7 @@ export class DealService {
           return el;
         });
       }
-      
+
       let minVoucher = dealDto.subDeals?.sort(
         (a, b) => a?.dealPrice - b?.dealPrice,
       )[0];
@@ -197,7 +199,82 @@ export class DealService {
 
       await this.dealModel.updateOne({ _id: dealDto.id }, dealDto);
 
-      return this.dealModel.findOne({ _id: dealDto.id });
+      let returnedDeal = await this.dealModel.findOne({ _id: dealDto.id });
+
+      const res = await axios.get(
+        `https://www.zohoapis.eu/crm/v2/functions/createdraftdeal/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&dealid=${returnedDeal.dealID}`,
+      );
+
+      return returnedDeal;
+    } catch (err) {
+      throw new HttpException(err, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async getDealByID(dealID) {
+    try {
+      let deal: any = await this.dealModel.findOne({ dealID: dealID });
+
+      deal = JSON.parse(JSON.stringify(deal));
+
+      let coverImageUrl = '';
+      deal.mediaUrl.forEach((el) => {
+        if (el.type == 'Image' && coverImageUrl == '') {
+          coverImageUrl = el.captureFileURL;
+        }
+      });
+
+      deal.voucherValidity = deal.subDeals[0].voucherValidity;
+      deal.voucherStartDate = deal.subDeals[0].voucherStartDate;
+      deal.voucherEndDate = deal.subDeals[0].voucherEndDate;
+      deal.publishStartDate = deal.startDate;
+      deal.publishEndDate = deal.endDate;
+      deal.coverImageUrl = coverImageUrl;
+
+      delete deal.mediaUrl;
+      delete deal.merchantMongoID;
+      delete deal.categoryID;
+      delete deal.subCategoryID;
+      delete deal.highlights;
+      delete deal.reviewMediaUrl;
+      delete deal.ratingsAverage;
+      delete deal.totalReviews;
+      delete deal.maxRating;
+      delete deal.minRating;
+      delete deal.pageNumber;
+      delete deal.deletedCheck;
+      delete deal.isCollapsed;
+      delete deal.isDuplicate;
+      delete deal.isSpecialOffer;
+      delete deal.netEarnings;
+      delete deal.finePrints;
+      delete deal.readMore;
+      delete deal.minDiscountPercentage;
+      delete deal.minOriginalPrice;
+      delete deal.minDealPrice;
+      delete deal.aboutThisDeal;
+      delete deal.id;
+      delete deal.createdAt;
+      delete deal.updatedAt;
+      delete deal.endDate;
+      delete deal.startDate;
+      deal.subDeals.forEach((el) => {
+        delete el._id;
+        el.publishStartDate = deal.publishStartDate;
+        el.publishEndDate = deal.publishEndDate;
+        el.subCategory = deal.subCategory;
+        el.categoryName = deal.categoryName;
+        el.voucherTitle = el.title;
+        delete el.title;
+        el.availableVouchers = el.numberOfVouchers;
+        delete el.numberOfVouchers;
+        delete el.grossEarning;
+        delete el.netEarning;
+      });
+      delete deal.availableVouchers;
+      delete deal.soldVouchers;
+
+      return deal;
     } catch (err) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
     }
@@ -315,7 +392,7 @@ export class DealService {
       const deal = await this.dealModel.findOne({
         _id: id,
         deletedCheck: false,
-        dealStatus: DEALSTATUS.published
+        dealStatus: DEALSTATUS.published,
       });
       if (!deal) {
         throw new HttpException('Deal not found!', HttpStatus.BAD_REQUEST);

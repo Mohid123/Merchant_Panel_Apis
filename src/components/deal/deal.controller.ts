@@ -20,6 +20,7 @@ import { DEALSTATUS } from '../../enum/deal/dealstatus.enum';
 import { UpdateDealDto } from '../../dto/deal/updatedeal.dto';
 import { MultipleDealsDto } from 'src/dto/deal/multipledeals.dto';
 import { MultipleReviewsDto } from 'src/dto/review/multiplereviews.dto';
+import { JwtManagerAuthGuard } from '../auth/jwt-manager-auth.guard';
 
 @ApiTags('Deal')
 @Controller('deal')
@@ -283,6 +284,14 @@ export class DealController {
       offset,
       limit,
     );
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtManagerAuthGuard)
+  @UseGuards(JwtAuthGuard)
+  @Get('getDealByID/:dealID')
+  getDealByID(@Param('dealID') dealID: string) {
+    return this.dealService.getDealByID(dealID);
   }
 
   // @Get('changeMediaURL')

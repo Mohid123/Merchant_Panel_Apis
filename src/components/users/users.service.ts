@@ -248,7 +248,7 @@ export class UsersService {
           },
         },
         {
-          $unwind: '$personalDetail'
+          $unwind: '$personalDetail',
         },
         {
           $addFields: {
@@ -647,7 +647,7 @@ export class UsersService {
           status: status,
           password: hashedPassword,
           voucherPinCode: pinCode,
-          userID: await this.generateMerchantId('merchantID')
+          userID: await this.generateMerchantId('merchantID'),
         },
       );
 
@@ -696,12 +696,12 @@ export class UsersService {
 
       const locObj = {
         merchantID: approveMerchantDto.userID,
-        // streetAddress: approveMerchantDto.streetAddress,
-        // zipCode: approveMerchantDto.zipCode,
-        // city: approveMerchantDto.city,
-        // googleMapPin: approveMerchantDto.googleMapPin,
-        // province: approveMerchantDto.province,
-        // phoneNumber: approveMerchantDto.phoneNumber,
+        streetAddress: approveMerchantDto.streetAddress,
+        zipCode: approveMerchantDto.zipCode,
+        city: approveMerchantDto.city,
+        googleMapPin: approveMerchantDto.googleMapPin,
+        province: approveMerchantDto.province,
+        phoneNumber: approveMerchantDto.phoneNumber,
       };
       if (userID) {
         await this._leadModel.updateOne(
