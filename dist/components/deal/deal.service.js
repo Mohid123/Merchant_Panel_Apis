@@ -189,66 +189,90 @@ let DealService = class DealService {
     }
     async getDealByID(dealID) {
         try {
+            let statuses = {
+                Draf: 'Draft',
+                'In review': 'Review Required',
+                'Needs attention': 'Merchant Action Requested',
+                Scheduled: 'Scheduled',
+                Published: 'Published',
+                'Rejected ': 'Rejected ',
+                'Expired ': 'Expired ',
+            };
             let deal = await this.dealModel.findOne({ dealID: dealID });
+            if (!deal) {
+                throw new Error('No deal Found!');
+            }
             deal = JSON.parse(JSON.stringify(deal));
             let coverImageUrl = '';
-            deal.mediaUrl.forEach((el) => {
+            deal === null || deal === void 0 ? void 0 : deal.mediaUrl.forEach((el) => {
                 if (el.type == 'Image' && coverImageUrl == '') {
                     coverImageUrl = el.captureFileURL;
                 }
             });
-            deal.voucherValidity = deal.subDeals[0].voucherValidity;
-            deal.voucherStartDate = deal.subDeals[0].voucherStartDate;
-            deal.voucherEndDate = deal.subDeals[0].voucherEndDate;
-            deal.publishStartDate = deal.startDate;
-            deal.publishEndDate = deal.endDate;
+            deal.voucherValidity = deal === null || deal === void 0 ? void 0 : deal.subDeals[0].voucherValidity;
+            deal.voucherStartDate = deal === null || deal === void 0 ? void 0 : deal.subDeals[0].voucherStartDate;
+            deal.voucherEndDate = deal === null || deal === void 0 ? void 0 : deal.subDeals[0].voucherEndDate;
+            deal.publishStartDate = deal === null || deal === void 0 ? void 0 : deal.startDate;
+            deal.publishEndDate = deal === null || deal === void 0 ? void 0 : deal.endDate;
             deal.coverImageUrl = coverImageUrl;
-            delete deal.mediaUrl;
-            delete deal.merchantMongoID;
-            delete deal.categoryID;
-            delete deal.subCategoryID;
-            delete deal.highlights;
-            delete deal.reviewMediaUrl;
-            delete deal.ratingsAverage;
-            delete deal.totalReviews;
-            delete deal.maxRating;
-            delete deal.minRating;
-            delete deal.pageNumber;
-            delete deal.deletedCheck;
-            delete deal.isCollapsed;
-            delete deal.isDuplicate;
-            delete deal.isSpecialOffer;
-            delete deal.netEarnings;
-            delete deal.finePrints;
-            delete deal.readMore;
-            delete deal.minDiscountPercentage;
-            delete deal.minOriginalPrice;
-            delete deal.minDealPrice;
-            delete deal.aboutThisDeal;
-            delete deal.id;
-            delete deal.createdAt;
-            delete deal.updatedAt;
-            delete deal.endDate;
-            delete deal.startDate;
-            deal.subDeals.forEach((el) => {
+            deal.dealStatus = statuses[deal.dealStatus];
+            deal === null || deal === void 0 ? true : delete deal.mediaUrl;
+            deal === null || deal === void 0 ? true : delete deal.merchantMongoID;
+            deal === null || deal === void 0 ? true : delete deal.categoryID;
+            deal === null || deal === void 0 ? true : delete deal.subCategoryID;
+            deal === null || deal === void 0 ? true : delete deal.highlights;
+            deal === null || deal === void 0 ? true : delete deal.reviewMediaUrl;
+            deal === null || deal === void 0 ? true : delete deal.ratingsAverage;
+            deal === null || deal === void 0 ? true : delete deal.totalReviews;
+            deal === null || deal === void 0 ? true : delete deal.maxRating;
+            deal === null || deal === void 0 ? true : delete deal.minRating;
+            deal === null || deal === void 0 ? true : delete deal.pageNumber;
+            deal === null || deal === void 0 ? true : delete deal.deletedCheck;
+            deal === null || deal === void 0 ? true : delete deal.isCollapsed;
+            deal === null || deal === void 0 ? true : delete deal.isDuplicate;
+            deal === null || deal === void 0 ? true : delete deal.isSpecialOffer;
+            deal === null || deal === void 0 ? true : delete deal.netEarnings;
+            deal === null || deal === void 0 ? true : delete deal.finePrints;
+            deal === null || deal === void 0 ? true : delete deal.readMore;
+            deal === null || deal === void 0 ? true : delete deal.minDiscountPercentage;
+            deal === null || deal === void 0 ? true : delete deal.minOriginalPrice;
+            deal === null || deal === void 0 ? true : delete deal.minDealPrice;
+            deal === null || deal === void 0 ? true : delete deal.aboutThisDeal;
+            deal === null || deal === void 0 ? true : delete deal.id;
+            deal === null || deal === void 0 ? true : delete deal.createdAt;
+            deal === null || deal === void 0 ? true : delete deal.updatedAt;
+            deal === null || deal === void 0 ? true : delete deal.endDate;
+            deal === null || deal === void 0 ? true : delete deal.startDate;
+            deal === null || deal === void 0 ? void 0 : deal.subDeals.forEach((el) => {
                 delete el._id;
-                el.publishStartDate = deal.publishStartDate;
-                el.publishEndDate = deal.publishEndDate;
-                el.subCategory = deal.subCategory;
-                el.categoryName = deal.categoryName;
-                el.voucherTitle = el.title;
+                el.publishStartDate = deal === null || deal === void 0 ? void 0 : deal.publishStartDate;
+                el.publishEndDate = deal === null || deal === void 0 ? void 0 : deal.publishEndDate;
+                el.subCategory = deal === null || deal === void 0 ? void 0 : deal.subCategory;
+                el.categoryName = deal === null || deal === void 0 ? void 0 : deal.categoryName;
+                el.voucherTitle = el === null || el === void 0 ? void 0 : el.title;
                 delete el.title;
                 el.availableVouchers = el.numberOfVouchers;
-                delete el.numberOfVouchers;
-                delete el.grossEarning;
-                delete el.netEarning;
+                el.originalPrice = el.originalPrice.toFixed(2).replace('.', ',');
+                el.dealPrice = el.dealPrice.toFixed(2).replace('.', ',');
+                el.discountPercentage = el.discountPercentage
+                    .toFixed(2)
+                    .replace('.', ',');
+                el === null || el === void 0 ? true : delete el.numberOfVouchers;
+                el === null || el === void 0 ? true : delete el.grossEarning;
+                el === null || el === void 0 ? true : delete el.netEarning;
             });
-            delete deal.availableVouchers;
-            delete deal.soldVouchers;
+            deal === null || deal === void 0 ? true : delete deal.availableVouchers;
+            deal === null || deal === void 0 ? true : delete deal.soldVouchers;
+            if (!deal.dealPreviewURL) {
+                deal.dealPreviewURL = '';
+            }
+            if (!deal.editDealURL) {
+                deal.editDealURL = '';
+            }
             return deal;
         }
         catch (err) {
-            throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
+            throw new common_1.HttpException(err.message, common_1.HttpStatus.BAD_REQUEST);
         }
     }
     async updateDeal(updateDealDto, dealID) {

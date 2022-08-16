@@ -616,6 +616,7 @@ let UsersService = class UsersService {
             };
             const locObj = {
                 merchantID: approveMerchantDto.userID,
+                tradeName: approveMerchantDto.legalName,
                 streetAddress: approveMerchantDto.streetAddress,
                 zipCode: approveMerchantDto.zipCode,
                 city: approveMerchantDto.city,
