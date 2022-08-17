@@ -10,8 +10,6 @@ export class UpdateDealForCRMDTO {
   @ApiProperty()
   quantityAvailable: number;
   @ApiProperty()
-  availabilityFromDate: number;
-  @ApiProperty()
   availabilityToDate: number;
   @ApiProperty()
   availabilityDays: number;
