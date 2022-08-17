@@ -61,6 +61,7 @@ let DealService = class DealService {
                 });
                 dealDto.subCategoryID = subCategory.id;
                 dealDto.categoryName = subCategory.categoryName;
+                dealDto.categoryID = subCategory.categoryID;
             }
             if (!savedDeal) {
                 dealDto.dealID = await this.generateVoucherId('dealID');
@@ -280,7 +281,7 @@ let DealService = class DealService {
     async updateDealByID(updateDealDto) {
         try {
             let statuses = {
-                Draf: 'Draft',
+                Draft: 'Draft',
                 'Review Required': 'In review',
                 'Merchant Action Requested': 'Needs attention',
                 Scheduled: 'Scheduled',
