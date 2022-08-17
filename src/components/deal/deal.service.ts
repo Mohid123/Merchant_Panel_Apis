@@ -237,14 +237,15 @@ export class DealService {
           coverImageUrl = el.captureFileURL;
         }
       });
-
-      deal.voucherValidity = deal?.subDeals[0].voucherValidity;
-      deal.voucherStartDate = deal?.subDeals[0].voucherStartDate;
-      deal.voucherEndDate = deal?.subDeals[0].voucherEndDate;
-      deal.publishStartDate = deal?.startDate;
-      deal.publishEndDate = deal?.endDate;
-      deal.coverImageUrl = coverImageUrl;
-      deal.dealStatus = statuses[deal.dealStatus];
+      if (deal?.subDeals.length > 0) {
+        deal.voucherValidity = deal?.subDeals[0].voucherValidity;
+        deal.voucherStartDate = deal?.subDeals[0].voucherStartDate;
+        deal.voucherEndDate = deal?.subDeals[0].voucherEndDate;
+        deal.publishStartDate = deal?.startDate;
+        deal.publishEndDate = deal?.endDate;
+        deal.coverImageUrl = coverImageUrl;
+        deal.dealStatus = statuses[deal.dealStatus];
+      }
 
       delete deal?.mediaUrl;
       delete deal?.merchantMongoID;
@@ -303,6 +304,67 @@ export class DealService {
       }
 
       return deal;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async updateDealByID(updateDealDto) {
+    try {
+      let statuses = {
+        Draf: 'Draft',
+        'Review Required': 'In review',
+        'Merchant Action Requested': 'Needs attention',
+        Scheduled: 'Scheduled',
+        Published: 'Published',
+        'Rejected ': 'Rejected ',
+        'Expired ': 'Expired ',
+      };
+
+      let deal: any = await this.dealModel.findOne({
+        dealID: updateDealDto.dealID,
+      });
+
+      if (!deal) {
+        throw new Error('No deal Found!');
+      }
+
+      if (updateDealDto.status) {
+        deal.dealStatus = statuses[updateDealDto.status];
+      }
+
+      let dealVouchers = 0;
+      deal.subDeals = deal.subDeals.map((element) => {
+        if (updateDealDto.quantityAvailable) {
+          element.numberOfVouchers = updateDealDto.quantityAvailable;
+        }
+
+        if (updateDealDto.availabilityDays) {
+          element.voucherValidity = updateDealDto.availabilityDays;
+        }
+
+        if (updateDealDto.availabilityFromDate) {
+          element.voucherStartDate = updateDealDto.availabilityFromDate;
+        }
+        if (updateDealDto.availabilityToDate) {
+          element.voucherEndDate = updateDealDto.availabilityToDate;
+        }
+        if (element.voucherEndDate < element.voucherStartDate) {
+          throw new Error(
+            'Voucher End Date can not be smaller than voucher start date!',
+          );
+        }
+
+        dealVouchers += element.numberOfVouchers;
+
+        return element;
+      });
+
+      deal.availableVouchers = dealVouchers;
+
+      await this.dealModel.updateOne({ dealID: updateDealDto.dealID }, deal);
+
+      return { message: 'Deal Updated Successfully' };
     } catch (err) {
       throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
