@@ -1121,7 +1121,7 @@ export class DealService {
       const totalCount = await this.dealModel.countDocuments({
         deletedCheck: false,
         dealStatus: DEALSTATUS.published,
-        vouchers: { $elemMatch: { dealPrice: { $lt: price } } },
+        subDeals: { $elemMatch: { dealPrice: { $lt: price } } },
       });
       let deals = await this.dealModel
         .aggregate([
@@ -1129,7 +1129,7 @@ export class DealService {
             $match: {
               deletedCheck: false,
               dealStatus: DEALSTATUS.published,
-              vouchers: {
+              subDeals: {
                 $elemMatch: { dealPrice: { $lt: price } },
               },
             },
@@ -1290,7 +1290,7 @@ export class DealService {
       const totalCount = await this.dealModel.countDocuments({
         deletedCheck: false,
         dealStatus: DEALSTATUS.published,
-        vouchers: { $elemMatch: { discountPercentage: { $lte: percentage } } },
+        subDeals: { $elemMatch: { discountPercentage: { $lte: percentage } } },
       });
       let deals = await this.dealModel
         .aggregate([
@@ -1298,7 +1298,7 @@ export class DealService {
             $match: {
               deletedCheck: false,
               dealStatus: DEALSTATUS.published,
-              vouchers: {
+              subDeals: {
                 $elemMatch: { discountPercentage: { $lte: percentage } },
               },
             },
