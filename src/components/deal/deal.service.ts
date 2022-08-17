@@ -312,7 +312,7 @@ export class DealService {
   async updateDealByID(updateDealDto) {
     try {
       let statuses = {
-        Draf: 'Draft',
+        Draft: 'Draft',
         'Review Required': 'In review',
         'Merchant Action Requested': 'Needs attention',
         Scheduled: 'Scheduled',
