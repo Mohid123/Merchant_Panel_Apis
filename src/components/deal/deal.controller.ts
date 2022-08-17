@@ -21,6 +21,7 @@ import { UpdateDealDto } from '../../dto/deal/updatedeal.dto';
 import { MultipleDealsDto } from 'src/dto/deal/multipledeals.dto';
 import { MultipleReviewsDto } from 'src/dto/review/multiplereviews.dto';
 import { JwtManagerAuthGuard } from '../auth/jwt-manager-auth.guard';
+import { UpdateDealForCRMDTO } from 'src/dto/deal/updateDealForCrm.dto';
 
 @ApiTags('Deal')
 @Controller('deal')
@@ -155,12 +156,16 @@ export class DealController {
   }
 
   @Get('getDealsByMerchantIDForCustomerPanel/:merchantID')
-  getDealsByMerchantIDForCustomerPanel (
+  getDealsByMerchantIDForCustomerPanel(
     @Param('merchantID') merchantID: string,
     @Query('offset') offset: number = 0,
     @Query('limit') limit: number = 10,
   ) {
-    return this.dealService.getDealsByMerchantIDForCustomerPanel(merchantID, offset, limit);
+    return this.dealService.getDealsByMerchantIDForCustomerPanel(
+      merchantID,
+      offset,
+      limit,
+    );
   }
 
   @ApiBearerAuth()
@@ -292,6 +297,14 @@ export class DealController {
   @Get('getDealByID/:dealID')
   getDealByID(@Param('dealID') dealID: string) {
     return this.dealService.getDealByID(dealID);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtManagerAuthGuard)
+  @UseGuards(JwtAuthGuard)
+  @Post('updateDealByID')
+  updateDealByID(@Body() updateDealDto: UpdateDealForCRMDTO) {
+    return this.dealService.updateDealByID(updateDealDto);
   }
 
   // @Get('changeMediaURL')
