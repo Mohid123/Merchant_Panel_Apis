@@ -878,7 +878,7 @@ let DealService = class DealService {
             const totalCount = await this.dealModel.countDocuments({
                 deletedCheck: false,
                 dealStatus: dealstatus_enum_1.DEALSTATUS.published,
-                vouchers: { $elemMatch: { dealPrice: { $lt: price } } },
+                subDeals: { $elemMatch: { dealPrice: { $lt: price } } },
             });
             let deals = await this.dealModel
                 .aggregate([
@@ -886,7 +886,7 @@ let DealService = class DealService {
                     $match: {
                         deletedCheck: false,
                         dealStatus: dealstatus_enum_1.DEALSTATUS.published,
-                        vouchers: {
+                        subDeals: {
                             $elemMatch: { dealPrice: { $lt: price } },
                         },
                     },
@@ -1043,7 +1043,7 @@ let DealService = class DealService {
             const totalCount = await this.dealModel.countDocuments({
                 deletedCheck: false,
                 dealStatus: dealstatus_enum_1.DEALSTATUS.published,
-                vouchers: { $elemMatch: { discountPercentage: { $lte: percentage } } },
+                subDeals: { $elemMatch: { discountPercentage: { $lte: percentage } } },
             });
             let deals = await this.dealModel
                 .aggregate([
@@ -1051,7 +1051,7 @@ let DealService = class DealService {
                     $match: {
                         deletedCheck: false,
                         dealStatus: dealstatus_enum_1.DEALSTATUS.published,
-                        vouchers: {
+                        subDeals: {
                             $elemMatch: { discountPercentage: { $lte: percentage } },
                         },
                     },
