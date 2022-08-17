@@ -214,70 +214,164 @@ export class DealService {
 
   async getDealByID(dealID) {
     try {
+      let statuses = {
+        Draf: 'Draft',
+        'In review': 'Review Required',
+        'Needs attention': 'Merchant Action Requested',
+        Scheduled: 'Scheduled',
+        Published: 'Published',
+        'Rejected ': 'Rejected ',
+        'Expired ': 'Expired ',
+      };
+
       let deal: any = await this.dealModel.findOne({ dealID: dealID });
+
+      if (!deal) {
+        throw new Error('No deal Found!');
+      }
 
       deal = JSON.parse(JSON.stringify(deal));
 
       let coverImageUrl = '';
-      deal.mediaUrl.forEach((el) => {
+      deal?.mediaUrl.forEach((el) => {
         if (el.type == 'Image' && coverImageUrl == '') {
           coverImageUrl = el.captureFileURL;
         }
       });
+      if (deal?.subDeals.length > 0) {
+        deal.voucherValidity = deal?.subDeals[0].voucherValidity;
+        deal.voucherStartDate = deal?.subDeals[0].voucherStartDate;
+        deal.voucherEndDate = deal?.subDeals[0].voucherEndDate;
+        deal.publishStartDate = deal?.startDate;
+        deal.publishEndDate = deal?.endDate;
+        deal.coverImageUrl = coverImageUrl;
+        deal.dealStatus = statuses[deal.dealStatus];
+      }
 
-      deal.voucherValidity = deal.subDeals[0].voucherValidity;
-      deal.voucherStartDate = deal.subDeals[0].voucherStartDate;
-      deal.voucherEndDate = deal.subDeals[0].voucherEndDate;
-      deal.publishStartDate = deal.startDate;
-      deal.publishEndDate = deal.endDate;
-      deal.coverImageUrl = coverImageUrl;
-
-      delete deal.mediaUrl;
-      delete deal.merchantMongoID;
-      delete deal.categoryID;
-      delete deal.subCategoryID;
-      delete deal.highlights;
-      delete deal.reviewMediaUrl;
-      delete deal.ratingsAverage;
-      delete deal.totalReviews;
-      delete deal.maxRating;
-      delete deal.minRating;
-      delete deal.pageNumber;
-      delete deal.deletedCheck;
-      delete deal.isCollapsed;
-      delete deal.isDuplicate;
-      delete deal.isSpecialOffer;
-      delete deal.netEarnings;
-      delete deal.finePrints;
-      delete deal.readMore;
-      delete deal.minDiscountPercentage;
-      delete deal.minOriginalPrice;
-      delete deal.minDealPrice;
-      delete deal.aboutThisDeal;
-      delete deal.id;
-      delete deal.createdAt;
-      delete deal.updatedAt;
-      delete deal.endDate;
-      delete deal.startDate;
-      deal.subDeals.forEach((el) => {
+      delete deal?.mediaUrl;
+      delete deal?.merchantMongoID;
+      delete deal?.categoryID;
+      delete deal?.subCategoryID;
+      delete deal?.highlights;
+      delete deal?.reviewMediaUrl;
+      delete deal?.ratingsAverage;
+      delete deal?.totalReviews;
+      delete deal?.maxRating;
+      delete deal?.minRating;
+      delete deal?.pageNumber;
+      delete deal?.deletedCheck;
+      delete deal?.isCollapsed;
+      delete deal?.isDuplicate;
+      delete deal?.isSpecialOffer;
+      delete deal?.netEarnings;
+      delete deal?.finePrints;
+      delete deal?.readMore;
+      delete deal?.minDiscountPercentage;
+      delete deal?.minOriginalPrice;
+      delete deal?.minDealPrice;
+      delete deal?.aboutThisDeal;
+      delete deal?.id;
+      delete deal?.createdAt;
+      delete deal?.updatedAt;
+      delete deal?.endDate;
+      delete deal?.startDate;
+      deal?.subDeals.forEach((el) => {
         delete el._id;
-        el.publishStartDate = deal.publishStartDate;
-        el.publishEndDate = deal.publishEndDate;
-        el.subCategory = deal.subCategory;
-        el.categoryName = deal.categoryName;
-        el.voucherTitle = el.title;
+        el.publishStartDate = deal?.publishStartDate;
+        el.publishEndDate = deal?.publishEndDate;
+        el.subCategory = deal?.subCategory;
+        el.categoryName = deal?.categoryName;
+        el.voucherTitle = el?.title;
         delete el.title;
         el.availableVouchers = el.numberOfVouchers;
-        delete el.numberOfVouchers;
-        delete el.grossEarning;
-        delete el.netEarning;
+        el.originalPrice = el.originalPrice.toFixed(2).replace('.', ',');
+        el.dealPrice = el.dealPrice.toFixed(2).replace('.', ',');
+        el.discountPercentage = el.discountPercentage
+          .toFixed(2)
+          .replace('.', ',');
+        delete el?.numberOfVouchers;
+        delete el?.grossEarning;
+        delete el?.netEarning;
       });
-      delete deal.availableVouchers;
-      delete deal.soldVouchers;
+      delete deal?.availableVouchers;
+      delete deal?.soldVouchers;
+
+      if (!deal.dealPreviewURL) {
+        deal.dealPreviewURL = '';
+      }
+
+      if (!deal.editDealURL) {
+        deal.editDealURL = '';
+      }
 
       return deal;
     } catch (err) {
-      throw new HttpException(err, HttpStatus.BAD_REQUEST);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async updateDealByID(updateDealDto) {
+    try {
+      let statuses = {
+        Draf: 'Draft',
+        'Review Required': 'In review',
+        'Merchant Action Requested': 'Needs attention',
+        Scheduled: 'Scheduled',
+        Published: 'Published',
+        'Rejected ': 'Rejected ',
+        'Expired ': 'Expired ',
+      };
+
+      let deal: any = await this.dealModel.findOne({
+        dealID: updateDealDto.dealID,
+      });
+
+      if (!deal) {
+        throw new Error('No deal Found!');
+      }
+
+      if (updateDealDto.status) {
+        deal.dealStatus = statuses[updateDealDto.status];
+      }
+
+      let dealVouchers = 0;
+      deal.subDeals = deal.subDeals.map((element) => {
+        if (updateDealDto.subDealID) {
+          if (updateDealDto.subDealID === element['subDealID']) {
+            if (updateDealDto.quantityAvailable) {
+              element.numberOfVouchers = updateDealDto.quantityAvailable;
+            }
+          }
+        }
+
+        if (updateDealDto.availabilityDays) {
+          element.voucherValidity = updateDealDto.availabilityDays;
+          element.voucherStartDate = 0;
+          element.voucherEndDate = 0;
+        }
+
+        if (updateDealDto.availabilityToDate) {
+          element.voucherEndDate = updateDealDto.availabilityToDate;
+          element.voucherValidity = 0;
+          if (element.voucherEndDate < element.voucherStartDate) {
+            throw new Error(
+              'Voucher End Date can not be smaller than voucher start date!',
+            );
+          }
+        }
+
+        dealVouchers += element.numberOfVouchers;
+
+        return element;
+      });
+
+      deal.availableVouchers = dealVouchers;
+
+      await this.dealModel.updateOne({ dealID: updateDealDto.dealID }, deal);
+
+      return { message: 'Deal Updated Successfully' };
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -912,7 +1006,7 @@ export class DealService {
     }
   }
 
-  async getDealsByMerchantIDForCustomerPanel (merchantID, offset, limit) {
+  async getDealsByMerchantIDForCustomerPanel(merchantID, offset, limit) {
     try {
       offset = parseInt(offset) < 0 ? 0 : offset;
       limit = parseInt(limit) < 1 ? 10 : limit;
@@ -920,80 +1014,78 @@ export class DealService {
       const totalCount = await this.dealModel.countDocuments({
         merchantMongoID: merchantID,
         deletedCheck: false,
-        dealStatus: DEALSTATUS.published
+        dealStatus: DEALSTATUS.published,
       });
 
-      const mercahntDeals = await this.dealModel.aggregate([
-        {
-          $match: {
-            merchantMongoID: merchantID,
-            deletedCheck: false,
-            dealStatus: DEALSTATUS.published
-          }
-        },
-        {
-          $sort: {
-            createdAt: -1
-          }
-        },
-        {
-          $addFields: {
-            id: '$_id',
-            mediaUrl: {
-              $slice: [
-                {
-                  $filter: {
-                    input: '$mediaUrl',
-                    as: 'mediaUrl',
-                    cond: {
-                      $eq: [
-                        '$$mediaUrl.type', 'Image'
-                      ]
+      const mercahntDeals = await this.dealModel
+        .aggregate([
+          {
+            $match: {
+              merchantMongoID: merchantID,
+              deletedCheck: false,
+              dealStatus: DEALSTATUS.published,
+            },
+          },
+          {
+            $sort: {
+              createdAt: -1,
+            },
+          },
+          {
+            $addFields: {
+              id: '$_id',
+              mediaUrl: {
+                $slice: [
+                  {
+                    $filter: {
+                      input: '$mediaUrl',
+                      as: 'mediaUrl',
+                      cond: {
+                        $eq: ['$$mediaUrl.type', 'Image'],
+                      },
                     },
                   },
-                },
-                1
-              ],
+                  1,
+                ],
+              },
             },
-          }
-        },
-        {
-          $project: {
-            _id: 0,
-            dealID: 0,
-            merchantMongoID: 0,
-            merchantID: 0,
-            subTitle: 0,
-            categoryName: 0,
-            subCategoryID: 0,
-            subCategory: 0,
-            subDeals: 0,
-            availableVouchers: 0,
-            aboutThisDeal: 0,
-            readMore: 0,
-            finePrints: 0,
-            netEarnings: 0,
-            isCollapsed: 0,
-            isDuplicate: 0,
-            totalReviews: 0,
-            maxRating: 0,
-            minRating: 0,
-            pageNumber: 0,
-            updatedAt: 0,
-            __v: 0,
-            endDate: 0,              
-            startDate: 0,
-          }
-        }
-      ])
-      .skip(parseInt(offset))
-      .limit(parseInt(limit));
+          },
+          {
+            $project: {
+              _id: 0,
+              dealID: 0,
+              merchantMongoID: 0,
+              merchantID: 0,
+              subTitle: 0,
+              categoryName: 0,
+              subCategoryID: 0,
+              subCategory: 0,
+              subDeals: 0,
+              availableVouchers: 0,
+              aboutThisDeal: 0,
+              readMore: 0,
+              finePrints: 0,
+              netEarnings: 0,
+              isCollapsed: 0,
+              isDuplicate: 0,
+              totalReviews: 0,
+              maxRating: 0,
+              minRating: 0,
+              pageNumber: 0,
+              updatedAt: 0,
+              __v: 0,
+              endDate: 0,
+              startDate: 0,
+            },
+          },
+        ])
+        .skip(parseInt(offset))
+        .limit(parseInt(limit));
 
       return {
         totalCount: totalCount,
-        data: mercahntDeals
-      }
-
+        data: mercahntDeals,
+      };
     } catch (err) {
       throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
@@ -1030,7 +1122,7 @@ export class DealService {
       const totalCount = await this.dealModel.countDocuments({
         deletedCheck: false,
         dealStatus: DEALSTATUS.published,
-        vouchers: { $elemMatch: { dealPrice: { $lt: price } } },
+        subDeals: { $elemMatch: { dealPrice: { $lt: price } } },
       });
       let deals = await this.dealModel
         .aggregate([
@@ -1038,7 +1130,7 @@ export class DealService {
             $match: {
               deletedCheck: false,
               dealStatus: DEALSTATUS.published,
-              vouchers: {
+              subDeals: {
                 $elemMatch: { dealPrice: { $lt: price } },
               },
             },
@@ -1058,13 +1150,11 @@ export class DealService {
                       input: '$mediaUrl',
                       as: 'mediaUrl',
                       cond: {
-                        $eq: [
-                          '$$mediaUrl.type', 'Image'
-                        ]
+                        $eq: ['$$mediaUrl.type', 'Image'],
                       },
                     },
                   },
-                  1
+                  1,
                 ],
               },
             },
@@ -1142,13 +1232,11 @@ export class DealService {
                       input: '$mediaUrl',
                       as: 'mediaUrl',
                       cond: {
-                        $eq: [
-                          '$$mediaUrl.type', 'Image'
-                        ]
+                        $eq: ['$$mediaUrl.type', 'Image'],
                       },
                     },
                   },
-                  1
+                  1,
                 ],
               },
             },
@@ -1203,7 +1291,7 @@ export class DealService {
       const totalCount = await this.dealModel.countDocuments({
         deletedCheck: false,
         dealStatus: DEALSTATUS.published,
-        vouchers: { $elemMatch: { discountPercentage: { $lte: percentage } } },
+        subDeals: { $elemMatch: { discountPercentage: { $lte: percentage } } },
       });
       let deals = await this.dealModel
         .aggregate([
@@ -1211,7 +1299,7 @@ export class DealService {
             $match: {
               deletedCheck: false,
               dealStatus: DEALSTATUS.published,
-              vouchers: {
+              subDeals: {
                 $elemMatch: { discountPercentage: { $lte: percentage } },
               },
             },
@@ -1231,13 +1319,11 @@ export class DealService {
                       input: '$mediaUrl',
                       as: 'mediaUrl',
                       cond: {
-                        $eq: [
-                          '$$mediaUrl.type', 'Image'
-                        ]
+                        $eq: ['$$mediaUrl.type', 'Image'],
                       },
                     },
                   },
-                  1
+                  1,
                 ],
               },
             },
@@ -1332,13 +1418,11 @@ export class DealService {
                       input: '$mediaUrl',
                       as: 'mediaUrl',
                       cond: {
-                        $eq: [
-                          '$$mediaUrl.type', 'Image'
-                        ]
+                        $eq: ['$$mediaUrl.type', 'Image'],
                       },
                     },
                   },
-                  1
+                  1,
                 ],
               },
             },
@@ -1418,13 +1502,11 @@ export class DealService {
                       input: '$mediaUrl',
                       as: 'mediaUrl',
                       cond: {
-                        $eq: [
-                          '$$mediaUrl.type', 'Image'
-                        ]
+                        $eq: ['$$mediaUrl.type', 'Image'],
                       },
                     },
                   },
-                  1
+                  1,
                 ],
               },
             },
@@ -1509,13 +1591,11 @@ export class DealService {
                       input: '$mediaUrl',
                       as: 'mediaUrl',
                       cond: {
-                        $eq: [
-                          '$$mediaUrl.type', 'Image'
-                        ]
+                        $eq: ['$$mediaUrl.type', 'Image'],
                       },
                     },
                   },
-                  1
+                  1,
                 ],
               },
             },
@@ -1653,13 +1733,11 @@ export class DealService {
                       input: '$mediaUrl',
                       as: 'mediaUrl',
                       cond: {
-                        $eq: [
-                          '$$mediaUrl.type', 'Image'
-                        ]
+                        $eq: ['$$mediaUrl.type', 'Image'],
                       },
                     },
                   },
-                  1
+                  1,
                 ],
               },
             },
@@ -1742,13 +1820,11 @@ export class DealService {
                       input: '$mediaUrl',
                       as: 'mediaUrl',
                       cond: {
-                        $eq: [
-                          '$$mediaUrl.type', 'Image'
-                        ]
+                        $eq: ['$$mediaUrl.type', 'Image'],
                       },
                     },
                   },
-                  1
+                  1,
                 ],
               },
             },
