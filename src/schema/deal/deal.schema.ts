@@ -33,8 +33,8 @@ export const DealSchema = new mongoose.Schema(
     isCollapsed: { type: Boolean, default: false },
     isDuplicate: { type: Boolean, default: false },
     isSpecialOffer: { type: Boolean, default: false },
-    dealPreviewURL: { type: String },
-    editDealURL: { String },
+    dealPreviewURL: { type: String, default: '' },
+    editDealURL: { String, default: '' },
     reviewMediaUrl: { type: Array },
     ratingsAverage: {
       type: Number,

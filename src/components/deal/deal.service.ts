@@ -71,6 +71,7 @@ export class DealService {
         });
         dealDto.subCategoryID = subCategory.id;
         dealDto.categoryName = subCategory.categoryName;
+        dealDto.categoryID = subCategory.categoryID;
       }
 
       if (!savedDeal) {
@@ -312,7 +313,7 @@ export class DealService {
   async updateDealByID(updateDealDto) {
     try {
       let statuses = {
-        Draf: 'Draft',
+        Draft: 'Draft',
         'Review Required': 'In review',
         'Merchant Action Requested': 'Needs attention',
         Scheduled: 'Scheduled',
