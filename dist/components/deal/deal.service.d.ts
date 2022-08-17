@@ -16,6 +16,9 @@ export declare class DealService {
         _id: any;
     }>;
     getDealByID(dealID: any): Promise<any>;
+    updateDealByID(updateDealDto: any): Promise<{
+        message: string;
+    }>;
     updateDeal(updateDealDto: any, dealID: any): Promise<{
         message: string;
     }>;

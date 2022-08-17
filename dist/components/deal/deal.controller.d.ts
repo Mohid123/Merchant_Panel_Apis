@@ -6,6 +6,7 @@ import { DEALSTATUS } from '../../enum/deal/dealstatus.enum';
 import { UpdateDealDto } from '../../dto/deal/updatedeal.dto';
 import { MultipleDealsDto } from 'src/dto/deal/multipledeals.dto';
 import { MultipleReviewsDto } from 'src/dto/review/multiplereviews.dto';
+import { UpdateDealForCRMDTO } from 'src/dto/deal/updateDealForCrm.dto';
 export declare class DealController {
     private readonly dealService;
     constructor(dealService: DealService);
@@ -98,4 +99,7 @@ export declare class DealController {
         deals: any[];
     }>;
     getDealByID(dealID: string): Promise<any>;
+    updateDealByID(updateDealDto: UpdateDealForCRMDTO): Promise<{
+        message: string;
+    }>;
 }

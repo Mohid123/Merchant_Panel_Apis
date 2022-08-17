@@ -27,6 +27,7 @@ const updatedeal_dto_1 = require("../../dto/deal/updatedeal.dto");
 const multipledeals_dto_1 = require("../../dto/deal/multipledeals.dto");
 const multiplereviews_dto_1 = require("../../dto/review/multiplereviews.dto");
 const jwt_manager_auth_guard_1 = require("../auth/jwt-manager-auth.guard");
+const updateDealForCrm_dto_1 = require("../../dto/deal/updateDealForCrm.dto");
 let DealController = class DealController {
     constructor(dealService) {
         this.dealService = dealService;
@@ -96,6 +97,9 @@ let DealController = class DealController {
     }
     getDealByID(dealID) {
         return this.dealService.getDealByID(dealID);
+    }
+    updateDealByID(updateDealDto) {
+        return this.dealService.updateDealByID(updateDealDto);
     }
 };
 __decorate([
@@ -337,6 +341,16 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], DealController.prototype, "getDealByID", null);
+__decorate([
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)(jwt_manager_auth_guard_1.JwtManagerAuthGuard),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Post)('updateDealByID'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [updateDealForCrm_dto_1.UpdateDealForCRMDTO]),
+    __metadata("design:returntype", void 0)
+], DealController.prototype, "updateDealByID", null);
 DealController = __decorate([
     (0, swagger_1.ApiTags)('Deal'),
     (0, common_1.Controller)('deal'),
