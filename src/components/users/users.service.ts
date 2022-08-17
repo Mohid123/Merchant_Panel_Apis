@@ -21,6 +21,7 @@ import axios from 'axios';
 import { VoucherCounterInterface } from 'src/interface/vouchers/vouchersCounter.interface';
 import { Location } from 'src/interface/location/location.interface';
 import { LeadInterface } from 'src/interface/lead/lead.interface';
+import { USERROLE } from 'src/enum/user/userrole.enum';
 
 var htmlencode = require('htmlencode');
 var generator = require('generate-password');
@@ -237,6 +238,42 @@ export class UsersService {
             _id: id,
             deletedCheck: false,
             status: USERSTATUS.approved,
+          },
+        },
+        {
+          $lookup: {
+            from: 'locations',
+            as: 'personalDetail',
+            localField: 'userID',
+            foreignField: 'merchantID',
+          },
+        },
+        {
+          $unwind: '$personalDetail',
+        },
+        {
+          $addFields: {
+            id: '$_id',
+          },
+        },
+        {
+          $project: {
+            _id: 0,
+          },
+        },
+      ])
+      .then((items) => items[0]);
+  }
+
+  async getMerchantByID (merchantID) {
+    return await this._userModel
+      .aggregate([
+        {
+          $match: {
+            _id: merchantID,
+            deletedCheck: false,
+            status: USERSTATUS.approved,
+            role: USERROLE.merchant
           },
         },
         {

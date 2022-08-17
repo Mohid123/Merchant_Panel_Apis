@@ -1,9 +1,10 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNumber, MaxLength } from "class-validator";
+import { IsNumber, MaxLength, MinLength } from "class-validator";
 
 export class VoucherPinCodeDto {
     @ApiProperty()
     @MaxLength(4)
-    @IsNumber()
-    voucherPinCode: number;
+    @MinLength(4)
+    // @IsNumber()
+    voucherPinCode: string;
 }

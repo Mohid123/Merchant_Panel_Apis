@@ -90,6 +90,13 @@ export class UsersController {
     return this._usersService.getUserById(id);
   }
 
+  @Get('getMerchantByID/:merchantID')
+  getMerchantByID (
+    @Param('merchantID') merchantID: string
+  ) {
+    return this._usersService.getMerchantByID(merchantID)
+  }
+
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @Get('getMerchantStats/:id')
