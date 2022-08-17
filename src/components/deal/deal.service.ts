@@ -71,6 +71,7 @@ export class DealService {
         });
         dealDto.subCategoryID = subCategory.id;
         dealDto.categoryName = subCategory.categoryName;
+        dealDto.categoryID = subCategory.categoryID;
       }
 
       if (!savedDeal) {
