@@ -299,8 +299,12 @@ let DealService = class DealService {
             }
             let dealVouchers = 0;
             deal.subDeals = deal.subDeals.map((element) => {
-                if (updateDealDto.quantityAvailable) {
-                    element.numberOfVouchers = updateDealDto.quantityAvailable;
+                if (updateDealDto.subDealID) {
+                    if (updateDealDto.subDealID === element['subDealID']) {
+                        if (updateDealDto.quantityAvailable) {
+                            element.numberOfVouchers = updateDealDto.quantityAvailable;
+                        }
+                    }
                 }
                 if (updateDealDto.availabilityDays) {
                     element.voucherValidity = updateDealDto.availabilityDays;
