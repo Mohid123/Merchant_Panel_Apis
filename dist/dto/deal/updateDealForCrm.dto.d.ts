@@ -3,7 +3,6 @@ export declare class UpdateDealForCRMDTO {
     subDealID: string;
     status: string;
     quantityAvailable: number;
-    availabilityFromDate: number;
     availabilityToDate: number;
     availabilityDays: number;
 }
