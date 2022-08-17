@@ -345,18 +345,18 @@ export class DealService {
 
         if (updateDealDto.availabilityDays) {
           element.voucherValidity = updateDealDto.availabilityDays;
+          element.voucherStartDate = 0;
+          element.voucherEndDate = 0;
         }
 
-        if (updateDealDto.availabilityFromDate) {
-          element.voucherStartDate = updateDealDto.availabilityFromDate;
-        }
         if (updateDealDto.availabilityToDate) {
           element.voucherEndDate = updateDealDto.availabilityToDate;
-        }
-        if (element.voucherEndDate < element.voucherStartDate) {
-          throw new Error(
-            'Voucher End Date can not be smaller than voucher start date!',
-          );
+          element.voucherValidity = 0;
+          if (element.voucherEndDate < element.voucherStartDate) {
+            throw new Error(
+              'Voucher End Date can not be smaller than voucher start date!',
+            );
+          }
         }
 
         dealVouchers += element.numberOfVouchers;
