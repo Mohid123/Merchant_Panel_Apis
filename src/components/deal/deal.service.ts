@@ -284,11 +284,6 @@ export class DealService {
         el.voucherTitle = el?.title;
         delete el.title;
         el.availableVouchers = el.numberOfVouchers;
-        el.originalPrice = el.originalPrice.toFixed(2).replace('.', ',');
-        el.dealPrice = el.dealPrice.toFixed(2).replace('.', ',');
-        el.discountPercentage = el.discountPercentage
-          .toFixed(2)
-          .replace('.', ',');
         delete el?.numberOfVouchers;
         delete el?.grossEarning;
         delete el?.netEarning;
@@ -353,7 +348,7 @@ export class DealService {
         if (updateDealDto.availabilityToDate) {
           element.voucherEndDate = updateDealDto.availabilityToDate;
           if (updateDealDto.availabilityToDate > deal.endDate) {
-            deal.startDate = updateDealDto.availabilityToDate;
+            deal.endDate = updateDealDto.availabilityToDate;
           }
           element.voucherValidity = 0;
           if (element.voucherEndDate < element.voucherStartDate) {
