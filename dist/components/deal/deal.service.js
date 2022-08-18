@@ -308,6 +308,9 @@ let DealService = class DealService {
                     element.voucherEndDate = 0;
                 }
                 if (updateDealDto.availabilityToDate) {
+                    if (element.voucherStartDate == 0) {
+                        element.voucherStartDate = deal.startDate;
+                    }
                     element.voucherEndDate = updateDealDto.availabilityToDate;
                     if (updateDealDto.availabilityToDate > deal.endDate) {
                         deal.endDate = updateDealDto.availabilityToDate;
@@ -875,11 +878,18 @@ let DealService = class DealService {
             price = parseFloat(price);
             offset = parseInt(offset) < 0 ? 0 : offset;
             limit = parseInt(limit) < 1 ? 10 : limit;
-            const totalCount = await this.dealModel.countDocuments({
-                deletedCheck: false,
-                dealStatus: dealstatus_enum_1.DEALSTATUS.published,
-                subDeals: { $elemMatch: { dealPrice: { $lt: price } } },
-            });
+            let totalCount;
+            let priceIncrease = 10;
+            do {
+                priceIncrease += 10;
+                totalCount = await this.dealModel.countDocuments({
+                    deletedCheck: false,
+                    dealStatus: dealstatus_enum_1.DEALSTATUS.published,
+                    subDeals: { $elemMatch: { dealPrice: { $lt: price } } },
+                });
+                price = price + priceIncrease;
+            } while (totalCount < 8);
+            price = price - priceIncrease;
             let deals = await this.dealModel
                 .aggregate([
                 {
@@ -947,6 +957,7 @@ let DealService = class DealService {
                 .skip(parseInt(offset))
                 .limit(parseInt(limit));
             return {
+                price,
                 totalCount: totalCount,
                 data: deals,
             };
@@ -1040,12 +1051,22 @@ let DealService = class DealService {
             percentage = parseFloat(percentage);
             offset = parseInt(offset) < 0 ? 0 : offset;
             limit = parseInt(limit) < 1 ? 10 : limit;
-            const totalCount = await this.dealModel.countDocuments({
-                deletedCheck: false,
-                dealStatus: dealstatus_enum_1.DEALSTATUS.published,
-                subDeals: { $elemMatch: { discountPercentage: { $lte: percentage } } },
-            });
-            let deals = await this.dealModel
+            let totalCount;
+            do {
+                totalCount = await this.dealModel.countDocuments({
+                    deletedCheck: false,
+                    dealStatus: dealstatus_enum_1.DEALSTATUS.published,
+                    subDeals: {
+                        $elemMatch: { discountPercentage: { $lte: percentage } },
+                    },
+                });
+                percentage += 10;
+                if (percentage > 100) {
+                    break;
+                }
+            } while (totalCount < 8);
+            percentage = percentage - 10;
+            const deals = await this.dealModel
                 .aggregate([
                 {
                     $match: {
@@ -1112,6 +1133,7 @@ let DealService = class DealService {
                 .skip(parseInt(offset))
                 .limit(parseInt(limit));
             return {
+                percentage,
                 totalCount: totalCount,
                 data: deals,
             };

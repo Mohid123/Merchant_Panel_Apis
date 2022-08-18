@@ -70,11 +70,13 @@ export declare class DealController {
         data: any[];
     }>;
     getLowPriceDeals(price: number, offset?: number, limit?: number): Promise<{
-        totalCount: number;
+        price: any;
+        totalCount: any;
         data: any[];
     }>;
     getDiscountedDeals(percentage: number, offset?: number, limit?: number): Promise<{
-        totalCount: number;
+        percentage: any;
+        totalCount: any;
         data: any[];
     }>;
     getSpecialOfferDeals(offset?: number, limit?: number): Promise<{

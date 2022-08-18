@@ -52,7 +52,8 @@ export declare class DealService {
     }>;
     getTopRatedDeals(merchantID: any): Promise<any[]>;
     getLowPriceDeals(price: any, offset: any, limit: any): Promise<{
-        totalCount: number;
+        price: any;
+        totalCount: any;
         data: any[];
     }>;
     getNewDeals(offset: any, limit: any): Promise<{
@@ -60,7 +61,8 @@ export declare class DealService {
         data: any[];
     }>;
     getDiscountedDeals(percentage: any, offset: any, limit: any): Promise<{
-        totalCount: number;
+        percentage: any;
+        totalCount: any;
         data: any[];
     }>;
     getHotDeals(offset: any, limit: any): Promise<{
