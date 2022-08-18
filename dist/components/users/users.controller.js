@@ -52,6 +52,9 @@ let UsersController = class UsersController {
     geUserById(id) {
         return this._usersService.getUserById(id);
     }
+    getMerchantByID(merchantID) {
+        return this._usersService.getMerchantByID(merchantID);
+    }
     getUserStats(id) {
         return this._usersService.getMerchantStats(id);
     }
@@ -139,6 +142,13 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "geUserById", null);
+__decorate([
+    (0, common_1.Get)('getMerchantByID/:merchantID'),
+    __param(0, (0, common_1.Param)('merchantID')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "getMerchantByID", null);
 __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, swagger_1.ApiBearerAuth)(),

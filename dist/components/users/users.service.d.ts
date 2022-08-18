@@ -30,6 +30,7 @@ export declare class UsersService {
     updateBusinessHours(updateHoursDTO: UpdateHoursDto): Promise<import("mongodb").UpdateResult>;
     deleteUser(id: any): Promise<import("mongodb").UpdateResult>;
     getUserById(id: any): Promise<any>;
+    getMerchantByID(merchantID: any): Promise<any>;
     getMerchantStats(id: any): Promise<any>;
     getAllUsers(offset: any, limit: any): Promise<{
         totalCount: number;

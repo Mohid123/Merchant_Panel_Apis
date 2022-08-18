@@ -27,6 +27,7 @@ export declare class UsersController {
     }>;
     updateBusinessHours(updateHoursDTO: UpdateHoursDto): Promise<import("mongodb").UpdateResult>;
     geUserById(id: string): Promise<any>;
+    getMerchantByID(merchantID: string): Promise<any>;
     getUserStats(id: string): Promise<any>;
     getAllUsers(offset?: number, limit?: number): Promise<{
         totalCount: number;

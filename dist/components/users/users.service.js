@@ -28,6 +28,7 @@ const userstatus_enum_1 = require("../../enum/user/userstatus.enum");
 const utils_1 = require("../file-management/utils/utils");
 const nodemailer = require("nodemailer");
 const axios_1 = require("axios");
+const userrole_enum_1 = require("../../enum/user/userrole.enum");
 var htmlencode = require('htmlencode');
 var generator = require('generate-password');
 var otpGenerator = require('otp-generator');
@@ -183,6 +184,41 @@ let UsersService = class UsersService {
                     _id: id,
                     deletedCheck: false,
                     status: userstatus_enum_1.USERSTATUS.approved,
+                },
+            },
+            {
+                $lookup: {
+                    from: 'locations',
+                    as: 'personalDetail',
+                    localField: 'userID',
+                    foreignField: 'merchantID',
+                },
+            },
+            {
+                $unwind: '$personalDetail',
+            },
+            {
+                $addFields: {
+                    id: '$_id',
+                },
+            },
+            {
+                $project: {
+                    _id: 0,
+                },
+            },
+        ])
+            .then((items) => items[0]);
+    }
+    async getMerchantByID(merchantID) {
+        return await this._userModel
+            .aggregate([
+            {
+                $match: {
+                    _id: merchantID,
+                    deletedCheck: false,
+                    status: userstatus_enum_1.USERSTATUS.approved,
+                    role: userrole_enum_1.USERROLE.merchant
                 },
             },
             {

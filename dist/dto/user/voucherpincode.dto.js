@@ -17,8 +17,8 @@ class VoucherPinCodeDto {
 __decorate([
     (0, swagger_1.ApiProperty)(),
     (0, class_validator_1.MaxLength)(4),
-    (0, class_validator_1.IsNumber)(),
-    __metadata("design:type", Number)
+    (0, class_validator_1.MinLength)(4),
+    __metadata("design:type", String)
 ], VoucherPinCodeDto.prototype, "voucherPinCode", void 0);
 exports.VoucherPinCodeDto = VoucherPinCodeDto;
 //# sourceMappingURL=voucherpincode.dto.js.map
