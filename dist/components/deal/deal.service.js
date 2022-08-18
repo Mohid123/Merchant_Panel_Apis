@@ -191,7 +191,7 @@ let DealService = class DealService {
     async getDealByID(dealID) {
         try {
             let statuses = {
-                Draf: 'Draft',
+                Draft: 'Draft',
                 'In review': 'Review Required',
                 'Needs attention': 'Merchant Action Requested',
                 Scheduled: 'Scheduled',
