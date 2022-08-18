@@ -27,9 +27,7 @@ export declare class DealService {
         totalCount: number;
         data: any[];
     }>;
-    getDeal(id: any): Promise<DealInterface & {
-        _id: any;
-    }>;
+    getDeal(id: any): Promise<any>;
     getDealReviews(offset: any, limit: any, rating: any, id: any, createdAt: any, totalRating: any): Promise<any>;
     deleteDeal(dealID: any): Promise<{
         status: string;

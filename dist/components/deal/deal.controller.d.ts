@@ -21,9 +21,7 @@ export declare class DealController {
         message: string;
     }>;
     approveRejectDeal(dealID: string, dealStatusDto: DealStatusDto): Promise<import("mongodb").UpdateResult>;
-    getDeal(id: string): Promise<import("../../interface/deal/deal.interface").DealInterface & {
-        _id: any;
-    }>;
+    getDeal(id: string): Promise<any>;
     getDealsReviewStatsByMerchant(merchantID: string, dealID: string, offset: number, limit: number, multipleReviewsDto: MultipleReviewsDto): Promise<{
         totalDeals: number;
         filteredDealCount: number;
