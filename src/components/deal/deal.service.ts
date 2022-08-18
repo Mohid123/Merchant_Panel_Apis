@@ -215,13 +215,13 @@ export class DealService {
   async getDealByID(dealID) {
     try {
       let statuses = {
-        Draf: 'Draft',
+        Draft: 'Draft',
         'In review': 'Review Required',
         'Needs attention': 'Merchant Action Requested',
         Scheduled: 'Scheduled',
         Published: 'Published',
-        'Rejected ': 'Rejected ',
-        'Expired ': 'Expired ',
+        Rejected: 'Rejected',
+        Expired: 'Expired',
       };
 
       let deal: any = await this.dealModel.findOne({ dealID: dealID });
@@ -313,8 +313,8 @@ export class DealService {
         'Merchant Action Requested': 'Needs attention',
         Scheduled: 'Scheduled',
         Published: 'Published',
-        'Rejected ': 'Rejected ',
-        'Expired ': 'Expired ',
+        Rejected: 'Rejected',
+        Expired: 'Expired',
       };
 
       let deal: any = await this.dealModel.findOne({
