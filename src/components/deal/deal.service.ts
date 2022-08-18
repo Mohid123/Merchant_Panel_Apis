@@ -1647,7 +1647,18 @@ export class DealService {
       offset = parseInt(offset) < 0 ? 0 : offset;
       limit = parseInt(limit) < 1 ? 10 : limit;
 
+      if (!distance) {
+        distance = 10;
+      }
+
       let radius = parseFloat(distance) / 6378.1;
+
+      if (!lat && !lng) {
+        lat = 50.850346;
+        lng = 4.351721;
+        radius = 20 / 6378.1;
+      }
+
       const deal = await this.dealModel
         .aggregate([
           {
