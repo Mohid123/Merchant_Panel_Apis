@@ -890,6 +890,7 @@ let DealService = class DealService {
                 price = price + priceIncrease;
             } while (totalCount < 8);
             price = price - priceIncrease;
+            let filterValue = price;
             let deals = await this.dealModel
                 .aggregate([
                 {
@@ -957,7 +958,7 @@ let DealService = class DealService {
                 .skip(parseInt(offset))
                 .limit(parseInt(limit));
             return {
-                price,
+                filterValue,
                 totalCount: totalCount,
                 data: deals,
             };
@@ -1061,11 +1062,12 @@ let DealService = class DealService {
                     },
                 });
                 percentage += 10;
-                if (percentage > 100) {
+                if (percentage > 95) {
                     break;
                 }
             } while (totalCount < 8);
             percentage = percentage - 10;
+            let filterValue = percentage;
             const deals = await this.dealModel
                 .aggregate([
                 {
@@ -1133,7 +1135,7 @@ let DealService = class DealService {
                 .skip(parseInt(offset))
                 .limit(parseInt(limit));
             return {
-                percentage,
+                filterValue,
                 totalCount: totalCount,
                 data: deals,
             };
