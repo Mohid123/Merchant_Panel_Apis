@@ -35,7 +35,7 @@ export const UsersSchema = new mongoose.Schema(
     profilePicURL: { type: String, default: '' },
     profilePicBlurHash: { type: String, default: '' },
     gallery: { type: Array },
-    voucherPinCode: { type: Number },
+    voucherPinCode: { type: String },
     deletedCheck: { type: Boolean, default: false },
     status: { type: String, default: '' },
     newUser: { type: Boolean, default: true },
