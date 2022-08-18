@@ -196,8 +196,8 @@ let DealService = class DealService {
                 'Needs attention': 'Merchant Action Requested',
                 Scheduled: 'Scheduled',
                 Published: 'Published',
-                'Rejected ': 'Rejected ',
-                'Expired ': 'Expired ',
+                Rejected: 'Rejected',
+                Expired: 'Expired',
             };
             let deal = await this.dealModel.findOne({ dealID: dealID });
             if (!deal) {
@@ -281,8 +281,8 @@ let DealService = class DealService {
                 'Merchant Action Requested': 'Needs attention',
                 Scheduled: 'Scheduled',
                 Published: 'Published',
-                'Rejected ': 'Rejected ',
-                'Expired ': 'Expired ',
+                Rejected: 'Rejected',
+                Expired: 'Expired',
             };
             let deal = await this.dealModel.findOne({
                 dealID: updateDealDto.dealID,
@@ -1395,7 +1395,15 @@ let DealService = class DealService {
         try {
             offset = parseInt(offset) < 0 ? 0 : offset;
             limit = parseInt(limit) < 1 ? 10 : limit;
+            if (!distance) {
+                distance = 10;
+            }
             let radius = parseFloat(distance) / 6378.1;
+            if (!lat && !lng) {
+                lat = 50.850346;
+                lng = 4.351721;
+                radius = 20 / 6378.1;
+            }
             const deal = await this.dealModel
                 .aggregate([
                 {
