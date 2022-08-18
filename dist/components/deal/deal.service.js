@@ -255,11 +255,6 @@ let DealService = class DealService {
                 el.voucherTitle = el === null || el === void 0 ? void 0 : el.title;
                 delete el.title;
                 el.availableVouchers = el.numberOfVouchers;
-                el.originalPrice = el.originalPrice.toFixed(2).replace('.', ',');
-                el.dealPrice = el.dealPrice.toFixed(2).replace('.', ',');
-                el.discountPercentage = el.discountPercentage
-                    .toFixed(2)
-                    .replace('.', ',');
                 el === null || el === void 0 ? true : delete el.numberOfVouchers;
                 el === null || el === void 0 ? true : delete el.grossEarning;
                 el === null || el === void 0 ? true : delete el.netEarning;
@@ -315,7 +310,7 @@ let DealService = class DealService {
                 if (updateDealDto.availabilityToDate) {
                     element.voucherEndDate = updateDealDto.availabilityToDate;
                     if (updateDealDto.availabilityToDate > deal.endDate) {
-                        deal.startDate = updateDealDto.availabilityToDate;
+                        deal.endDate = updateDealDto.availabilityToDate;
                     }
                     element.voucherValidity = 0;
                     if (element.voucherEndDate < element.voucherStartDate) {
