@@ -352,6 +352,9 @@ export class DealService {
 
         if (updateDealDto.availabilityToDate) {
           element.voucherEndDate = updateDealDto.availabilityToDate;
+          if (updateDealDto.availabilityToDate > deal.endDate) {
+            deal.startDate = updateDealDto.availabilityToDate;
+          }
           element.voucherValidity = 0;
           if (element.voucherEndDate < element.voucherStartDate) {
             throw new Error(
