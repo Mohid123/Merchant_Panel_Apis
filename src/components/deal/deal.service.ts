@@ -79,9 +79,9 @@ export class DealService {
       }
 
       if (dealDto.startDate && dealDto.endDate) {
-        let stamp = new Date(dealDto.startDate).getTime();
+        let stamp = new Date(dealDto.startDate).setUTCHours(0,0,0,0);
         dealDto.startDate = stamp;
-        stamp = new Date(dealDto.endDate).getTime();
+        stamp = new Date(dealDto.endDate).setUTCHours(23,59,59,0);
         dealDto.endDate = stamp;
       }
       if (!savedDeal) {
@@ -107,9 +107,13 @@ export class DealService {
         dealDto.subDeals = dealDto.subDeals.map((el) => {
           let startTime;
           let endTime;
-          let calculateDiscountPercentage =
+          if (el.originalPrice !== 0 || el.dealPrice !== 0) {
+            let calculateDiscountPercentage =
             ((el.originalPrice - el.dealPrice) / el.originalPrice) * 100;
           el.discountPercentage = calculateDiscountPercentage;
+          } else if (el.originalPrice == 0 && el.dealPrice == 0) {
+            el.discountPercentage = 0;
+          }
 
           dealVouchers += el.numberOfVouchers;
           el.soldVouchers = 0;
