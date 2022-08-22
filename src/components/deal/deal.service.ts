@@ -242,11 +242,12 @@ export class DealService {
         deal.voucherValidity = deal?.subDeals[0].voucherValidity;
         deal.voucherStartDate = deal?.subDeals[0].voucherStartDate;
         deal.voucherEndDate = deal?.subDeals[0].voucherEndDate;
-        deal.publishStartDate = deal?.startDate;
-        deal.publishEndDate = deal?.endDate;
-        deal.coverImageUrl = coverImageUrl;
-        deal.dealStatus = statuses[deal.dealStatus];
       }
+
+      deal.publishStartDate = deal?.startDate;
+      deal.publishEndDate = deal?.endDate;
+      deal.coverImageUrl = coverImageUrl;
+      deal.dealStatus = statuses[deal.dealStatus];
 
       delete deal?.mediaUrl;
       delete deal?.merchantMongoID;
