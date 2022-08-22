@@ -1126,6 +1126,7 @@ export class DealService {
               __v: 0,
               endDate: 0,
               startDate: 0,
+              reviewMediaUrl: 0
             },
           },
         ])
@@ -1247,6 +1248,7 @@ export class DealService {
               __v: 0,
               endDate: 0,
               startDate: 0,
+              reviewMediaUrl: 0
             },
           },
         ])
@@ -1330,6 +1332,7 @@ export class DealService {
               __v: 0,
               endDate: 0,
               startDate: 0,
+              reviewMediaUrl: 0
             },
           },
         ])
@@ -1430,6 +1433,7 @@ export class DealService {
               __v: 0,
               endDate: 0,
               startDate: 0,
+              reviewMediaUrl: 0
             },
           },
         ])
@@ -1450,12 +1454,14 @@ export class DealService {
     try {
       offset = parseInt(offset) < 0 ? 0 : offset;
       limit = parseInt(limit) < 1 ? 10 : limit;
+
       const totalCount = await this.dealModel.countDocuments({
         deletedCheck: false,
         dealStatus: DEALSTATUS.published,
         availableVouchers: { $gt: 0 },
         soldVouchers: { $gt: 0 },
       });
+
       let deals = await this.dealModel
         .aggregate([
           {
@@ -1533,6 +1539,7 @@ export class DealService {
               __v: 0,
               endDate: 0,
               startDate: 0,
+              reviewMediaUrl: 0
             },
           },
           {
@@ -1615,6 +1622,7 @@ export class DealService {
               __v: 0,
               endDate: 0,
               startDate: 0,
+              reviewMediaUrl: 0
             },
           },
           {
@@ -1704,6 +1712,7 @@ export class DealService {
               __v: 0,
               endDate: 0,
               startDate: 0,
+              reviewMediaUrl: 0
             },
           },
         ])
@@ -1778,8 +1787,20 @@ export class DealService {
     }
   }
 
-  async searchDeals(header, offset, limit) {
+  async searchDeals(
+    header,
+    categoryName,
+    subCategoryName,
+    fromPrice,
+    toPrice,
+    reviewRating,
+    offset,
+    limit
+  ) {
     try {
+      offset = parseInt(offset) < 0 ? 0 : offset;
+      limit = parseInt(limit) < 1 ? 10 : limit;
+
       header = header.trim();
 
       let filters = {};
@@ -1792,10 +1813,70 @@ export class DealService {
         };
       }
 
+      let matchFilter = {};
+
+      if (categoryName) {
+        matchFilter = {
+          ...matchFilter,
+          categoryName: categoryName,
+        };
+      }
+
+      if (subCategoryName) {
+        matchFilter = {
+          ...matchFilter,
+          subCategory: subCategoryName,
+        };
+      }
+
+      let minValue = parseInt(fromPrice);
+      let maxValue = parseInt(toPrice);
+
+      if (fromPrice && toPrice) {
+        matchFilter = {
+          ...matchFilter,
+          minDealPrice: {
+            $gte: minValue,
+            $lte: maxValue,
+          },
+        };
+      } else if (fromPrice) {
+        matchFilter = {
+          ...matchFilter,
+          minDealPrice: {
+            $gte: minValue,
+          },
+        }
+       } else if (toPrice) {
+        matchFilter = {
+          ...matchFilter,
+          minDealPrice: {
+            $lte: maxValue,
+          },
+        };
+      }
+
+      let rating = parseFloat(reviewRating);
+
+      if (reviewRating) {
+        matchFilter = {
+          ...matchFilter,
+          ratingsAverage: {
+            $gte: rating,
+          },
+        };
+      }
+
       const totalCount = await this.dealModel.countDocuments({
         deletedCheck: false,
         dealStatus: DEALSTATUS.published,
+      });
+
+      const filteredCount = await this.dealModel.countDocuments({
+        deletedCheck: false,
+        dealStatus: DEALSTATUS.published,
         ...filters,
+        ...matchFilter
       });
 
       const deals = await this.dealModel
@@ -1805,6 +1886,7 @@ export class DealService {
               deletedCheck: false,
               dealStatus: DEALSTATUS.published,
               ...filters,
+              ...matchFilter
             },
           },
           {
@@ -1857,6 +1939,7 @@ export class DealService {
               __v: 0,
               endDate: 0,
               startDate: 0,
+              reviewMediaUrl: 0
             },
           },
         ])
@@ -1865,7 +1948,301 @@ export class DealService {
 
       return {
         totalDeals: totalCount,
+        filteredDeals: filteredCount,
         data: deals,
+      };
+    } catch (err) {
+      throw new HttpException(err, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async getDealsByCategories (
+    categoryName,
+    subCategoryName,
+    fromPrice,
+    toPrice,
+    reviewRating,
+    price,
+    ratingSort,
+    createdAt,
+    offset,
+    limit
+  ) {
+    try {
+      offset = parseInt(offset) < 0 ? 0 : offset;
+      limit = parseInt(limit) < 1 ? 10 : limit;
+
+      let matchFilter = {};
+
+      if (categoryName) {
+        matchFilter = {
+          ...matchFilter,
+          categoryName: categoryName,
+        };
+      }
+
+      if (subCategoryName) {
+        matchFilter = {
+          ...matchFilter,
+          subCategory: subCategoryName,
+        };
+      }
+
+      let minValue = parseInt(fromPrice);
+      let maxValue = parseInt(toPrice);
+
+      if (fromPrice && toPrice) {
+        matchFilter = {
+          ...matchFilter,
+          minDealPrice: {
+            $gte: minValue,
+            $lte: maxValue,
+          },
+        };
+      } else if (fromPrice) {
+        matchFilter = {
+          ...matchFilter,
+          minDealPrice: {
+            $gte: minValue,
+          },
+        }
+       } else if (toPrice) {
+        matchFilter = {
+          ...matchFilter,
+          minDealPrice: {
+            $lte: maxValue,
+          },
+        };
+      }
+
+      let rating = parseFloat(reviewRating);
+
+      if (reviewRating) {
+        matchFilter = {
+          ...matchFilter,
+          ratingsAverage: {
+            $gte: rating,
+          },
+        };
+      }
+
+      let sort = {};
+
+      if (price) {
+        let sortPrice = price == SORT.ASC ? 1 : -1;
+        console.log('price');
+        sort = {
+          ...sort,
+          minDealPrice: sortPrice,
+        };
+      }
+
+      if (ratingSort) {
+        let sortRating = ratingSort == SORT.ASC ? 1 : -1;
+        console.log('ratingSort');
+        sort = {
+          ...sort,
+          ratingsAverage: sortRating,
+        };
+      }
+
+      if (createdAt) {
+        let sortTime = createdAt == SORT.ASC ? 1 : -1;
+        console.log('createdAt');
+        sort = {
+          ...sort,
+          createdAt: sortTime,
+        };
+      }
+
+      const totalCount = await this.dealModel.countDocuments({
+        deletedCheck: false,
+        dealStatus: DEALSTATUS.published,
+      });
+
+      const filteredCount = await this.dealModel.countDocuments({
+        deletedCheck: false,
+        dealStatus: DEALSTATUS.published,
+        ...matchFilter
+      });
+
+      const deals = await this.dealModel
+        .aggregate([
+          {
+            $match: {
+              deletedCheck: false,
+              dealStatus: DEALSTATUS.published,
+              ...matchFilter
+            },
+          },
+          {
+            $sort: sort
+          },
+          {
+            $addFields: {
+              id: '$_id',
+              mediaUrl: {
+                $slice: [
+                  {
+                    $filter: {
+                      input: '$mediaUrl',
+                      as: 'mediaUrl',
+                      cond: {
+                        $eq: ['$$mediaUrl.type', 'Image'],
+                      },
+                    },
+                  },
+                  1,
+                ],
+              },
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+              dealID: 0,
+              merchantMongoID: 0,
+              merchantID: 0,
+              subTitle: 0,
+              categoryName: 0,
+              subCategoryID: 0,
+              subCategory: 0,
+              subDeals: 0,
+              availableVouchers: 0,
+              aboutThisDeal: 0,
+              readMore: 0,
+              finePrints: 0,
+              netEarnings: 0,
+              isCollapsed: 0,
+              isDuplicate: 0,
+              totalReviews: 0,
+              maxRating: 0,
+              minRating: 0,
+              pageNumber: 0,
+              updatedAt: 0,
+              __v: 0,
+              endDate: 0,
+              startDate: 0,
+              reviewMediaUrl: 0
+            },
+          },
+        ])
+        .skip(parseInt(offset))
+        .limit(parseInt(limit));
+
+      return {
+        totalDeals: totalCount,
+        filteredDeals: filteredCount,
+        data: deals,
+      };
+    } catch (err) {
+      throw new HttpException(err, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async getTrendingDeals (offset, limit) {
+    try {
+      offset = parseInt(offset) < 0 ? 0 : offset;
+      limit = parseInt(limit) < 1 ? 10 : limit;
+
+      const totalCount = await this.dealModel.countDocuments({
+        deletedCheck: false,
+        dealStatus: DEALSTATUS.published,
+        availableVouchers: { $gt: 0 },
+        soldVouchers: { $gt: 0 },
+      });
+
+      const trendingDeals = await this.dealModel.aggregate([
+        {
+          $match: {
+            deletedCheck: false,
+            dealStatus: DEALSTATUS.published,
+            availableVouchers: { $gt: 0 },
+            soldVouchers: { $gt: 0 },
+          },
+        },
+        {
+          $addFields: {
+            id: '$_id',
+            added: { $add: ['$soldVouchers', '$availableVouchers'] },
+          },
+        },
+        {
+          $addFields: {
+            divided: { $divide: ['$soldVouchers', '$added'] },
+            percent: {
+              $multiply: ['$divided', 100],
+            },
+          },
+        },
+        {
+          $addFields: {
+            percent: {
+              $multiply: ['$divided', 100],
+            },
+          },
+        },
+        {
+          $addFields: {
+            mediaUrl: {
+              $slice: [
+                {
+                  $filter: {
+                    input: '$mediaUrl',
+                    as: 'mediaUrl',
+                    cond: {
+                      $eq: ['$$mediaUrl.type', 'Image'],
+                    },
+                  },
+                },
+                1,
+              ],
+            },
+          },
+        },
+        {
+          $project: {
+            _id: 0,
+            added: 0,
+            divided: 0,
+            dealID: 0,
+            merchantMongoID: 0,
+            merchantID: 0,
+            subTitle: 0,
+            categoryName: 0,
+            subCategoryID: 0,
+            subCategory: 0,
+            subDeals: 0,
+            availableVouchers: 0,
+            aboutThisDeal: 0,
+            readMore: 0,
+            finePrints: 0,
+            netEarnings: 0,
+            isCollapsed: 0,
+            isDuplicate: 0,
+            totalReviews: 0,
+            maxRating: 0,
+            minRating: 0,
+            pageNumber: 0,
+            updatedAt: 0,
+            __v: 0,
+            endDate: 0,
+            startDate: 0,
+            reviewMediaUrl: 0
+          },
+        },
+        {
+          $sort: {
+            percent: -1,
+          },
+        },
+      ])
+      .skip(parseInt(offset))
+      .limit(parseInt(limit));
+
+      return {
+        totalDeals: totalCount,
+        data: trendingDeals,
       };
     } catch (err) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
@@ -1944,6 +2321,7 @@ export class DealService {
               __v: 0,
               endDate: 0,
               startDate: 0,
+              reviewMediaUrl: 0
             },
           },
         ])

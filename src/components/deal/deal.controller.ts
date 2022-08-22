@@ -267,13 +267,75 @@ export class DealController {
     return this.dealService.getNearByDeals(lat, lng, distance, offset, limit);
   }
 
+  @ApiQuery({ name: 'categoryName', required: false })
+  @ApiQuery({ name: 'subCategoryName', required: false })
+  @ApiQuery({ name: 'fromPrice', required: false })
+  @ApiQuery({ name: 'toPrice', required: false })
+  @ApiQuery({ name: 'reviewRating', required: false })
   @Get('searchDeals')
   searchDeals(
     @Query('header') header: string = '',
+    @Query('categoryName') categoryName: string,
+    @Query('subCategoryName') subCategoryName: string,
+    @Query('fromPrice') fromPrice: number,
+    @Query('toPrice') toPrice: number,
+    @Query('reviewRating') reviewRating: number,
     @Query('offset') offset: number = 0,
     @Query('limit') limit: number = 10,
   ) {
-    return this.dealService.searchDeals(header, offset, limit);
+    return this.dealService.searchDeals(
+      header,
+      categoryName,
+      subCategoryName,
+      fromPrice,
+      toPrice,
+      reviewRating,
+      offset,
+      limit
+      );
+  }
+
+  @ApiQuery({ name: 'categoryName', required: false })
+  @ApiQuery({ name: 'subCategoryName', required: false })
+  @ApiQuery({ name: 'fromPrice', required: false })
+  @ApiQuery({ name: 'toPrice', required: false })
+  @ApiQuery({ name: 'reviewRating', required: false })
+  @ApiQuery({ name: 'price', enum: SORT, required: false })
+  @ApiQuery({ name: 'ratingSort', enum: SORT, required: false })
+  @ApiQuery({ name: 'createdAt', enum: SORT, required: false })
+  @Get('getDealsByCategories')
+  getDealsByCategories (  
+    @Query('categoryName') categoryName: string,
+    @Query('subCategoryName') subCategoryName: string,
+    @Query('fromPrice') fromPrice: number,
+    @Query('toPrice') toPrice: number,
+    @Query('reviewRating') reviewRating: number,
+    @Query('price') price: SORT,
+    @Query('ratingSort') ratingSort: SORT,
+    @Query('createdAt') createdAt: SORT,
+    @Query('offset') offset: number = 0,
+    @Query('limit') limit: number = 10,
+  ) {
+    return this.dealService.getDealsByCategories(
+      categoryName,
+      subCategoryName,
+      fromPrice,
+      toPrice,
+      reviewRating,
+      price,
+      ratingSort,
+      createdAt,
+      offset,
+      limit
+    );
+  }
+
+  @Get('getTrendingDeals')
+  getTrendingDeals (
+    @Query('offset') offset: number = 0,
+    @Query('limit') limit: number = 10,
+  ) {
+    return this.dealService.getTrendingDeals(offset, limit)
   }
 
   @Get('getSimilarDeals/:categoryName/:subCategoryName')
