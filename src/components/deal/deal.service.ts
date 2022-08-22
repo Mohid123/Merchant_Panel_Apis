@@ -123,11 +123,8 @@ export class DealService {
 
           if (el.voucherValidity > 0) {
             startTime = 0;
+            endTime = 0;
 
-            let today = new Date();
-            let tomorrow = new Date();
-            let newDay = tomorrow.setDate(today.getDate() + el.voucherValidity);
-            endTime = new Date(newDay).getTime();
           } else {
             startTime = new Date(el.voucherStartDate).getTime();
             endTime = new Date(el.voucherEndDate).getTime();
