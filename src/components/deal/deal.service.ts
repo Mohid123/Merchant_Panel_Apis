@@ -16,6 +16,8 @@ import { RATINGENUM } from 'src/enum/review/ratingValue.enum';
 import { UsersInterface } from 'src/interface/user/users.interface';
 import axios from 'axios';
 import { delay } from 'rxjs';
+import { ScheduleService } from '../schedule/schedule.service';
+import { Schedule } from 'src/interface/schedule/schedule.interface';
 
 @Injectable()
 export class DealService {
@@ -29,6 +31,8 @@ export class DealService {
     private readonly subCategoryModel: Model<SubCategoryInterface>,
     @InjectModel('User')
     private readonly _userModel: Model<UsersInterface>,
+    @InjectModel('Schedule') private _scheduleModel: Model<Schedule>,
+    private _scheduleService: ScheduleService,
   ) {}
 
   async generateVoucherId(sequenceName) {
@@ -328,6 +332,27 @@ export class DealService {
 
       if (updateDealDto.status) {
         deal.dealStatus = statuses[updateDealDto.status];
+
+        if (updateDealDto.status == 'Rejected') {
+          let scheduledDeal = await this._scheduleModel.findOne({
+            dealID: deal.dealID,
+            status: 0,
+          });
+
+          if (scheduledDeal) {
+            this._scheduleService.cancelJob(scheduledDeal.id);
+          }
+        }
+
+        if (updateDealDto.status == 'Scheduled') {
+          this._scheduleService.scheduleDeal({
+            scheduleDate: new Date(deal.startDate),
+            status: 0,
+            type: 'publishDeal',
+            dealID: deal.dealID,
+            deletedCheck: false,
+          });
+        }
       }
 
       let dealVouchers = 0;
@@ -490,53 +515,54 @@ export class DealService {
 
   async getDeal(id) {
     try {
-      const deal = await this.dealModel.aggregate([
-        {
-          $match: {
-            _id: id,
-            deletedCheck: false,
-            dealStatus: DEALSTATUS.published,
-          }
-        },
-        {
-          $lookup: {
-            from: 'users',
-            as: 'merchantDetails',
-            let: {
-              merchantMongoID: "$merchantMongoID"
+      const deal = await this.dealModel
+        .aggregate([
+          {
+            $match: {
+              _id: id,
+              deletedCheck: false,
+              dealStatus: DEALSTATUS.published,
             },
-            pipeline: [
-              {
-                $match: { 
-                  $expr: { $eq: ["$$merchantMongoID", "$_id"] },
-                } 
-              },
-              {
-                $project: {
-                  _id: 1,
-                  legalName: 1,
-                  totalReviews: 1,
-                  ratingsAverage: 1
-                },
-              },
-            ],
           },
-        },
-        {
-          $unwind: '$merchantDetails'
-        },
-        {
-          $addFields: {
-            id: '$_id'
-          }
-        },
-        {
-          $project: {
-            _id: 0
-          }
-        }
-      ])
-      .then((items) => items[0]);
+          {
+            $lookup: {
+              from: 'users',
+              as: 'merchantDetails',
+              let: {
+                merchantMongoID: '$merchantMongoID',
+              },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: { $eq: ['$$merchantMongoID', '$_id'] },
+                  },
+                },
+                {
+                  $project: {
+                    _id: 1,
+                    legalName: 1,
+                    totalReviews: 1,
+                    ratingsAverage: 1,
+                  },
+                },
+              ],
+            },
+          },
+          {
+            $unwind: '$merchantDetails',
+          },
+          {
+            $addFields: {
+              id: '$_id',
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+            },
+          },
+        ])
+        .then((items) => items[0]);
 
       if (!deal) {
         throw new HttpException('Deal not found!', HttpStatus.BAD_REQUEST);
@@ -1179,6 +1205,11 @@ export class DealService {
           dealStatus: DEALSTATUS.published,
           subDeals: { $elemMatch: { dealPrice: { $lt: price } } },
         });
+
+        if (price > 150) {
+          break;
+        }
+
         price = price + priceIncrease;
       } while (totalCount < 8);
 

@@ -19,6 +19,10 @@ import { LeadsModule } from './components/leads/leads.module';
 import { LocationModule } from './components/location/location.module';
 import { BlogModule } from './components/blog/blog.module';
 import { SubscribeModule } from './components/subscribe/subscribe.module';
+import { ScheduleModule } from './components/schedule/schedule.module';
+import { ScheduleService } from './components/schedule/schedule.service';
+import { ScheduleSchema } from './schema/schedule/schedule.schema';
+import { DealSchema } from './schema/deal/deal.schema';
 
 @Module({
   imports: [
@@ -28,6 +32,10 @@ import { SubscribeModule } from './components/subscribe/subscribe.module';
     }),
     MongooseModule.forRoot(process.env.MONGO_URI),
     AuthModule.forRoot(),
+    MongooseModule.forFeature([
+      { name: 'Schedule', schema: ScheduleSchema },
+      { name: 'Deal', schema: DealSchema },
+    ]),
     UsersModule,
     DealModule,
     CategoryModule,
@@ -43,8 +51,9 @@ import { SubscribeModule } from './components/subscribe/subscribe.module';
     BlogModule,
     SubscribeModule,
     UtilModule,
+    ScheduleModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, ScheduleService],
 })
 export class AppModule {}
