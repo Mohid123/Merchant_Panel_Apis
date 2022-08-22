@@ -214,11 +214,11 @@ let DealService = class DealService {
                 deal.voucherValidity = deal === null || deal === void 0 ? void 0 : deal.subDeals[0].voucherValidity;
                 deal.voucherStartDate = deal === null || deal === void 0 ? void 0 : deal.subDeals[0].voucherStartDate;
                 deal.voucherEndDate = deal === null || deal === void 0 ? void 0 : deal.subDeals[0].voucherEndDate;
-                deal.publishStartDate = deal === null || deal === void 0 ? void 0 : deal.startDate;
-                deal.publishEndDate = deal === null || deal === void 0 ? void 0 : deal.endDate;
-                deal.coverImageUrl = coverImageUrl;
-                deal.dealStatus = statuses[deal.dealStatus];
             }
+            deal.publishStartDate = deal === null || deal === void 0 ? void 0 : deal.startDate;
+            deal.publishEndDate = deal === null || deal === void 0 ? void 0 : deal.endDate;
+            deal.coverImageUrl = coverImageUrl;
+            deal.dealStatus = statuses[deal.dealStatus];
             deal === null || deal === void 0 ? true : delete deal.mediaUrl;
             deal === null || deal === void 0 ? true : delete deal.merchantMongoID;
             deal === null || deal === void 0 ? true : delete deal.categoryID;
