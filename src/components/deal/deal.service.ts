@@ -490,11 +490,54 @@ export class DealService {
 
   async getDeal(id) {
     try {
-      const deal = await this.dealModel.findOne({
-        _id: id,
-        deletedCheck: false,
-        dealStatus: DEALSTATUS.published,
-      });
+      const deal = await this.dealModel.aggregate([
+        {
+          $match: {
+            _id: id,
+            deletedCheck: false,
+            dealStatus: DEALSTATUS.published,
+          }
+        },
+        {
+          $lookup: {
+            from: 'users',
+            as: 'merchantDetails',
+            let: {
+              merchantMongoID: "$merchantMongoID"
+            },
+            pipeline: [
+              {
+                $match: { 
+                  $expr: { $eq: ["$$merchantMongoID", "$_id"] },
+                } 
+              },
+              {
+                $project: {
+                  _id: 1,
+                  legalName: 1,
+                  totalReviews: 1,
+                  ratingsAverage: 1
+                },
+              },
+            ],
+          },
+        },
+        {
+          $unwind: '$merchantDetails'
+        },
+        {
+          $addFields: {
+            id: '$_id'
+          }
+        },
+        {
+          $project: {
+            _id: 0
+          }
+        }
+      ])
+      .then((items) => items[0]);
+
       if (!deal) {
         throw new HttpException('Deal not found!', HttpStatus.BAD_REQUEST);
       }
