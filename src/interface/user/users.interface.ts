@@ -8,13 +8,13 @@ export interface businessHour {
 }
 
 export interface Gallery {
-  type: string,
-  captureFileURL: string,
-  path: string,
-  thumbnailURL: string,
-  thumbnailPath: string,
-  blurHash: string,
-  backgroundColorHex: string,
+  type: string;
+  captureFileURL: string;
+  path: string;
+  thumbnailURL: string;
+  thumbnailPath: string;
+  blurHash: string;
+  backgroundColorHex: string;
 }
 
 export interface UsersInterface {
@@ -64,6 +64,7 @@ export interface UsersInterface {
   soldDeals: number;
   countryCode: string;
   leadSource: string;
+  stripeCustomerID: string;
   ratingsAverage: number;
   totalReviews: number;
   maxRating: number;

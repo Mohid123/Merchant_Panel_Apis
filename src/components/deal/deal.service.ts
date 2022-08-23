@@ -83,9 +83,9 @@ export class DealService {
       }
 
       if (dealDto.startDate && dealDto.endDate) {
-        let stamp = new Date(dealDto.startDate).setUTCHours(0,0,0,0);
+        let stamp = new Date(dealDto.startDate).setUTCHours(0, 0, 0, 0);
         dealDto.startDate = stamp;
-        stamp = new Date(dealDto.endDate).setUTCHours(23,59,59,0);
+        stamp = new Date(dealDto.endDate).setUTCHours(23, 59, 59, 0);
         dealDto.endDate = stamp;
       }
       if (!savedDeal) {
@@ -113,8 +113,8 @@ export class DealService {
           let endTime;
           if (el.originalPrice !== 0 || el.dealPrice !== 0) {
             let calculateDiscountPercentage =
-            ((el.originalPrice - el.dealPrice) / el.originalPrice) * 100;
-          el.discountPercentage = calculateDiscountPercentage;
+              ((el.originalPrice - el.dealPrice) / el.originalPrice) * 100;
+            el.discountPercentage = calculateDiscountPercentage;
           } else if (el.originalPrice == 0 && el.dealPrice == 0) {
             el.discountPercentage = 0;
           }
@@ -128,7 +128,6 @@ export class DealService {
           if (el.voucherValidity > 0) {
             startTime = 0;
             endTime = 0;
-
           } else {
             startTime = new Date(el.voucherStartDate).getTime();
             endTime = new Date(el.voucherEndDate).getTime();
