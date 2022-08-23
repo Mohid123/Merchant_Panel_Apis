@@ -70,4 +70,5 @@ export interface UsersInterface {
   maxRating: number;
   minRating: number;
   isSubscribed: boolean;
+  popularCount: number;
 }

@@ -46,7 +46,7 @@ export class AuthController {
 
   @Post('signup')
   signup(@Body() signupDto: SignUpDTO) {
-    return this._authService.signupCustomer(signupDto);
+    return this._authService.signup(signupDto);
   }
 
   @Post('signupCustomer')
@@ -62,6 +62,11 @@ export class AuthController {
   @Post('/isEmailExists')
   isEmailExists(@Body() isEmailExistsDto: IsEmailExistsDTO) {
     return this._authService.isEmailExists(isEmailExistsDto.email);
+  }
+
+  @Post('/isEmailExistsForCustomerPanel')
+  isEmailExistsForCustomerPanel(@Body() isEmailExistsDto: IsEmailExistsDTO) {
+    return this._authService.isEmailExistsForCustomerPanel(isEmailExistsDto.email);
   }
 
   @Post('/sendOtp')
