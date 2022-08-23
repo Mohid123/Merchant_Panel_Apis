@@ -24,5 +24,8 @@ export class BuyNowDTO {
   subDealID: string;
 
   @ApiProperty()
+  affiliateID: string;
+
+  @ApiProperty()
   quantity: number;
 }

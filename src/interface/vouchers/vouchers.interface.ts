@@ -7,6 +7,7 @@ export interface VoucherInterface extends Document {
   dealHeader: string;
   dealID: string;
   merchantID: string;
+  affiliateID: string;
   merchantMongoID: string;
   customerID: string;
   amount: number;
@@ -15,5 +16,9 @@ export interface VoucherInterface extends Document {
   status: string;
   paymentStatus: string;
   boughtDate: number;
+  imageURL: object;
+  dealPrice: number;
+  originalPrice: number;
+  discountedPercentage: number;
   deletedCheck: boolean;
 }

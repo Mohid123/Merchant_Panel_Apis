@@ -1,6 +1,8 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { VOUCHERSTATUSENUM } from 'src/enum/voucher/voucherstatus.enum';
+import { UsersInterface } from 'src/interface/user/users.interface';
 import { VoucherInterface } from 'src/interface/vouchers/vouchers.interface';
 import { SORT } from '../../enum/sort/sort.enum';
 import { VoucherCounterInterface } from '../../interface/vouchers/vouchersCounter.interface';
@@ -12,6 +14,8 @@ export class VouchersService {
     private readonly voucherModel: Model<VoucherInterface>,
     @InjectModel('Counter')
     private readonly voucherCounterModel: Model<VoucherCounterInterface>,
+    @InjectModel('User')
+    private readonly userModel: Model<UsersInterface>,
   ) {}
 
   async generateVoucherId(sequenceName) {
@@ -302,7 +306,7 @@ export class VouchersService {
             $project: {
               _id: 0,
             },
-          }
+          },
         ])
         .skip(parseInt(offset))
         .limit(parseInt(limit));
@@ -314,6 +318,43 @@ export class VouchersService {
       };
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async redeemVoucher(voucherId) {
+    try {
+      const voucherErrors = {
+        Expired: 'Voucher Expired!',
+        Redeemed: 'Voucher already Reedemed!',
+        Refunded: 'Vocuher Refunded!',
+        'In Dispute': 'Voucher is in dispute!',
+      };
+
+      const voucher = await this.voucherModel.findOne({ voucherID: voucherId });
+
+      if (voucher) {
+        if (voucherErrors[voucher.status]) {
+          throw new Error(voucherErrors[voucher.status]);
+        }
+      }
+
+      const merchant = await this.userModel.findOne({
+        userID: voucher.merchantID,
+      });
+
+      await this.voucherModel.updateOne(
+        { voucherID: voucherId },
+        { status: VOUCHERSTATUSENUM.redeeemed },
+      );
+
+      await this.userModel.updateOne(
+        { userID: voucher.merchantID },
+        { redeemedVouchers: merchant.redeemedVouchers + 1 },
+      );
+
+      return { status: 'success', message: 'Voucher redeemed successfully' };
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 }

@@ -2627,7 +2627,21 @@ export class DealService implements OnModuleInit {
     try {
       const deal = await this.dealModel.findOne({ dealID: buyNowDto.dealID });
 
+      const merchant = await this._userModel.findOne({
+        userID: deal.merchantID,
+        deletedCheck: false,
+      });
+
       const customer = await this._userModel.findById(req.user.id);
+
+      // const affiliate = await this._userModel.findOne({
+      //   userID: buyNowDto.affiliateID,
+      //   deletedCheck: false,
+      // });
+
+      // if (!affiliate) {
+      //   throw new Error('Affiliate doesnot exist!');
+      // }
 
       const subDeal = deal.subDeals.find(
         (el) => el.subDealID == buyNowDto.subDealID,
@@ -2656,7 +2670,7 @@ export class DealService implements OnModuleInit {
       deal.soldVouchers = soldVouchers;
       deal.availableVouchers = dealVouchers - soldVouchers;
 
-      debugger;
+      let imageURL = {};
 
       let payment = (subDeal.dealPrice * buyNowDto.quantity).toString();
 
@@ -2678,6 +2692,14 @@ export class DealService implements OnModuleInit {
         req,
       );
 
+      deal?.mediaUrl.forEach((el) => {
+        if (el.type == 'Image' && Object.keys(imageURL).length === 0) {
+          imageURL = {
+            ...el,
+          };
+        }
+      });
+
       let voucherDto: any = {
         voucherHeader: subDeal.title,
         dealHeader: deal.dealHeader,
@@ -2685,7 +2707,12 @@ export class DealService implements OnModuleInit {
         amount: subDeal.dealPrice,
         status: VOUCHERSTATUSENUM.purchased,
         merchantID: deal.merchantID,
+        // affiliateID: buyNowDto.affiliateID,
         customerID: req.user.id,
+        imageURL,
+        dealPrice: subDeal.dealPrice,
+        originalPrice: subDeal.originalPrice,
+        discountedPercentage: subDeal.discountPercentage,
         deletedCheck: false,
       };
 
@@ -2702,6 +2729,11 @@ export class DealService implements OnModuleInit {
       );
 
       await this.dealModel.updateOne({ dealID: buyNowDto.dealID }, deal);
+
+      await this._userModel.updateOne(
+        { userID: deal.merchantID },
+        { purchasedVouchers: merchant.purchasedVouchers + buyNowDto.quantity },
+      );
 
       this.sendMail(emailDto);
 

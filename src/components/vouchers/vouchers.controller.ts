@@ -86,4 +86,9 @@ export class VouchersController {
   searchByVoucherId(@Param('voucherId') voucherId: number) {
     return this.voucherService.searchByVoucherId(voucherId);
   }
+
+  @Get('redeemVoucher/:voucherId')
+  redeemVoucher(@Param('voucherId') voucherId: string) {
+    return this.voucherService.redeemVoucher(voucherId);
+  }
 }

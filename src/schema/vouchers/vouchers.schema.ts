@@ -18,6 +18,10 @@ export const VoucherSchema = new mongoose.Schema(
     status: { type: String, default: '' },
     paymentStatus: { type: String, default: 'In process' },
     boughtDate: { type: Number },
+    imageURL: { type: Object },
+    dealPrice: { type: Number },
+    originalPrice: { type: Number },
+    discountedPercentage: { type: Number },
     deletedCheck: { type: Boolean, default: false },
   },
   {
