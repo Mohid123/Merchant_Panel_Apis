@@ -18,6 +18,7 @@ import { cpuUsage } from 'process';
 import { USERSTATUS } from 'src/enum/user/userstatus.enum';
 import { VoucherCounterInterface } from 'src/interface/vouchers/vouchersCounter.interface';
 import { LeadInterface } from 'src/interface/lead/lead.interface';
+import { USERROLE } from 'src/enum/user/userrole.enum';
 
 var htmlencode = require('htmlencode');
 var generator = require('generate-password');
@@ -254,14 +255,26 @@ export class AuthService {
   async isEmailExists(email) {
     const user = await this._usersService.findOne({
       email: email?.toLowerCase(),
-      deletedCheck: false
+      deletedCheck: false,
+      role: USERROLE.merchant
     });
     const lead = await this._leadModel.findOne({
       email:email?.toLowerCase(),
-      deletedCheck: false
+      deletedCheck: false,
+      role: USERROLE.merchant
     })
 
     return user || lead ? true : false;
+  }
+
+  async isEmailExistsForCustomerPanel (email) {
+    const user = await this._usersService.findOne({
+      email: email?.toLowerCase(),
+      deletedCheck: false,
+      role: USERROLE.customer
+    });
+
+    return user ? true : false;
   }
 
   async sendOtp(otpEmailDto) {

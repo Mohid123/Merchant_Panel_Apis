@@ -82,8 +82,14 @@ export class VouchersController {
     );
   }
 
-  @Get('searchByVoucherId/:voucherId')
-  searchByVoucherId(@Param('voucherId') voucherId: number) {
-    return this.voucherService.searchByVoucherId(voucherId);
+  @ApiQuery({ name: 'voucherId', required: false })
+  @Get('searchByVoucherId/:merchantID')
+  searchByVoucherId(
+    @Param('merchantID') merchantID: string,
+    @Query('voucherId') voucherId: string = '',
+    @Query('offset') offset: number = 0,
+    @Query('limit') limit: number = 10,
+    ) {
+    return this.voucherService.searchByVoucherId(merchantID, voucherId, offset, limit);
   }
 }
