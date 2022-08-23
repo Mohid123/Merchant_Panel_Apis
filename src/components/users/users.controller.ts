@@ -36,6 +36,8 @@ export class UsersController {
     return this._usersService.addUser(usersDto);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @Post('comparePassword/:userID')
   comparePassword (
     @Param('userID') userID: string,
