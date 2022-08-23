@@ -1,4 +1,9 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  OnModuleInit,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { DEALSTATUS } from '../../enum/deal/dealstatus.enum';
@@ -18,9 +23,18 @@ import axios from 'axios';
 import { delay } from 'rxjs';
 import { ScheduleService } from '../schedule/schedule.service';
 import { Schedule } from 'src/interface/schedule/schedule.interface';
+import { StripePaymentDTO } from 'src/dto/stripe/stripe.dto';
+import { StripeService } from '../stripe/stripe.service';
+import { VoucherDto } from 'src/dto/vouchers/vouchers.dto';
+import { VOUCHERSTATUSENUM } from 'src/enum/voucher/voucherstatus.enum';
+import { VouchersService } from '../vouchers/vouchers.service';
+import * as nodemailer from 'nodemailer';
+import { EmailDTO } from 'src/dto/email/email.dto';
+import { getEmailHTML } from './email/emailHtml';
+let transporter;
 
 @Injectable()
-export class DealService {
+export class DealService implements OnModuleInit {
   constructor(
     @InjectModel('Deal') private readonly dealModel: Model<DealInterface>,
     @InjectModel('Category')
@@ -33,7 +47,22 @@ export class DealService {
     private readonly _userModel: Model<UsersInterface>,
     @InjectModel('Schedule') private _scheduleModel: Model<Schedule>,
     private _scheduleService: ScheduleService,
+    private _stripeService: StripeService,
+    private _voucherService: VouchersService,
   ) {}
+
+  onModuleInit() {
+    transporter = nodemailer.createTransport({
+      // host: 'boostingthemovement.com',
+      // port: 465,
+      // secure: true,
+      service: 'Gmail',
+      auth: {
+        user: 'noreplydivideals@gmail.com',
+        pass: 'eyccuiqvdskyaknn',
+      },
+    });
+  }
 
   async generateVoucherId(sequenceName) {
     const sequenceDocument = await this.voucherCounterModel.findByIdAndUpdate(
@@ -1151,7 +1180,7 @@ export class DealService {
               __v: 0,
               endDate: 0,
               startDate: 0,
-              reviewMediaUrl: 0
+              reviewMediaUrl: 0,
             },
           },
         ])
@@ -1278,7 +1307,7 @@ export class DealService {
               __v: 0,
               endDate: 0,
               startDate: 0,
-              reviewMediaUrl: 0
+              reviewMediaUrl: 0,
             },
           },
         ])
@@ -1362,7 +1391,7 @@ export class DealService {
               __v: 0,
               endDate: 0,
               startDate: 0,
-              reviewMediaUrl: 0
+              reviewMediaUrl: 0,
             },
           },
         ])
@@ -1463,7 +1492,7 @@ export class DealService {
               __v: 0,
               endDate: 0,
               startDate: 0,
-              reviewMediaUrl: 0
+              reviewMediaUrl: 0,
             },
           },
         ])
@@ -1569,7 +1598,7 @@ export class DealService {
               __v: 0,
               endDate: 0,
               startDate: 0,
-              reviewMediaUrl: 0
+              reviewMediaUrl: 0,
             },
           },
           {
@@ -1652,7 +1681,7 @@ export class DealService {
               __v: 0,
               endDate: 0,
               startDate: 0,
-              reviewMediaUrl: 0
+              reviewMediaUrl: 0,
             },
           },
           {
@@ -1742,7 +1771,7 @@ export class DealService {
               __v: 0,
               endDate: 0,
               startDate: 0,
-              reviewMediaUrl: 0
+              reviewMediaUrl: 0,
             },
           },
         ])
@@ -1825,7 +1854,7 @@ export class DealService {
     toPrice,
     reviewRating,
     offset,
-    limit
+    limit,
   ) {
     try {
       offset = parseInt(offset) < 0 ? 0 : offset;
@@ -1876,8 +1905,8 @@ export class DealService {
           minDealPrice: {
             $gte: minValue,
           },
-        }
-       } else if (toPrice) {
+        };
+      } else if (toPrice) {
         matchFilter = {
           ...matchFilter,
           minDealPrice: {
@@ -1906,7 +1935,7 @@ export class DealService {
         deletedCheck: false,
         dealStatus: DEALSTATUS.published,
         ...filters,
-        ...matchFilter
+        ...matchFilter,
       });
 
       const deals = await this.dealModel
@@ -1916,7 +1945,7 @@ export class DealService {
               deletedCheck: false,
               dealStatus: DEALSTATUS.published,
               ...filters,
-              ...matchFilter
+              ...matchFilter,
             },
           },
           {
@@ -1969,7 +1998,7 @@ export class DealService {
               __v: 0,
               endDate: 0,
               startDate: 0,
-              reviewMediaUrl: 0
+              reviewMediaUrl: 0,
             },
           },
         ])
@@ -1986,7 +2015,7 @@ export class DealService {
     }
   }
 
-  async getDealsByCategories (
+  async getDealsByCategories(
     categoryName,
     subCategoryName,
     fromPrice,
@@ -1996,7 +2025,7 @@ export class DealService {
     ratingSort,
     createdAt,
     offset,
-    limit
+    limit,
   ) {
     try {
       offset = parseInt(offset) < 0 ? 0 : offset;
@@ -2035,8 +2064,8 @@ export class DealService {
           minDealPrice: {
             $gte: minValue,
           },
-        }
-       } else if (toPrice) {
+        };
+      } else if (toPrice) {
         matchFilter = {
           ...matchFilter,
           minDealPrice: {
@@ -2093,7 +2122,7 @@ export class DealService {
       const filteredCount = await this.dealModel.countDocuments({
         deletedCheck: false,
         dealStatus: DEALSTATUS.published,
-        ...matchFilter
+        ...matchFilter,
       });
 
       const deals = await this.dealModel
@@ -2102,11 +2131,11 @@ export class DealService {
             $match: {
               deletedCheck: false,
               dealStatus: DEALSTATUS.published,
-              ...matchFilter
+              ...matchFilter,
             },
           },
           {
-            $sort: sort
+            $sort: sort,
           },
           {
             $addFields: {
@@ -2153,7 +2182,7 @@ export class DealService {
               __v: 0,
               endDate: 0,
               startDate: 0,
-              reviewMediaUrl: 0
+              reviewMediaUrl: 0,
             },
           },
         ])
@@ -2170,7 +2199,7 @@ export class DealService {
     }
   }
 
-  async getTrendingDeals (offset, limit) {
+  async getTrendingDeals(offset, limit) {
     try {
       offset = parseInt(offset) < 0 ? 0 : offset;
       limit = parseInt(limit) < 1 ? 10 : limit;
@@ -2182,93 +2211,94 @@ export class DealService {
         soldVouchers: { $gt: 0 },
       });
 
-      const trendingDeals = await this.dealModel.aggregate([
-        {
-          $match: {
-            deletedCheck: false,
-            dealStatus: DEALSTATUS.published,
-            availableVouchers: { $gt: 0 },
-            soldVouchers: { $gt: 0 },
-          },
-        },
-        {
-          $addFields: {
-            id: '$_id',
-            added: { $add: ['$soldVouchers', '$availableVouchers'] },
-          },
-        },
-        {
-          $addFields: {
-            divided: { $divide: ['$soldVouchers', '$added'] },
-            percent: {
-              $multiply: ['$divided', 100],
+      const trendingDeals = await this.dealModel
+        .aggregate([
+          {
+            $match: {
+              deletedCheck: false,
+              dealStatus: DEALSTATUS.published,
+              availableVouchers: { $gt: 0 },
+              soldVouchers: { $gt: 0 },
             },
           },
-        },
-        {
-          $addFields: {
-            percent: {
-              $multiply: ['$divided', 100],
+          {
+            $addFields: {
+              id: '$_id',
+              added: { $add: ['$soldVouchers', '$availableVouchers'] },
             },
           },
-        },
-        {
-          $addFields: {
-            mediaUrl: {
-              $slice: [
-                {
-                  $filter: {
-                    input: '$mediaUrl',
-                    as: 'mediaUrl',
-                    cond: {
-                      $eq: ['$$mediaUrl.type', 'Image'],
+          {
+            $addFields: {
+              divided: { $divide: ['$soldVouchers', '$added'] },
+              percent: {
+                $multiply: ['$divided', 100],
+              },
+            },
+          },
+          {
+            $addFields: {
+              percent: {
+                $multiply: ['$divided', 100],
+              },
+            },
+          },
+          {
+            $addFields: {
+              mediaUrl: {
+                $slice: [
+                  {
+                    $filter: {
+                      input: '$mediaUrl',
+                      as: 'mediaUrl',
+                      cond: {
+                        $eq: ['$$mediaUrl.type', 'Image'],
+                      },
                     },
                   },
-                },
-                1,
-              ],
+                  1,
+                ],
+              },
             },
           },
-        },
-        {
-          $project: {
-            _id: 0,
-            added: 0,
-            divided: 0,
-            dealID: 0,
-            merchantMongoID: 0,
-            merchantID: 0,
-            subTitle: 0,
-            categoryName: 0,
-            subCategoryID: 0,
-            subCategory: 0,
-            subDeals: 0,
-            availableVouchers: 0,
-            aboutThisDeal: 0,
-            readMore: 0,
-            finePrints: 0,
-            netEarnings: 0,
-            isCollapsed: 0,
-            isDuplicate: 0,
-            totalReviews: 0,
-            maxRating: 0,
-            minRating: 0,
-            pageNumber: 0,
-            updatedAt: 0,
-            __v: 0,
-            endDate: 0,
-            startDate: 0,
-            reviewMediaUrl: 0
+          {
+            $project: {
+              _id: 0,
+              added: 0,
+              divided: 0,
+              dealID: 0,
+              merchantMongoID: 0,
+              merchantID: 0,
+              subTitle: 0,
+              categoryName: 0,
+              subCategoryID: 0,
+              subCategory: 0,
+              subDeals: 0,
+              availableVouchers: 0,
+              aboutThisDeal: 0,
+              readMore: 0,
+              finePrints: 0,
+              netEarnings: 0,
+              isCollapsed: 0,
+              isDuplicate: 0,
+              totalReviews: 0,
+              maxRating: 0,
+              minRating: 0,
+              pageNumber: 0,
+              updatedAt: 0,
+              __v: 0,
+              endDate: 0,
+              startDate: 0,
+              reviewMediaUrl: 0,
+            },
           },
-        },
-        {
-          $sort: {
-            percent: -1,
+          {
+            $sort: {
+              percent: -1,
+            },
           },
-        },
-      ])
-      .skip(parseInt(offset))
-      .limit(parseInt(limit));
+        ])
+        .skip(parseInt(offset))
+        .limit(parseInt(limit));
 
       return {
         totalDeals: totalCount,
@@ -2351,7 +2381,7 @@ export class DealService {
               __v: 0,
               endDate: 0,
               startDate: 0,
-              reviewMediaUrl: 0
+              reviewMediaUrl: 0,
             },
           },
         ])
@@ -2591,5 +2621,113 @@ export class DealService {
         console.log('deals changed', deal.id);
       }
     }
+  }
+
+  async buyNow(buyNowDto, req) {
+    try {
+      const deal = await this.dealModel.findOne({ dealID: buyNowDto.dealID });
+
+      const customer = await this._userModel.findById(req.user.id);
+
+      const subDeal = deal.subDeals.find(
+        (el) => el.subDealID == buyNowDto.subDealID,
+      );
+
+      if (
+        subDeal.numberOfVouchers - subDeal.soldVouchers <
+        buyNowDto.quantity
+      ) {
+        throw new Error('Insufficent Quantity of deal present!');
+      }
+
+      let dealVouchers = 0,
+        soldVouchers = 0;
+      deal.subDeals = deal.subDeals.map((element) => {
+        if (buyNowDto.subDealID === element['subDealID']) {
+          element.soldVouchers += buyNowDto.quantity;
+        }
+
+        dealVouchers += element.numberOfVouchers;
+        soldVouchers += element.soldVouchers;
+
+        return element;
+      });
+
+      deal.soldVouchers = soldVouchers;
+      deal.availableVouchers = dealVouchers - soldVouchers;
+
+      debugger;
+
+      let payment = (subDeal.dealPrice * buyNowDto.quantity).toString();
+
+      let description = `Customer with id ${req.user.id} and email address ${customer.email} is buying ${buyNowDto.quantity} vouchers of sub deal ${subDeal.title}`;
+
+      let userId = req.user.id;
+
+      let card = buyNowDto.card;
+
+      let stripePaymentDto: StripePaymentDTO = {
+        card,
+        payment,
+        description,
+        userId,
+      };
+
+      const stripeResponse: any = await this._stripeService.checkout(
+        stripePaymentDto,
+        req,
+      );
+
+      let voucherDto: any = {
+        voucherHeader: subDeal.title,
+        dealHeader: deal.dealHeader,
+        dealID: deal.dealID,
+        amount: subDeal.dealPrice,
+        status: VOUCHERSTATUSENUM.purchased,
+        merchantID: deal.merchantID,
+        customerID: req.user.id,
+        deletedCheck: false,
+      };
+
+      let vouchers: any = [];
+      for (let i = 0; i < buyNowDto.quantity; i++) {
+        vouchers.push = this._voucherService.createVoucher(voucherDto);
+      }
+      await Promise.all(vouchers);
+
+      const emailDto = getEmailHTML(
+        customer.email,
+        customer.firstName,
+        customer.lastName,
+      );
+
+      await this.dealModel.updateOne({ dealID: buyNowDto.dealID }, deal);
+
+      this.sendMail(emailDto);
+
+      return { message: 'Purchase Successfull!' };
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_GATEWAY);
+    }
+  }
+
+  async sendMail(emailDto: EmailDTO) {
+    // create reusable transporter object using the default SMTP transport
+
+    // send mail with defined transport object
+    var mailOptions = {
+      from: emailDto.from,
+      to: emailDto.to,
+      subject: emailDto.subject,
+      text: emailDto.text,
+      html: emailDto.html,
+    };
+    transporter.sendMail(mailOptions, function (error, response) {
+      if (error) {
+        console.log(error);
+      } else {
+        // res.redirect('/');
+      }
+    });
   }
 }
