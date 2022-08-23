@@ -11,6 +11,7 @@ import {
 import { ApiBearerAuth, ApiTags, ApiQuery } from '@nestjs/swagger';
 import { ResetPasswordDto } from 'src/dto/resetPasswordDto/resetPassword.dto';
 import { ApproveMerchantDTO } from 'src/dto/user/approveMerchant.dto';
+import { IsPasswordExistsDto } from 'src/dto/user/is-password-exists.dto';
 import { UpdatePasswordDto } from 'src/dto/user/updatepassword.dto';
 import { VoucherPinCodeDto } from 'src/dto/user/voucherpincode.dto';
 import { USERSTATUS } from 'src/enum/user/userstatus.enum';
@@ -33,6 +34,14 @@ export class UsersController {
   @Post('addUser')
   addUser(@Body() usersDto: UsersDto) {
     return this._usersService.addUser(usersDto);
+  }
+
+  @Post('comparePassword/:userID')
+  comparePassword (
+    @Param('userID') userID: string,
+    @Body() isPasswordExistsDto: IsPasswordExistsDto
+  ) {
+    return this._usersService.comparePassword(userID, isPasswordExistsDto)
   }
 
   @UseGuards(JwtAuthGuard)

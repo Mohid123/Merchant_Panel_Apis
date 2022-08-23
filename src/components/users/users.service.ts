@@ -90,13 +90,31 @@ export class UsersService {
     return user;
   }
 
+  async comparePassword (userID, isPasswordExistsDto) {
+    try {
+      let user = await this._userModel.findOne({ _id: userID });
+      if (!user) {
+        throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
+      }
+
+      const comaprePasswords = await bcrypt.compare(
+        isPasswordExistsDto.password,
+        user.password,
+      );
+
+      return comaprePasswords ? true : false;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
   async changePassword(id, updatepasswordDto) {
     let user = await this._userModel.findOne({ _id: id });
     if (!user) {
       throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
     }
 
-    const comaprePasswords = bcrypt.compare(
+    const comaprePasswords = await bcrypt.compare(
       updatepasswordDto.password,
       user.password,
     );
