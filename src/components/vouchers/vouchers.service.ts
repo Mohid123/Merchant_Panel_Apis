@@ -49,13 +49,53 @@ export class VouchersService {
     }
   }
 
-  async searchByVoucherId(voucherId) {
+  async searchByVoucherId(merchantID ,voucherId, offset, limit) {
     try {
-      const voucher = await this.voucherModel.find({ voucherID: voucherId });
-      if (!voucher) {
-        throw new HttpException('No record Found', HttpStatus.NOT_FOUND);
+      offset = parseInt(offset) < 0 ? 0 : offset;
+      limit = parseInt(limit) < 1 ? 10 : limit;
+
+      let filters = {};
+
+      if (voucherId.trim().length) {
+        var query = new RegExp(`${voucherId}`, 'i');
+        filters = {
+          ...filters,
+          voucherID: query,
+        };
       }
-      return voucher;
+
+      const totalCount = await this.voucherModel.countDocuments({
+        merchantMongoID: merchantID,
+        deletedCheck: false,
+        ...filters,
+      })
+
+      const vouchers = await this.voucherModel.aggregate([
+        {
+          $match: {
+            merchantMongoID: merchantID,
+            deletedCheck: false,
+            ...filters,
+          }
+        },
+        {
+          $addFields: {
+            id: '$_id'
+          }
+        },
+        {
+          $project: {
+            _id: 0
+          }
+        }
+      ])
+      .skip(parseInt(offset))
+      .limit(parseInt(limit))
+
+      return {
+        totalCount: totalCount,
+        data: vouchers
+      }
     } catch (err) {
       throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
