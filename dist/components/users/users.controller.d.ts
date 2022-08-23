@@ -1,6 +1,7 @@
 /// <reference types="mongoose" />
 import { ResetPasswordDto } from 'src/dto/resetPasswordDto/resetPassword.dto';
 import { ApproveMerchantDTO } from 'src/dto/user/approveMerchant.dto';
+import { IsPasswordExistsDto } from 'src/dto/user/is-password-exists.dto';
 import { UpdatePasswordDto } from 'src/dto/user/updatepassword.dto';
 import { VoucherPinCodeDto } from 'src/dto/user/voucherpincode.dto';
 import { USERSTATUS } from 'src/enum/user/userstatus.enum';
@@ -15,6 +16,7 @@ export declare class UsersController {
     addUser(usersDto: UsersDto): Promise<import("mongoose").Document<unknown, any, import("../../interface/user/users.interface").UsersInterface> & import("../../interface/user/users.interface").UsersInterface & {
         _id: string;
     }>;
+    comparePassword(userID: string, isPasswordExistsDto: IsPasswordExistsDto): Promise<boolean>;
     changePassword(id: string, updatepasswordDto: UpdatePasswordDto): Promise<import("mongodb").UpdateResult>;
     completeKYC(merchantID: string, kycDto: KycDto): Promise<{
         message: string;

@@ -16,6 +16,7 @@ export declare class UsersService {
     addUser(usersDto: any): Promise<import("mongoose").Document<unknown, any, UsersInterface> & UsersInterface & {
         _id: string;
     }>;
+    comparePassword(userID: any, isPasswordExistsDto: any): Promise<boolean>;
     changePassword(id: any, updatepasswordDto: any): Promise<import("mongodb").UpdateResult>;
     validateVatNumber(vatNumber: any): Promise<any>;
     completeKYC(merchantID: any, kycDto: any): Promise<{

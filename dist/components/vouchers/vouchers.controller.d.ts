@@ -15,7 +15,8 @@ export declare class VouchersController {
         filteredCount: number;
         data: any[];
     }>;
-    searchByVoucherId(voucherId: number): Promise<(import("../../interface/vouchers/vouchers.interface").VoucherInterface & {
-        _id: string;
-    })[]>;
+    searchByVoucherId(merchantID: string, voucherId?: string, offset?: number, limit?: number): Promise<{
+        totalCount: number;
+        data: any[];
+    }>;
 }

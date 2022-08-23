@@ -20,6 +20,7 @@ const mongoose_2 = require("mongoose");
 const bcrypt = require("bcrypt");
 const nodemailer = require("nodemailer");
 const userstatus_enum_1 = require("../../enum/user/userstatus.enum");
+const userrole_enum_1 = require("../../enum/user/userrole.enum");
 var htmlencode = require('htmlencode');
 var generator = require('generate-password');
 var otpGenerator = require('otp-generator');
@@ -198,13 +199,23 @@ let AuthService = class AuthService {
     async isEmailExists(email) {
         const user = await this._usersService.findOne({
             email: email === null || email === void 0 ? void 0 : email.toLowerCase(),
-            deletedCheck: false
+            deletedCheck: false,
+            role: userrole_enum_1.USERROLE.merchant
         });
         const lead = await this._leadModel.findOne({
             email: email === null || email === void 0 ? void 0 : email.toLowerCase(),
-            deletedCheck: false
+            deletedCheck: false,
+            role: userrole_enum_1.USERROLE.merchant
         });
         return user || lead ? true : false;
+    }
+    async isEmailExistsForCustomerPanel(email) {
+        const user = await this._usersService.findOne({
+            email: email === null || email === void 0 ? void 0 : email.toLowerCase(),
+            deletedCheck: false,
+            role: userrole_enum_1.USERROLE.customer
+        });
+        return user ? true : false;
     }
     async sendOtp(otpEmailDto) {
         var _a;

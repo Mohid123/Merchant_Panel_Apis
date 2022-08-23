@@ -17,6 +17,7 @@ const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const resetPassword_dto_1 = require("../../dto/resetPasswordDto/resetPassword.dto");
 const approveMerchant_dto_1 = require("../../dto/user/approveMerchant.dto");
+const is_password_exists_dto_1 = require("../../dto/user/is-password-exists.dto");
 const updatepassword_dto_1 = require("../../dto/user/updatepassword.dto");
 const voucherpincode_dto_1 = require("../../dto/user/voucherpincode.dto");
 const userstatus_enum_1 = require("../../enum/user/userstatus.enum");
@@ -33,6 +34,9 @@ let UsersController = class UsersController {
     }
     addUser(usersDto) {
         return this._usersService.addUser(usersDto);
+    }
+    comparePassword(userID, isPasswordExistsDto) {
+        return this._usersService.comparePassword(userID, isPasswordExistsDto);
     }
     changePassword(id, updatepasswordDto) {
         return this._usersService.changePassword(id, updatepasswordDto);
@@ -86,6 +90,16 @@ __decorate([
     __metadata("design:paramtypes", [users_dto_1.UsersDto]),
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "addUser", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.Post)('comparePassword/:userID'),
+    __param(0, (0, common_1.Param)('userID')),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, is_password_exists_dto_1.IsPasswordExistsDto]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "comparePassword", null);
 __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, swagger_1.ApiBearerAuth)(),

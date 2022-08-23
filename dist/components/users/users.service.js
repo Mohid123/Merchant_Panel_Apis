@@ -63,12 +63,25 @@ let UsersService = class UsersService {
         const user = new this._userModel(usersDto).save();
         return user;
     }
+    async comparePassword(userID, isPasswordExistsDto) {
+        try {
+            let user = await this._userModel.findOne({ _id: userID });
+            if (!user) {
+                throw new common_1.HttpException('Unauthorized', common_1.HttpStatus.UNAUTHORIZED);
+            }
+            const comaprePasswords = await bcrypt.compare(isPasswordExistsDto.password, user.password);
+            return comaprePasswords ? true : false;
+        }
+        catch (err) {
+            throw new common_1.HttpException(err.message, common_1.HttpStatus.BAD_REQUEST);
+        }
+    }
     async changePassword(id, updatepasswordDto) {
         let user = await this._userModel.findOne({ _id: id });
         if (!user) {
             throw new common_1.HttpException('Unauthorized', common_1.HttpStatus.UNAUTHORIZED);
         }
-        const comaprePasswords = bcrypt.compare(updatepasswordDto.password, user.password);
+        const comaprePasswords = await bcrypt.compare(updatepasswordDto.password, user.password);
         if (!comaprePasswords) {
             throw new common_1.UnauthorizedException('Incorrect password!');
         }

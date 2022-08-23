@@ -33,8 +33,8 @@ let VouchersController = class VouchersController {
     getAllVouchers(merchantID, deal, voucher, amount, fee, net, status, paymentStatus, dateFrom, dateTo, voucherID = '', dealHeader = '', voucherHeader = '', voucherStatus = '', invoiceStatus = '', offset = 0, limit = 10, multipleVouchersDto) {
         return this.voucherService.getAllVouchersByMerchantID(deal, voucher, amount, fee, net, status, paymentStatus, dateFrom, dateTo, merchantID, voucherID, dealHeader, voucherHeader, voucherStatus, invoiceStatus, offset, limit, multipleVouchersDto);
     }
-    searchByVoucherId(voucherId) {
-        return this.voucherService.searchByVoucherId(voucherId);
+    searchByVoucherId(merchantID, voucherId = '', offset = 0, limit = 10) {
+        return this.voucherService.searchByVoucherId(merchantID, voucherId, offset, limit);
     }
 };
 __decorate([
@@ -79,10 +79,14 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], VouchersController.prototype, "getAllVouchers", null);
 __decorate([
-    (0, common_1.Get)('searchByVoucherId/:voucherId'),
-    __param(0, (0, common_1.Param)('voucherId')),
+    (0, swagger_1.ApiQuery)({ name: 'voucherId', required: false }),
+    (0, common_1.Get)('searchByVoucherId/:merchantID'),
+    __param(0, (0, common_1.Param)('merchantID')),
+    __param(1, (0, common_1.Query)('voucherId')),
+    __param(2, (0, common_1.Query)('offset')),
+    __param(3, (0, common_1.Query)('limit')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Number]),
+    __metadata("design:paramtypes", [String, String, Number, Number]),
     __metadata("design:returntype", void 0)
 ], VouchersController.prototype, "searchByVoucherId", null);
 VouchersController = __decorate([

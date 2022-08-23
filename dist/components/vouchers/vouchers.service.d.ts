@@ -9,9 +9,10 @@ export declare class VouchersService {
     createVoucher(voucherDto: any): Promise<VoucherInterface & {
         _id: string;
     }>;
-    searchByVoucherId(voucherId: any): Promise<(VoucherInterface & {
-        _id: string;
-    })[]>;
+    searchByVoucherId(merchantID: any, voucherId: any, offset: any, limit: any): Promise<{
+        totalCount: number;
+        data: any[];
+    }>;
     getAllVouchersByMerchantID(deal: any, voucher: any, amount: any, fee: any, net: any, status: any, paymentStatus: any, dateFrom: any, dateTo: any, merchantId: any, voucherID: any, dealHeader: any, voucherHeader: any, voucherStatus: any, invoiceStatus: any, offset: any, limit: any, multipleVouchersDto: any): Promise<{
         totalCount: number;
         filteredCount: number;

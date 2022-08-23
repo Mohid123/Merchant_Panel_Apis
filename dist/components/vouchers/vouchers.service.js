@@ -43,13 +43,37 @@ let VouchersService = class VouchersService {
             throw new common_1.HttpException(error.message, common_1.HttpStatus.BAD_REQUEST);
         }
     }
-    async searchByVoucherId(voucherId) {
+    async searchByVoucherId(merchantID, voucherId, offset, limit) {
         try {
-            const voucher = await this.voucherModel.find({ voucherID: voucherId });
-            if (!voucher) {
-                throw new common_1.HttpException('No record Found', common_1.HttpStatus.NOT_FOUND);
+            offset = parseInt(offset) < 0 ? 0 : offset;
+            limit = parseInt(limit) < 1 ? 10 : limit;
+            let filters = {};
+            if (voucherId.trim().length) {
+                var query = new RegExp(`${voucherId}`, 'i');
+                filters = Object.assign(Object.assign({}, filters), { voucherID: query });
             }
-            return voucher;
+            const totalCount = await this.voucherModel.countDocuments(Object.assign({ merchantMongoID: merchantID, deletedCheck: false }, filters));
+            const vouchers = await this.voucherModel.aggregate([
+                {
+                    $match: Object.assign({ merchantMongoID: merchantID, deletedCheck: false }, filters)
+                },
+                {
+                    $addFields: {
+                        id: '$_id'
+                    }
+                },
+                {
+                    $project: {
+                        _id: 0
+                    }
+                }
+            ])
+                .skip(parseInt(offset))
+                .limit(parseInt(limit));
+            return {
+                totalCount: totalCount,
+                data: vouchers
+            };
         }
         catch (err) {
             throw new common_1.HttpException(err.message, common_1.HttpStatus.BAD_REQUEST);
