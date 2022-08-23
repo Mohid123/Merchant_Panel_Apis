@@ -228,7 +228,12 @@ export class AuthService {
 
     signupUserDto.password = hashedPassword;
 
-    return await new this._usersService(signupUserDto).save();
+    let newUser = await new this._usersService(signupUserDto).save();
+    newUser = JSON.parse(JSON.stringify(newUser));
+
+    const token = this.generateToken(newUser);
+
+    return { newUser, token: token.access_token };
   }
 
   async sendMail(emailDto: EmailDTO) {
