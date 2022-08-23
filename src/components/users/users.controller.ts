@@ -13,6 +13,7 @@ import { ResetPasswordDto } from 'src/dto/resetPasswordDto/resetPassword.dto';
 import { ApproveMerchantDTO } from 'src/dto/user/approveMerchant.dto';
 import { UpdatePasswordDto } from 'src/dto/user/updatepassword.dto';
 import { VoucherPinCodeDto } from 'src/dto/user/voucherpincode.dto';
+import { SORT } from 'src/enum/sort/sort.enum';
 import { USERSTATUS } from 'src/enum/user/userstatus.enum';
 import { KycDto } from '../../dto/user/kyc.dto';
 import { UpdateHoursDto } from '../../dto/user/updatehours.dto';
@@ -112,6 +113,42 @@ export class UsersController {
     @Query('limit') limit: number = 10,
   ) {
     return this._usersService.getAllUsers(offset, limit);
+  }
+
+  @ApiQuery({ name: 'searchAffiliates', required: false })
+  @ApiQuery({ name: 'sortAffiliates', enum: SORT, required: false })
+  @ApiQuery({ name: 'categories', required: false })
+  @Get('searchAllAffiliates')
+  searchAllAffiliates (
+    @Query('searchAffiliates') searchAffiliates: string = '',
+    @Query('categories') categories: string = '',
+    @Query('sortAffiliates') sortAffiliates: SORT,
+    @Query('offset') offset: number = 0,
+    @Query('limit') limit: number = 10,
+  ) {
+    return this._usersService.searchAllAffiliates(
+      searchAffiliates,
+      categories,
+      sortAffiliates,
+      offset,
+      limit
+    )
+  }
+
+  @Get('getPopularAffiliates')
+  getPopularAffiliates (
+    @Query('offset') offset: number = 0,
+    @Query('limit') limit: number = 10,
+  ) {
+    return this._usersService.getPopularAffiliates(offset, limit);
+  }
+
+  @Get('getFavouriteAffiliates')
+  getFavouriteAffiliates (
+    @Query('offset') offset: number = 0,
+    @Query('limit') limit: number = 10,
+  ) {
+    return this._usersService.getFavouriteAffiliates(offset, limit)
   }
 
   @UseGuards(JwtAuthGuard)

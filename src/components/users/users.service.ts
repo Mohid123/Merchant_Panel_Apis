@@ -22,6 +22,7 @@ import { VoucherCounterInterface } from 'src/interface/vouchers/vouchersCounter.
 import { Location } from 'src/interface/location/location.interface';
 import { LeadInterface } from 'src/interface/lead/lead.interface';
 import { USERROLE } from 'src/enum/user/userrole.enum';
+import { SORT } from 'src/enum/sort/sort.enum';
 
 var htmlencode = require('htmlencode');
 var generator = require('generate-password');
@@ -419,6 +420,199 @@ export class UsersService {
       totalCount: totalCount,
       data: users,
     };
+  }
+
+  async searchAllAffiliates (
+    searchAffiliates,
+    categories,
+    Affiliates,
+    offset,
+    limit
+  ) {
+    try {
+      offset = parseInt(offset) < 0 ? 0 : offset;
+      limit = parseInt(limit) < 1 ? 10 : limit;
+
+      let matchFilter = {};
+
+      if (categories) {
+        matchFilter = {
+          ...matchFilter,
+          businessType: categories,
+        };
+      }
+
+      if (searchAffiliates.trim().length) {
+        var query = new RegExp(`${searchAffiliates}`, 'i');
+        matchFilter = {
+          ...matchFilter,
+          firstName: query,
+        };
+      }
+
+      let sort = {};
+
+      if (Affiliates) {
+        let sortAffiliates = Affiliates == SORT.ASC ? 1 : -1;
+        console.log('sortAffiliates');
+        sort = {
+          ...sort,
+          firstName: sortAffiliates,
+        };
+      }
+
+      if (Object.keys(sort).length === 0 && sort.constructor === Object) {
+        sort = {
+          createdAt: -1,
+        };
+      }
+
+      console.log(sort);
+      console.log(matchFilter);
+
+      const totalCount = await this._userModel.countDocuments({
+        role: USERROLE.affiliate,
+        status: USERSTATUS.approved,
+        deletedCheck: false,
+      });
+
+      const filteredCount = await this._userModel.countDocuments({
+        role: USERROLE.affiliate,
+        status: USERSTATUS.approved,
+        deletedCheck: false,
+        ...matchFilter
+      });
+
+      const affiliates = await this._userModel.aggregate([
+        {
+          $match: {
+            role: USERROLE.affiliate,
+            status: USERSTATUS.approved,
+            deletedCheck: false,
+            ...matchFilter
+          }
+        },
+        {
+          $sort: sort
+        },
+        {
+          $addFields: {
+            id: '$_id'
+          }
+        },
+        {
+          $project: {
+            _id: 0
+          }
+        }
+      ])
+      .skip(parseInt(offset))
+      .limit(parseInt(limit))
+
+      return {
+        totalCount: totalCount,
+        filteredCount: filteredCount,
+        data: affiliates
+      }
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async getPopularAffiliates (offset, limit) {
+    try {
+      offset = parseInt(offset) < 0 ? 0 : offset;
+      limit = parseInt(limit) < 1 ? 10 : limit;
+
+      const totalCount = await this._userModel.countDocuments({
+        role: USERROLE.affiliate,
+        status: USERSTATUS.approved,
+        deletedCheck: false,
+      });
+
+      const affiliates = await this._userModel.aggregate([
+        {
+          $match: {
+            role: USERROLE.affiliate,
+            status: USERSTATUS.approved,
+            deletedCheck: false,
+          }
+        },
+        {
+          $sort: {
+            popularCount: -1
+          }
+        },
+        {
+          $addFields: {
+            id: '$_id'
+          }
+        },
+        {
+          $project: {
+            _id: 0
+          }
+        }
+      ])
+      .skip(parseInt(offset))
+      .limit(parseInt(limit))
+
+      return {
+        totalCount: totalCount,
+        data: affiliates
+      }
+
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async getFavouriteAffiliates (offset, limit) {
+    try {
+      offset = parseInt(offset) < 0 ? 0 : offset;
+      limit = parseInt(limit) < 1 ? 10 : limit;
+
+      const totalCount = await this._userModel.countDocuments({
+        role: USERROLE.affiliate,
+        status: USERSTATUS.approved,
+        deletedCheck: false,
+      });
+
+      const affiliates = await this._userModel.aggregate([
+        {
+          $match: {
+            role: USERROLE.affiliate,
+            status: USERSTATUS.approved,
+            deletedCheck: false,
+          }
+        },
+        {
+          $sort: {
+            createdAt: -1
+          }
+        },
+        {
+          $addFields: {
+            id: '$_id'
+          }
+        },
+        {
+          $project: {
+            _id: 0
+          }
+        }
+      ])
+      .skip(parseInt(offset))
+      .limit(parseInt(limit))
+
+      return {
+        totalCount: totalCount,
+        data: affiliates
+      }
+
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
   }
 
   async resetPassword(resetPasswordDto, req) {
