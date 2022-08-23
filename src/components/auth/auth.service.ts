@@ -107,8 +107,7 @@ export class AuthService {
   async login(loginDto) {
     let user = await this._usersService.findOne({
       email: loginDto.email.toLowerCase(),
-      deletedCheck: false,
-      role: 'Merchant',
+      deletedCheck: false
     });
 
     if (!user) {
@@ -142,8 +141,7 @@ export class AuthService {
   async loginCustomer(loginDto) {
     let user = await this._usersService.findOne({
       email: loginDto.email.toLowerCase(),
-      deletedCheck: false,
-      role: 'Customer',
+      deletedCheck: false
     });
 
     if (!user) {
@@ -192,8 +190,7 @@ export class AuthService {
     loginDto.email = loginDto?.email?.toLowerCase();
     let user = await this._usersService.findOne({
       email: loginDto.email,
-      deletedCheck: false,
-      role: 'Merchant',
+      deletedCheck: false
     });
     if (user) {
       throw new ForbiddenException('Email already exists');
@@ -201,7 +198,7 @@ export class AuthService {
     loginDto._id = new Types.ObjectId().toString();
 
     loginDto.status = USERSTATUS.pending;
-    loginDto.role = 'Merchant';
+    loginDto.role = USERROLE.merchant;
     loginDto.tradeName = loginDto.companyName;
     loginDto.countryCode = 'BE';
     loginDto.leadSource = 'web';
@@ -212,8 +209,7 @@ export class AuthService {
     signupUserDto.email = signupUserDto?.email?.toLowerCase();
     let user = await this._usersService.findOne({
       email: signupUserDto.email,
-      deletedCheck: false,
-      role: 'Customer',
+      deletedCheck: false
     });
     if (user) {
       throw new ForbiddenException('Email already exists');
@@ -221,7 +217,7 @@ export class AuthService {
     signupUserDto._id = new Types.ObjectId().toString();
 
     signupUserDto.status = USERSTATUS.approved;
-    signupUserDto.role = 'Customer';
+    signupUserDto.role = USERROLE.customer;
     signupUserDto.userID = await this.generateCustomerId('customerID');
 
     const salt = await bcrypt.genSalt();
@@ -260,26 +256,14 @@ export class AuthService {
   async isEmailExists(email) {
     const user = await this._usersService.findOne({
       email: email?.toLowerCase(),
-      deletedCheck: false,
-      role: USERROLE.merchant
+      deletedCheck: false
     });
     const lead = await this._leadModel.findOne({
       email:email?.toLowerCase(),
-      deletedCheck: false,
-      role: USERROLE.merchant
+      deletedCheck: false
     })
 
     return user || lead ? true : false;
-  }
-
-  async isEmailExistsForCustomerPanel (email) {
-    const user = await this._usersService.findOne({
-      email: email?.toLowerCase(),
-      deletedCheck: false,
-      role: USERROLE.customer
-    });
-
-    return user ? true : false;
   }
 
   async sendOtp(otpEmailDto) {
