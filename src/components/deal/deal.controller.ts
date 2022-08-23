@@ -22,6 +22,7 @@ import { MultipleDealsDto } from 'src/dto/deal/multipledeals.dto';
 import { MultipleReviewsDto } from 'src/dto/review/multiplereviews.dto';
 import { JwtManagerAuthGuard } from '../auth/jwt-manager-auth.guard';
 import { UpdateDealForCRMDTO } from 'src/dto/deal/updateDealForCrm.dto';
+import { BuyNowDTO } from 'src/dto/deal/buy-now.dto';
 
 @ApiTags('Deal')
 @Controller('deal')
@@ -291,8 +292,8 @@ export class DealController {
       toPrice,
       reviewRating,
       offset,
-      limit
-      );
+      limit,
+    );
   }
 
   @ApiQuery({ name: 'categoryName', required: false })
@@ -304,7 +305,7 @@ export class DealController {
   @ApiQuery({ name: 'ratingSort', enum: SORT, required: false })
   @ApiQuery({ name: 'createdAt', enum: SORT, required: false })
   @Get('getDealsByCategories')
-  getDealsByCategories (  
+  getDealsByCategories(
     @Query('categoryName') categoryName: string,
     @Query('subCategoryName') subCategoryName: string,
     @Query('fromPrice') fromPrice: number,
@@ -326,16 +327,16 @@ export class DealController {
       ratingSort,
       createdAt,
       offset,
-      limit
+      limit,
     );
   }
 
   @Get('getTrendingDeals')
-  getTrendingDeals (
+  getTrendingDeals(
     @Query('offset') offset: number = 0,
     @Query('limit') limit: number = 10,
   ) {
-    return this.dealService.getTrendingDeals(offset, limit)
+    return this.dealService.getTrendingDeals(offset, limit);
   }
 
   @Get('getSimilarDeals/:categoryName/:subCategoryName')
@@ -374,4 +375,11 @@ export class DealController {
   // ) {
   //   return this.dealService.changeMediaURL()
   // }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @Post('buyNow')
+  buyNow(@Body() buyNowDto: BuyNowDTO, @Req() req) {
+    return this.dealService.buyNow(buyNowDto, req);
+  }
 }
