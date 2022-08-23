@@ -52,13 +52,15 @@ export class UsersController {
     return this._usersService.completeKYC(merchantID, kycDto);
   }
 
-
   @Post('updateVoucherPinCode/:merchantID')
-  updateVoucherPinCode (
+  updateVoucherPinCode(
     @Param('merchantID') merchantID: string,
-    @Body() voucherPinCodeDto: VoucherPinCodeDto
+    @Body() voucherPinCodeDto: VoucherPinCodeDto,
   ) {
-    return this._usersService.updateVoucherPinCode(merchantID, voucherPinCodeDto);
+    return this._usersService.updateVoucherPinCode(
+      merchantID,
+      voucherPinCodeDto,
+    );
   }
 
   @UseGuards(JwtAuthGuard)
@@ -91,10 +93,8 @@ export class UsersController {
   }
 
   @Get('getMerchantByID/:merchantID')
-  getMerchantByID (
-    @Param('merchantID') merchantID: string
-  ) {
-    return this._usersService.getMerchantByID(merchantID)
+  getMerchantByID(@Param('merchantID') merchantID: string) {
+    return this._usersService.getMerchantByID(merchantID);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -162,5 +162,17 @@ export class UsersController {
     @Body() approveMerchantDto: ApproveMerchantDTO,
   ) {
     return this._usersService.approveMerchant(id, approveMerchantDto);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtManagerAuthGuard)
+  @UseGuards(JwtAuthGuard)
+  @ApiQuery({ name: 'id', required: false })
+  @Post('approveAffiliate')
+  approveAffiliate(
+    @Query('id') id: string,
+    @Body() approveAffiliateDto: ApproveMerchantDTO,
+  ) {
+    return this._usersService.approveAffiliate(id, approveAffiliateDto);
   }
 }

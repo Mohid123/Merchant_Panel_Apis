@@ -23,6 +23,7 @@ import { ScheduleModule } from './components/schedule/schedule.module';
 import { ScheduleService } from './components/schedule/schedule.service';
 import { ScheduleSchema } from './schema/schedule/schedule.schema';
 import { DealSchema } from './schema/deal/deal.schema';
+import { StripeModule } from './components/stripe/stripe.module';
 import { FavouritesModule } from './components/favourites/favourites.module';
 
 @Module({
@@ -54,6 +55,7 @@ import { FavouritesModule } from './components/favourites/favourites.module';
     UtilModule,
     ScheduleModule,
     FavouritesModule,
+    StripeModule,
   ],
   controllers: [AppController],
   providers: [AppService, ScheduleService],

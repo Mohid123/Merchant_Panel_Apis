@@ -52,6 +52,7 @@ export const UsersSchema = new mongoose.Schema(
     soldDeals: { type: Number, default: 0 },
     countryCode: { type: String, default: 'BE' },
     leadSource: { type: String, default: 'web' },
+    stripeCustomerID: { type: String, default: '' },
     ratingsAverage: {
       type: Number,
       default: 0,
@@ -71,7 +72,7 @@ export const UsersSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
-    isSubscribed: { type: Boolean, default: false }
+    isSubscribed: { type: Boolean, default: false },
   },
   {
     collection: 'users',
