@@ -16,6 +16,7 @@ export interface VoucherInterface extends Document {
   status: string;
   paymentStatus: string;
   boughtDate: number;
+  expiryDate: number;
   imageURL: object;
   dealPrice: number;
   originalPrice: number;
