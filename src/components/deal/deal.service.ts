@@ -1221,6 +1221,8 @@ export class DealService implements OnModuleInit {
 
   async getLowPriceDeals(price, offset, limit) {
     try {
+      debugger;
+
       price = parseFloat(price);
       offset = parseInt(offset) < 0 ? 0 : offset;
       limit = parseInt(limit) < 1 ? 10 : limit;
@@ -1241,7 +1243,7 @@ export class DealService implements OnModuleInit {
         }
 
         price = price + priceIncrease;
-      } while (totalCount < 8);
+      } while (totalCount < 6);
 
       price = price - priceIncrease;
       let filterValue = price;
@@ -1428,7 +1430,7 @@ export class DealService implements OnModuleInit {
         if (percentage > 95) {
           break;
         }
-      } while (totalCount < 8);
+      } while (totalCount < 6);
       percentage = percentage - 10;
       let filterValue = percentage;
       const deals = await this.dealModel
