@@ -6,6 +6,7 @@ export interface VoucherInterface extends Document {
   voucherHeader: string;
   dealHeader: string;
   dealID: string;
+  subDealID: string;
   merchantID: string;
   affiliateID: string;
   merchantMongoID: string;
