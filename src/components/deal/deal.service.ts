@@ -2636,14 +2636,14 @@ export class DealService implements OnModuleInit {
 
       const customer = await this._userModel.findById(req.user.id);
 
-      // const affiliate = await this._userModel.findOne({
-      //   userID: buyNowDto.affiliateID,
-      //   deletedCheck: false,
-      // });
+      const affiliate = await this._userModel.findOne({
+        userID: buyNowDto.affiliateID,
+        deletedCheck: false,
+      });
 
-      // if (!affiliate) {
-      //   throw new Error('Affiliate doesnot exist!');
-      // }
+      if (!affiliate) {
+        throw new Error('Affiliate doesnot exist!');
+      }
 
       const subDeal = deal.subDeals.find(
         (el) => el.subDealID == buyNowDto.subDealID,
@@ -2709,7 +2709,8 @@ export class DealService implements OnModuleInit {
         amount: subDeal.dealPrice,
         status: VOUCHERSTATUSENUM.purchased,
         merchantID: deal.merchantID,
-        // affiliateID: buyNowDto.affiliateID,
+        merchantMongoID: merchant.id,
+        affiliateID: buyNowDto.affiliateID,
         customerID: req.user.id,
         imageURL,
         dealPrice: subDeal.dealPrice,

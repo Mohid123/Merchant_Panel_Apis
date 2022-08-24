@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { MultipleVouchersDto } from 'src/dto/vouchers/multiplevouchers.dto';
+import { RedeemVoucherDto } from 'src/dto/vouchers/redeemVoucher.dto';
 import { VoucherDto } from '../../dto/vouchers/vouchers.dto';
 import { BILLINGSTATUS } from '../../enum/billing/billingStatus.enum';
 import { SORT } from '../../enum/sort/sort.enum';
@@ -17,19 +18,20 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { JwtMerchantAuthGuard } from '../auth/jwt-merchant-auth.guard';
 import { VouchersService } from './vouchers.service';
 
-@ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
 @ApiTags('Voucher')
 @Controller('voucher')
 export class VouchersController {
   constructor(private readonly voucherService: VouchersService) {}
 
+  @ApiBearerAuth()
   @UseGuards(JwtMerchantAuthGuard)
   @Post('createVoucher')
   createVoucher(@Body() voucherDto: VoucherDto) {
     return this.voucherService.createVoucher(voucherDto);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
   @ApiQuery({ name: 'deal', enum: SORT, required: false })
   @ApiQuery({ name: 'voucher', enum: SORT, required: false })
   @ApiQuery({ name: 'amount', enum: SORT, required: false })
@@ -82,6 +84,8 @@ export class VouchersController {
     );
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
   @ApiQuery({ name: 'voucherId', required: false })
   @Get('searchByVoucherId/:merchantID')
   searchByVoucherId(
@@ -89,12 +93,29 @@ export class VouchersController {
     @Query('voucherId') voucherId: string = '',
     @Query('offset') offset: number = 0,
     @Query('limit') limit: number = 10,
-    ) {
-    return this.voucherService.searchByVoucherId(merchantID, voucherId, offset, limit);
+  ) {
+    return this.voucherService.searchByVoucherId(
+      merchantID,
+      voucherId,
+      offset,
+      limit,
+    );
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtMerchantAuthGuard)
   @Get('redeemVoucher/:voucherId')
   redeemVoucher(@Param('voucherId') voucherId: string) {
     return this.voucherService.redeemVoucher(voucherId);
+  }
+
+  @Get('getVoucherByMongoId/:voucherId')
+  getVoucherByMongoId(@Param('voucherId') voucherId: string) {
+    return this.voucherService.getVoucherByMongoId(voucherId);
+  }
+
+  @Post('redeemVoucherByMerchantPin/')
+  redeemVoucherByMerchantPin(@Body() redeemVoucherDto: RedeemVoucherDto) {
+    return this.voucherService.redeemVoucherByMerchantPin(redeemVoucherDto);
   }
 }

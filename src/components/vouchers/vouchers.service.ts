@@ -49,7 +49,7 @@ export class VouchersService {
     }
   }
 
-  async searchByVoucherId(merchantID ,voucherId, offset, limit) {
+  async searchByVoucherId(merchantID, voucherId, offset, limit) {
     try {
       offset = parseInt(offset) < 0 ? 0 : offset;
       limit = parseInt(limit) < 1 ? 10 : limit;
@@ -68,34 +68,35 @@ export class VouchersService {
         merchantMongoID: merchantID,
         deletedCheck: false,
         ...filters,
-      })
+      });
 
-      const vouchers = await this.voucherModel.aggregate([
-        {
-          $match: {
-            merchantMongoID: merchantID,
-            deletedCheck: false,
-            ...filters,
-          }
-        },
-        {
-          $addFields: {
-            id: '$_id'
-          }
-        },
-        {
-          $project: {
-            _id: 0
-          }
-        }
-      ])
-      .skip(parseInt(offset))
-      .limit(parseInt(limit))
+      const vouchers = await this.voucherModel
+        .aggregate([
+          {
+            $match: {
+              merchantMongoID: merchantID,
+              deletedCheck: false,
+              ...filters,
+            },
+          },
+          {
+            $addFields: {
+              id: '$_id',
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+            },
+          },
+        ])
+        .skip(parseInt(offset))
+        .limit(parseInt(limit));
 
       return {
         totalCount: totalCount,
-        data: vouchers
-      }
+        data: vouchers,
+      };
     } catch (err) {
       throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
@@ -370,12 +371,19 @@ export class VouchersService {
         'In Dispute': 'Voucher is in dispute!',
       };
 
-      const voucher = await this.voucherModel.findOne({ voucherID: voucherId });
+      const voucher = await this.voucherModel.findOne({
+        voucherID: voucherId,
+        deletedCheck: false,
+      });
 
       if (voucher) {
         if (voucherErrors[voucher.status]) {
           throw new Error(voucherErrors[voucher.status]);
         }
+      }
+
+      if (!voucher) {
+        throw new Error('No found!');
       }
 
       const merchant = await this.userModel.findOne({
@@ -384,6 +392,123 @@ export class VouchersService {
 
       await this.voucherModel.updateOne(
         { voucherID: voucherId },
+        { status: VOUCHERSTATUSENUM.redeeemed },
+      );
+
+      await this.userModel.updateOne(
+        { userID: voucher.merchantID },
+        { redeemedVouchers: merchant.redeemedVouchers + 1 },
+      );
+
+      return { status: 'success', message: 'Voucher redeemed successfully' };
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async getVoucherByMongoId(id) {
+    try {
+      const voucher = await this.voucherModel.aggregate([
+        {
+          $match: {
+            _id: id,
+            deletedCheck: false,
+          },
+        },
+        {
+          $lookup: {
+            from: 'users',
+            as: 'merchantDetail',
+            localField: 'merchantID',
+            foreignField: 'userID',
+            // pipeline: [{ $project: { firstName: 1, lastName: 1 } }],
+          },
+        },
+        {
+          $unwind: '$merchantDetail',
+        },
+        {
+          $addFields: {
+            id: '$_id',
+          },
+        },
+        {
+          $project: {
+            id: 1,
+            voucherID: 1,
+            voucherHeader: 1,
+            dealHeader: 1,
+            dealID: 1,
+            merchantID: 1,
+            merchantMongoID: 1,
+            customerID: 1,
+            amount: 1,
+            fee: 1,
+            net: 1,
+            status: 1,
+            paymentStatus: 1,
+            boughtDate: 1,
+            imageURL: 1,
+            dealPrice: 1,
+            originalPrice: 1,
+            discountedPercentage: 1,
+            personalDetail: {
+              firstName: 1,
+              lastName: 1,
+            },
+          },
+        },
+        {
+          $project: {
+            _id: 0,
+          },
+        },
+      ]);
+
+      if (voucher.length == 0) {
+        throw new Error('No Voucher Found!');
+      }
+
+      return voucher[0];
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async redeemVoucherByMerchantPin(redeemVoucherDto) {
+    try {
+      const voucherErrors = {
+        Expired: 'Voucher Expired!',
+        Redeemed: 'Voucher already Reedemed!',
+        Refunded: 'Vocuher Refunded!',
+        'In Dispute': 'Voucher is in dispute!',
+      };
+
+      const voucher = await this.voucherModel.findOne({
+        voucherID: redeemVoucherDto.voucherID,
+        deletedCheck: false,
+      });
+
+      if (voucher) {
+        if (voucherErrors[voucher.status]) {
+          throw new Error(voucherErrors[voucher.status]);
+        }
+      }
+
+      if (!voucher) {
+        throw new Error('No found!');
+      }
+
+      const merchant = await this.userModel.findOne({
+        userID: voucher.merchantID,
+      });
+
+      if (merchant.voucherPinCode != redeemVoucherDto.pin) {
+        throw new Error('Inavlid Pin Code!');
+      }
+
+      await this.voucherModel.updateOne(
+        { voucherID: redeemVoucherDto.voucherID },
         { status: VOUCHERSTATUSENUM.redeeemed },
       );
 
