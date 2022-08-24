@@ -3257,6 +3257,7 @@ export class DealService implements OnModuleInit {
         voucherHeader: subDeal.title,
         dealHeader: deal.dealHeader,
         dealID: deal.dealID,
+        subDealID: subDeal.subDealID,
         amount: subDeal.dealPrice,
         status: VOUCHERSTATUSENUM.purchased,
         merchantID: deal.merchantID,
