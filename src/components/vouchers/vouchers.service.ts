@@ -400,7 +400,15 @@ export class VouchersService {
         { redeemedVouchers: merchant.redeemedVouchers + 1 },
       );
 
-      return { status: 'success', message: 'Voucher redeemed successfully' };
+      const updtaedVoucher = await this.voucherModel.findOne({
+        voucherID: voucherId,
+      });
+
+      return {
+        status: 'success',
+        message: 'Voucher redeemed successfully',
+        updtaedVoucher,
+      };
     } catch (err) {
       throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }

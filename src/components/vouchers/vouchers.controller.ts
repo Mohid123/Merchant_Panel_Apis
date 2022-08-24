@@ -7,6 +7,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { MultipleVouchersDto } from 'src/dto/vouchers/multiplevouchers.dto';
 import { RedeemVoucherDto } from 'src/dto/vouchers/redeemVoucher.dto';
@@ -24,7 +25,7 @@ export class VouchersController {
   constructor(private readonly voucherService: VouchersService) {}
 
   @ApiBearerAuth()
-  @UseGuards(JwtMerchantAuthGuard)
+  @UseGuards(AuthGuard('jwt'), JwtMerchantAuthGuard)
   @Post('createVoucher')
   createVoucher(@Body() voucherDto: VoucherDto) {
     return this.voucherService.createVoucher(voucherDto);
@@ -103,7 +104,7 @@ export class VouchersController {
   }
 
   @ApiBearerAuth()
-  @UseGuards(JwtMerchantAuthGuard)
+  @UseGuards(AuthGuard('jwt'), JwtMerchantAuthGuard)
   @Get('redeemVoucher/:voucherId')
   redeemVoucher(@Param('voucherId') voucherId: string) {
     return this.voucherService.redeemVoucher(voucherId);
