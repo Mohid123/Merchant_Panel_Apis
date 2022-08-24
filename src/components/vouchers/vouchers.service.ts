@@ -520,12 +520,15 @@ export class VouchersService {
         { status: VOUCHERSTATUSENUM.redeeemed },
       );
 
-      await this.userModel.updateOne(
-        { userID: voucher.merchantID },
-        { redeemedVouchers: merchant.redeemedVouchers + 1 },
-      );
+      const updtaedVoucher = await this.voucherModel.findOne({
+        voucherID: redeemVoucherDto.voucherId,
+      });
 
-      return { status: 'success', message: 'Voucher redeemed successfully' };
+      return {
+        status: 'success',
+        message: 'Voucher redeemed successfully',
+        updtaedVoucher,
+      };
     } catch (err) {
       throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
