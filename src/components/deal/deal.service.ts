@@ -1110,7 +1110,7 @@ export class DealService implements OnModuleInit {
     }
   }
 
-  async getDealsByMerchantIDForCustomerPanel(merchantID, offset, limit) {
+  async getDealsByMerchantIDForCustomerPanel(merchantID, offset, limit, req) {
     try {
       offset = parseInt(offset) < 0 ? 0 : offset;
       limit = parseInt(limit) < 1 ? 10 : limit;
@@ -1136,6 +1136,36 @@ export class DealService implements OnModuleInit {
             },
           },
           {
+            $lookup: {
+              from: 'favourites',
+              as: 'favouriteDeal',
+              let: {
+                dealID: '$dealID',
+                customerMongoID: req?.user?.id
+              },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: { $and: [
+                      {
+                        $eq: ['$$dealID', '$dealID']
+                      },
+                      {
+                        $eq: ['$$customerMongoID', '$customerMongoID']
+                      }
+                    ] },
+                  },
+                },
+              ],
+            },
+          },
+          {
+            $unwind: {
+              path: '$favouriteDeal',
+              preserveNullAndEmptyArrays: true,
+            }
+          },
+          {
             $addFields: {
               id: '$_id',
               mediaUrl: {
@@ -1152,12 +1182,21 @@ export class DealService implements OnModuleInit {
                   1,
                 ],
               },
+              isFavourite: {
+                $cond: [
+                  {
+                    $ifNull: [
+                      '$favouriteDeal', false
+                    ]
+                  },
+                  true, false
+                ]
+              }
             },
           },
           {
             $project: {
               _id: 0,
-              dealID: 0,
               merchantMongoID: 0,
               merchantID: 0,
               subTitle: 0,
@@ -1181,6 +1220,7 @@ export class DealService implements OnModuleInit {
               endDate: 0,
               startDate: 0,
               reviewMediaUrl: 0,
+              favouriteDeal: 0
             },
           },
         ])
@@ -1219,7 +1259,7 @@ export class DealService implements OnModuleInit {
     }
   }
 
-  async getLowPriceDeals(price, offset, limit) {
+  async getLowPriceDeals(price, offset, limit, req) {
     try {
       debugger;
 
@@ -1265,6 +1305,36 @@ export class DealService implements OnModuleInit {
             },
           },
           {
+            $lookup: {
+              from: 'favourites',
+              as: 'favouriteDeal',
+              let: {
+                dealID: '$dealID',
+                customerMongoID: req?.user?.id
+              },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: { $and: [
+                      {
+                        $eq: ['$$dealID', '$dealID']
+                      },
+                      {
+                        $eq: ['$$customerMongoID', '$customerMongoID']
+                      }
+                    ] },
+                  },
+                },
+              ],
+            },
+          },
+          {
+            $unwind: {
+              path: '$favouriteDeal',
+              preserveNullAndEmptyArrays: true,
+            }
+          },
+          {
             $addFields: {
               id: '$_id',
               mediaUrl: {
@@ -1281,12 +1351,21 @@ export class DealService implements OnModuleInit {
                   1,
                 ],
               },
+              isFavourite: {
+                $cond: [
+                  {
+                    $ifNull: [
+                      '$favouriteDeal', false
+                    ]
+                  },
+                  true, false
+                ]
+              }
             },
           },
           {
             $project: {
               _id: 0,
-              dealID: 0,
               merchantMongoID: 0,
               merchantID: 0,
               subTitle: 0,
@@ -1310,6 +1389,7 @@ export class DealService implements OnModuleInit {
               endDate: 0,
               startDate: 0,
               reviewMediaUrl: 0,
+              favouriteDeal: 0
             },
           },
         ])
@@ -1325,7 +1405,7 @@ export class DealService implements OnModuleInit {
     }
   }
 
-  async getNewDeals(offset, limit) {
+  async getNewDeals(offset, limit, req) {
     try {
       offset = parseInt(offset) < 0 ? 0 : offset;
       limit = parseInt(limit) < 1 ? 10 : limit;
@@ -1349,6 +1429,36 @@ export class DealService implements OnModuleInit {
             },
           },
           {
+            $lookup: {
+              from: 'favourites',
+              as: 'favouriteDeal',
+              let: {
+                dealID: '$dealID',
+                customerMongoID: req?.user?.id
+              },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: { $and: [
+                      {
+                        $eq: ['$$dealID', '$dealID']
+                      },
+                      {
+                        $eq: ['$$customerMongoID', '$customerMongoID']
+                      }
+                    ] },
+                  },
+                },
+              ],
+            },
+          },
+          {
+            $unwind: {
+              path: '$favouriteDeal',
+              preserveNullAndEmptyArrays: true,
+            }
+          },
+          {
             $addFields: {
               id: '$_id',
               mediaUrl: {
@@ -1365,12 +1475,21 @@ export class DealService implements OnModuleInit {
                   1,
                 ],
               },
+              isFavourite: {
+                $cond: [
+                  {
+                    $ifNull: [
+                      '$favouriteDeal', false
+                    ]
+                  },
+                  true, false
+                ]
+              }
             },
           },
           {
             $project: {
               _id: 0,
-              dealID: 0,
               merchantMongoID: 0,
               merchantID: 0,
               subTitle: 0,
@@ -1394,6 +1513,7 @@ export class DealService implements OnModuleInit {
               endDate: 0,
               startDate: 0,
               reviewMediaUrl: 0,
+              favouriteDeal: 0
             },
           },
         ])
@@ -1409,7 +1529,7 @@ export class DealService implements OnModuleInit {
     }
   }
 
-  async getDiscountedDeals(percentage, offset, limit) {
+  async getDiscountedDeals(percentage, offset, limit, req) {
     try {
       percentage = parseFloat(percentage);
 
@@ -1450,6 +1570,36 @@ export class DealService implements OnModuleInit {
             },
           },
           {
+            $lookup: {
+              from: 'favourites',
+              as: 'favouriteDeal',
+              let: {
+                dealID: '$dealID',
+                customerMongoID: req?.user?.id
+              },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: { $and: [
+                      {
+                        $eq: ['$$dealID', '$dealID']
+                      },
+                      {
+                        $eq: ['$$customerMongoID', '$customerMongoID']
+                      }
+                    ] },
+                  },
+                },
+              ],
+            },
+          },
+          {
+            $unwind: {
+              path: '$favouriteDeal',
+              preserveNullAndEmptyArrays: true,
+            }
+          },
+          {
             $addFields: {
               id: '$_id',
               mediaUrl: {
@@ -1466,12 +1616,21 @@ export class DealService implements OnModuleInit {
                   1,
                 ],
               },
+              isFavourite: {
+                $cond: [
+                  {
+                    $ifNull: [
+                      '$favouriteDeal', false
+                    ]
+                  },
+                  true, false
+                ]
+              }
             },
           },
           {
             $project: {
               _id: 0,
-              dealID: 0,
               merchantMongoID: 0,
               merchantID: 0,
               subTitle: 0,
@@ -1495,6 +1654,7 @@ export class DealService implements OnModuleInit {
               endDate: 0,
               startDate: 0,
               reviewMediaUrl: 0,
+              favouriteDeal: 0
             },
           },
         ])
@@ -1511,7 +1671,7 @@ export class DealService implements OnModuleInit {
     }
   }
 
-  async getHotDeals(offset, limit) {
+  async getHotDeals(offset, limit, req) {
     try {
       offset = parseInt(offset) < 0 ? 0 : offset;
       limit = parseInt(limit) < 1 ? 10 : limit;
@@ -1555,6 +1715,36 @@ export class DealService implements OnModuleInit {
             },
           },
           {
+            $lookup: {
+              from: 'favourites',
+              as: 'favouriteDeal',
+              let: {
+                dealID: '$dealID',
+                customerMongoID: req?.user?.id
+              },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: { $and: [
+                      {
+                        $eq: ['$$dealID', '$dealID']
+                      },
+                      {
+                        $eq: ['$$customerMongoID', '$customerMongoID']
+                      }
+                    ] },
+                  },
+                },
+              ],
+            },
+          },
+          {
+            $unwind: {
+              path: '$favouriteDeal',
+              preserveNullAndEmptyArrays: true,
+            }
+          },
+          {
             $addFields: {
               mediaUrl: {
                 $slice: [
@@ -1570,6 +1760,16 @@ export class DealService implements OnModuleInit {
                   1,
                 ],
               },
+              isFavourite: {
+                $cond: [
+                  {
+                    $ifNull: [
+                      '$favouriteDeal', false
+                    ]
+                  },
+                  true, false
+                ]
+              }
             },
           },
           {
@@ -1577,7 +1777,6 @@ export class DealService implements OnModuleInit {
               _id: 0,
               added: 0,
               divided: 0,
-              dealID: 0,
               merchantMongoID: 0,
               merchantID: 0,
               subTitle: 0,
@@ -1601,6 +1800,7 @@ export class DealService implements OnModuleInit {
               endDate: 0,
               startDate: 0,
               reviewMediaUrl: 0,
+              favouriteDeal: 0
             },
           },
           {
@@ -1620,7 +1820,7 @@ export class DealService implements OnModuleInit {
     }
   }
 
-  async getSpecialOfferDeals(offset, limit) {
+  async getSpecialOfferDeals(offset, limit, req) {
     try {
       offset = parseInt(offset) < 0 ? 0 : offset;
       limit = parseInt(limit) < 1 ? 10 : limit;
@@ -1639,6 +1839,36 @@ export class DealService implements OnModuleInit {
             },
           },
           {
+            $lookup: {
+              from: 'favourites',
+              as: 'favouriteDeal',
+              let: {
+                dealID: '$dealID',
+                customerMongoID: req?.user?.id
+              },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: { $and: [
+                      {
+                        $eq: ['$$dealID', '$dealID']
+                      },
+                      {
+                        $eq: ['$$customerMongoID', '$customerMongoID']
+                      }
+                    ] },
+                  },
+                },
+              ],
+            },
+          },
+          {
+            $unwind: {
+              path: '$favouriteDeal',
+              preserveNullAndEmptyArrays: true,
+            }
+          },
+          {
             $addFields: {
               id: '$_id',
               mediaUrl: {
@@ -1655,12 +1885,21 @@ export class DealService implements OnModuleInit {
                   1,
                 ],
               },
+              isFavourite: {
+                $cond: [
+                  {
+                    $ifNull: [
+                      '$favouriteDeal', false
+                    ]
+                  },
+                  true, false
+                ]
+              }
             },
           },
           {
             $project: {
               _id: 0,
-              dealID: 0,
               merchantMongoID: 0,
               merchantID: 0,
               subTitle: 0,
@@ -1684,6 +1923,7 @@ export class DealService implements OnModuleInit {
               endDate: 0,
               startDate: 0,
               reviewMediaUrl: 0,
+              favouriteDeal: 0
             },
           },
           {
@@ -1703,7 +1943,7 @@ export class DealService implements OnModuleInit {
     }
   }
 
-  async getNewFavouriteDeal(offset, limit) {
+  async getNewFavouriteDeal(offset, limit, req) {
     try {
       offset = parseInt(offset) < 0 ? 0 : offset;
       limit = parseInt(limit) < 1 ? 10 : limit;
@@ -1729,6 +1969,36 @@ export class DealService implements OnModuleInit {
             },
           },
           {
+            $lookup: {
+              from: 'favourites',
+              as: 'favouriteDeal',
+              let: {
+                dealID: '$dealID',
+                customerMongoID: req?.user?.id
+              },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: { $and: [
+                      {
+                        $eq: ['$$dealID', '$dealID']
+                      },
+                      {
+                        $eq: ['$$customerMongoID', '$customerMongoID']
+                      }
+                    ] },
+                  },
+                },
+              ],
+            },
+          },
+          {
+            $unwind: {
+              path: '$favouriteDeal',
+              preserveNullAndEmptyArrays: true,
+            }
+          },
+          {
             $addFields: {
               id: '$_id',
               mediaUrl: {
@@ -1745,12 +2015,21 @@ export class DealService implements OnModuleInit {
                   1,
                 ],
               },
+              isFavourite: {
+                $cond: [
+                  {
+                    $ifNull: [
+                      '$favouriteDeal', false
+                    ]
+                  },
+                  true, false
+                ]
+              }
             },
           },
           {
             $project: {
               _id: 0,
-              dealID: 0,
               merchantMongoID: 0,
               merchantID: 0,
               subTitle: 0,
@@ -1774,6 +2053,7 @@ export class DealService implements OnModuleInit {
               endDate: 0,
               startDate: 0,
               reviewMediaUrl: 0,
+              favouriteDeal: 0
             },
           },
         ])
@@ -1788,7 +2068,7 @@ export class DealService implements OnModuleInit {
     }
   }
 
-  async getNearByDeals(lat, lng, distance, offset, limit) {
+  async getNearByDeals(lat, lng, distance, offset, limit, req) {
     try {
       offset = parseInt(offset) < 0 ? 0 : offset;
       limit = parseInt(limit) < 1 ? 10 : limit;
@@ -1838,6 +2118,94 @@ export class DealService implements OnModuleInit {
               },
             },
           },
+          {
+            $lookup: {
+              from: 'favourites',
+              as: 'favouriteDeal',
+              let: {
+                dealID: '$dealID',
+                customerMongoID: req?.user?.id
+              },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: { $and: [
+                      {
+                        $eq: ['$$dealID', '$dealID']
+                      },
+                      {
+                        $eq: ['$$customerMongoID', '$customerMongoID']
+                      }
+                    ] },
+                  },
+                },
+              ],
+            },
+          },
+          {
+            $unwind: {
+              path: '$favouriteDeal',
+              preserveNullAndEmptyArrays: true,
+            }
+          },
+          {
+            $addFields: {
+              id: '$_id',
+              mediaUrl: {
+                $slice: [
+                  {
+                    $filter: {
+                      input: '$mediaUrl',
+                      as: 'mediaUrl',
+                      cond: {
+                        $eq: ['$$mediaUrl.type', 'Image'],
+                      },
+                    },
+                  },
+                  1,
+                ],
+              },
+              isFavourite: {
+                $cond: [
+                  {
+                    $ifNull: [
+                      '$favouriteDeal', false
+                    ]
+                  },
+                  true, false
+                ]
+              }
+            }
+          },
+          {
+            $project: {
+              _id: 0,
+              merchantMongoID: 0,
+              merchantID: 0,
+              subTitle: 0,
+              categoryName: 0,
+              subCategoryID: 0,
+              subCategory: 0,
+              subDeals: 0,
+              availableVouchers: 0,
+              aboutThisDeal: 0,
+              readMore: 0,
+              finePrints: 0,
+              netEarnings: 0,
+              isCollapsed: 0,
+              isDuplicate: 0,
+              totalReviews: 0,
+              maxRating: 0,
+              minRating: 0,
+              pageNumber: 0,
+              updatedAt: 0,
+              __v: 0,
+              endDate: 0,
+              startDate: 0,
+              reviewMediaUrl: 0,
+              favouriteDeal: 0
+            }
+          }
         ])
         .skip(parseInt(offset))
         .limit(parseInt(limit));
@@ -1857,6 +2225,7 @@ export class DealService implements OnModuleInit {
     reviewRating,
     offset,
     limit,
+    req
   ) {
     try {
       offset = parseInt(offset) < 0 ? 0 : offset;
@@ -1956,6 +2325,36 @@ export class DealService implements OnModuleInit {
             },
           },
           {
+            $lookup: {
+              from: 'favourites',
+              as: 'favouriteDeal',
+              let: {
+                dealID: '$dealID',
+                customerMongoID: req?.user?.id
+              },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: { $and: [
+                      {
+                        $eq: ['$$dealID', '$dealID']
+                      },
+                      {
+                        $eq: ['$$customerMongoID', '$customerMongoID']
+                      }
+                    ] },
+                  },
+                },
+              ],
+            },
+          },
+          {
+            $unwind: {
+              path: '$favouriteDeal',
+              preserveNullAndEmptyArrays: true,
+            }
+          },
+          {
             $addFields: {
               id: '$_id',
               mediaUrl: {
@@ -1972,12 +2371,21 @@ export class DealService implements OnModuleInit {
                   1,
                 ],
               },
+              isFavourite: {
+                $cond: [
+                  {
+                    $ifNull: [
+                      '$favouriteDeal', false
+                    ]
+                  },
+                  true, false
+                ]
+              }
             },
           },
           {
             $project: {
               _id: 0,
-              dealID: 0,
               merchantMongoID: 0,
               merchantID: 0,
               subTitle: 0,
@@ -2001,6 +2409,7 @@ export class DealService implements OnModuleInit {
               endDate: 0,
               startDate: 0,
               reviewMediaUrl: 0,
+              favouriteDeal: 0
             },
           },
         ])
@@ -2028,6 +2437,7 @@ export class DealService implements OnModuleInit {
     createdAt,
     offset,
     limit,
+    req
   ) {
     try {
       offset = parseInt(offset) < 0 ? 0 : offset;
@@ -2140,6 +2550,36 @@ export class DealService implements OnModuleInit {
             $sort: sort,
           },
           {
+            $lookup: {
+              from: 'favourites',
+              as: 'favouriteDeal',
+              let: {
+                dealID: '$dealID',
+                customerMongoID: req?.user?.id
+              },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: { $and: [
+                      {
+                        $eq: ['$$dealID', '$dealID']
+                      },
+                      {
+                        $eq: ['$$customerMongoID', '$customerMongoID']
+                      }
+                    ] },
+                  },
+                },
+              ],
+            },
+          },
+          {
+            $unwind: {
+              path: '$favouriteDeal',
+              preserveNullAndEmptyArrays: true,
+            }
+          },
+          {
             $addFields: {
               id: '$_id',
               mediaUrl: {
@@ -2156,12 +2596,21 @@ export class DealService implements OnModuleInit {
                   1,
                 ],
               },
+              isFavourite: {
+                $cond: [
+                  {
+                    $ifNull: [
+                      '$favouriteDeal', false
+                    ]
+                  },
+                  true, false
+                ]
+              }
             },
           },
           {
             $project: {
               _id: 0,
-              dealID: 0,
               merchantMongoID: 0,
               merchantID: 0,
               subTitle: 0,
@@ -2185,6 +2634,7 @@ export class DealService implements OnModuleInit {
               endDate: 0,
               startDate: 0,
               reviewMediaUrl: 0,
+              favouriteDeal: 0
             },
           },
         ])
@@ -2201,7 +2651,7 @@ export class DealService implements OnModuleInit {
     }
   }
 
-  async getTrendingDeals(offset, limit) {
+  async getTrendingDeals(offset, limit, req) {
     try {
       offset = parseInt(offset) < 0 ? 0 : offset;
       limit = parseInt(limit) < 1 ? 10 : limit;
@@ -2245,6 +2695,36 @@ export class DealService implements OnModuleInit {
             },
           },
           {
+            $lookup: {
+              from: 'favourites',
+              as: 'favouriteDeal',
+              let: {
+                dealID: '$dealID',
+                customerMongoID: req?.user?.id
+              },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: { $and: [
+                      {
+                        $eq: ['$$dealID', '$dealID']
+                      },
+                      {
+                        $eq: ['$$customerMongoID', '$customerMongoID']
+                      }
+                    ] },
+                  },
+                },
+              ],
+            },
+          },
+          {
+            $unwind: {
+              path: '$favouriteDeal',
+              preserveNullAndEmptyArrays: true,
+            }
+          },
+          {
             $addFields: {
               mediaUrl: {
                 $slice: [
@@ -2260,6 +2740,16 @@ export class DealService implements OnModuleInit {
                   1,
                 ],
               },
+              isFavourite: {
+                $cond: [
+                  {
+                    $ifNull: [
+                      '$favouriteDeal', false
+                    ]
+                  },
+                  true, false
+                ]
+              }
             },
           },
           {
@@ -2267,7 +2757,6 @@ export class DealService implements OnModuleInit {
               _id: 0,
               added: 0,
               divided: 0,
-              dealID: 0,
               merchantMongoID: 0,
               merchantID: 0,
               subTitle: 0,
@@ -2291,6 +2780,7 @@ export class DealService implements OnModuleInit {
               endDate: 0,
               startDate: 0,
               reviewMediaUrl: 0,
+              favouriteDeal: 0
             },
           },
           {
@@ -2311,7 +2801,7 @@ export class DealService implements OnModuleInit {
     }
   }
 
-  async getSimilarDeals(categoryName, subCategoryName, offset, limit) {
+  async getSimilarDeals(categoryName, subCategoryName, offset, limit, req) {
     try {
       offset = parseInt(offset) < 0 ? 0 : offset;
       limit = parseInt(limit) < 1 ? 10 : limit;
@@ -2339,6 +2829,36 @@ export class DealService implements OnModuleInit {
             },
           },
           {
+            $lookup: {
+              from: 'favourites',
+              as: 'favouriteDeal',
+              let: {
+                dealID: '$dealID',
+                customerMongoID: req?.user?.id
+              },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: { $and: [
+                      {
+                        $eq: ['$$dealID', '$dealID']
+                      },
+                      {
+                        $eq: ['$$customerMongoID', '$customerMongoID']
+                      }
+                    ] },
+                  },
+                },
+              ],
+            },
+          },
+          {
+            $unwind: {
+              path: '$favouriteDeal',
+              preserveNullAndEmptyArrays: true,
+            }
+          },
+          {
             $addFields: {
               id: '$_id',
               mediaUrl: {
@@ -2355,12 +2875,21 @@ export class DealService implements OnModuleInit {
                   1,
                 ],
               },
+              isFavourite: {
+                $cond: [
+                  {
+                    $ifNull: [
+                      '$favouriteDeal', false
+                    ]
+                  },
+                  true, false
+                ]
+              }
             },
           },
           {
             $project: {
               _id: 0,
-              dealID: 0,
               merchantMongoID: 0,
               merchantID: 0,
               subTitle: 0,
@@ -2384,6 +2913,7 @@ export class DealService implements OnModuleInit {
               endDate: 0,
               startDate: 0,
               reviewMediaUrl: 0,
+              favouriteDeal: 0
             },
           },
         ])
