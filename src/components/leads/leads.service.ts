@@ -33,9 +33,9 @@ export class LeadsService {
 
     const lead = await new this._leadModel(leadDto).save();
 
-    const res = await axios.get(
-      `https://www.zohoapis.eu/crm/v2/functions/createleadinzoho/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&enquiryid=${lead.id}`,
-    );
+    // const res = await axios.get(
+    //   `https://www.zohoapis.eu/crm/v2/functions/createleadinzoho/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&enquiryid=${lead.id}`,
+    // );
 
     return lead;
   }

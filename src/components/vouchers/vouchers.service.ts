@@ -1,4 +1,9 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { VOUCHERSTATUSENUM } from 'src/enum/voucher/voucherstatus.enum';
@@ -362,7 +367,7 @@ export class VouchersService {
     }
   }
 
-  async redeemVoucher(voucherId) {
+  async redeemVoucher(voucherId, req) {
     try {
       const voucherErrors = {
         Expired: 'Voucher Expired!',
@@ -376,9 +381,21 @@ export class VouchersService {
         deletedCheck: false,
       });
 
+      if (req.user.id != voucher.merchantMongoID) {
+        throw new UnauthorizedException('Not allowed to redeem voucher!');
+      }
+
       if (voucher) {
+        if (voucher.expiryDate < new Date().getTime()) {
+          voucher.status = 'Expired';
+        }
+
         if (voucherErrors[voucher.status]) {
-          throw new Error(voucherErrors[voucher.status]);
+          return {
+            status: 'error',
+            message: voucherErrors[voucher.status],
+            voucher,
+          };
         }
       }
 
@@ -390,9 +407,11 @@ export class VouchersService {
         userID: voucher.merchantID,
       });
 
+      let redeemDate = new Date().getTime();
+
       await this.voucherModel.updateOne(
         { voucherID: voucherId },
-        { status: VOUCHERSTATUSENUM.redeeemed },
+        { status: VOUCHERSTATUSENUM.redeeemed, redeemDate: redeemDate },
       );
 
       await this.userModel.updateOne(
@@ -400,7 +419,15 @@ export class VouchersService {
         { redeemedVouchers: merchant.redeemedVouchers + 1 },
       );
 
-      return { status: 'success', message: 'Voucher redeemed successfully' };
+      const updtaedVoucher = await this.voucherModel.findOne({
+        voucherID: voucherId,
+      });
+
+      return {
+        status: 'success',
+        message: 'Voucher redeemed successfully',
+        voucher:updtaedVoucher,
+      };
     } catch (err) {
       throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
@@ -490,8 +517,16 @@ export class VouchersService {
       });
 
       if (voucher) {
+        if (voucher.expiryDate < new Date().getTime()) {
+          voucher.status = 'Expired';
+        }
+
         if (voucherErrors[voucher.status]) {
-          throw new Error(voucherErrors[voucher.status]);
+          return {
+            status: 'error',
+            message: voucherErrors[voucher.status],
+            voucher,
+          };
         }
       }
 
@@ -507,17 +542,22 @@ export class VouchersService {
         throw new Error('Inavlid Pin Code!');
       }
 
+      let redeemDate = new Date().getTime();
+
       await this.voucherModel.updateOne(
         { voucherID: redeemVoucherDto.voucherID },
-        { status: VOUCHERSTATUSENUM.redeeemed },
+        { status: VOUCHERSTATUSENUM.redeeemed, redeemDate: redeemDate },
       );
 
-      await this.userModel.updateOne(
-        { userID: voucher.merchantID },
-        { redeemedVouchers: merchant.redeemedVouchers + 1 },
-      );
+      const updtaedVoucher = await this.voucherModel.findOne({
+        voucherID: redeemVoucherDto.voucherID,
+      });
 
-      return { status: 'success', message: 'Voucher redeemed successfully' };
+      return {
+        status: 'success',
+        message: 'Voucher redeemed successfully',
+        voucher:updtaedVoucher,
+      };
     } catch (err) {
       throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }

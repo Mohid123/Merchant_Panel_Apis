@@ -12,18 +12,18 @@ export interface SubDealInterface {
   grossEarning: number;
   netEarning: number;
   voucherValidity: number;
-  voucherStartDate: Date;
-  voucherEndDate: Date;
+  voucherStartDate: number;
+  voucherEndDate: number;
 }
 
 export interface MedialUrl {
-  type: string,
-  captureFileURL: string,
-  path: string,
-  thumbnailURL: string,
-  thumbnailPath: string,
-  blurHash: string,
-  backgroundColorHex: string,
+  type: string;
+  captureFileURL: string;
+  path: string;
+  thumbnailURL: string;
+  thumbnailPath: string;
+  blurHash: string;
+  backgroundColorHex: string;
 }
 
 export interface DealInterface extends Document {

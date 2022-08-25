@@ -27,6 +27,7 @@ import { StripePaymentDTO } from 'src/dto/stripe/stripe.dto';
 import { StripeService } from '../stripe/stripe.service';
 import { VoucherDto } from 'src/dto/vouchers/vouchers.dto';
 import { VOUCHERSTATUSENUM } from 'src/enum/voucher/voucherstatus.enum';
+import { BILLINGSTATUS } from 'src/enum/billing/billingStatus.enum';
 import { VouchersService } from '../vouchers/vouchers.service';
 import * as nodemailer from 'nodemailer';
 import { EmailDTO } from 'src/dto/email/email.dto';
@@ -166,7 +167,12 @@ export class DealService implements OnModuleInit {
           el.dealPrice = parseFloat(el.dealPrice);
           el.numberOfVouchers = parseInt(el.numberOfVouchers);
           el._id = generateStringId();
-          el.subDealID = dealDto.dealID + '-' + num++;
+          if (savedDeal) {
+            el.subDealID = savedDeal.dealID + '-' + num++;
+          } else {
+            el.subDealID = dealDto.dealID + '-' + num++;
+          }
+
           el.voucherStartDate = startTime;
           el.voucherEndDate = endTime;
 
@@ -235,9 +241,9 @@ export class DealService implements OnModuleInit {
 
       let returnedDeal = await this.dealModel.findOne({ _id: dealDto.id });
 
-      const res = await axios.get(
-        `https://www.zohoapis.eu/crm/v2/functions/createdraftdeal/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&dealid=${returnedDeal.dealID}`,
-      );
+      // const res = await axios.get(
+      //   `https://www.zohoapis.eu/crm/v2/functions/createdraftdeal/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&dealid=${returnedDeal.dealID}`,
+      // );
 
       return returnedDeal;
     } catch (err) {
@@ -425,9 +431,9 @@ export class DealService implements OnModuleInit {
 
       await this.dealModel.updateOne({ dealID: updateDealDto.dealID }, deal);
 
-      const res = await axios.get(
-        `https://www.zohoapis.eu/crm/v2/functions/createdraftdeal/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&dealid=${deal.dealID}`,
-      );
+      // const res = await axios.get(
+      //   `https://www.zohoapis.eu/crm/v2/functions/createdraftdeal/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&dealid=${deal.dealID}`,
+      // );
 
       return { message: 'Deal Updated Successfully' };
     } catch (err) {
@@ -1167,7 +1173,7 @@ export class DealService implements OnModuleInit {
             $unwind: {
               path: '$favouriteDeal',
               preserveNullAndEmptyArrays: true,
-            }
+            },
           },
           {
             $addFields: {
@@ -1189,13 +1195,12 @@ export class DealService implements OnModuleInit {
               isFavourite: {
                 $cond: [
                   {
-                    $ifNull: [
-                      '$favouriteDeal', false
-                    ]
+                    $ifNull: ['$favouriteDeal', false],
                   },
-                  true, false
-                ]
-              }
+                  true,
+                  false,
+                ],
+              },
             },
           },
           {
@@ -1224,7 +1229,7 @@ export class DealService implements OnModuleInit {
               endDate: 0,
               startDate: 0,
               reviewMediaUrl: 0,
-              favouriteDeal: 0
+              favouriteDeal: 0,
             },
           },
         ])
@@ -1340,7 +1345,7 @@ export class DealService implements OnModuleInit {
             $unwind: {
               path: '$favouriteDeal',
               preserveNullAndEmptyArrays: true,
-            }
+            },
           },
           {
             $addFields: {
@@ -1362,13 +1367,12 @@ export class DealService implements OnModuleInit {
               isFavourite: {
                 $cond: [
                   {
-                    $ifNull: [
-                      '$favouriteDeal', false
-                    ]
+                    $ifNull: ['$favouriteDeal', false],
                   },
-                  true, false
-                ]
-              }
+                  true,
+                  false,
+                ],
+              },
             },
           },
           {
@@ -1397,7 +1401,7 @@ export class DealService implements OnModuleInit {
               endDate: 0,
               startDate: 0,
               reviewMediaUrl: 0,
-              favouriteDeal: 0
+              favouriteDeal: 0,
             },
           },
         ])
@@ -1468,7 +1472,7 @@ export class DealService implements OnModuleInit {
             $unwind: {
               path: '$favouriteDeal',
               preserveNullAndEmptyArrays: true,
-            }
+            },
           },
           {
             $addFields: {
@@ -1490,13 +1494,12 @@ export class DealService implements OnModuleInit {
               isFavourite: {
                 $cond: [
                   {
-                    $ifNull: [
-                      '$favouriteDeal', false
-                    ]
+                    $ifNull: ['$favouriteDeal', false],
                   },
-                  true, false
-                ]
-              }
+                  true,
+                  false,
+                ],
+              },
             },
           },
           {
@@ -1613,7 +1616,7 @@ export class DealService implements OnModuleInit {
             $unwind: {
               path: '$favouriteDeal',
               preserveNullAndEmptyArrays: true,
-            }
+            },
           },
           {
             $addFields: {
@@ -1635,13 +1638,12 @@ export class DealService implements OnModuleInit {
               isFavourite: {
                 $cond: [
                   {
-                    $ifNull: [
-                      '$favouriteDeal', false
-                    ]
+                    $ifNull: ['$favouriteDeal', false],
                   },
-                  true, false
-                ]
-              }
+                  true,
+                  false,
+                ],
+              },
             },
           },
           {
@@ -1670,7 +1672,7 @@ export class DealService implements OnModuleInit {
               endDate: 0,
               startDate: 0,
               reviewMediaUrl: 0,
-              favouriteDeal: 0
+              favouriteDeal: 0,
             },
           },
         ])
@@ -1762,7 +1764,7 @@ export class DealService implements OnModuleInit {
             $unwind: {
               path: '$favouriteDeal',
               preserveNullAndEmptyArrays: true,
-            }
+            },
           },
           {
             $addFields: {
@@ -1783,13 +1785,12 @@ export class DealService implements OnModuleInit {
               isFavourite: {
                 $cond: [
                   {
-                    $ifNull: [
-                      '$favouriteDeal', false
-                    ]
+                    $ifNull: ['$favouriteDeal', false],
                   },
-                  true, false
-                ]
-              }
+                  true,
+                  false,
+                ],
+              },
             },
           },
           {
@@ -1820,7 +1821,7 @@ export class DealService implements OnModuleInit {
               endDate: 0,
               startDate: 0,
               reviewMediaUrl: 0,
-              favouriteDeal: 0
+              favouriteDeal: 0,
             },
           },
           {
@@ -1890,7 +1891,7 @@ export class DealService implements OnModuleInit {
             $unwind: {
               path: '$favouriteDeal',
               preserveNullAndEmptyArrays: true,
-            }
+            },
           },
           {
             $addFields: {
@@ -1912,13 +1913,12 @@ export class DealService implements OnModuleInit {
               isFavourite: {
                 $cond: [
                   {
-                    $ifNull: [
-                      '$favouriteDeal', false
-                    ]
+                    $ifNull: ['$favouriteDeal', false],
                   },
-                  true, false
-                ]
-              }
+                  true,
+                  false,
+                ],
+              },
             },
           },
           {
@@ -1947,7 +1947,7 @@ export class DealService implements OnModuleInit {
               endDate: 0,
               startDate: 0,
               reviewMediaUrl: 0,
-              favouriteDeal: 0
+              favouriteDeal: 0,
             },
           },
           {
@@ -2024,7 +2024,7 @@ export class DealService implements OnModuleInit {
             $unwind: {
               path: '$favouriteDeal',
               preserveNullAndEmptyArrays: true,
-            }
+            },
           },
           {
             $addFields: {
@@ -2046,13 +2046,12 @@ export class DealService implements OnModuleInit {
               isFavourite: {
                 $cond: [
                   {
-                    $ifNull: [
-                      '$favouriteDeal', false
-                    ]
+                    $ifNull: ['$favouriteDeal', false],
                   },
-                  true, false
-                ]
-              }
+                  true,
+                  false,
+                ],
+              },
             },
           },
           {
@@ -2081,7 +2080,7 @@ export class DealService implements OnModuleInit {
               endDate: 0,
               startDate: 0,
               reviewMediaUrl: 0,
-              favouriteDeal: 0
+              favouriteDeal: 0,
             },
           },
         ])
@@ -2178,7 +2177,7 @@ export class DealService implements OnModuleInit {
             $unwind: {
               path: '$favouriteDeal',
               preserveNullAndEmptyArrays: true,
-            }
+            },
           },
           {
             $addFields: {
@@ -2200,14 +2199,13 @@ export class DealService implements OnModuleInit {
               isFavourite: {
                 $cond: [
                   {
-                    $ifNull: [
-                      '$favouriteDeal', false
-                    ]
+                    $ifNull: ['$favouriteDeal', false],
                   },
-                  true, false
-                ]
-              }
-            }
+                  true,
+                  false,
+                ],
+              },
+            },
           },
           {
             $project: {
@@ -2235,9 +2233,9 @@ export class DealService implements OnModuleInit {
               endDate: 0,
               startDate: 0,
               reviewMediaUrl: 0,
-              favouriteDeal: 0
-            }
-          }
+              favouriteDeal: 0,
+            },
+          },
         ])
         .skip(parseInt(offset))
         .limit(parseInt(limit));
@@ -2257,7 +2255,7 @@ export class DealService implements OnModuleInit {
     reviewRating,
     offset,
     limit,
-    req
+    req,
   ) {
     try {
       offset = parseInt(offset) < 0 ? 0 : offset;
@@ -2388,7 +2386,7 @@ export class DealService implements OnModuleInit {
             $unwind: {
               path: '$favouriteDeal',
               preserveNullAndEmptyArrays: true,
-            }
+            },
           },
           {
             $addFields: {
@@ -2410,13 +2408,12 @@ export class DealService implements OnModuleInit {
               isFavourite: {
                 $cond: [
                   {
-                    $ifNull: [
-                      '$favouriteDeal', false
-                    ]
+                    $ifNull: ['$favouriteDeal', false],
                   },
-                  true, false
-                ]
-              }
+                  true,
+                  false,
+                ],
+              },
             },
           },
           {
@@ -2445,7 +2442,7 @@ export class DealService implements OnModuleInit {
               endDate: 0,
               startDate: 0,
               reviewMediaUrl: 0,
-              favouriteDeal: 0
+              favouriteDeal: 0,
             },
           },
         ])
@@ -2473,7 +2470,7 @@ export class DealService implements OnModuleInit {
     createdAt,
     offset,
     limit,
-    req
+    req,
   ) {
     try {
       offset = parseInt(offset) < 0 ? 0 : offset;
@@ -2617,7 +2614,7 @@ export class DealService implements OnModuleInit {
             $unwind: {
               path: '$favouriteDeal',
               preserveNullAndEmptyArrays: true,
-            }
+            },
           },
           {
             $addFields: {
@@ -2639,13 +2636,12 @@ export class DealService implements OnModuleInit {
               isFavourite: {
                 $cond: [
                   {
-                    $ifNull: [
-                      '$favouriteDeal', false
-                    ]
+                    $ifNull: ['$favouriteDeal', false],
                   },
-                  true, false
-                ]
-              }
+                  true,
+                  false,
+                ],
+              },
             },
           },
           {
@@ -2674,7 +2670,7 @@ export class DealService implements OnModuleInit {
               endDate: 0,
               startDate: 0,
               reviewMediaUrl: 0,
-              favouriteDeal: 0
+              favouriteDeal: 0,
             },
           },
         ])
@@ -2766,7 +2762,7 @@ export class DealService implements OnModuleInit {
             $unwind: {
               path: '$favouriteDeal',
               preserveNullAndEmptyArrays: true,
-            }
+            },
           },
           {
             $addFields: {
@@ -2787,13 +2783,12 @@ export class DealService implements OnModuleInit {
               isFavourite: {
                 $cond: [
                   {
-                    $ifNull: [
-                      '$favouriteDeal', false
-                    ]
+                    $ifNull: ['$favouriteDeal', false],
                   },
-                  true, false
-                ]
-              }
+                  true,
+                  false,
+                ],
+              },
             },
           },
           {
@@ -2824,7 +2819,7 @@ export class DealService implements OnModuleInit {
               endDate: 0,
               startDate: 0,
               reviewMediaUrl: 0,
-              favouriteDeal: 0
+              favouriteDeal: 0,
             },
           },
           {
@@ -2904,7 +2899,7 @@ export class DealService implements OnModuleInit {
             $unwind: {
               path: '$favouriteDeal',
               preserveNullAndEmptyArrays: true,
-            }
+            },
           },
           {
             $addFields: {
@@ -2926,13 +2921,12 @@ export class DealService implements OnModuleInit {
               isFavourite: {
                 $cond: [
                   {
-                    $ifNull: [
-                      '$favouriteDeal', false
-                    ]
+                    $ifNull: ['$favouriteDeal', false],
                   },
-                  true, false
-                ]
-              }
+                  true,
+                  false,
+                ],
+              },
             },
           },
           {
@@ -2961,7 +2955,7 @@ export class DealService implements OnModuleInit {
               endDate: 0,
               startDate: 0,
               reviewMediaUrl: 0,
-              favouriteDeal: 0
+              favouriteDeal: 0,
             },
           },
         ])
@@ -3280,6 +3274,15 @@ export class DealService implements OnModuleInit {
         }
       });
 
+      let expiryDate;
+
+      if (subDeal.voucherStartDate > 0) {
+        expiryDate = subDeal.voucherStartDate;
+      } else {
+        expiryDate =
+          new Date().getTime() + subDeal?.voucherValidity * 24 * 60 * 60 * 1000;
+      }
+
       let voucherDto: any = {
         voucherHeader: subDeal.title,
         dealHeader: deal.dealHeader,
@@ -3290,12 +3293,16 @@ export class DealService implements OnModuleInit {
         merchantID: deal.merchantID,
         merchantMongoID: merchant.id,
         affiliateID: buyNowDto.affiliateID,
-        customerID: req.user.id,
+        customerID: customer.userID,
+        affiliateMongoID: affiliate.id,
+        customerMongoID: customer.id,
         imageURL,
         dealPrice: subDeal.dealPrice,
         originalPrice: subDeal.originalPrice,
         discountedPercentage: subDeal.discountPercentage,
+        expiryDate,
         deletedCheck: false,
+        paymentStatus: BILLINGSTATUS.paid,
       };
 
       let vouchers: any = [];

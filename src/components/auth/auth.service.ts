@@ -281,7 +281,7 @@ export class AuthService {
       specialChars: false,
     });
 
-    let expiryTime = new Date(Date.now()).getTime() + 10 * 60 * 1000;
+    let expiryTime = new Date(Date.now()).getTime() + 1 * 60 * 1000;
 
     console.log(expiryTime);
 
