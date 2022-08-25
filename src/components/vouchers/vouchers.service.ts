@@ -377,11 +377,13 @@ export class VouchersService {
       });
 
       if (voucher) {
-        return {
-          status: 'error',
-          message: voucherErrors[voucher.status],
-          voucher,
-        };
+        if (voucherErrors[voucher.status]) {
+          return {
+            status: 'error',
+            message: voucherErrors[voucher.status],
+            voucher,
+          };
+        }
       }
 
       if (!voucher) {
