@@ -129,6 +129,8 @@ export class UsersController {
   @ApiQuery({ name: 'searchAffiliates', required: false })
   @ApiQuery({ name: 'sortAffiliates', enum: SORT, required: false })
   @ApiQuery({ name: 'categories', required: false })
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @Get('searchAllAffiliates')
   searchAllAffiliates (
     @Query('searchAffiliates') searchAffiliates: string = '',
@@ -136,30 +138,38 @@ export class UsersController {
     @Query('sortAffiliates') sortAffiliates: SORT,
     @Query('offset') offset: number = 0,
     @Query('limit') limit: number = 10,
+    @Req() req
   ) {
     return this._usersService.searchAllAffiliates(
       searchAffiliates,
       categories,
       sortAffiliates,
       offset,
-      limit
+      limit,
+      req
     )
   }
 
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @Get('getPopularAffiliates')
   getPopularAffiliates (
     @Query('offset') offset: number = 0,
     @Query('limit') limit: number = 10,
+    @Req() req
   ) {
-    return this._usersService.getPopularAffiliates(offset, limit);
+    return this._usersService.getPopularAffiliates(offset, limit, req);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @Get('getFavouriteAffiliates')
   getFavouriteAffiliates (
     @Query('offset') offset: number = 0,
     @Query('limit') limit: number = 10,
+    @Req() req
   ) {
-    return this._usersService.getFavouriteAffiliates(offset, limit)
+    return this._usersService.getFavouriteAffiliates(offset, limit, req)
   }
 
   @UseGuards(JwtAuthGuard)

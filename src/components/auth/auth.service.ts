@@ -422,7 +422,7 @@ export class AuthService {
                         <!-- COPY -->
                         <tr>
                           <td bgcolor="#FFFFFF" align="left" style="padding: 20px 30px 40px 30px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 18px; font-weight: 400; line-height: 25px;" >
-                            <p style="margin: 0;">Your OTP for password reset on <b>Divideals Merchant Panel</b> is generated. Please use this OTP to create new password. </p>
+                            <p style="margin: 0;">Your OTP for password reset on <b>Divideals ${user.role} Panel</b> is generated. Please use this OTP to create new password. </p>
                           </td>
                         </tr>
                         <!-- BULLETPROOF BUTTON -->

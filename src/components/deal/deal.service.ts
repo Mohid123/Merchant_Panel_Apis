@@ -1148,20 +1148,22 @@ export class DealService implements OnModuleInit {
               let: {
                 dealID: '$dealID',
                 customerMongoID: req?.user?.id,
+                deletedCheck:'$deletedCheck',
               },
               pipeline: [
                 {
                   $match: {
-                    $expr: {
-                      $and: [
-                        {
-                          $eq: ['$$dealID', '$dealID'],
-                        },
-                        {
-                          $eq: ['$$customerMongoID', '$customerMongoID'],
-                        },
-                      ],
-                    },
+                    $expr: { $and: [
+                      {
+                        $eq: ['$$dealID', '$dealID']
+                      },
+                      {
+                        $eq: ['$$customerMongoID', '$customerMongoID']
+                      },
+                      {
+                        $eq: ['$deletedCheck', false]
+                      }
+                    ] },
                   },
                 },
               ],
@@ -1318,20 +1320,22 @@ export class DealService implements OnModuleInit {
               let: {
                 dealID: '$dealID',
                 customerMongoID: req?.user?.id,
+                deletedCheck:'$deletedCheck',
               },
               pipeline: [
                 {
                   $match: {
-                    $expr: {
-                      $and: [
-                        {
-                          $eq: ['$$dealID', '$dealID'],
-                        },
-                        {
-                          $eq: ['$$customerMongoID', '$customerMongoID'],
-                        },
-                      ],
-                    },
+                    $expr: { $and: [
+                      {
+                        $eq: ['$$dealID', '$dealID']
+                      },
+                      {
+                        $eq: ['$$customerMongoID', '$customerMongoID']
+                      },
+                      {
+                        $eq: ['$deletedCheck', false]
+                      }
+                    ] },
                   },
                 },
               ],
@@ -1443,20 +1447,22 @@ export class DealService implements OnModuleInit {
               let: {
                 dealID: '$dealID',
                 customerMongoID: req?.user?.id,
+                deletedCheck:'$deletedCheck',
               },
               pipeline: [
                 {
                   $match: {
-                    $expr: {
-                      $and: [
-                        {
-                          $eq: ['$$dealID', '$dealID'],
-                        },
-                        {
-                          $eq: ['$$customerMongoID', '$customerMongoID'],
-                        },
-                      ],
-                    },
+                    $expr: { $and: [
+                      {
+                        $eq: ['$$dealID', '$dealID']
+                      },
+                      {
+                        $eq: ['$$customerMongoID', '$customerMongoID']
+                      },
+                      {
+                        $eq: ['$deletedCheck', false]
+                      }
+                    ] },
                   },
                 },
               ],
@@ -1522,7 +1528,7 @@ export class DealService implements OnModuleInit {
               endDate: 0,
               startDate: 0,
               reviewMediaUrl: 0,
-              favouriteDeal: 0,
+              // favouriteDeal: 0
             },
           },
         ])
@@ -1585,20 +1591,22 @@ export class DealService implements OnModuleInit {
               let: {
                 dealID: '$dealID',
                 customerMongoID: req?.user?.id,
+                deletedCheck:'$deletedCheck',
               },
               pipeline: [
                 {
                   $match: {
-                    $expr: {
-                      $and: [
-                        {
-                          $eq: ['$$dealID', '$dealID'],
-                        },
-                        {
-                          $eq: ['$$customerMongoID', '$customerMongoID'],
-                        },
-                      ],
-                    },
+                    $expr: { $and: [
+                      {
+                        $eq: ['$$dealID', '$dealID']
+                      },
+                      {
+                        $eq: ['$$customerMongoID', '$customerMongoID']
+                      },
+                      {
+                        $eq: ['$deletedCheck', false]
+                      }
+                    ] },
                   },
                 },
               ],
@@ -1731,20 +1739,22 @@ export class DealService implements OnModuleInit {
               let: {
                 dealID: '$dealID',
                 customerMongoID: req?.user?.id,
+                deletedCheck:'$deletedCheck',
               },
               pipeline: [
                 {
                   $match: {
-                    $expr: {
-                      $and: [
-                        {
-                          $eq: ['$$dealID', '$dealID'],
-                        },
-                        {
-                          $eq: ['$$customerMongoID', '$customerMongoID'],
-                        },
-                      ],
-                    },
+                    $expr: { $and: [
+                      {
+                        $eq: ['$$dealID', '$dealID']
+                      },
+                      {
+                        $eq: ['$$customerMongoID', '$customerMongoID']
+                      },
+                      {
+                        $eq: ['$deletedCheck', false]
+                      }
+                    ] },
                   },
                 },
               ],
@@ -1856,20 +1866,22 @@ export class DealService implements OnModuleInit {
               let: {
                 dealID: '$dealID',
                 customerMongoID: req?.user?.id,
+                deletedCheck:'$deletedCheck',
               },
               pipeline: [
                 {
                   $match: {
-                    $expr: {
-                      $and: [
-                        {
-                          $eq: ['$$dealID', '$dealID'],
-                        },
-                        {
-                          $eq: ['$$customerMongoID', '$customerMongoID'],
-                        },
-                      ],
-                    },
+                    $expr: { $and: [
+                      {
+                        $eq: ['$$dealID', '$dealID']
+                      },
+                      {
+                        $eq: ['$$customerMongoID', '$customerMongoID']
+                      },
+                      {
+                        $eq: ['$deletedCheck', false]
+                      }
+                    ] },
                   },
                 },
               ],
@@ -1987,20 +1999,22 @@ export class DealService implements OnModuleInit {
               let: {
                 dealID: '$dealID',
                 customerMongoID: req?.user?.id,
+                deletedCheck:'$deletedCheck',
               },
               pipeline: [
                 {
                   $match: {
-                    $expr: {
-                      $and: [
-                        {
-                          $eq: ['$$dealID', '$dealID'],
-                        },
-                        {
-                          $eq: ['$$customerMongoID', '$customerMongoID'],
-                        },
-                      ],
-                    },
+                    $expr: { $and: [
+                      {
+                        $eq: ['$$dealID', '$dealID']
+                      },
+                      {
+                        $eq: ['$$customerMongoID', '$customerMongoID']
+                      },
+                      {
+                        $eq: ['$deletedCheck', false]
+                      }
+                    ] },
                   },
                 },
               ],
@@ -2138,20 +2152,22 @@ export class DealService implements OnModuleInit {
               let: {
                 dealID: '$dealID',
                 customerMongoID: req?.user?.id,
+                deletedCheck:'$deletedCheck',
               },
               pipeline: [
                 {
                   $match: {
-                    $expr: {
-                      $and: [
-                        {
-                          $eq: ['$$dealID', '$dealID'],
-                        },
-                        {
-                          $eq: ['$$customerMongoID', '$customerMongoID'],
-                        },
-                      ],
-                    },
+                    $expr: { $and: [
+                      {
+                        $eq: ['$$dealID', '$dealID']
+                      },
+                      {
+                        $eq: ['$$customerMongoID', '$customerMongoID']
+                      },
+                      {
+                        $eq: ['$deletedCheck', false]
+                      }
+                    ] },
                   },
                 },
               ],
@@ -2345,20 +2361,22 @@ export class DealService implements OnModuleInit {
               let: {
                 dealID: '$dealID',
                 customerMongoID: req?.user?.id,
+                deletedCheck:'$deletedCheck',
               },
               pipeline: [
                 {
                   $match: {
-                    $expr: {
-                      $and: [
-                        {
-                          $eq: ['$$dealID', '$dealID'],
-                        },
-                        {
-                          $eq: ['$$customerMongoID', '$customerMongoID'],
-                        },
-                      ],
-                    },
+                    $expr: { $and: [
+                      {
+                        $eq: ['$$dealID', '$dealID']
+                      },
+                      {
+                        $eq: ['$$customerMongoID', '$customerMongoID']
+                      },
+                      {
+                        $eq: ['$deletedCheck', false]
+                      }
+                    ] },
                   },
                 },
               ],
@@ -2571,20 +2589,22 @@ export class DealService implements OnModuleInit {
               let: {
                 dealID: '$dealID',
                 customerMongoID: req?.user?.id,
+                deletedCheck:'$deletedCheck',
               },
               pipeline: [
                 {
                   $match: {
-                    $expr: {
-                      $and: [
-                        {
-                          $eq: ['$$dealID', '$dealID'],
-                        },
-                        {
-                          $eq: ['$$customerMongoID', '$customerMongoID'],
-                        },
-                      ],
-                    },
+                    $expr: { $and: [
+                      {
+                        $eq: ['$$dealID', '$dealID']
+                      },
+                      {
+                        $eq: ['$$customerMongoID', '$customerMongoID']
+                      },
+                      {
+                        $eq: ['$deletedCheck', false]
+                      }
+                    ] },
                   },
                 },
               ],
@@ -2717,20 +2737,22 @@ export class DealService implements OnModuleInit {
               let: {
                 dealID: '$dealID',
                 customerMongoID: req?.user?.id,
+                deletedCheck:'$deletedCheck',
               },
               pipeline: [
                 {
                   $match: {
-                    $expr: {
-                      $and: [
-                        {
-                          $eq: ['$$dealID', '$dealID'],
-                        },
-                        {
-                          $eq: ['$$customerMongoID', '$customerMongoID'],
-                        },
-                      ],
-                    },
+                    $expr: { $and: [
+                      {
+                        $eq: ['$$dealID', '$dealID']
+                      },
+                      {
+                        $eq: ['$$customerMongoID', '$customerMongoID']
+                      },
+                      {
+                        $eq: ['$deletedCheck', false]
+                      }
+                    ] },
                   },
                 },
               ],
@@ -2852,20 +2874,22 @@ export class DealService implements OnModuleInit {
               let: {
                 dealID: '$dealID',
                 customerMongoID: req?.user?.id,
+                deletedCheck:'$deletedCheck',
               },
               pipeline: [
                 {
                   $match: {
-                    $expr: {
-                      $and: [
-                        {
-                          $eq: ['$$dealID', '$dealID'],
-                        },
-                        {
-                          $eq: ['$$customerMongoID', '$customerMongoID'],
-                        },
-                      ],
-                    },
+                    $expr: { $and: [
+                      {
+                        $eq: ['$$dealID', '$dealID']
+                      },
+                      {
+                        $eq: ['$$customerMongoID', '$customerMongoID']
+                      },
+                      {
+                        $eq: ['$deletedCheck', false]
+                      }
+                    ] },
                   },
                 },
               ],
