@@ -7,10 +7,12 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { VOUCHERSTATUSENUM } from 'src/enum/voucher/voucherstatus.enum';
+import { Schedule } from 'src/interface/schedule/schedule.interface';
 import { UsersInterface } from 'src/interface/user/users.interface';
 import { VoucherInterface } from 'src/interface/vouchers/vouchers.interface';
 import { SORT } from '../../enum/sort/sort.enum';
 import { VoucherCounterInterface } from '../../interface/vouchers/vouchersCounter.interface';
+import { ScheduleService } from '../schedule/schedule.service';
 
 @Injectable()
 export class VouchersService {
@@ -21,6 +23,8 @@ export class VouchersService {
     private readonly voucherCounterModel: Model<VoucherCounterInterface>,
     @InjectModel('User')
     private readonly userModel: Model<UsersInterface>,
+    @InjectModel('Schedule') private _scheduleModel: Model<Schedule>,
+    private _scheduleService: ScheduleService,
   ) {}
 
   async generateVoucherId(sequenceName) {
@@ -47,6 +51,14 @@ export class VouchersService {
       voucherDto.boughtDate = timeStamp;
       voucherDto.voucherID = await this.generateVoucherId('voucherID');
       const voucher = new this.voucherModel(voucherDto);
+
+      this._scheduleService.scheduleVocuher({
+        scheduleDate: new Date(voucherDto.expiryDate),
+        status: 0,
+        type: 'expireVoucher',
+        dealID: voucherDto.voucherID,
+        deletedCheck: false,
+      });
 
       return await voucher.save();
     } catch (error) {
@@ -403,6 +415,15 @@ export class VouchersService {
         throw new Error('No found!');
       }
 
+      let scheduledVoucher = await this._scheduleModel.findOne({
+        dealID: voucher.voucherID,
+        status: 0,
+      });
+
+      if (scheduledVoucher) {
+        this._scheduleService.cancelJob(scheduledVoucher.id);
+      }
+
       const merchant = await this.userModel.findOne({
         userID: voucher.merchantID,
       });
@@ -426,7 +447,7 @@ export class VouchersService {
       return {
         status: 'success',
         message: 'Voucher redeemed successfully',
-        voucher:updtaedVoucher,
+        voucher: updtaedVoucher,
       };
     } catch (err) {
       throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
@@ -534,6 +555,15 @@ export class VouchersService {
         throw new Error('No found!');
       }
 
+      let scheduledVoucher = await this._scheduleModel.findOne({
+        dealID: voucher.voucherID,
+        status: 0,
+      });
+
+      if (scheduledVoucher) {
+        this._scheduleService.cancelJob(scheduledVoucher.id);
+      }
+
       const merchant = await this.userModel.findOne({
         userID: voucher.merchantID,
       });
@@ -556,7 +586,7 @@ export class VouchersService {
       return {
         status: 'success',
         message: 'Voucher redeemed successfully',
-        voucher:updtaedVoucher,
+        voucher: updtaedVoucher,
       };
     } catch (err) {
       throw new HttpException(err.message, HttpStatus.BAD_REQUEST);

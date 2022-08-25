@@ -7,8 +7,10 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { ScheduleDealDto } from 'src/dto/schedule/scheduleDeal.dto';
+import { VOUCHERSTATUSENUM } from 'src/enum/voucher/voucherstatus.enum';
 import { DealInterface } from 'src/interface/deal/deal.interface';
 import { Schedule } from 'src/interface/schedule/schedule.interface';
+import { VoucherInterface } from 'src/interface/vouchers/vouchers.interface';
 const nodeSchedule = require('node-schedule');
 
 @Injectable()
@@ -16,6 +18,8 @@ export class ScheduleService {
   constructor(
     @InjectModel('Schedule') private _scheduleModel: Model<Schedule>,
     @InjectModel('Deal') private _dealModel: Model<DealInterface>,
+    @InjectModel('Voucher')
+    private readonly _voucherModel: Model<VoucherInterface>,
   ) {}
 
   async retrieveJobs() {
@@ -40,13 +44,42 @@ export class ScheduleService {
         status = 'Published';
       } else if (jobDoc.type == 'expireDeal') {
         status = 'Expired';
+      } else if (jobDoc.type == 'expireVoucher') {
+        status = 'Expired';
       }
       await this.scheduleDealsFromDatabase(
         jobDoc.id,
         jobDoc.dealID,
         jobDoc.scheduleDate,
         status,
+        jobDoc.type,
       );
+    });
+  }
+
+  async scheduleVocuher(scheduleVocuherDto: ScheduleDealDto) {
+    const job = await new this._scheduleModel(scheduleVocuherDto).save();
+
+    nodeSchedule.scheduleJob(job.id, job.scheduleDate, async () => {
+      let status = '';
+      if (job.type == 'expireVoucher') {
+        status = VOUCHERSTATUSENUM.expired;
+      }
+
+      if (status == VOUCHERSTATUSENUM.expired) {
+        await this._voucherModel.updateOne(
+          { voucherID: job.dealID },
+          { status: status },
+        );
+
+        const voucher = await this._voucherModel.findOne({
+          voucherID: job.dealID,
+        });
+
+        await this._scheduleModel.updateOne({ _id: job.id }, { status: -1 });
+      }
+
+      console.log(`Voucher ${status}...`);
     });
   }
 
@@ -91,7 +124,7 @@ export class ScheduleService {
     });
   }
 
-  async scheduleDealsFromDatabase(id, dealID, scheduleDate, status) {
+  async scheduleDealsFromDatabase(id, dealID, scheduleDate, status, type) {
     nodeSchedule.scheduleJob(id, scheduleDate, async () => {
       if (status == 'Published') {
         await this._dealModel.updateOne(
@@ -110,10 +143,16 @@ export class ScheduleService {
         });
 
         await this._scheduleModel.updateOne({ _id: id }, { status: -1 });
-      } else if (status == 'Expired') {
+      } else if (status == 'Expired' && type == 'expireDeal') {
         await this._dealModel.updateOne(
           { dealID: dealID },
           { dealStatus: status },
+        );
+        await this._scheduleModel.updateOne({ _id: id }, { status: -1 });
+      } else if (status == 'Expired' && type == 'expireDeal') {
+        await this._voucherModel.updateOne(
+          { voucherID: dealID },
+          { status: status },
         );
         await this._scheduleModel.updateOne({ _id: id }, { status: -1 });
       }
