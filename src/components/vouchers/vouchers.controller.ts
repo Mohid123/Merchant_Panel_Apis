@@ -5,6 +5,7 @@ import {
   Param,
   Post,
   Query,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
@@ -106,8 +107,8 @@ export class VouchersController {
   @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'), JwtMerchantAuthGuard)
   @Get('redeemVoucher/:voucherId')
-  redeemVoucher(@Param('voucherId') voucherId: string) {
-    return this.voucherService.redeemVoucher(voucherId);
+  redeemVoucher(@Param('voucherId') voucherId: string, @Req() req) {
+    return this.voucherService.redeemVoucher(voucherId, req);
   }
 
   @Get('getVoucherByMongoId/:voucherId')

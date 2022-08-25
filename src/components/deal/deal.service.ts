@@ -27,6 +27,7 @@ import { StripePaymentDTO } from 'src/dto/stripe/stripe.dto';
 import { StripeService } from '../stripe/stripe.service';
 import { VoucherDto } from 'src/dto/vouchers/vouchers.dto';
 import { VOUCHERSTATUSENUM } from 'src/enum/voucher/voucherstatus.enum';
+import { BILLINGSTATUS } from 'src/enum/billing/billingStatus.enum';
 import { VouchersService } from '../vouchers/vouchers.service';
 import * as nodemailer from 'nodemailer';
 import { EmailDTO } from 'src/dto/email/email.dto';
@@ -3255,7 +3256,7 @@ export class DealService implements OnModuleInit {
         expiryDate = subDeal.voucherStartDate;
       } else {
         expiryDate =
-          new Date().getTime() + subDeal.voucherValidity * 24 * 60 * 60 * 1000;
+          new Date().getTime() + subDeal?.voucherValidity * 24 * 60 * 60 * 1000;
       }
 
       let voucherDto: any = {
@@ -3268,13 +3269,16 @@ export class DealService implements OnModuleInit {
         merchantID: deal.merchantID,
         merchantMongoID: merchant.id,
         affiliateID: buyNowDto.affiliateID,
-        customerID: req.user.id,
+        customerID: customer.userID,
+        affiliateMongoID: affiliate.id,
+        customerMongoID: customer.id,
         imageURL,
         dealPrice: subDeal.dealPrice,
         originalPrice: subDeal.originalPrice,
         discountedPercentage: subDeal.discountPercentage,
         expiryDate,
         deletedCheck: false,
+        paymentStatus: BILLINGSTATUS.paid,
       };
 
       let vouchers: any = [];
