@@ -107,7 +107,7 @@ export class FavouritesService {
         }
     }
 
-    async getFavouriteDeal (id) {
+    async getFavourite (id) {
         try {
             const favourite = await this.favouriteModel.aggregate([
                 {
@@ -134,7 +134,7 @@ export class FavouritesService {
         }
     }
 
-    async getAllFavouriteDeals (offset, limit) {
+    async getAllFavourites (offset, limit) {
         try {
             offset = parseInt(offset) < 0 ? 0 : offset;
             limit = parseInt(limit) < 1 ? 10 : limit;

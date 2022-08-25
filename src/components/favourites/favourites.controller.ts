@@ -29,26 +29,32 @@ export class FavouritesController {
         return this.favouriteService.addToAffiliateFavourites(affiliateFavouritesDto, req)
     }
 
-    @Post('removeFromFavourites/:id')
+    @Get('removeFromFavourites/:id')
     removeFromFavourites (
         @Param('id') id: string,
-        @Req() req
     ) {
-        return this.favouriteService.removeFromFavourites(id,req)
+        return this.favouriteService.removeFromFavourites(id)
     }
 
-    @Get('getFavouriteDeal/:id')
+    @Get('removeFromAffiliateFavourites')
+    removeFromAffiliateFavourites (
+        @Param('id') id: string,
+    ) {
+        return this.favouriteService.removeFromAffiliateFavourites(id)
+    }
+
+    @Get('getFavourite/:id')
     getFavourite (
         @Param('id') id: string
     ) {
-        return this.favouriteService.getFavouriteDeal(id)
+        return this.favouriteService.getFavourite(id)
     }
 
-    @Get('getAllFavouriteDeals')
-    getAllFavouriteDeals (
+    @Get('getAllFavourites')
+    getAllFavourites (
         @Query('offset') offset: number = 0,
         @Query('limit') limit: number = 10,
     ) {
-        return this.favouriteService.getAllFavouriteDeals(offset, limit)
+        return this.favouriteService.getAllFavourites(offset, limit)
     }
 }
