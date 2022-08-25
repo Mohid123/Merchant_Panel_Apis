@@ -445,7 +445,8 @@ export class UsersService {
     categories,
     Affiliates,
     offset,
-    limit
+    limit,
+    req
   ) {
     try {
       offset = parseInt(offset) < 0 ? 0 : offset;
@@ -514,13 +515,103 @@ export class UsersService {
           $sort: sort
         },
         {
+          $lookup: {
+            from: 'affiliateFvaourites',
+            as: 'favouriteAffiliate',
+            let: {
+              affiliateID: '$userID',
+              customerMongoID: req?.user?.id,
+              deletedCheck: '$deletedCheck',
+            },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $and:
+                    [
+                      {
+                        $eq: ['$$affiliateID', '$affiliateID']
+                      },
+                      {
+                        $eq: ['$$customerMongoID', '$customerMongoID']
+                      },
+                      {
+                        $eq: ['$deletedCheck', false]
+                      }
+                    ] 
+                  },
+                },
+              },
+            ],
+          },
+        },
+        {
+          $unwind: {
+            path: '$favouriteAffiliate',
+            preserveNullAndEmptyArrays: true,
+           }
+        },
+        {
           $addFields: {
-            id: '$_id'
+            id: '$_id',
+            isFavourite: {
+              $cond: [
+                {
+                  $ifNull: [
+                    '$favouriteAffiliate', false
+                  ]
+                },
+                true, false
+              ]
+            }
           }
         },
         {
           $project: {
-            _id: 0
+            _id: 0,
+            email: 0,
+            password: 0,
+            phoneNumber: 0,
+            businessType: 0,
+            legalName: 0,
+            tradeName: 0,
+            streetAddress: 0,
+            zipCode: 0,
+            city: 0,
+            vatNumber: 0,
+            iban: 0,
+            bic_swiftCode: 0,
+            accountHolder: 0,
+            bankName: 0,
+            kycStatus: 0,
+            province: 0,
+            website_socialAppLink: 0,
+            googleMapPin: 0,
+            businessHours: 0,
+            finePrint: 0,
+            aboutUs: 0,
+            gallery: 0,
+            newUser: 0,
+            totalVoucherSales: 0,
+            redeemedVouchers: 0,
+            purchasedVouchers: 0,
+            expiredVouchers: 0,
+            totalEarnings: 0,
+            paidEarnings: 0,
+            pendingEarnings: 0,
+            soldDeals: 0,
+            pendingDeals: 0,
+            totalDeals: 0,
+            scheduledDeals: 0,
+            countryCode: 0,
+            leadSource: 0,
+            ratingsAverage: 0,
+            totalReviews: 0,
+            maxRating: 0,
+            minRating: 0,
+            isSubscribed: 0,
+            __v: 0,
+            favouriteAffiliate: 0,
           }
         }
       ])
@@ -537,7 +628,7 @@ export class UsersService {
     }
   }
 
-  async getPopularAffiliates (offset, limit) {
+  async getPopularAffiliates (offset, limit, req) {
     try {
       offset = parseInt(offset) < 0 ? 0 : offset;
       limit = parseInt(limit) < 1 ? 10 : limit;
@@ -562,13 +653,103 @@ export class UsersService {
           }
         },
         {
+          $lookup: {
+            from: 'affiliateFvaourites',
+            as: 'favouriteAffiliate',
+            let: {
+              affiliateID: '$userID',
+              customerMongoID: req?.user?.id,
+              deletedCheck: '$deletedCheck',
+            },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $and:
+                    [
+                      {
+                        $eq: ['$$affiliateID', '$affiliateID']
+                      },
+                      {
+                        $eq: ['$$customerMongoID', '$customerMongoID']
+                      },
+                      {
+                        $eq: ['$deletedCheck', false]
+                      }
+                    ] 
+                  },
+                },
+              },
+            ],
+          },
+        },
+        {
+          $unwind: {
+            path: '$favouriteAffiliate',
+            preserveNullAndEmptyArrays: true,
+           }
+        },
+        {
           $addFields: {
-            id: '$_id'
+            id: '$_id',
+            isFavourite: {
+              $cond: [
+                {
+                  $ifNull: [
+                    '$favouriteAffiliate', false
+                  ]
+                },
+                true, false
+              ]
+            }
           }
         },
         {
           $project: {
-            _id: 0
+            _id: 0,
+            email: 0,
+            password: 0,
+            phoneNumber: 0,
+            businessType: 0,
+            legalName: 0,
+            tradeName: 0,
+            streetAddress: 0,
+            zipCode: 0,
+            city: 0,
+            vatNumber: 0,
+            iban: 0,
+            bic_swiftCode: 0,
+            accountHolder: 0,
+            bankName: 0,
+            kycStatus: 0,
+            province: 0,
+            website_socialAppLink: 0,
+            googleMapPin: 0,
+            businessHours: 0,
+            finePrint: 0,
+            aboutUs: 0,
+            gallery: 0,
+            newUser: 0,
+            totalVoucherSales: 0,
+            redeemedVouchers: 0,
+            purchasedVouchers: 0,
+            expiredVouchers: 0,
+            totalEarnings: 0,
+            paidEarnings: 0,
+            pendingEarnings: 0,
+            soldDeals: 0,
+            pendingDeals: 0,
+            totalDeals: 0,
+            scheduledDeals: 0,
+            countryCode: 0,
+            leadSource: 0,
+            ratingsAverage: 0,
+            totalReviews: 0,
+            maxRating: 0,
+            minRating: 0,
+            isSubscribed: 0,
+            __v: 0,
+            favouriteAffiliate: 0,
           }
         }
       ])
@@ -585,16 +766,80 @@ export class UsersService {
     }
   }
 
-  async getFavouriteAffiliates (offset, limit) {
+  async getFavouriteAffiliates (offset, limit, req) {
     try {
       offset = parseInt(offset) < 0 ? 0 : offset;
       limit = parseInt(limit) < 1 ? 10 : limit;
 
-      const totalCount = await this._userModel.countDocuments({
-        role: USERROLE.affiliate,
-        status: USERSTATUS.approved,
-        deletedCheck: false,
-      });
+      let totalCount = await this._userModel.aggregate([
+        {
+          $match: {
+            role: USERROLE.affiliate,
+            status: USERSTATUS.approved,
+            deletedCheck: false,
+          }
+        },
+        {
+          $sort: {
+            createdAt: -1
+          }
+        },
+        {
+          $lookup: {
+            from: 'affiliateFvaourites',
+            as: 'favouriteAffiliate',
+            let: {
+              affiliateID: '$userID',
+              customerMongoID: req?.user?.id,
+              deletedCheck: '$deletedCheck',
+            },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $and:
+                    [
+                      {
+                        $eq: ['$$affiliateID', '$affiliateID']
+                      },
+                      {
+                        $eq: ['$$customerMongoID', '$customerMongoID']
+                      },
+                      {
+                        $eq: ['$deletedCheck', false]
+                      }
+                    ] 
+                  },
+                },
+              },
+            ],
+          },
+        },
+        {
+          $unwind: {
+            path: '$favouriteAffiliate',
+           }
+        },
+        {
+          $addFields: {
+            id: '$_id',
+            isFavourite: {
+              $cond: [
+                {
+                  $ifNull: [
+                    '$favouriteAffiliate', false
+                  ]
+                },
+                true, false
+              ]
+            }
+          }
+        },
+        {
+          $count: 'totalCount',
+        },
+      ])
+      
 
       const affiliates = await this._userModel.aggregate([
         {
@@ -610,13 +855,102 @@ export class UsersService {
           }
         },
         {
+          $lookup: {
+            from: 'affiliateFvaourites',
+            as: 'favouriteAffiliate',
+            let: {
+              affiliateID: '$userID',
+              customerMongoID: req?.user?.id,
+              deletedCheck: '$deletedCheck',
+            },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $and:
+                    [
+                      {
+                        $eq: ['$$affiliateID', '$affiliateID']
+                      },
+                      {
+                        $eq: ['$$customerMongoID', '$customerMongoID']
+                      },
+                      {
+                        $eq: ['$deletedCheck', false]
+                      }
+                    ] 
+                  },
+                },
+              },
+            ],
+          },
+        },
+        {
+          $unwind: {
+            path: '$favouriteAffiliate',
+           }
+        },
+        {
           $addFields: {
-            id: '$_id'
+            id: '$_id',
+            isFavourite: {
+              $cond: [
+                {
+                  $ifNull: [
+                    '$favouriteAffiliate', false
+                  ]
+                },
+                true, false
+              ]
+            }
           }
         },
         {
           $project: {
-            _id: 0
+            _id: 0,
+            email: 0,
+            password: 0,
+            phoneNumber: 0,
+            businessType: 0,
+            legalName: 0,
+            tradeName: 0,
+            streetAddress: 0,
+            zipCode: 0,
+            city: 0,
+            vatNumber: 0,
+            iban: 0,
+            bic_swiftCode: 0,
+            accountHolder: 0,
+            bankName: 0,
+            kycStatus: 0,
+            province: 0,
+            website_socialAppLink: 0,
+            googleMapPin: 0,
+            businessHours: 0,
+            finePrint: 0,
+            aboutUs: 0,
+            gallery: 0,
+            newUser: 0,
+            totalVoucherSales: 0,
+            redeemedVouchers: 0,
+            purchasedVouchers: 0,
+            expiredVouchers: 0,
+            totalEarnings: 0,
+            paidEarnings: 0,
+            pendingEarnings: 0,
+            soldDeals: 0,
+            pendingDeals: 0,
+            totalDeals: 0,
+            scheduledDeals: 0,
+            countryCode: 0,
+            leadSource: 0,
+            ratingsAverage: 0,
+            totalReviews: 0,
+            maxRating: 0,
+            minRating: 0,
+            isSubscribed: 0,
+            __v: 0,
+            favouriteAffiliate: 0,
           }
         }
       ])
@@ -624,7 +958,7 @@ export class UsersService {
       .limit(parseInt(limit))
 
       return {
-        totalCount: totalCount,
+        totalCount: totalCount[0].totalCount,
         data: affiliates
       }
 

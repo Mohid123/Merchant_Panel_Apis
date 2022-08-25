@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { AffiliateFavouritesDto } from 'src/dto/affiliate/affiliate.dto';
 import { FavouritesDto } from 'src/dto/favourites/favourites.dto';
 import { UpdateFavourite } from 'src/dto/favourites/updatefavourite.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -18,6 +19,14 @@ export class FavouritesController {
         @Req() req
     ) {
         return this.favouriteService.addToFavourites(favouritesDto, req)
+    }
+
+    @Post('addToAffiliateFavourites')
+    addToAffiliateFavourites (
+        @Body() affiliateFavouritesDto: AffiliateFavouritesDto,
+        @Req() req
+    ) {
+        return this.favouriteService.addToAffiliateFavourites(affiliateFavouritesDto, req)
     }
 
     @Post('removeFromFavourites/:id')

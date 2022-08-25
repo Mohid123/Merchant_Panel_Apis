@@ -1141,7 +1141,8 @@ export class DealService implements OnModuleInit {
               as: 'favouriteDeal',
               let: {
                 dealID: '$dealID',
-                customerMongoID: req?.user?.id
+                customerMongoID: req?.user?.id,
+                deletedCheck:'$deletedCheck',
               },
               pipeline: [
                 {
@@ -1152,6 +1153,9 @@ export class DealService implements OnModuleInit {
                       },
                       {
                         $eq: ['$$customerMongoID', '$customerMongoID']
+                      },
+                      {
+                        $eq: ['$deletedCheck', false]
                       }
                     ] },
                   },
@@ -1310,7 +1314,8 @@ export class DealService implements OnModuleInit {
               as: 'favouriteDeal',
               let: {
                 dealID: '$dealID',
-                customerMongoID: req?.user?.id
+                customerMongoID: req?.user?.id,
+                deletedCheck:'$deletedCheck',
               },
               pipeline: [
                 {
@@ -1321,6 +1326,9 @@ export class DealService implements OnModuleInit {
                       },
                       {
                         $eq: ['$$customerMongoID', '$customerMongoID']
+                      },
+                      {
+                        $eq: ['$deletedCheck', false]
                       }
                     ] },
                   },
@@ -1434,7 +1442,8 @@ export class DealService implements OnModuleInit {
               as: 'favouriteDeal',
               let: {
                 dealID: '$dealID',
-                customerMongoID: req?.user?.id
+                customerMongoID: req?.user?.id,
+                deletedCheck:'$deletedCheck',
               },
               pipeline: [
                 {
@@ -1445,6 +1454,9 @@ export class DealService implements OnModuleInit {
                       },
                       {
                         $eq: ['$$customerMongoID', '$customerMongoID']
+                      },
+                      {
+                        $eq: ['$deletedCheck', false]
                       }
                     ] },
                   },
@@ -1513,7 +1525,7 @@ export class DealService implements OnModuleInit {
               endDate: 0,
               startDate: 0,
               reviewMediaUrl: 0,
-              favouriteDeal: 0
+              // favouriteDeal: 0
             },
           },
         ])
@@ -1575,7 +1587,8 @@ export class DealService implements OnModuleInit {
               as: 'favouriteDeal',
               let: {
                 dealID: '$dealID',
-                customerMongoID: req?.user?.id
+                customerMongoID: req?.user?.id,
+                deletedCheck:'$deletedCheck',
               },
               pipeline: [
                 {
@@ -1586,6 +1599,9 @@ export class DealService implements OnModuleInit {
                       },
                       {
                         $eq: ['$$customerMongoID', '$customerMongoID']
+                      },
+                      {
+                        $eq: ['$deletedCheck', false]
                       }
                     ] },
                   },
@@ -1720,7 +1736,8 @@ export class DealService implements OnModuleInit {
               as: 'favouriteDeal',
               let: {
                 dealID: '$dealID',
-                customerMongoID: req?.user?.id
+                customerMongoID: req?.user?.id,
+                deletedCheck:'$deletedCheck',
               },
               pipeline: [
                 {
@@ -1731,6 +1748,9 @@ export class DealService implements OnModuleInit {
                       },
                       {
                         $eq: ['$$customerMongoID', '$customerMongoID']
+                      },
+                      {
+                        $eq: ['$deletedCheck', false]
                       }
                     ] },
                   },
@@ -1844,7 +1864,8 @@ export class DealService implements OnModuleInit {
               as: 'favouriteDeal',
               let: {
                 dealID: '$dealID',
-                customerMongoID: req?.user?.id
+                customerMongoID: req?.user?.id,
+                deletedCheck:'$deletedCheck',
               },
               pipeline: [
                 {
@@ -1855,6 +1876,9 @@ export class DealService implements OnModuleInit {
                       },
                       {
                         $eq: ['$$customerMongoID', '$customerMongoID']
+                      },
+                      {
+                        $eq: ['$deletedCheck', false]
                       }
                     ] },
                   },
@@ -1974,7 +1998,8 @@ export class DealService implements OnModuleInit {
               as: 'favouriteDeal',
               let: {
                 dealID: '$dealID',
-                customerMongoID: req?.user?.id
+                customerMongoID: req?.user?.id,
+                deletedCheck:'$deletedCheck',
               },
               pipeline: [
                 {
@@ -1985,6 +2010,9 @@ export class DealService implements OnModuleInit {
                       },
                       {
                         $eq: ['$$customerMongoID', '$customerMongoID']
+                      },
+                      {
+                        $eq: ['$deletedCheck', false]
                       }
                     ] },
                   },
@@ -2124,7 +2152,8 @@ export class DealService implements OnModuleInit {
               as: 'favouriteDeal',
               let: {
                 dealID: '$dealID',
-                customerMongoID: req?.user?.id
+                customerMongoID: req?.user?.id,
+                deletedCheck:'$deletedCheck',
               },
               pipeline: [
                 {
@@ -2135,6 +2164,9 @@ export class DealService implements OnModuleInit {
                       },
                       {
                         $eq: ['$$customerMongoID', '$customerMongoID']
+                      },
+                      {
+                        $eq: ['$deletedCheck', false]
                       }
                     ] },
                   },
@@ -2330,7 +2362,8 @@ export class DealService implements OnModuleInit {
               as: 'favouriteDeal',
               let: {
                 dealID: '$dealID',
-                customerMongoID: req?.user?.id
+                customerMongoID: req?.user?.id,
+                deletedCheck:'$deletedCheck',
               },
               pipeline: [
                 {
@@ -2341,6 +2374,9 @@ export class DealService implements OnModuleInit {
                       },
                       {
                         $eq: ['$$customerMongoID', '$customerMongoID']
+                      },
+                      {
+                        $eq: ['$deletedCheck', false]
                       }
                     ] },
                   },
@@ -2555,7 +2591,8 @@ export class DealService implements OnModuleInit {
               as: 'favouriteDeal',
               let: {
                 dealID: '$dealID',
-                customerMongoID: req?.user?.id
+                customerMongoID: req?.user?.id,
+                deletedCheck:'$deletedCheck',
               },
               pipeline: [
                 {
@@ -2566,6 +2603,9 @@ export class DealService implements OnModuleInit {
                       },
                       {
                         $eq: ['$$customerMongoID', '$customerMongoID']
+                      },
+                      {
+                        $eq: ['$deletedCheck', false]
                       }
                     ] },
                   },
@@ -2700,7 +2740,8 @@ export class DealService implements OnModuleInit {
               as: 'favouriteDeal',
               let: {
                 dealID: '$dealID',
-                customerMongoID: req?.user?.id
+                customerMongoID: req?.user?.id,
+                deletedCheck:'$deletedCheck',
               },
               pipeline: [
                 {
@@ -2711,6 +2752,9 @@ export class DealService implements OnModuleInit {
                       },
                       {
                         $eq: ['$$customerMongoID', '$customerMongoID']
+                      },
+                      {
+                        $eq: ['$deletedCheck', false]
                       }
                     ] },
                   },
@@ -2834,7 +2878,8 @@ export class DealService implements OnModuleInit {
               as: 'favouriteDeal',
               let: {
                 dealID: '$dealID',
-                customerMongoID: req?.user?.id
+                customerMongoID: req?.user?.id,
+                deletedCheck:'$deletedCheck',
               },
               pipeline: [
                 {
@@ -2845,6 +2890,9 @@ export class DealService implements OnModuleInit {
                       },
                       {
                         $eq: ['$$customerMongoID', '$customerMongoID']
+                      },
+                      {
+                        $eq: ['$deletedCheck', false]
                       }
                     ] },
                   },
