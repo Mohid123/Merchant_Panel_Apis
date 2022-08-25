@@ -32,8 +32,9 @@ export class FavouritesController {
     @Get('removeFromFavourites/:id')
     removeFromFavourites (
         @Param('id') id: string,
+        @Req() req,
     ) {
-        return this.favouriteService.removeFromFavourites(id)
+        return this.favouriteService.removeFromFavourites(id,req)
     }
 
     @Get('removeFromAffiliateFavourites')
