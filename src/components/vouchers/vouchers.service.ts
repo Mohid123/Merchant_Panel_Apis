@@ -527,7 +527,7 @@ export class VouchersService {
       );
 
       const updtaedVoucher = await this.voucherModel.findOne({
-        voucherID: redeemVoucherDto.voucherId,
+        voucherID: redeemVoucherDto.voucherID,
       });
 
       return {
