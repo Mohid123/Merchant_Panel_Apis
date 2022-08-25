@@ -499,7 +499,11 @@ export class VouchersService {
 
       if (voucher) {
         if (voucherErrors[voucher.status]) {
-          throw new Error(voucherErrors[voucher.status]);
+          return {
+            status: 'error',
+            message: voucherErrors[voucher.status],
+            voucher,
+          };
         }
       }
 

@@ -43,17 +43,14 @@ export class FavouritesService {
         }
     }
 
-    async removeFromFavourites (id) {
-        const favourite = await this.favouriteModel.findOne({_id: id, deletedCheck: false});
-
-        if (!favourite) {
-            throw new HttpException('Favourite not found', HttpStatus.BAD_REQUEST);
-        } else {
-            await this.favouriteModel.updateOne({_id: id}, {deletedCheck:true});
+    async removeFromFavourites (id,req) {
+            await this.favouriteModel.updateOne({  
+                dealMongoID: id,
+                customerMongoID: req.user.id,
+            }, {deletedCheck:true});
             return {
                 message: 'Removed from favourites'
             }
-        }
     }
 
     async getFavouriteDeal (id) {
