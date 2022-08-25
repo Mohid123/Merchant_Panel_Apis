@@ -377,9 +377,11 @@ export class VouchersService {
       });
 
       if (voucher) {
-        if (voucherErrors[voucher.status]) {
-          throw new Error(voucherErrors[voucher.status]);
-        }
+        return {
+          status: 'error',
+          message: voucherErrors[voucher.status],
+          voucher,
+        };
       }
 
       if (!voucher) {
@@ -407,7 +409,7 @@ export class VouchersService {
       return {
         status: 'success',
         message: 'Voucher redeemed successfully',
-        updtaedVoucher,
+        voucher:updtaedVoucher,
       };
     } catch (err) {
       throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
@@ -531,7 +533,7 @@ export class VouchersService {
       return {
         status: 'success',
         message: 'Voucher redeemed successfully',
-        updtaedVoucher,
+        voucher:updtaedVoucher,
       };
     } catch (err) {
       throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
