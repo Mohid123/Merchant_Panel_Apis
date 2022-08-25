@@ -166,7 +166,9 @@ export class DealService implements OnModuleInit {
           el.dealPrice = parseFloat(el.dealPrice);
           el.numberOfVouchers = parseInt(el.numberOfVouchers);
           el._id = generateStringId();
-          el.subDealID = dealDto.dealID + '-' + num++;
+          el.subDealID = el.subDealID
+            ? el.subDealID
+            : dealDto.dealID + '-' + num++;
           el.voucherStartDate = startTime;
           el.voucherEndDate = endTime;
 
