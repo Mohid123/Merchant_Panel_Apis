@@ -29,6 +29,7 @@ export const VoucherSchema = new mongoose.Schema(
     originalPrice: { type: Number },
     discountedPercentage: { type: Number },
     deletedCheck: { type: Boolean, default: false },
+    redeemQR: { type: String, default: '' },
   },
   {
     collection: 'vouchers',
