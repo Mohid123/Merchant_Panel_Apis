@@ -25,6 +25,7 @@ import { ScheduleSchema } from './schema/schedule/schedule.schema';
 import { DealSchema } from './schema/deal/deal.schema';
 import { StripeModule } from './components/stripe/stripe.module';
 import { FavouritesModule } from './components/favourites/favourites.module';
+import { ViewsModule } from './components/views/views.module';
 
 @Module({
   imports: [
@@ -55,6 +56,7 @@ import { FavouritesModule } from './components/favourites/favourites.module';
     UtilModule,
     ScheduleModule,
     FavouritesModule,
+    ViewsModule,
     StripeModule,
   ],
   controllers: [AppController],

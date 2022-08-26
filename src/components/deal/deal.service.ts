@@ -32,6 +32,7 @@ import { VouchersService } from '../vouchers/vouchers.service';
 import * as nodemailer from 'nodemailer';
 import { EmailDTO } from 'src/dto/email/email.dto';
 import { getEmailHTML } from './email/emailHtml';
+import { ViewsService } from '../views/views.service';
 let transporter;
 
 @Injectable()
@@ -50,6 +51,7 @@ export class DealService implements OnModuleInit {
     private _scheduleService: ScheduleService,
     private _stripeService: StripeService,
     private _voucherService: VouchersService,
+    private viewsService: ViewsService
   ) {}
 
   onModuleInit() {
@@ -548,9 +550,16 @@ export class DealService implements OnModuleInit {
     }
   }
 
-  async getDeal(id) {
+  async getDeal(id, req) {
     try {
-      const deal = await this.dealModel
+
+      // let deal = await this.dealModel.findOne({
+      //   _id: id,
+      //   deletedCheck: false,
+      //   dealStatus: DEALSTATUS.published,
+      // });
+
+      let deal = await this.dealModel
         .aggregate([
           {
             $match: {
@@ -602,6 +611,17 @@ export class DealService implements OnModuleInit {
       if (!deal) {
         throw new HttpException('Deal not found!', HttpStatus.BAD_REQUEST);
       }
+
+      let viewsDto: any = {
+        dealMongoID: deal.id,
+        dealID: deal.dealID,
+        customerMongoID: req.user.id,
+        customerID: req.user.userID,
+        viewedTime: new Date().getTime(),
+      } 
+
+      await this.viewsService.createDealView(viewsDto, '');
+
       return deal;
     } catch (err) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
@@ -2966,6 +2986,158 @@ export class DealService implements OnModuleInit {
         totalCount: totalCount,
         deals: similarDeals,
       };
+    } catch (err) {
+      throw new HttpException(err, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async getRecentlyViewedDeals (offset, limit, req) {
+    try {
+      offset = parseInt(offset) < 0 ? 0 : offset;
+      limit = parseInt(limit) < 1 ? 10 : limit;
+
+      // const totalCount = await this.dealModel.countDocuments();
+
+      const deals = await this.dealModel.aggregate([
+        {
+          $match: {
+            deletedCheck: false,
+            dealStatus: DEALSTATUS.published,
+          }
+        },
+        {
+          $lookup: {
+            from: 'views',
+            as: 'recentlyViewed',
+            let: {
+              dealID: '$dealID',
+              customerMongoID: req?.user?.id,
+            },
+            pipeline: [
+              {
+                $match: {
+                  $expr: { $and: [
+                    {
+                      $eq: ['$$dealID', '$dealID']
+                    },
+                    {
+                      $eq: ['$$customerMongoID', '$customerMongoID']
+                    },
+                  ] },
+                },
+              },
+            ],
+          },
+        },
+        {
+          $unwind: {
+            path: '$recentlyViewed',
+          },
+        },
+        {
+          $lookup: {
+            from: 'favourites',
+            as: 'favouriteDeal',
+            let: {
+              dealID: '$dealID',
+              customerMongoID: req?.user?.id,
+              deletedCheck:'$deletedCheck',
+            },
+            pipeline: [
+              {
+                $match: {
+                  $expr: { $and: [
+                    {
+                      $eq: ['$$dealID', '$dealID']
+                    },
+                    {
+                      $eq: ['$$customerMongoID', '$customerMongoID']
+                    },
+                    {
+                      $eq: ['$deletedCheck', false]
+                    }
+                  ] },
+                },
+              },
+            ],
+          },
+        },
+        {
+          $unwind: {
+            path: '$favouriteDeal',
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $sort: {
+            createdAt: -1
+          }
+        },
+        {
+          $addFields: {
+            id: '$_id',
+            mediaUrl: {
+              $slice: [
+                {
+                  $filter: {
+                    input: '$mediaUrl',
+                    as: 'mediaUrl',
+                    cond: {
+                      $eq: ['$$mediaUrl.type', 'Image'],
+                    },
+                  },
+                },
+                1,
+              ],
+            },
+            isFavourite: {
+              $cond: [
+                {
+                  $ifNull: ['$favouriteDeal', false],
+                },
+                true,
+                false,
+              ],
+            },
+          }
+        },
+        {
+          $project: {
+            _id: 0,
+            merchantMongoID: 0,
+            merchantID: 0,
+            subTitle: 0,
+            categoryName: 0,
+            subCategoryID: 0,
+            subCategory: 0,
+            subDeals: 0,
+            availableVouchers: 0,
+            aboutThisDeal: 0,
+            readMore: 0,
+            finePrints: 0,
+            netEarnings: 0,
+            isCollapsed: 0,
+            isDuplicate: 0,
+            totalReviews: 0,
+            maxRating: 0,
+            minRating: 0,
+            pageNumber: 0,
+            updatedAt: 0,
+            __v: 0,
+            endDate: 0,
+            startDate: 0,
+            reviewMediaUrl: 0,
+            favouriteDeal: 0,
+          }
+        }
+      ])
+      .skip(parseInt(offset))
+      .limit(parseInt(limit))
+
+      return {
+        // totalCount: totalCount,
+        data: deals
+      }
     } catch (err) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
     }

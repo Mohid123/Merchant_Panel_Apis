@@ -68,9 +68,13 @@ export class DealController {
     return this.dealService.approveRejectDeal(dealID, dealStatusDto);
   }
 
+  @UseGuards(OptionalJwtAuthGuard)
+  @ApiBearerAuth()
   @Get('getDeal/:id')
-  getDeal(@Param('id') id: string) {
-    return this.dealService.getDeal(id);
+  getDeal(
+    @Param('id') id: string,
+    @Req() req) {
+    return this.dealService.getDeal(id, req);
   }
 
   @ApiBearerAuth()
@@ -393,6 +397,17 @@ export class DealController {
       limit,
       req
     );
+  }
+
+  @UseGuards(OptionalJwtAuthGuard)
+  @ApiBearerAuth()
+  @Get('getRecentlyViewedDeals')
+  getRecentlyViewedDeals (
+    @Query('offset') offset: number = 0,
+    @Query('limit') limit: number = 10,
+    @Req() req
+  ) {
+    return this.dealService.getRecentlyViewedDeals(offset, limit, req)
   }
 
   @ApiBearerAuth()

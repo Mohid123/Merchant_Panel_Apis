@@ -14,6 +14,8 @@ import { StripeSchema } from 'src/schema/stripe/stripe.schema';
 import { StripeModule } from '../stripe/stripe.module';
 import { VoucherSchema } from 'src/schema/vouchers/vouchers.schema';
 import { VouchersModule } from '../vouchers/vouchers.module';
+import { ViewsSchema } from 'src/schema/views/views.schema';
+import { ViewsService } from '../views/views.service';
 @Module({
   imports: [
     forwardRef(() => CategoryModule),
@@ -26,11 +28,12 @@ import { VouchersModule } from '../vouchers/vouchers.module';
       { name: 'Schedule', schema: ScheduleSchema },
       { name: 'Stripe', schema: StripeSchema },
       { name: 'Voucher', schema: VoucherSchema },
+      { name: 'views', schema: ViewsSchema },
     ]),
     StripeModule,
     VouchersModule,
   ],
   controllers: [DealController],
-  providers: [DealService, ScheduleService],
+  providers: [DealService, ScheduleService, ViewsService],
 })
 export class DealModule {}
