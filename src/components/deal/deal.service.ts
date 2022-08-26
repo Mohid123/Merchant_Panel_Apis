@@ -79,9 +79,9 @@ export class DealService {
       }
 
       if (dealDto.startDate && dealDto.endDate) {
-        let stamp = new Date(dealDto.startDate).setUTCHours(0,0,0,0);
+        let stamp = new Date(dealDto.startDate).setUTCHours(0, 0, 0, 0);
         dealDto.startDate = stamp;
-        stamp = new Date(dealDto.endDate).setUTCHours(23,59,59,0);
+        stamp = new Date(dealDto.endDate).setUTCHours(23, 59, 59, 0);
         dealDto.endDate = stamp;
       }
       if (!savedDeal) {
@@ -109,8 +109,8 @@ export class DealService {
           let endTime;
           if (el.originalPrice !== 0 || el.dealPrice !== 0) {
             let calculateDiscountPercentage =
-            ((el.originalPrice - el.dealPrice) / el.originalPrice) * 100;
-          el.discountPercentage = calculateDiscountPercentage;
+              ((el.originalPrice - el.dealPrice) / el.originalPrice) * 100;
+            el.discountPercentage = calculateDiscountPercentage;
           } else if (el.originalPrice == 0 && el.dealPrice == 0) {
             el.discountPercentage = 0;
           }
@@ -124,7 +124,6 @@ export class DealService {
           if (el.voucherValidity > 0) {
             startTime = 0;
             endTime = 0;
-
           } else {
             startTime = new Date(el.voucherStartDate).getTime();
             endTime = new Date(el.voucherEndDate).getTime();
@@ -134,7 +133,12 @@ export class DealService {
           el.dealPrice = parseFloat(el.dealPrice);
           el.numberOfVouchers = parseInt(el.numberOfVouchers);
           el._id = generateStringId();
-          el.subDealID = dealDto.dealID + '-' + num++;
+          if (savedDeal) {
+            el.subDealID = savedDeal.dealID + '-' + num++;
+          } else {
+            el.subDealID = dealDto.dealID + '-' + num++;
+          }
+
           el.voucherStartDate = startTime;
           el.voucherEndDate = endTime;
 
@@ -491,53 +495,54 @@ export class DealService {
 
   async getDeal(id) {
     try {
-      const deal = await this.dealModel.aggregate([
-        {
-          $match: {
-            _id: id,
-            deletedCheck: false,
-            dealStatus: DEALSTATUS.published,
-          }
-        },
-        {
-          $lookup: {
-            from: 'users',
-            as: 'merchantDetails',
-            let: {
-              merchantMongoID: "$merchantMongoID"
+      const deal = await this.dealModel
+        .aggregate([
+          {
+            $match: {
+              _id: id,
+              deletedCheck: false,
+              dealStatus: DEALSTATUS.published,
             },
-            pipeline: [
-              {
-                $match: { 
-                  $expr: { $eq: ["$$merchantMongoID", "$_id"] },
-                } 
-              },
-              {
-                $project: {
-                  _id: 1,
-                  legalName: 1,
-                  totalReviews: 1,
-                  ratingsAverage: 1
-                },
-              },
-            ],
           },
-        },
-        {
-          $unwind: '$merchantDetails'
-        },
-        {
-          $addFields: {
-            id: '$_id'
-          }
-        },
-        {
-          $project: {
-            _id: 0
-          }
-        }
-      ])
-      .then((items) => items[0]);
+          {
+            $lookup: {
+              from: 'users',
+              as: 'merchantDetails',
+              let: {
+                merchantMongoID: '$merchantMongoID',
+              },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: { $eq: ['$$merchantMongoID', '$_id'] },
+                  },
+                },
+                {
+                  $project: {
+                    _id: 1,
+                    legalName: 1,
+                    totalReviews: 1,
+                    ratingsAverage: 1,
+                  },
+                },
+              ],
+            },
+          },
+          {
+            $unwind: '$merchantDetails',
+          },
+          {
+            $addFields: {
+              id: '$_id',
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+            },
+          },
+        ])
+        .then((items) => items[0]);
 
       if (!deal) {
         throw new HttpException('Deal not found!', HttpStatus.BAD_REQUEST);
