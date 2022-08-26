@@ -114,7 +114,12 @@ let DealService = class DealService {
                     el.dealPrice = parseFloat(el.dealPrice);
                     el.numberOfVouchers = parseInt(el.numberOfVouchers);
                     el._id = (0, utils_1.generateStringId)();
-                    el.subDealID = dealDto.dealID + '-' + num++;
+                    if (savedDeal) {
+                        el.subDealID = savedDeal.dealID + '-' + num++;
+                    }
+                    else {
+                        el.subDealID = dealDto.dealID + '-' + num++;
+                    }
                     el.voucherStartDate = startTime;
                     el.voucherEndDate = endTime;
                     return el;
@@ -425,51 +430,52 @@ let DealService = class DealService {
     }
     async getDeal(id) {
         try {
-            const deal = await this.dealModel.aggregate([
+            const deal = await this.dealModel
+                .aggregate([
                 {
                     $match: {
                         _id: id,
                         deletedCheck: false,
                         dealStatus: dealstatus_enum_1.DEALSTATUS.published,
-                    }
+                    },
                 },
                 {
                     $lookup: {
                         from: 'users',
                         as: 'merchantDetails',
                         let: {
-                            merchantMongoID: "$merchantMongoID"
+                            merchantMongoID: '$merchantMongoID',
                         },
                         pipeline: [
                             {
                                 $match: {
-                                    $expr: { $eq: ["$$merchantMongoID", "$_id"] },
-                                }
+                                    $expr: { $eq: ['$$merchantMongoID', '$_id'] },
+                                },
                             },
                             {
                                 $project: {
                                     _id: 1,
                                     legalName: 1,
                                     totalReviews: 1,
-                                    ratingsAverage: 1
+                                    ratingsAverage: 1,
                                 },
                             },
                         ],
                     },
                 },
                 {
-                    $unwind: '$merchantDetails'
+                    $unwind: '$merchantDetails',
                 },
                 {
                     $addFields: {
-                        id: '$_id'
-                    }
+                        id: '$_id',
+                    },
                 },
                 {
                     $project: {
-                        _id: 0
-                    }
-                }
+                        _id: 0,
+                    },
+                },
             ])
                 .then((items) => items[0]);
             if (!deal) {
