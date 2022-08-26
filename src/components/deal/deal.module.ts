@@ -8,6 +8,14 @@ import { CategorySchema } from '../../schema/category/category.schema';
 import { VoucherCounterSchema } from '../../schema/vouchers/vouchersCounter.schema';
 import { SubCategorySchema } from '../../schema/category/subcategory.schema';
 import { UsersSchema } from 'src/schema/user/users.schema';
+import { ScheduleService } from '../schedule/schedule.service';
+import { ScheduleSchema } from 'src/schema/schedule/schedule.schema';
+import { StripeSchema } from 'src/schema/stripe/stripe.schema';
+import { StripeModule } from '../stripe/stripe.module';
+import { VoucherSchema } from 'src/schema/vouchers/vouchers.schema';
+import { VouchersModule } from '../vouchers/vouchers.module';
+import { ViewsSchema } from 'src/schema/views/views.schema';
+import { ViewsService } from '../views/views.service';
 @Module({
   imports: [
     forwardRef(() => CategoryModule),
@@ -16,10 +24,16 @@ import { UsersSchema } from 'src/schema/user/users.schema';
       { name: 'Category', schema: CategorySchema },
       { name: 'Counter', schema: VoucherCounterSchema },
       { name: 'SubCategory', schema: SubCategorySchema },
-       { name: 'User', schema: UsersSchema }
+      { name: 'User', schema: UsersSchema },
+      { name: 'Schedule', schema: ScheduleSchema },
+      { name: 'Stripe', schema: StripeSchema },
+      { name: 'Voucher', schema: VoucherSchema },
+      { name: 'views', schema: ViewsSchema },
     ]),
+    StripeModule,
+    VouchersModule,
   ],
   controllers: [DealController],
-  providers: [DealService],
+  providers: [DealService, ScheduleService, ViewsService],
 })
 export class DealModule {}

@@ -14,6 +14,7 @@ import { ApproveMerchantDTO } from 'src/dto/user/approveMerchant.dto';
 import { IsPasswordExistsDto } from 'src/dto/user/is-password-exists.dto';
 import { UpdatePasswordDto } from 'src/dto/user/updatepassword.dto';
 import { VoucherPinCodeDto } from 'src/dto/user/voucherpincode.dto';
+import { SORT } from 'src/enum/sort/sort.enum';
 import { USERSTATUS } from 'src/enum/user/userstatus.enum';
 import { KycDto } from '../../dto/user/kyc.dto';
 import { UpdateHoursDto } from '../../dto/user/updatehours.dto';
@@ -63,13 +64,15 @@ export class UsersController {
     return this._usersService.completeKYC(merchantID, kycDto);
   }
 
-
   @Post('updateVoucherPinCode/:merchantID')
-  updateVoucherPinCode (
+  updateVoucherPinCode(
     @Param('merchantID') merchantID: string,
-    @Body() voucherPinCodeDto: VoucherPinCodeDto
+    @Body() voucherPinCodeDto: VoucherPinCodeDto,
   ) {
-    return this._usersService.updateVoucherPinCode(merchantID, voucherPinCodeDto);
+    return this._usersService.updateVoucherPinCode(
+      merchantID,
+      voucherPinCodeDto,
+    );
   }
 
   @UseGuards(JwtAuthGuard)
@@ -102,10 +105,8 @@ export class UsersController {
   }
 
   @Get('getMerchantByID/:merchantID')
-  getMerchantByID (
-    @Param('merchantID') merchantID: string
-  ) {
-    return this._usersService.getMerchantByID(merchantID)
+  getMerchantByID(@Param('merchantID') merchantID: string) {
+    return this._usersService.getMerchantByID(merchantID);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -123,6 +124,52 @@ export class UsersController {
     @Query('limit') limit: number = 10,
   ) {
     return this._usersService.getAllUsers(offset, limit);
+  }
+
+  @ApiQuery({ name: 'searchAffiliates', required: false })
+  @ApiQuery({ name: 'sortAffiliates', enum: SORT, required: false })
+  @ApiQuery({ name: 'categories', required: false })
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Get('searchAllAffiliates')
+  searchAllAffiliates (
+    @Query('searchAffiliates') searchAffiliates: string = '',
+    @Query('categories') categories: string = '',
+    @Query('sortAffiliates') sortAffiliates: SORT,
+    @Query('offset') offset: number = 0,
+    @Query('limit') limit: number = 10,
+    @Req() req
+  ) {
+    return this._usersService.searchAllAffiliates(
+      searchAffiliates,
+      categories,
+      sortAffiliates,
+      offset,
+      limit,
+      req
+    )
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Get('getPopularAffiliates')
+  getPopularAffiliates (
+    @Query('offset') offset: number = 0,
+    @Query('limit') limit: number = 10,
+    @Req() req
+  ) {
+    return this._usersService.getPopularAffiliates(offset, limit, req);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Get('getFavouriteAffiliates')
+  getFavouriteAffiliates (
+    @Query('offset') offset: number = 0,
+    @Query('limit') limit: number = 10,
+    @Req() req
+  ) {
+    return this._usersService.getFavouriteAffiliates(offset, limit, req)
   }
 
   @UseGuards(JwtAuthGuard)
@@ -173,5 +220,17 @@ export class UsersController {
     @Body() approveMerchantDto: ApproveMerchantDTO,
   ) {
     return this._usersService.approveMerchant(id, approveMerchantDto);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtManagerAuthGuard)
+  @UseGuards(JwtAuthGuard)
+  @ApiQuery({ name: 'id', required: false })
+  @Post('approveAffiliate')
+  approveAffiliate(
+    @Query('id') id: string,
+    @Body() approveAffiliateDto: ApproveMerchantDTO,
+  ) {
+    return this._usersService.approveAffiliate(id, approveAffiliateDto);
   }
 }
