@@ -542,6 +542,8 @@ export class VouchersService {
             status: 1,
             paymentStatus: 1,
             boughtDate: 1,
+            expiryDate: 1,
+            redeemDate: 1,
             imageURL: 1,
             dealPrice: 1,
             originalPrice: 1,
