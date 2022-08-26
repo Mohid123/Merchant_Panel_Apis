@@ -125,8 +125,8 @@ export class DealService {
             startTime = 0;
             endTime = 0;
           } else {
-            startTime = new Date(el.voucherStartDate).getTime();
-            endTime = new Date(el.voucherEndDate).getTime();
+            startTime = new Date(el.voucherStartDate).setUTCHours(0, 0, 0, 0);
+            endTime = new Date(el.voucherEndDate).setUTCHours(23, 59, 59, 0);
           }
 
           el.originalPrice = parseFloat(el.originalPrice);
