@@ -7,10 +7,14 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { VOUCHERSTATUSENUM } from 'src/enum/voucher/voucherstatus.enum';
+import { Schedule } from 'src/interface/schedule/schedule.interface';
 import { UsersInterface } from 'src/interface/user/users.interface';
 import { VoucherInterface } from 'src/interface/vouchers/vouchers.interface';
 import { SORT } from '../../enum/sort/sort.enum';
 import { VoucherCounterInterface } from '../../interface/vouchers/vouchersCounter.interface';
+import { ScheduleService } from '../schedule/schedule.service';
+const qr = require('qrcode');
+import * as fs from 'fs';
 
 @Injectable()
 export class VouchersService {
@@ -21,6 +25,8 @@ export class VouchersService {
     private readonly voucherCounterModel: Model<VoucherCounterInterface>,
     @InjectModel('User')
     private readonly userModel: Model<UsersInterface>,
+    @InjectModel('Schedule') private _scheduleModel: Model<Schedule>,
+    private _scheduleService: ScheduleService,
   ) {}
 
   async generateVoucherId(sequenceName) {
@@ -46,11 +52,54 @@ export class VouchersService {
       let timeStamp = new Date().getTime();
       voucherDto.boughtDate = timeStamp;
       voucherDto.voucherID = await this.generateVoucherId('voucherID');
-      const voucher = new this.voucherModel(voucherDto);
+      let voucher = new this.voucherModel(voucherDto);
 
-      return await voucher.save();
+      this._scheduleService.scheduleVocuher({
+        scheduleDate: new Date(voucherDto.expiryDate),
+        status: 0,
+        type: 'expireVoucher',
+        dealID: voucherDto.voucherID,
+        deletedCheck: false,
+      });
+
+      voucher = await voucher.save();
+
+      let url = `${process.env.webBaseURL}/redeemVoucher/${voucher.id}`;
+
+      url = await this.generateQRCode(url);
+
+      await this.voucherModel.findByIdAndUpdate(voucher.id, { redeemQR: url });
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async generateQRCode(qrUrl) {
+    try {
+      const qrData = qrUrl;
+
+      let randomName = Array(32)
+        .fill(null)
+        .map(() => Math.round(Math.random() * 16).toString(16))
+        .join('');
+
+      const url = `${process.env.URL}media-upload/mediaFiles/qr/${randomName}.png`;
+
+      const src = await qr.toDataURL(qrData);
+
+      var base64Data = src.replace(/^data:image\/png;base64,/, '');
+
+      await fs.promises.writeFile(
+        `./mediaFiles/NFT/qr/${randomName}.png`,
+        base64Data,
+        'base64',
+      );
+
+      console.log('QR Code generated');
+
+      return url;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -403,20 +452,38 @@ export class VouchersService {
         throw new Error('No found!');
       }
 
+      let scheduledVoucher = await this._scheduleModel.findOne({
+        dealID: voucher.voucherID,
+        status: 0,
+      });
+
+      if (scheduledVoucher) {
+        this._scheduleService.cancelJob(scheduledVoucher.id);
+      }
+
       const merchant = await this.userModel.findOne({
         userID: voucher.merchantID,
       });
 
       let redeemDate = new Date().getTime();
 
+      const net = voucher.dealPrice - 0.05 * voucher.dealPrice; //five percent gosed to affliate
+
       await this.voucherModel.updateOne(
         { voucherID: voucherId },
-        { status: VOUCHERSTATUSENUM.redeeemed, redeemDate: redeemDate },
+        {
+          status: VOUCHERSTATUSENUM.redeeemed,
+          redeemDate: redeemDate,
+          net: net,
+        },
       );
 
       await this.userModel.updateOne(
         { userID: voucher.merchantID },
-        { redeemedVouchers: merchant.redeemedVouchers + 1 },
+        {
+          redeemedVouchers: merchant.redeemedVouchers + 1,
+          totalEarnings: merchant.totalEarnings + net,
+        },
       );
 
       const updtaedVoucher = await this.voucherModel.findOne({
@@ -426,7 +493,7 @@ export class VouchersService {
       return {
         status: 'success',
         message: 'Voucher redeemed successfully',
-        voucher:updtaedVoucher,
+        voucher: updtaedVoucher,
       };
     } catch (err) {
       throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
@@ -475,6 +542,8 @@ export class VouchersService {
             status: 1,
             paymentStatus: 1,
             boughtDate: 1,
+            expiryDate: 1,
+            redeemDate: 1,
             imageURL: 1,
             dealPrice: 1,
             originalPrice: 1,
@@ -534,6 +603,15 @@ export class VouchersService {
         throw new Error('No found!');
       }
 
+      let scheduledVoucher = await this._scheduleModel.findOne({
+        dealID: voucher.voucherID,
+        status: 0,
+      });
+
+      if (scheduledVoucher) {
+        this._scheduleService.cancelJob(scheduledVoucher.id);
+      }
+
       const merchant = await this.userModel.findOne({
         userID: voucher.merchantID,
       });
@@ -544,9 +622,23 @@ export class VouchersService {
 
       let redeemDate = new Date().getTime();
 
+      const net = voucher.dealPrice - 0.05 * voucher.dealPrice; //five percent gosed to affliate
+
       await this.voucherModel.updateOne(
         { voucherID: redeemVoucherDto.voucherID },
-        { status: VOUCHERSTATUSENUM.redeeemed, redeemDate: redeemDate },
+        {
+          status: VOUCHERSTATUSENUM.redeeemed,
+          redeemDate: redeemDate,
+          net: net,
+        },
+      );
+
+      await this.userModel.updateOne(
+        { userID: voucher.merchantID },
+        {
+          redeemedVouchers: merchant.redeemedVouchers + 1,
+          totalEarnings: merchant.totalEarnings + net,
+        },
       );
 
       const updtaedVoucher = await this.voucherModel.findOne({
@@ -556,7 +648,7 @@ export class VouchersService {
       return {
         status: 'success',
         message: 'Voucher redeemed successfully',
-        voucher:updtaedVoucher,
+        voucher: updtaedVoucher,
       };
     } catch (err) {
       throw new HttpException(err.message, HttpStatus.BAD_REQUEST);

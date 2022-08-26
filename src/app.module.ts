@@ -25,6 +25,7 @@ import { ScheduleSchema } from './schema/schedule/schedule.schema';
 import { DealSchema } from './schema/deal/deal.schema';
 import { StripeModule } from './components/stripe/stripe.module';
 import { FavouritesModule } from './components/favourites/favourites.module';
+import { VoucherSchema } from './schema/vouchers/vouchers.schema';
 import { ViewsModule } from './components/views/views.module';
 
 @Module({
@@ -38,6 +39,7 @@ import { ViewsModule } from './components/views/views.module';
     MongooseModule.forFeature([
       { name: 'Schedule', schema: ScheduleSchema },
       { name: 'Deal', schema: DealSchema },
+      { name: 'Voucher', schema: VoucherSchema },
     ]),
     UsersModule,
     DealModule,

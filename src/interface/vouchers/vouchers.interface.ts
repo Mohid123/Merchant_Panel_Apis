@@ -26,4 +26,5 @@ export interface VoucherInterface extends Document {
   originalPrice: number;
   discountedPercentage: number;
   deletedCheck: boolean;
+  redeemQR: string;
 }
