@@ -107,8 +107,7 @@ export class AuthService {
   async login(loginDto) {
     let user = await this._usersService.findOne({
       email: loginDto.email.toLowerCase(),
-      deletedCheck: false,
-      role: 'Merchant',
+      deletedCheck: false
     });
 
     if (!user) {
@@ -142,8 +141,7 @@ export class AuthService {
   async loginCustomer(loginDto) {
     let user = await this._usersService.findOne({
       email: loginDto.email.toLowerCase(),
-      deletedCheck: false,
-      role: 'Customer',
+      deletedCheck: false
     });
 
     if (!user) {
@@ -192,8 +190,7 @@ export class AuthService {
     loginDto.email = loginDto?.email?.toLowerCase();
     let user = await this._usersService.findOne({
       email: loginDto.email,
-      deletedCheck: false,
-      role: 'Merchant',
+      deletedCheck: false
     });
     if (user) {
       throw new ForbiddenException('Email already exists');
@@ -201,7 +198,7 @@ export class AuthService {
     loginDto._id = new Types.ObjectId().toString();
 
     loginDto.status = USERSTATUS.pending;
-    loginDto.role = 'Merchant';
+    loginDto.role = USERROLE.merchant;
     loginDto.tradeName = loginDto.companyName;
     loginDto.countryCode = 'BE';
     loginDto.leadSource = 'web';
@@ -212,8 +209,7 @@ export class AuthService {
     signupUserDto.email = signupUserDto?.email?.toLowerCase();
     let user = await this._usersService.findOne({
       email: signupUserDto.email,
-      deletedCheck: false,
-      role: 'Customer',
+      deletedCheck: false
     });
     if (user) {
       throw new ForbiddenException('Email already exists');
@@ -221,7 +217,7 @@ export class AuthService {
     signupUserDto._id = new Types.ObjectId().toString();
 
     signupUserDto.status = USERSTATUS.approved;
-    signupUserDto.role = 'Customer';
+    signupUserDto.role = USERROLE.customer;
     signupUserDto.userID = await this.generateCustomerId('customerID');
 
     const salt = await bcrypt.genSalt();
@@ -229,7 +225,12 @@ export class AuthService {
 
     signupUserDto.password = hashedPassword;
 
-    return await new this._usersService(signupUserDto).save();
+    let newUser = await new this._usersService(signupUserDto).save();
+    newUser = JSON.parse(JSON.stringify(newUser));
+
+    const token = this.generateToken(newUser);
+
+    return { newUser, token: token.access_token };
   }
 
   async sendMail(emailDto: EmailDTO) {
@@ -292,7 +293,7 @@ export class AuthService {
       specialChars: false,
     });
 
-    let expiryTime = new Date(Date.now()).getTime() + 10 * 60 * 1000;
+    let expiryTime = new Date(Date.now()).getTime() + 1 * 60 * 1000;
 
     console.log(expiryTime);
 
@@ -433,7 +434,7 @@ export class AuthService {
                         <!-- COPY -->
                         <tr>
                           <td bgcolor="#FFFFFF" align="left" style="padding: 20px 30px 40px 30px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 18px; font-weight: 400; line-height: 25px;" >
-                            <p style="margin: 0;">Your OTP for password reset on <b>Divideals Merchant Panel</b> is generated. Please use this OTP to create new password. </p>
+                            <p style="margin: 0;">Your OTP for password reset on <b>Divideals ${user.role} Panel</b> is generated. Please use this OTP to create new password. </p>
                           </td>
                         </tr>
                         <!-- BULLETPROOF BUTTON -->

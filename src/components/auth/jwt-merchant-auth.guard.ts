@@ -6,6 +6,6 @@ import { USERROLE } from '../../enum/user/userrole.enum';
 export class JwtMerchantAuthGuard extends AuthGuard('jwt') {
     canActivate(context: ExecutionContext): boolean {
         const { user } = context.switchToHttp().getRequest();
-        return USERROLE.merchant == user.role;
+        return (USERROLE.merchant  == user.role) || (USERROLE.admin == user.role);
       }
 }
