@@ -14,8 +14,10 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.VouchersController = void 0;
 const common_1 = require("@nestjs/common");
+const passport_1 = require("@nestjs/passport");
 const swagger_1 = require("@nestjs/swagger");
 const multiplevouchers_dto_1 = require("../../dto/vouchers/multiplevouchers.dto");
+const redeemVoucher_dto_1 = require("../../dto/vouchers/redeemVoucher.dto");
 const vouchers_dto_1 = require("../../dto/vouchers/vouchers.dto");
 const billingStatus_enum_1 = require("../../enum/billing/billingStatus.enum");
 const sort_enum_1 = require("../../enum/sort/sort.enum");
@@ -36,9 +38,19 @@ let VouchersController = class VouchersController {
     searchByVoucherId(merchantID, voucherId = '', offset = 0, limit = 10) {
         return this.voucherService.searchByVoucherId(merchantID, voucherId, offset, limit);
     }
+    redeemVoucher(voucherId, req) {
+        return this.voucherService.redeemVoucher(voucherId, req);
+    }
+    getVoucherByMongoId(voucherId) {
+        return this.voucherService.getVoucherByMongoId(voucherId);
+    }
+    redeemVoucherByMerchantPin(redeemVoucherDto) {
+        return this.voucherService.redeemVoucherByMerchantPin(redeemVoucherDto);
+    }
 };
 __decorate([
-    (0, common_1.UseGuards)(jwt_merchant_auth_guard_1.JwtMerchantAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt'), jwt_merchant_auth_guard_1.JwtMerchantAuthGuard),
     (0, common_1.Post)('createVoucher'),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
@@ -46,6 +58,8 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], VouchersController.prototype, "createVoucher", null);
 __decorate([
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, swagger_1.ApiQuery)({ name: 'deal', enum: sort_enum_1.SORT, required: false }),
     (0, swagger_1.ApiQuery)({ name: 'voucher', enum: sort_enum_1.SORT, required: false }),
     (0, swagger_1.ApiQuery)({ name: 'amount', enum: sort_enum_1.SORT, required: false }),
@@ -79,6 +93,8 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], VouchersController.prototype, "getAllVouchers", null);
 __decorate([
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, swagger_1.ApiQuery)({ name: 'voucherId', required: false }),
     (0, common_1.Get)('searchByVoucherId/:merchantID'),
     __param(0, (0, common_1.Param)('merchantID')),
@@ -89,9 +105,31 @@ __decorate([
     __metadata("design:paramtypes", [String, String, Number, Number]),
     __metadata("design:returntype", void 0)
 ], VouchersController.prototype, "searchByVoucherId", null);
-VouchersController = __decorate([
+__decorate([
     (0, swagger_1.ApiBearerAuth)(),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt'), jwt_merchant_auth_guard_1.JwtMerchantAuthGuard),
+    (0, common_1.Get)('redeemVoucher/:voucherId'),
+    __param(0, (0, common_1.Param)('voucherId')),
+    __param(1, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", void 0)
+], VouchersController.prototype, "redeemVoucher", null);
+__decorate([
+    (0, common_1.Get)('getVoucherByMongoId/:voucherId'),
+    __param(0, (0, common_1.Param)('voucherId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], VouchersController.prototype, "getVoucherByMongoId", null);
+__decorate([
+    (0, common_1.Post)('redeemVoucherByMerchantPin/'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [redeemVoucher_dto_1.RedeemVoucherDto]),
+    __metadata("design:returntype", void 0)
+], VouchersController.prototype, "redeemVoucherByMerchantPin", null);
+VouchersController = __decorate([
     (0, swagger_1.ApiTags)('Voucher'),
     (0, common_1.Controller)('voucher'),
     __metadata("design:paramtypes", [vouchers_service_1.VouchersService])

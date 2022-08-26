@@ -13,7 +13,7 @@ const userrole_enum_1 = require("../../enum/user/userrole.enum");
 let JwtMerchantAuthGuard = class JwtMerchantAuthGuard extends (0, passport_1.AuthGuard)('jwt') {
     canActivate(context) {
         const { user } = context.switchToHttp().getRequest();
-        return userrole_enum_1.USERROLE.merchant == user.role;
+        return (userrole_enum_1.USERROLE.merchant == user.role) || (userrole_enum_1.USERROLE.admin == user.role);
     }
 };
 JwtMerchantAuthGuard = __decorate([

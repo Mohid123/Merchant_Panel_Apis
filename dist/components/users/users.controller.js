@@ -20,6 +20,7 @@ const approveMerchant_dto_1 = require("../../dto/user/approveMerchant.dto");
 const is_password_exists_dto_1 = require("../../dto/user/is-password-exists.dto");
 const updatepassword_dto_1 = require("../../dto/user/updatepassword.dto");
 const voucherpincode_dto_1 = require("../../dto/user/voucherpincode.dto");
+const sort_enum_1 = require("../../enum/sort/sort.enum");
 const userstatus_enum_1 = require("../../enum/user/userstatus.enum");
 const kyc_dto_1 = require("../../dto/user/kyc.dto");
 const updatehours_dto_1 = require("../../dto/user/updatehours.dto");
@@ -65,6 +66,15 @@ let UsersController = class UsersController {
     getAllUsers(offset = 0, limit = 10) {
         return this._usersService.getAllUsers(offset, limit);
     }
+    searchAllAffiliates(searchAffiliates = '', categories = '', sortAffiliates, offset = 0, limit = 10, req) {
+        return this._usersService.searchAllAffiliates(searchAffiliates, categories, sortAffiliates, offset, limit, req);
+    }
+    getPopularAffiliates(offset = 0, limit = 10, req) {
+        return this._usersService.getPopularAffiliates(offset, limit, req);
+    }
+    getFavouriteAffiliates(offset = 0, limit = 10, req) {
+        return this._usersService.getFavouriteAffiliates(offset, limit, req);
+    }
     resetPassword(resetPasswordDto, req) {
         return this._usersService.resetPassword(resetPasswordDto, req);
     }
@@ -79,6 +89,9 @@ let UsersController = class UsersController {
     }
     approveMerchant(id, approveMerchantDto) {
         return this._usersService.approveMerchant(id, approveMerchantDto);
+    }
+    approveAffiliate(id, approveAffiliateDto) {
+        return this._usersService.approveAffiliate(id, approveAffiliateDto);
     }
 };
 __decorate([
@@ -183,6 +196,45 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "getAllUsers", null);
 __decorate([
+    (0, swagger_1.ApiQuery)({ name: 'searchAffiliates', required: false }),
+    (0, swagger_1.ApiQuery)({ name: 'sortAffiliates', enum: sort_enum_1.SORT, required: false }),
+    (0, swagger_1.ApiQuery)({ name: 'categories', required: false }),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.Get)('searchAllAffiliates'),
+    __param(0, (0, common_1.Query)('searchAffiliates')),
+    __param(1, (0, common_1.Query)('categories')),
+    __param(2, (0, common_1.Query)('sortAffiliates')),
+    __param(3, (0, common_1.Query)('offset')),
+    __param(4, (0, common_1.Query)('limit')),
+    __param(5, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, String, Number, Number, Object]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "searchAllAffiliates", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.Get)('getPopularAffiliates'),
+    __param(0, (0, common_1.Query)('offset')),
+    __param(1, (0, common_1.Query)('limit')),
+    __param(2, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, Number, Object]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "getPopularAffiliates", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.Get)('getFavouriteAffiliates'),
+    __param(0, (0, common_1.Query)('offset')),
+    __param(1, (0, common_1.Query)('limit')),
+    __param(2, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, Number, Object]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "getFavouriteAffiliates", null);
+__decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.Post)('/resetPassword'),
@@ -230,6 +282,18 @@ __decorate([
     __metadata("design:paramtypes", [String, approveMerchant_dto_1.ApproveMerchantDTO]),
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "approveMerchant", null);
+__decorate([
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)(jwt_manager_auth_guard_1.JwtManagerAuthGuard),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiQuery)({ name: 'id', required: false }),
+    (0, common_1.Post)('approveAffiliate'),
+    __param(0, (0, common_1.Query)('id')),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, approveMerchant_dto_1.ApproveMerchantDTO]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "approveAffiliate", null);
 UsersController = __decorate([
     (0, swagger_1.ApiTags)('Users'),
     (0, common_1.Controller)('users'),

@@ -15,7 +15,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.LeadsService = void 0;
 const common_1 = require("@nestjs/common");
 const mongoose_1 = require("@nestjs/mongoose");
-const axios_1 = require("axios");
 const mongoose_2 = require("mongoose");
 let LeadsService = class LeadsService {
     constructor(_leadModel) {
@@ -34,7 +33,6 @@ let LeadsService = class LeadsService {
         leadDto.countryCode = 'BE';
         leadDto.leadSource = 'web';
         const lead = await new this._leadModel(leadDto).save();
-        const res = await axios_1.default.get(`https://www.zohoapis.eu/crm/v2/functions/createleadinzoho/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&enquiryid=${lead.id}`);
         return lead;
     }
     async getLead(id) {

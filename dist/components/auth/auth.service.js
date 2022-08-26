@@ -85,8 +85,7 @@ let AuthService = class AuthService {
     async login(loginDto) {
         let user = await this._usersService.findOne({
             email: loginDto.email.toLowerCase(),
-            deletedCheck: false,
-            role: 'Merchant',
+            deletedCheck: false
         });
         if (!user) {
             throw new common_1.UnauthorizedException('Incorrect email!');
@@ -109,8 +108,7 @@ let AuthService = class AuthService {
     async loginCustomer(loginDto) {
         let user = await this._usersService.findOne({
             email: loginDto.email.toLowerCase(),
-            deletedCheck: false,
-            role: 'Customer',
+            deletedCheck: false
         });
         if (!user) {
             throw new common_1.UnauthorizedException('Incorrect email!');
@@ -146,15 +144,14 @@ let AuthService = class AuthService {
         loginDto.email = (_a = loginDto === null || loginDto === void 0 ? void 0 : loginDto.email) === null || _a === void 0 ? void 0 : _a.toLowerCase();
         let user = await this._usersService.findOne({
             email: loginDto.email,
-            deletedCheck: false,
-            role: 'Merchant',
+            deletedCheck: false
         });
         if (user) {
             throw new common_1.ForbiddenException('Email already exists');
         }
         loginDto._id = new mongoose_2.Types.ObjectId().toString();
         loginDto.status = userstatus_enum_1.USERSTATUS.pending;
-        loginDto.role = 'Merchant';
+        loginDto.role = userrole_enum_1.USERROLE.merchant;
         loginDto.tradeName = loginDto.companyName;
         loginDto.countryCode = 'BE';
         loginDto.leadSource = 'web';
@@ -165,20 +162,22 @@ let AuthService = class AuthService {
         signupUserDto.email = (_a = signupUserDto === null || signupUserDto === void 0 ? void 0 : signupUserDto.email) === null || _a === void 0 ? void 0 : _a.toLowerCase();
         let user = await this._usersService.findOne({
             email: signupUserDto.email,
-            deletedCheck: false,
-            role: 'Customer',
+            deletedCheck: false
         });
         if (user) {
             throw new common_1.ForbiddenException('Email already exists');
         }
         signupUserDto._id = new mongoose_2.Types.ObjectId().toString();
         signupUserDto.status = userstatus_enum_1.USERSTATUS.approved;
-        signupUserDto.role = 'Customer';
+        signupUserDto.role = userrole_enum_1.USERROLE.customer;
         signupUserDto.userID = await this.generateCustomerId('customerID');
         const salt = await bcrypt.genSalt();
         let hashedPassword = await bcrypt.hash(signupUserDto.password, salt);
         signupUserDto.password = hashedPassword;
-        return await new this._usersService(signupUserDto).save();
+        let newUser = await new this._usersService(signupUserDto).save();
+        newUser = JSON.parse(JSON.stringify(newUser));
+        const token = this.generateToken(newUser);
+        return { newUser, token: token.access_token };
     }
     async sendMail(emailDto) {
         var mailOptions = {
@@ -229,7 +228,7 @@ let AuthService = class AuthService {
             lowerCaseAlphabets: false,
             specialChars: false,
         });
-        let expiryTime = new Date(Date.now()).getTime() + 10 * 60 * 1000;
+        let expiryTime = new Date(Date.now()).getTime() + 1 * 60 * 1000;
         console.log(expiryTime);
         const otpObject = {
             otp,
@@ -359,7 +358,7 @@ let AuthService = class AuthService {
                         <!-- COPY -->
                         <tr>
                           <td bgcolor="#FFFFFF" align="left" style="padding: 20px 30px 40px 30px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 18px; font-weight: 400; line-height: 25px;" >
-                            <p style="margin: 0;">Your OTP for password reset on <b>Divideals Merchant Panel</b> is generated. Please use this OTP to create new password. </p>
+                            <p style="margin: 0;">Your OTP for password reset on <b>Divideals ${user.role} Panel</b> is generated. Please use this OTP to create new password. </p>
                           </td>
                         </tr>
                         <!-- BULLETPROOF BUTTON -->

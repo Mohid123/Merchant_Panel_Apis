@@ -4,6 +4,7 @@ import { ApproveMerchantDTO } from 'src/dto/user/approveMerchant.dto';
 import { IsPasswordExistsDto } from 'src/dto/user/is-password-exists.dto';
 import { UpdatePasswordDto } from 'src/dto/user/updatepassword.dto';
 import { VoucherPinCodeDto } from 'src/dto/user/voucherpincode.dto';
+import { SORT } from 'src/enum/sort/sort.enum';
 import { USERSTATUS } from 'src/enum/user/userstatus.enum';
 import { KycDto } from '../../dto/user/kyc.dto';
 import { UpdateHoursDto } from '../../dto/user/updatehours.dto';
@@ -35,6 +36,19 @@ export declare class UsersController {
         totalCount: number;
         data: any[];
     }>;
+    searchAllAffiliates(searchAffiliates: string, categories: string, sortAffiliates: SORT, offset: number, limit: number, req: any): Promise<{
+        totalCount: number;
+        filteredCount: number;
+        data: any[];
+    }>;
+    getPopularAffiliates(offset: number, limit: number, req: any): Promise<{
+        totalCount: number;
+        data: any[];
+    }>;
+    getFavouriteAffiliates(offset: number, limit: number, req: any): Promise<{
+        totalCount: any;
+        data: any[];
+    }>;
     resetPassword(resetPasswordDto: ResetPasswordDto, req: any): Promise<{
         message: string;
     }>;
@@ -49,5 +63,9 @@ export declare class UsersController {
     approveMerchant(id: string, approveMerchantDto: ApproveMerchantDTO): Promise<{
         enquiryID: any;
         merchantID: string;
+    }>;
+    approveAffiliate(id: string, approveAffiliateDto: ApproveMerchantDTO): Promise<{
+        enquiryID: any;
+        affliateID: string;
     }>;
 }

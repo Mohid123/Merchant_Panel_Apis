@@ -27,14 +27,37 @@ const dealstatus_enum_1 = require("../../enum/deal/dealstatus.enum");
 const utils_1 = require("../file-management/utils/utils");
 const sort_enum_1 = require("../../enum/sort/sort.enum");
 const ratingValue_enum_1 = require("../../enum/review/ratingValue.enum");
-const axios_1 = require("axios");
+const schedule_service_1 = require("../schedule/schedule.service");
+const stripe_service_1 = require("../stripe/stripe.service");
+const voucherstatus_enum_1 = require("../../enum/voucher/voucherstatus.enum");
+const billingStatus_enum_1 = require("../../enum/billing/billingStatus.enum");
+const vouchers_service_1 = require("../vouchers/vouchers.service");
+const nodemailer = require("nodemailer");
+const emailHtml_1 = require("./email/emailHtml");
+const views_service_1 = require("../views/views.service");
+let transporter;
 let DealService = class DealService {
-    constructor(dealModel, categorymodel, voucherCounterModel, subCategoryModel, _userModel) {
+    constructor(dealModel, categorymodel, voucherCounterModel, subCategoryModel, _userModel, _scheduleModel, _viewsModel, _scheduleService, _stripeService, _voucherService, viewsService) {
         this.dealModel = dealModel;
         this.categorymodel = categorymodel;
         this.voucherCounterModel = voucherCounterModel;
         this.subCategoryModel = subCategoryModel;
         this._userModel = _userModel;
+        this._scheduleModel = _scheduleModel;
+        this._viewsModel = _viewsModel;
+        this._scheduleService = _scheduleService;
+        this._stripeService = _stripeService;
+        this._voucherService = _voucherService;
+        this.viewsService = viewsService;
+    }
+    onModuleInit() {
+        transporter = nodemailer.createTransport({
+            service: 'Gmail',
+            auth: {
+                user: 'noreplydivideals@gmail.com',
+                pass: 'eyccuiqvdskyaknn',
+            },
+        });
     }
     async generateVoucherId(sequenceName) {
         const sequenceDocument = await this.voucherCounterModel.findByIdAndUpdate(sequenceName, {
@@ -188,7 +211,6 @@ let DealService = class DealService {
             }
             await this.dealModel.updateOne({ _id: dealDto.id }, dealDto);
             let returnedDeal = await this.dealModel.findOne({ _id: dealDto.id });
-            const res = await axios_1.default.get(`https://www.zohoapis.eu/crm/v2/functions/createdraftdeal/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&dealid=${returnedDeal.dealID}`);
             return returnedDeal;
         }
         catch (err) {
@@ -299,6 +321,24 @@ let DealService = class DealService {
             }
             if (updateDealDto.status) {
                 deal.dealStatus = statuses[updateDealDto.status];
+                if (updateDealDto.status == 'Rejected') {
+                    let scheduledDeal = await this._scheduleModel.findOne({
+                        dealID: deal.dealID,
+                        status: 0,
+                    });
+                    if (scheduledDeal) {
+                        this._scheduleService.cancelJob(scheduledDeal.id);
+                    }
+                }
+                if (updateDealDto.status == 'Scheduled') {
+                    this._scheduleService.scheduleDeal({
+                        scheduleDate: new Date(deal.startDate),
+                        status: 0,
+                        type: 'publishDeal',
+                        dealID: deal.dealID,
+                        deletedCheck: false,
+                    });
+                }
             }
             let dealVouchers = 0;
             deal.subDeals = deal.subDeals.map((element) => {
@@ -332,7 +372,6 @@ let DealService = class DealService {
             });
             deal.availableVouchers = dealVouchers;
             await this.dealModel.updateOne({ dealID: updateDealDto.dealID }, deal);
-            const res = await axios_1.default.get(`https://www.zohoapis.eu/crm/v2/functions/createdraftdeal/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&dealid=${deal.dealID}`);
             return { message: 'Deal Updated Successfully' };
         }
         catch (err) {
@@ -428,9 +467,9 @@ let DealService = class DealService {
             throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
         }
     }
-    async getDeal(id) {
+    async getDeal(id, req) {
         try {
-            const deal = await this.dealModel
+            let deal = await this.dealModel
                 .aggregate([
                 {
                     $match: {
@@ -481,6 +520,14 @@ let DealService = class DealService {
             if (!deal) {
                 throw new common_1.HttpException('Deal not found!', common_1.HttpStatus.BAD_REQUEST);
             }
+            let viewsDto = {
+                dealMongoID: deal.id,
+                dealID: deal.dealID,
+                customerMongoID: req.user.id,
+                customerID: req.user.userID,
+                viewedTime: new Date().getTime(),
+            };
+            await this.viewsService.createDealView(viewsDto, '');
             return deal;
         }
         catch (err) {
@@ -819,7 +866,8 @@ let DealService = class DealService {
             throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
         }
     }
-    async getDealsByMerchantIDForCustomerPanel(merchantID, offset, limit) {
+    async getDealsByMerchantIDForCustomerPanel(merchantID, offset, limit, req) {
+        var _a;
         try {
             offset = parseInt(offset) < 0 ? 0 : offset;
             limit = parseInt(limit) < 1 ? 10 : limit;
@@ -843,6 +891,42 @@ let DealService = class DealService {
                     },
                 },
                 {
+                    $lookup: {
+                        from: 'favourites',
+                        as: 'favouriteDeal',
+                        let: {
+                            dealID: '$dealID',
+                            customerMongoID: (_a = req === null || req === void 0 ? void 0 : req.user) === null || _a === void 0 ? void 0 : _a.id,
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$dealID', '$dealID'],
+                                            },
+                                            {
+                                                $eq: ['$$customerMongoID', '$customerMongoID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: {
+                        path: '$favouriteDeal',
+                        preserveNullAndEmptyArrays: true,
+                    },
+                },
+                {
                     $addFields: {
                         id: '$_id',
                         mediaUrl: {
@@ -859,12 +943,20 @@ let DealService = class DealService {
                                 1,
                             ],
                         },
+                        isFavourite: {
+                            $cond: [
+                                {
+                                    $ifNull: ['$favouriteDeal', false],
+                                },
+                                true,
+                                false,
+                            ],
+                        },
                     },
                 },
                 {
                     $project: {
                         _id: 0,
-                        dealID: 0,
                         merchantMongoID: 0,
                         merchantID: 0,
                         subTitle: 0,
@@ -887,6 +979,8 @@ let DealService = class DealService {
                         __v: 0,
                         endDate: 0,
                         startDate: 0,
+                        reviewMediaUrl: 0,
+                        favouriteDeal: 0,
                     },
                 },
             ])
@@ -923,8 +1017,10 @@ let DealService = class DealService {
             throw new common_1.HttpException(error.message, common_1.HttpStatus.BAD_REQUEST);
         }
     }
-    async getLowPriceDeals(price, offset, limit) {
+    async getLowPriceDeals(price, offset, limit, req) {
+        var _a;
         try {
+            debugger;
             price = parseFloat(price);
             offset = parseInt(offset) < 0 ? 0 : offset;
             limit = parseInt(limit) < 1 ? 10 : limit;
@@ -937,8 +1033,11 @@ let DealService = class DealService {
                     dealStatus: dealstatus_enum_1.DEALSTATUS.published,
                     subDeals: { $elemMatch: { dealPrice: { $lt: price } } },
                 });
+                if (price > 150) {
+                    break;
+                }
                 price = price + priceIncrease;
-            } while (totalCount < 8);
+            } while (totalCount < 6);
             price = price - priceIncrease;
             let filterValue = price;
             let deals = await this.dealModel
@@ -958,6 +1057,42 @@ let DealService = class DealService {
                     },
                 },
                 {
+                    $lookup: {
+                        from: 'favourites',
+                        as: 'favouriteDeal',
+                        let: {
+                            dealID: '$dealID',
+                            customerMongoID: (_a = req === null || req === void 0 ? void 0 : req.user) === null || _a === void 0 ? void 0 : _a.id,
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$dealID', '$dealID'],
+                                            },
+                                            {
+                                                $eq: ['$$customerMongoID', '$customerMongoID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: {
+                        path: '$favouriteDeal',
+                        preserveNullAndEmptyArrays: true,
+                    },
+                },
+                {
                     $addFields: {
                         id: '$_id',
                         mediaUrl: {
@@ -974,12 +1109,20 @@ let DealService = class DealService {
                                 1,
                             ],
                         },
+                        isFavourite: {
+                            $cond: [
+                                {
+                                    $ifNull: ['$favouriteDeal', false],
+                                },
+                                true,
+                                false,
+                            ],
+                        },
                     },
                 },
                 {
                     $project: {
                         _id: 0,
-                        dealID: 0,
                         merchantMongoID: 0,
                         merchantID: 0,
                         subTitle: 0,
@@ -1002,6 +1145,8 @@ let DealService = class DealService {
                         __v: 0,
                         endDate: 0,
                         startDate: 0,
+                        reviewMediaUrl: 0,
+                        favouriteDeal: 0,
                     },
                 },
             ])
@@ -1017,7 +1162,8 @@ let DealService = class DealService {
             throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
         }
     }
-    async getNewDeals(offset, limit) {
+    async getNewDeals(offset, limit, req) {
+        var _a;
         try {
             offset = parseInt(offset) < 0 ? 0 : offset;
             limit = parseInt(limit) < 1 ? 10 : limit;
@@ -1039,6 +1185,42 @@ let DealService = class DealService {
                     },
                 },
                 {
+                    $lookup: {
+                        from: 'favourites',
+                        as: 'favouriteDeal',
+                        let: {
+                            dealID: '$dealID',
+                            customerMongoID: (_a = req === null || req === void 0 ? void 0 : req.user) === null || _a === void 0 ? void 0 : _a.id,
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$dealID', '$dealID'],
+                                            },
+                                            {
+                                                $eq: ['$$customerMongoID', '$customerMongoID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: {
+                        path: '$favouriteDeal',
+                        preserveNullAndEmptyArrays: true,
+                    },
+                },
+                {
                     $addFields: {
                         id: '$_id',
                         mediaUrl: {
@@ -1055,12 +1237,20 @@ let DealService = class DealService {
                                 1,
                             ],
                         },
+                        isFavourite: {
+                            $cond: [
+                                {
+                                    $ifNull: ['$favouriteDeal', false],
+                                },
+                                true,
+                                false,
+                            ],
+                        },
                     },
                 },
                 {
                     $project: {
                         _id: 0,
-                        dealID: 0,
                         merchantMongoID: 0,
                         merchantID: 0,
                         subTitle: 0,
@@ -1083,6 +1273,7 @@ let DealService = class DealService {
                         __v: 0,
                         endDate: 0,
                         startDate: 0,
+                        reviewMediaUrl: 0,
                     },
                 },
             ])
@@ -1097,7 +1288,8 @@ let DealService = class DealService {
             throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
         }
     }
-    async getDiscountedDeals(percentage, offset, limit) {
+    async getDiscountedDeals(percentage, offset, limit, req) {
+        var _a;
         try {
             percentage = parseFloat(percentage);
             offset = parseInt(offset) < 0 ? 0 : offset;
@@ -1115,7 +1307,7 @@ let DealService = class DealService {
                 if (percentage > 95) {
                     break;
                 }
-            } while (totalCount < 8);
+            } while (totalCount < 6);
             percentage = percentage - 10;
             let filterValue = percentage;
             const deals = await this.dealModel
@@ -1135,6 +1327,42 @@ let DealService = class DealService {
                     },
                 },
                 {
+                    $lookup: {
+                        from: 'favourites',
+                        as: 'favouriteDeal',
+                        let: {
+                            dealID: '$dealID',
+                            customerMongoID: (_a = req === null || req === void 0 ? void 0 : req.user) === null || _a === void 0 ? void 0 : _a.id,
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$dealID', '$dealID'],
+                                            },
+                                            {
+                                                $eq: ['$$customerMongoID', '$customerMongoID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: {
+                        path: '$favouriteDeal',
+                        preserveNullAndEmptyArrays: true,
+                    },
+                },
+                {
                     $addFields: {
                         id: '$_id',
                         mediaUrl: {
@@ -1151,12 +1379,20 @@ let DealService = class DealService {
                                 1,
                             ],
                         },
+                        isFavourite: {
+                            $cond: [
+                                {
+                                    $ifNull: ['$favouriteDeal', false],
+                                },
+                                true,
+                                false,
+                            ],
+                        },
                     },
                 },
                 {
                     $project: {
                         _id: 0,
-                        dealID: 0,
                         merchantMongoID: 0,
                         merchantID: 0,
                         subTitle: 0,
@@ -1179,6 +1415,8 @@ let DealService = class DealService {
                         __v: 0,
                         endDate: 0,
                         startDate: 0,
+                        reviewMediaUrl: 0,
+                        favouriteDeal: 0,
                     },
                 },
             ])
@@ -1194,7 +1432,8 @@ let DealService = class DealService {
             throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
         }
     }
-    async getHotDeals(offset, limit) {
+    async getHotDeals(offset, limit, req) {
+        var _a;
         try {
             offset = parseInt(offset) < 0 ? 0 : offset;
             limit = parseInt(limit) < 1 ? 10 : limit;
@@ -1236,6 +1475,42 @@ let DealService = class DealService {
                     },
                 },
                 {
+                    $lookup: {
+                        from: 'favourites',
+                        as: 'favouriteDeal',
+                        let: {
+                            dealID: '$dealID',
+                            customerMongoID: (_a = req === null || req === void 0 ? void 0 : req.user) === null || _a === void 0 ? void 0 : _a.id,
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$dealID', '$dealID'],
+                                            },
+                                            {
+                                                $eq: ['$$customerMongoID', '$customerMongoID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: {
+                        path: '$favouriteDeal',
+                        preserveNullAndEmptyArrays: true,
+                    },
+                },
+                {
                     $addFields: {
                         mediaUrl: {
                             $slice: [
@@ -1251,6 +1526,15 @@ let DealService = class DealService {
                                 1,
                             ],
                         },
+                        isFavourite: {
+                            $cond: [
+                                {
+                                    $ifNull: ['$favouriteDeal', false],
+                                },
+                                true,
+                                false,
+                            ],
+                        },
                     },
                 },
                 {
@@ -1258,7 +1542,6 @@ let DealService = class DealService {
                         _id: 0,
                         added: 0,
                         divided: 0,
-                        dealID: 0,
                         merchantMongoID: 0,
                         merchantID: 0,
                         subTitle: 0,
@@ -1281,6 +1564,8 @@ let DealService = class DealService {
                         __v: 0,
                         endDate: 0,
                         startDate: 0,
+                        reviewMediaUrl: 0,
+                        favouriteDeal: 0,
                     },
                 },
                 {
@@ -1300,7 +1585,8 @@ let DealService = class DealService {
             throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
         }
     }
-    async getSpecialOfferDeals(offset, limit) {
+    async getSpecialOfferDeals(offset, limit, req) {
+        var _a;
         try {
             offset = parseInt(offset) < 0 ? 0 : offset;
             limit = parseInt(limit) < 1 ? 10 : limit;
@@ -1316,6 +1602,42 @@ let DealService = class DealService {
                         deletedCheck: false,
                         dealStatus: dealstatus_enum_1.DEALSTATUS.published,
                         isSpecialOffer: true,
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'favourites',
+                        as: 'favouriteDeal',
+                        let: {
+                            dealID: '$dealID',
+                            customerMongoID: (_a = req === null || req === void 0 ? void 0 : req.user) === null || _a === void 0 ? void 0 : _a.id,
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$dealID', '$dealID'],
+                                            },
+                                            {
+                                                $eq: ['$$customerMongoID', '$customerMongoID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: {
+                        path: '$favouriteDeal',
+                        preserveNullAndEmptyArrays: true,
                     },
                 },
                 {
@@ -1335,12 +1657,20 @@ let DealService = class DealService {
                                 1,
                             ],
                         },
+                        isFavourite: {
+                            $cond: [
+                                {
+                                    $ifNull: ['$favouriteDeal', false],
+                                },
+                                true,
+                                false,
+                            ],
+                        },
                     },
                 },
                 {
                     $project: {
                         _id: 0,
-                        dealID: 0,
                         merchantMongoID: 0,
                         merchantID: 0,
                         subTitle: 0,
@@ -1363,6 +1693,8 @@ let DealService = class DealService {
                         __v: 0,
                         endDate: 0,
                         startDate: 0,
+                        reviewMediaUrl: 0,
+                        favouriteDeal: 0,
                     },
                 },
                 {
@@ -1382,7 +1714,8 @@ let DealService = class DealService {
             throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
         }
     }
-    async getNewFavouriteDeal(offset, limit) {
+    async getNewFavouriteDeal(offset, limit, req) {
+        var _a;
         try {
             offset = parseInt(offset) < 0 ? 0 : offset;
             limit = parseInt(limit) < 1 ? 10 : limit;
@@ -1407,6 +1740,42 @@ let DealService = class DealService {
                     },
                 },
                 {
+                    $lookup: {
+                        from: 'favourites',
+                        as: 'favouriteDeal',
+                        let: {
+                            dealID: '$dealID',
+                            customerMongoID: (_a = req === null || req === void 0 ? void 0 : req.user) === null || _a === void 0 ? void 0 : _a.id,
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$dealID', '$dealID'],
+                                            },
+                                            {
+                                                $eq: ['$$customerMongoID', '$customerMongoID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: {
+                        path: '$favouriteDeal',
+                        preserveNullAndEmptyArrays: true,
+                    },
+                },
+                {
                     $addFields: {
                         id: '$_id',
                         mediaUrl: {
@@ -1423,12 +1792,20 @@ let DealService = class DealService {
                                 1,
                             ],
                         },
+                        isFavourite: {
+                            $cond: [
+                                {
+                                    $ifNull: ['$favouriteDeal', false],
+                                },
+                                true,
+                                false,
+                            ],
+                        },
                     },
                 },
                 {
                     $project: {
                         _id: 0,
-                        dealID: 0,
                         merchantMongoID: 0,
                         merchantID: 0,
                         subTitle: 0,
@@ -1451,6 +1828,8 @@ let DealService = class DealService {
                         __v: 0,
                         endDate: 0,
                         startDate: 0,
+                        reviewMediaUrl: 0,
+                        favouriteDeal: 0,
                     },
                 },
             ])
@@ -1465,7 +1844,8 @@ let DealService = class DealService {
             throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
         }
     }
-    async getNearByDeals(lat, lng, distance, offset, limit) {
+    async getNearByDeals(lat, lng, distance, offset, limit, req) {
+        var _a;
         try {
             offset = parseInt(offset) < 0 ? 0 : offset;
             limit = parseInt(limit) < 1 ? 10 : limit;
@@ -1478,65 +1858,241 @@ let DealService = class DealService {
                 lng = 4.351721;
                 radius = 20 / 6378.1;
             }
-            const deal = await this.dealModel
-                .aggregate([
-                {
-                    $match: {
-                        deletedCheck: false,
-                        dealStatus: dealstatus_enum_1.DEALSTATUS.published,
+            let deal;
+            let isFound = false;
+            while (!isFound) {
+                deal = await this.dealModel
+                    .aggregate([
+                    {
+                        $match: {
+                            deletedCheck: false,
+                            dealStatus: dealstatus_enum_1.DEALSTATUS.published,
+                        },
                     },
-                },
-                {
-                    $lookup: {
-                        from: 'locations',
-                        as: 'location',
-                        localField: 'merchantID',
-                        foreignField: 'merchantID',
+                    {
+                        $lookup: {
+                            from: 'locations',
+                            as: 'location',
+                            localField: 'merchantID',
+                            foreignField: 'merchantID',
+                        },
                     },
-                },
-                {
-                    $unwind: '$location',
-                },
-                {
-                    $addFields: {
-                        locationCoordinates: '$location.location',
+                    {
+                        $unwind: '$location',
                     },
-                },
-                {
-                    $match: {
-                        locationCoordinates: {
-                            $geoWithin: {
-                                $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+                    {
+                        $addFields: {
+                            locationCoordinates: '$location.location',
+                        },
+                    },
+                    {
+                        $match: {
+                            locationCoordinates: {
+                                $geoWithin: {
+                                    $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+                                },
                             },
                         },
                     },
-                },
-            ])
-                .skip(parseInt(offset))
-                .limit(parseInt(limit));
+                    {
+                        $lookup: {
+                            from: 'favourites',
+                            as: 'favouriteDeal',
+                            let: {
+                                dealID: '$dealID',
+                                customerMongoID: (_a = req === null || req === void 0 ? void 0 : req.user) === null || _a === void 0 ? void 0 : _a.id,
+                                deletedCheck: '$deletedCheck',
+                            },
+                            pipeline: [
+                                {
+                                    $match: {
+                                        $expr: {
+                                            $and: [
+                                                {
+                                                    $eq: ['$$dealID', '$dealID'],
+                                                },
+                                                {
+                                                    $eq: ['$$customerMongoID', '$customerMongoID'],
+                                                },
+                                                {
+                                                    $eq: ['$deletedCheck', false],
+                                                },
+                                            ],
+                                        },
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                    {
+                        $unwind: {
+                            path: '$favouriteDeal',
+                            preserveNullAndEmptyArrays: true,
+                        },
+                    },
+                    {
+                        $addFields: {
+                            id: '$_id',
+                            mediaUrl: {
+                                $slice: [
+                                    {
+                                        $filter: {
+                                            input: '$mediaUrl',
+                                            as: 'mediaUrl',
+                                            cond: {
+                                                $eq: ['$$mediaUrl.type', 'Image'],
+                                            },
+                                        },
+                                    },
+                                    1,
+                                ],
+                            },
+                            isFavourite: {
+                                $cond: [
+                                    {
+                                        $ifNull: ['$favouriteDeal', false],
+                                    },
+                                    true,
+                                    false,
+                                ],
+                            },
+                        },
+                    },
+                    {
+                        $project: {
+                            _id: 0,
+                            merchantMongoID: 0,
+                            merchantID: 0,
+                            subTitle: 0,
+                            categoryName: 0,
+                            subCategoryID: 0,
+                            subCategory: 0,
+                            subDeals: 0,
+                            availableVouchers: 0,
+                            aboutThisDeal: 0,
+                            readMore: 0,
+                            finePrints: 0,
+                            netEarnings: 0,
+                            isCollapsed: 0,
+                            isDuplicate: 0,
+                            totalReviews: 0,
+                            maxRating: 0,
+                            minRating: 0,
+                            pageNumber: 0,
+                            updatedAt: 0,
+                            __v: 0,
+                            endDate: 0,
+                            startDate: 0,
+                            reviewMediaUrl: 0,
+                            favouriteDeal: 0,
+                        },
+                    },
+                ])
+                    .skip(parseInt(offset))
+                    .limit(parseInt(limit));
+                if (deal.length > 0) {
+                    break;
+                }
+                lat = 33.5705073;
+                lng = 73.1434092;
+            }
             return deal;
         }
         catch (err) {
             console.log(err);
         }
     }
-    async searchDeals(header, offset, limit) {
+    async searchDeals(header, categoryName, subCategoryName, fromPrice, toPrice, reviewRating, offset, limit, req) {
+        var _a;
         try {
+            offset = parseInt(offset) < 0 ? 0 : offset;
+            limit = parseInt(limit) < 1 ? 10 : limit;
             header = header.trim();
             let filters = {};
             if (header.trim().length) {
                 var query = new RegExp(`${header}`, 'i');
                 filters = Object.assign(Object.assign({}, filters), { dealHeader: query });
             }
-            const totalCount = await this.dealModel.countDocuments(Object.assign({ deletedCheck: false, dealStatus: dealstatus_enum_1.DEALSTATUS.published }, filters));
+            let matchFilter = {};
+            if (categoryName) {
+                matchFilter = Object.assign(Object.assign({}, matchFilter), { categoryName: categoryName });
+            }
+            if (subCategoryName) {
+                matchFilter = Object.assign(Object.assign({}, matchFilter), { subCategory: subCategoryName });
+            }
+            let minValue = parseInt(fromPrice);
+            let maxValue = parseInt(toPrice);
+            if (fromPrice && toPrice) {
+                matchFilter = Object.assign(Object.assign({}, matchFilter), { minDealPrice: {
+                        $gte: minValue,
+                        $lte: maxValue,
+                    } });
+            }
+            else if (fromPrice) {
+                matchFilter = Object.assign(Object.assign({}, matchFilter), { minDealPrice: {
+                        $gte: minValue,
+                    } });
+            }
+            else if (toPrice) {
+                matchFilter = Object.assign(Object.assign({}, matchFilter), { minDealPrice: {
+                        $lte: maxValue,
+                    } });
+            }
+            let rating = parseFloat(reviewRating);
+            if (reviewRating) {
+                matchFilter = Object.assign(Object.assign({}, matchFilter), { ratingsAverage: {
+                        $gte: rating,
+                    } });
+            }
+            const totalCount = await this.dealModel.countDocuments({
+                deletedCheck: false,
+                dealStatus: dealstatus_enum_1.DEALSTATUS.published,
+            });
+            const filteredCount = await this.dealModel.countDocuments(Object.assign(Object.assign({ deletedCheck: false, dealStatus: dealstatus_enum_1.DEALSTATUS.published }, filters), matchFilter));
             const deals = await this.dealModel
                 .aggregate([
                 {
-                    $match: Object.assign({ deletedCheck: false, dealStatus: dealstatus_enum_1.DEALSTATUS.published }, filters),
+                    $match: Object.assign(Object.assign({ deletedCheck: false, dealStatus: dealstatus_enum_1.DEALSTATUS.published }, filters), matchFilter),
                 },
                 {
                     $sort: {
                         createdAt: -1,
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'favourites',
+                        as: 'favouriteDeal',
+                        let: {
+                            dealID: '$dealID',
+                            customerMongoID: (_a = req === null || req === void 0 ? void 0 : req.user) === null || _a === void 0 ? void 0 : _a.id,
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$dealID', '$dealID'],
+                                            },
+                                            {
+                                                $eq: ['$$customerMongoID', '$customerMongoID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: {
+                        path: '$favouriteDeal',
+                        preserveNullAndEmptyArrays: true,
                     },
                 },
                 {
@@ -1556,12 +2112,20 @@ let DealService = class DealService {
                                 1,
                             ],
                         },
+                        isFavourite: {
+                            $cond: [
+                                {
+                                    $ifNull: ['$favouriteDeal', false],
+                                },
+                                true,
+                                false,
+                            ],
+                        },
                     },
                 },
                 {
                     $project: {
                         _id: 0,
-                        dealID: 0,
                         merchantMongoID: 0,
                         merchantID: 0,
                         subTitle: 0,
@@ -1584,6 +2148,8 @@ let DealService = class DealService {
                         __v: 0,
                         endDate: 0,
                         startDate: 0,
+                        reviewMediaUrl: 0,
+                        favouriteDeal: 0,
                     },
                 },
             ])
@@ -1591,6 +2157,7 @@ let DealService = class DealService {
                 .limit(parseInt(limit));
             return {
                 totalDeals: totalCount,
+                filteredDeals: filteredCount,
                 data: deals,
             };
         }
@@ -1598,7 +2165,332 @@ let DealService = class DealService {
             throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
         }
     }
-    async getSimilarDeals(categoryName, subCategoryName, offset, limit) {
+    async getDealsByCategories(categoryName, subCategoryName, fromPrice, toPrice, reviewRating, price, ratingSort, createdAt, offset, limit, req) {
+        var _a;
+        try {
+            offset = parseInt(offset) < 0 ? 0 : offset;
+            limit = parseInt(limit) < 1 ? 10 : limit;
+            let matchFilter = {};
+            if (categoryName) {
+                matchFilter = Object.assign(Object.assign({}, matchFilter), { categoryName: categoryName });
+            }
+            if (subCategoryName) {
+                matchFilter = Object.assign(Object.assign({}, matchFilter), { subCategory: subCategoryName });
+            }
+            let minValue = parseInt(fromPrice);
+            let maxValue = parseInt(toPrice);
+            if (fromPrice && toPrice) {
+                matchFilter = Object.assign(Object.assign({}, matchFilter), { minDealPrice: {
+                        $gte: minValue,
+                        $lte: maxValue,
+                    } });
+            }
+            else if (fromPrice) {
+                matchFilter = Object.assign(Object.assign({}, matchFilter), { minDealPrice: {
+                        $gte: minValue,
+                    } });
+            }
+            else if (toPrice) {
+                matchFilter = Object.assign(Object.assign({}, matchFilter), { minDealPrice: {
+                        $lte: maxValue,
+                    } });
+            }
+            let rating = parseFloat(reviewRating);
+            if (reviewRating) {
+                matchFilter = Object.assign(Object.assign({}, matchFilter), { ratingsAverage: {
+                        $gte: rating,
+                    } });
+            }
+            let sort = {};
+            if (price) {
+                let sortPrice = price == sort_enum_1.SORT.ASC ? 1 : -1;
+                console.log('price');
+                sort = Object.assign(Object.assign({}, sort), { minDealPrice: sortPrice });
+            }
+            if (ratingSort) {
+                let sortRating = ratingSort == sort_enum_1.SORT.ASC ? 1 : -1;
+                console.log('ratingSort');
+                sort = Object.assign(Object.assign({}, sort), { ratingsAverage: sortRating });
+            }
+            if (createdAt) {
+                let sortTime = createdAt == sort_enum_1.SORT.ASC ? 1 : -1;
+                console.log('createdAt');
+                sort = Object.assign(Object.assign({}, sort), { createdAt: sortTime });
+            }
+            const totalCount = await this.dealModel.countDocuments({
+                deletedCheck: false,
+                dealStatus: dealstatus_enum_1.DEALSTATUS.published,
+            });
+            const filteredCount = await this.dealModel.countDocuments(Object.assign({ deletedCheck: false, dealStatus: dealstatus_enum_1.DEALSTATUS.published }, matchFilter));
+            const deals = await this.dealModel
+                .aggregate([
+                {
+                    $match: Object.assign({ deletedCheck: false, dealStatus: dealstatus_enum_1.DEALSTATUS.published }, matchFilter),
+                },
+                {
+                    $sort: sort,
+                },
+                {
+                    $lookup: {
+                        from: 'favourites',
+                        as: 'favouriteDeal',
+                        let: {
+                            dealID: '$dealID',
+                            customerMongoID: (_a = req === null || req === void 0 ? void 0 : req.user) === null || _a === void 0 ? void 0 : _a.id,
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$dealID', '$dealID'],
+                                            },
+                                            {
+                                                $eq: ['$$customerMongoID', '$customerMongoID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: {
+                        path: '$favouriteDeal',
+                        preserveNullAndEmptyArrays: true,
+                    },
+                },
+                {
+                    $addFields: {
+                        id: '$_id',
+                        mediaUrl: {
+                            $slice: [
+                                {
+                                    $filter: {
+                                        input: '$mediaUrl',
+                                        as: 'mediaUrl',
+                                        cond: {
+                                            $eq: ['$$mediaUrl.type', 'Image'],
+                                        },
+                                    },
+                                },
+                                1,
+                            ],
+                        },
+                        isFavourite: {
+                            $cond: [
+                                {
+                                    $ifNull: ['$favouriteDeal', false],
+                                },
+                                true,
+                                false,
+                            ],
+                        },
+                    },
+                },
+                {
+                    $project: {
+                        _id: 0,
+                        merchantMongoID: 0,
+                        merchantID: 0,
+                        subTitle: 0,
+                        categoryName: 0,
+                        subCategoryID: 0,
+                        subCategory: 0,
+                        subDeals: 0,
+                        availableVouchers: 0,
+                        aboutThisDeal: 0,
+                        readMore: 0,
+                        finePrints: 0,
+                        netEarnings: 0,
+                        isCollapsed: 0,
+                        isDuplicate: 0,
+                        totalReviews: 0,
+                        maxRating: 0,
+                        minRating: 0,
+                        pageNumber: 0,
+                        updatedAt: 0,
+                        __v: 0,
+                        endDate: 0,
+                        startDate: 0,
+                        reviewMediaUrl: 0,
+                        favouriteDeal: 0,
+                    },
+                },
+            ])
+                .skip(parseInt(offset))
+                .limit(parseInt(limit));
+            return {
+                totalDeals: totalCount,
+                filteredDeals: filteredCount,
+                data: deals,
+            };
+        }
+        catch (err) {
+            throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
+        }
+    }
+    async getTrendingDeals(offset, limit, req) {
+        var _a;
+        try {
+            offset = parseInt(offset) < 0 ? 0 : offset;
+            limit = parseInt(limit) < 1 ? 10 : limit;
+            const totalCount = await this.dealModel.countDocuments({
+                deletedCheck: false,
+                dealStatus: dealstatus_enum_1.DEALSTATUS.published,
+                availableVouchers: { $gt: 0 },
+                soldVouchers: { $gt: 0 },
+            });
+            const trendingDeals = await this.dealModel
+                .aggregate([
+                {
+                    $match: {
+                        deletedCheck: false,
+                        dealStatus: dealstatus_enum_1.DEALSTATUS.published,
+                        availableVouchers: { $gt: 0 },
+                        soldVouchers: { $gt: 0 },
+                    },
+                },
+                {
+                    $addFields: {
+                        id: '$_id',
+                        added: { $add: ['$soldVouchers', '$availableVouchers'] },
+                    },
+                },
+                {
+                    $addFields: {
+                        divided: { $divide: ['$soldVouchers', '$added'] },
+                        percent: {
+                            $multiply: ['$divided', 100],
+                        },
+                    },
+                },
+                {
+                    $addFields: {
+                        percent: {
+                            $multiply: ['$divided', 100],
+                        },
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'favourites',
+                        as: 'favouriteDeal',
+                        let: {
+                            dealID: '$dealID',
+                            customerMongoID: (_a = req === null || req === void 0 ? void 0 : req.user) === null || _a === void 0 ? void 0 : _a.id,
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$dealID', '$dealID'],
+                                            },
+                                            {
+                                                $eq: ['$$customerMongoID', '$customerMongoID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: {
+                        path: '$favouriteDeal',
+                        preserveNullAndEmptyArrays: true,
+                    },
+                },
+                {
+                    $addFields: {
+                        mediaUrl: {
+                            $slice: [
+                                {
+                                    $filter: {
+                                        input: '$mediaUrl',
+                                        as: 'mediaUrl',
+                                        cond: {
+                                            $eq: ['$$mediaUrl.type', 'Image'],
+                                        },
+                                    },
+                                },
+                                1,
+                            ],
+                        },
+                        isFavourite: {
+                            $cond: [
+                                {
+                                    $ifNull: ['$favouriteDeal', false],
+                                },
+                                true,
+                                false,
+                            ],
+                        },
+                    },
+                },
+                {
+                    $project: {
+                        _id: 0,
+                        added: 0,
+                        divided: 0,
+                        merchantMongoID: 0,
+                        merchantID: 0,
+                        subTitle: 0,
+                        categoryName: 0,
+                        subCategoryID: 0,
+                        subCategory: 0,
+                        subDeals: 0,
+                        availableVouchers: 0,
+                        aboutThisDeal: 0,
+                        readMore: 0,
+                        finePrints: 0,
+                        netEarnings: 0,
+                        isCollapsed: 0,
+                        isDuplicate: 0,
+                        totalReviews: 0,
+                        maxRating: 0,
+                        minRating: 0,
+                        pageNumber: 0,
+                        updatedAt: 0,
+                        __v: 0,
+                        endDate: 0,
+                        startDate: 0,
+                        reviewMediaUrl: 0,
+                        favouriteDeal: 0,
+                    },
+                },
+                {
+                    $sort: {
+                        percent: -1,
+                    },
+                },
+            ])
+                .skip(parseInt(offset))
+                .limit(parseInt(limit));
+            return {
+                totalDeals: totalCount,
+                data: trendingDeals,
+            };
+        }
+        catch (err) {
+            throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
+        }
+    }
+    async getSimilarDeals(categoryName, subCategoryName, offset, limit, req) {
+        var _a;
         try {
             offset = parseInt(offset) < 0 ? 0 : offset;
             limit = parseInt(limit) < 1 ? 10 : limit;
@@ -1624,6 +2516,42 @@ let DealService = class DealService {
                     },
                 },
                 {
+                    $lookup: {
+                        from: 'favourites',
+                        as: 'favouriteDeal',
+                        let: {
+                            dealID: '$dealID',
+                            customerMongoID: (_a = req === null || req === void 0 ? void 0 : req.user) === null || _a === void 0 ? void 0 : _a.id,
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$dealID', '$dealID'],
+                                            },
+                                            {
+                                                $eq: ['$$customerMongoID', '$customerMongoID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: {
+                        path: '$favouriteDeal',
+                        preserveNullAndEmptyArrays: true,
+                    },
+                },
+                {
                     $addFields: {
                         id: '$_id',
                         mediaUrl: {
@@ -1640,12 +2568,20 @@ let DealService = class DealService {
                                 1,
                             ],
                         },
+                        isFavourite: {
+                            $cond: [
+                                {
+                                    $ifNull: ['$favouriteDeal', false],
+                                },
+                                true,
+                                false,
+                            ],
+                        },
                     },
                 },
                 {
                     $project: {
                         _id: 0,
-                        dealID: 0,
                         merchantMongoID: 0,
                         merchantID: 0,
                         subTitle: 0,
@@ -1668,6 +2604,8 @@ let DealService = class DealService {
                         __v: 0,
                         endDate: 0,
                         startDate: 0,
+                        reviewMediaUrl: 0,
+                        favouriteDeal: 0,
                     },
                 },
             ])
@@ -1676,6 +2614,154 @@ let DealService = class DealService {
             return {
                 totalCount: totalCount,
                 deals: similarDeals,
+            };
+        }
+        catch (err) {
+            throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
+        }
+    }
+    async getRecentlyViewedDeals(offset, limit, req) {
+        var _a, _b;
+        try {
+            offset = parseInt(offset) < 0 ? 0 : offset;
+            limit = parseInt(limit) < 1 ? 10 : limit;
+            const deals = await this.dealModel.aggregate([
+                {
+                    $match: {
+                        deletedCheck: false,
+                        dealStatus: dealstatus_enum_1.DEALSTATUS.published,
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'views',
+                        as: 'recentlyViewed',
+                        let: {
+                            dealID: '$dealID',
+                            customerMongoID: (_a = req === null || req === void 0 ? void 0 : req.user) === null || _a === void 0 ? void 0 : _a.id,
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: { $and: [
+                                            {
+                                                $eq: ['$$dealID', '$dealID']
+                                            },
+                                            {
+                                                $eq: ['$$customerMongoID', '$customerMongoID']
+                                            },
+                                        ] },
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: {
+                        path: '$recentlyViewed',
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'favourites',
+                        as: 'favouriteDeal',
+                        let: {
+                            dealID: '$dealID',
+                            customerMongoID: (_b = req === null || req === void 0 ? void 0 : req.user) === null || _b === void 0 ? void 0 : _b.id,
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: { $and: [
+                                            {
+                                                $eq: ['$$dealID', '$dealID']
+                                            },
+                                            {
+                                                $eq: ['$$customerMongoID', '$customerMongoID']
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false]
+                                            }
+                                        ] },
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: {
+                        path: '$favouriteDeal',
+                        preserveNullAndEmptyArrays: true,
+                    },
+                },
+                {
+                    $sort: {
+                        createdAt: -1
+                    }
+                },
+                {
+                    $addFields: {
+                        id: '$_id',
+                        mediaUrl: {
+                            $slice: [
+                                {
+                                    $filter: {
+                                        input: '$mediaUrl',
+                                        as: 'mediaUrl',
+                                        cond: {
+                                            $eq: ['$$mediaUrl.type', 'Image'],
+                                        },
+                                    },
+                                },
+                                1,
+                            ],
+                        },
+                        isFavourite: {
+                            $cond: [
+                                {
+                                    $ifNull: ['$favouriteDeal', false],
+                                },
+                                true,
+                                false,
+                            ],
+                        },
+                    }
+                },
+                {
+                    $project: {
+                        _id: 0,
+                        merchantMongoID: 0,
+                        merchantID: 0,
+                        subTitle: 0,
+                        categoryName: 0,
+                        subCategoryID: 0,
+                        subCategory: 0,
+                        subDeals: 0,
+                        availableVouchers: 0,
+                        aboutThisDeal: 0,
+                        readMore: 0,
+                        finePrints: 0,
+                        netEarnings: 0,
+                        isCollapsed: 0,
+                        isDuplicate: 0,
+                        totalReviews: 0,
+                        maxRating: 0,
+                        minRating: 0,
+                        pageNumber: 0,
+                        updatedAt: 0,
+                        __v: 0,
+                        endDate: 0,
+                        startDate: 0,
+                        reviewMediaUrl: 0,
+                        favouriteDeal: 0,
+                    }
+                }
+            ])
+                .skip(parseInt(offset))
+                .limit(parseInt(limit));
+            return {
+                data: deals
             };
         }
         catch (err) {
@@ -1891,6 +2977,114 @@ let DealService = class DealService {
             finally { if (e_2) throw e_2.error; }
         }
     }
+    async buyNow(buyNowDto, req) {
+        try {
+            const deal = await this.dealModel.findOne({ dealID: buyNowDto.dealID });
+            const merchant = await this._userModel.findOne({
+                userID: deal.merchantID,
+                deletedCheck: false,
+            });
+            const customer = await this._userModel.findById(req.user.id);
+            const affiliate = await this._userModel.findOne({
+                userID: buyNowDto.affiliateID,
+                deletedCheck: false,
+            });
+            if (!affiliate) {
+                throw new Error('Affiliate doesnot exist!');
+            }
+            const subDeal = deal.subDeals.find((el) => el.subDealID == buyNowDto.subDealID);
+            if (subDeal.numberOfVouchers - subDeal.soldVouchers <
+                buyNowDto.quantity) {
+                throw new Error('Insufficent Quantity of deal present!');
+            }
+            let dealVouchers = 0, soldVouchers = 0;
+            deal.subDeals = deal.subDeals.map((element) => {
+                if (buyNowDto.subDealID === element['subDealID']) {
+                    element.soldVouchers += buyNowDto.quantity;
+                }
+                dealVouchers += element.numberOfVouchers;
+                soldVouchers += element.soldVouchers;
+                return element;
+            });
+            deal.soldVouchers = soldVouchers;
+            deal.availableVouchers = dealVouchers - soldVouchers;
+            let imageURL = {};
+            let payment = (subDeal.dealPrice * buyNowDto.quantity).toString();
+            let description = `Customer with id ${req.user.id} and email address ${customer.email} is buying ${buyNowDto.quantity} vouchers of sub deal ${subDeal.title}`;
+            let userId = req.user.id;
+            let card = buyNowDto.card;
+            let stripePaymentDto = {
+                card,
+                payment,
+                description,
+                userId,
+            };
+            const stripeResponse = await this._stripeService.checkout(stripePaymentDto, req);
+            deal === null || deal === void 0 ? void 0 : deal.mediaUrl.forEach((el) => {
+                if (el.type == 'Image' && Object.keys(imageURL).length === 0) {
+                    imageURL = Object.assign({}, el);
+                }
+            });
+            let expiryDate;
+            if (subDeal.voucherStartDate > 0) {
+                expiryDate = subDeal.voucherStartDate;
+            }
+            else {
+                expiryDate =
+                    new Date().getTime() + (subDeal === null || subDeal === void 0 ? void 0 : subDeal.voucherValidity) * 24 * 60 * 60 * 1000;
+            }
+            let voucherDto = {
+                voucherHeader: subDeal.title,
+                dealHeader: deal.dealHeader,
+                dealID: deal.dealID,
+                subDealID: subDeal.subDealID,
+                amount: subDeal.dealPrice,
+                status: voucherstatus_enum_1.VOUCHERSTATUSENUM.purchased,
+                merchantID: deal.merchantID,
+                merchantMongoID: merchant.id,
+                affiliateID: buyNowDto.affiliateID,
+                customerID: customer.userID,
+                affiliateMongoID: affiliate.id,
+                customerMongoID: customer.id,
+                imageURL,
+                dealPrice: subDeal.dealPrice,
+                originalPrice: subDeal.originalPrice,
+                discountedPercentage: subDeal.discountPercentage,
+                expiryDate,
+                deletedCheck: false,
+                paymentStatus: billingStatus_enum_1.BILLINGSTATUS.paid,
+            };
+            let vouchers = [];
+            for (let i = 0; i < buyNowDto.quantity; i++) {
+                vouchers.push = this._voucherService.createVoucher(voucherDto);
+            }
+            await Promise.all(vouchers);
+            const emailDto = (0, emailHtml_1.getEmailHTML)(customer.email, customer.firstName, customer.lastName);
+            await this.dealModel.updateOne({ dealID: buyNowDto.dealID }, deal);
+            await this._userModel.updateOne({ userID: deal.merchantID }, { purchasedVouchers: merchant.purchasedVouchers + buyNowDto.quantity });
+            this.sendMail(emailDto);
+            return { message: 'Purchase Successfull!' };
+        }
+        catch (err) {
+            throw new common_1.HttpException(err.message, common_1.HttpStatus.BAD_GATEWAY);
+        }
+    }
+    async sendMail(emailDto) {
+        var mailOptions = {
+            from: emailDto.from,
+            to: emailDto.to,
+            subject: emailDto.subject,
+            text: emailDto.text,
+            html: emailDto.html,
+        };
+        transporter.sendMail(mailOptions, function (error, response) {
+            if (error) {
+                console.log(error);
+            }
+            else {
+            }
+        });
+    }
 };
 DealService = __decorate([
     (0, common_1.Injectable)(),
@@ -1899,11 +3093,19 @@ DealService = __decorate([
     __param(2, (0, mongoose_1.InjectModel)('Counter')),
     __param(3, (0, mongoose_1.InjectModel)('SubCategory')),
     __param(4, (0, mongoose_1.InjectModel)('User')),
+    __param(5, (0, mongoose_1.InjectModel)('Schedule')),
+    __param(6, (0, mongoose_1.InjectModel)('views')),
     __metadata("design:paramtypes", [mongoose_2.Model,
         mongoose_2.Model,
         mongoose_2.Model,
         mongoose_2.Model,
-        mongoose_2.Model])
+        mongoose_2.Model,
+        mongoose_2.Model,
+        mongoose_2.Model,
+        schedule_service_1.ScheduleService,
+        stripe_service_1.StripeService,
+        vouchers_service_1.VouchersService,
+        views_service_1.ViewsService])
 ], DealService);
 exports.DealService = DealService;
 //# sourceMappingURL=deal.service.js.map

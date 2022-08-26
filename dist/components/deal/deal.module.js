@@ -17,6 +17,14 @@ const category_schema_1 = require("../../schema/category/category.schema");
 const vouchersCounter_schema_1 = require("../../schema/vouchers/vouchersCounter.schema");
 const subcategory_schema_1 = require("../../schema/category/subcategory.schema");
 const users_schema_1 = require("../../schema/user/users.schema");
+const schedule_service_1 = require("../schedule/schedule.service");
+const schedule_schema_1 = require("../../schema/schedule/schedule.schema");
+const stripe_schema_1 = require("../../schema/stripe/stripe.schema");
+const stripe_module_1 = require("../stripe/stripe.module");
+const vouchers_schema_1 = require("../../schema/vouchers/vouchers.schema");
+const vouchers_module_1 = require("../vouchers/vouchers.module");
+const views_schema_1 = require("../../schema/views/views.schema");
+const views_service_1 = require("../views/views.service");
 let DealModule = class DealModule {
 };
 DealModule = __decorate([
@@ -28,11 +36,17 @@ DealModule = __decorate([
                 { name: 'Category', schema: category_schema_1.CategorySchema },
                 { name: 'Counter', schema: vouchersCounter_schema_1.VoucherCounterSchema },
                 { name: 'SubCategory', schema: subcategory_schema_1.SubCategorySchema },
-                { name: 'User', schema: users_schema_1.UsersSchema }
+                { name: 'User', schema: users_schema_1.UsersSchema },
+                { name: 'Schedule', schema: schedule_schema_1.ScheduleSchema },
+                { name: 'Stripe', schema: stripe_schema_1.StripeSchema },
+                { name: 'Voucher', schema: vouchers_schema_1.VoucherSchema },
+                { name: 'views', schema: views_schema_1.ViewsSchema },
             ]),
+            stripe_module_1.StripeModule,
+            vouchers_module_1.VouchersModule,
         ],
         controllers: [deal_controller_1.DealController],
-        providers: [deal_service_1.DealService],
+        providers: [deal_service_1.DealService, schedule_service_1.ScheduleService, views_service_1.ViewsService],
     })
 ], DealModule);
 exports.DealModule = DealModule;

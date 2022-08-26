@@ -7,6 +7,7 @@ import { UpdateDealDto } from '../../dto/deal/updatedeal.dto';
 import { MultipleDealsDto } from 'src/dto/deal/multipledeals.dto';
 import { MultipleReviewsDto } from 'src/dto/review/multiplereviews.dto';
 import { UpdateDealForCRMDTO } from 'src/dto/deal/updateDealForCrm.dto';
+import { BuyNowDTO } from 'src/dto/deal/buy-now.dto';
 export declare class DealController {
     private readonly dealService;
     constructor(dealService: DealService);
@@ -21,7 +22,7 @@ export declare class DealController {
         message: string;
     }>;
     approveRejectDeal(dealID: string, dealStatusDto: DealStatusDto): Promise<import("mongodb").UpdateResult>;
-    getDeal(id: string): Promise<any>;
+    getDeal(id: string, req: any): Promise<any>;
     getDealsReviewStatsByMerchant(merchantID: string, dealID: string, offset: number, limit: number, multipleReviewsDto: MultipleReviewsDto): Promise<{
         totalDeals: number;
         filteredDealCount: number;
@@ -37,7 +38,7 @@ export declare class DealController {
         totalDeals: number;
         data: any[];
     }>;
-    getDealsByMerchantIDForCustomerPanel(merchantID: string, offset?: number, limit?: number): Promise<{
+    getDealsByMerchantIDForCustomerPanel(merchantID: string, offset: number, limit: number, req: any): Promise<{
         totalCount: number;
         data: any[];
     }>;
@@ -63,43 +64,59 @@ export declare class DealController {
     }>;
     getDealReviews(dealID: string, createdAt: SORT, totalRating: SORT, rating: number, offset?: number, limit?: number): Promise<any>;
     getTopRatedDeals(merchantID: string): Promise<any[]>;
-    getNewDeals(offset?: number, limit?: number): Promise<{
+    getNewDeals(offset: number, limit: number, req: any): Promise<{
         totalCount: number;
         data: any[];
     }>;
-    getLowPriceDeals(price: number, offset?: number, limit?: number): Promise<{
+    getLowPriceDeals(price: number, offset: number, limit: number, req: any): Promise<{
         filterValue: any;
         totalCount: any;
         data: any[];
     }>;
-    getDiscountedDeals(percentage: number, offset?: number, limit?: number): Promise<{
+    getDiscountedDeals(percentage: number, offset: number, limit: number, req: any): Promise<{
         filterValue: any;
         totalCount: any;
         data: any[];
     }>;
-    getSpecialOfferDeals(offset?: number, limit?: number): Promise<{
+    getSpecialOfferDeals(offset: number, limit: number, req: any): Promise<{
         totalCount: number;
         data: any[];
     }>;
-    getHotDeals(offset?: number, limit?: number): Promise<{
+    getHotDeals(offset: number, limit: number, req: any): Promise<{
         totalCount: number;
         data: any[];
     }>;
-    getNewFavouriteDeal(offset?: number, limit?: number): Promise<{
+    getNewFavouriteDeal(offset: number, limit: number, req: any): Promise<{
         totalCount: number;
         data: any[];
     }>;
-    getNearByDeals(lat: number, lng: number, distance: number, offset?: number, limit?: number): Promise<any[]>;
-    searchDeals(header?: string, offset?: number, limit?: number): Promise<{
+    getNearByDeals(lat: number, lng: number, distance: number, offset: number, limit: number, req: any): Promise<any>;
+    searchDeals(header: string, categoryName: string, subCategoryName: string, fromPrice: number, toPrice: number, reviewRating: number, offset: number, limit: number, req: any): Promise<{
+        totalDeals: number;
+        filteredDeals: number;
+        data: any[];
+    }>;
+    getDealsByCategories(categoryName: string, subCategoryName: string, fromPrice: number, toPrice: number, reviewRating: number, price: SORT, ratingSort: SORT, createdAt: SORT, offset: number, limit: number, req: any): Promise<{
+        totalDeals: number;
+        filteredDeals: number;
+        data: any[];
+    }>;
+    getTrendingDeals(offset: number, limit: number, req: any): Promise<{
         totalDeals: number;
         data: any[];
     }>;
-    getSimilarDeals(categoryName: string, subCategoryName: string, offset?: number, limit?: number): Promise<{
+    getSimilarDeals(categoryName: string, subCategoryName: string, offset: number, limit: number, req: any): Promise<{
         totalCount: number;
         deals: any[];
     }>;
+    getRecentlyViewedDeals(offset: number, limit: number, req: any): Promise<{
+        data: any[];
+    }>;
     getDealByID(dealID: string): Promise<any>;
     updateDealByID(updateDealDto: UpdateDealForCRMDTO): Promise<{
+        message: string;
+    }>;
+    buyNow(buyNowDto: BuyNowDTO, req: any): Promise<{
         message: string;
     }>;
 }

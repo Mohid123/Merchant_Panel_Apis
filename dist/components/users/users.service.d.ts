@@ -13,6 +13,7 @@ export declare class UsersService {
     constructor(_userModel: Model<UsersInterface>, _locationModel: Model<Location>, voucherCounterModel: Model<VoucherCounterInterface>, _leadModel: Model<LeadInterface>);
     onModuleInit(): void;
     generateMerchantId(sequenceName: any): Promise<string>;
+    generateAffiliateId(sequenceName: any): Promise<string>;
     addUser(usersDto: any): Promise<import("mongoose").Document<unknown, any, UsersInterface> & UsersInterface & {
         _id: string;
     }>;
@@ -37,6 +38,19 @@ export declare class UsersService {
         totalCount: number;
         data: any[];
     }>;
+    searchAllAffiliates(searchAffiliates: any, categories: any, Affiliates: any, offset: any, limit: any, req: any): Promise<{
+        totalCount: number;
+        filteredCount: number;
+        data: any[];
+    }>;
+    getPopularAffiliates(offset: any, limit: any, req: any): Promise<{
+        totalCount: number;
+        data: any[];
+    }>;
+    getFavouriteAffiliates(offset: any, limit: any, req: any): Promise<{
+        totalCount: any;
+        data: any[];
+    }>;
     resetPassword(resetPasswordDto: any, req: any): Promise<{
         message: string;
     }>;
@@ -52,5 +66,9 @@ export declare class UsersService {
     approveMerchant(userID: any, approveMerchantDto: any): Promise<{
         enquiryID: any;
         merchantID: string;
+    }>;
+    approveAffiliate(userID: any, affliateID: any): Promise<{
+        enquiryID: any;
+        affliateID: string;
     }>;
 }

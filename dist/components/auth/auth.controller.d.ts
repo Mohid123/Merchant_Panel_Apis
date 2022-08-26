@@ -25,11 +25,17 @@ export declare class AuthController {
         };
         token: string;
     }>;
-    signup(signupDto: SignUpDTO): Promise<import("mongoose").Document<unknown, any, import("../../interface/user/users.interface").UsersInterface> & import("../../interface/user/users.interface").UsersInterface & {
-        _id: string;
+    signup(signupDto: SignUpDTO): Promise<{
+        newUser: import("mongoose").Document<unknown, any, import("../../interface/user/users.interface").UsersInterface> & import("../../interface/user/users.interface").UsersInterface & {
+            _id: string;
+        };
+        token: string;
     }>;
-    signupUser(signupUserDto: SignUpCustomerDTO): Promise<import("mongoose").Document<unknown, any, import("../../interface/user/users.interface").UsersInterface> & import("../../interface/user/users.interface").UsersInterface & {
-        _id: string;
+    signupUser(signupUserDto: SignUpCustomerDTO): Promise<{
+        newUser: import("mongoose").Document<unknown, any, import("../../interface/user/users.interface").UsersInterface> & import("../../interface/user/users.interface").UsersInterface & {
+            _id: string;
+        };
+        token: string;
     }>;
     sendEmail(emailDto: EmailDTO): Promise<void>;
     isEmailExists(isEmailExistsDto: IsEmailExistsDTO): Promise<boolean>;

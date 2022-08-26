@@ -28,6 +28,14 @@ const leads_module_1 = require("./components/leads/leads.module");
 const location_module_1 = require("./components/location/location.module");
 const blog_module_1 = require("./components/blog/blog.module");
 const subscribe_module_1 = require("./components/subscribe/subscribe.module");
+const schedule_module_1 = require("./components/schedule/schedule.module");
+const schedule_service_1 = require("./components/schedule/schedule.service");
+const schedule_schema_1 = require("./schema/schedule/schedule.schema");
+const deal_schema_1 = require("./schema/deal/deal.schema");
+const stripe_module_1 = require("./components/stripe/stripe.module");
+const favourites_module_1 = require("./components/favourites/favourites.module");
+const vouchers_schema_1 = require("./schema/vouchers/vouchers.schema");
+const views_module_1 = require("./components/views/views.module");
 let AppModule = class AppModule {
 };
 AppModule = __decorate([
@@ -39,6 +47,11 @@ AppModule = __decorate([
             }),
             mongoose_1.MongooseModule.forRoot(process.env.MONGO_URI),
             auth_module_1.AuthModule.forRoot(),
+            mongoose_1.MongooseModule.forFeature([
+                { name: 'Schedule', schema: schedule_schema_1.ScheduleSchema },
+                { name: 'Deal', schema: deal_schema_1.DealSchema },
+                { name: 'Voucher', schema: vouchers_schema_1.VoucherSchema },
+            ]),
             users_module_1.UsersModule,
             deal_module_1.DealModule,
             category_module_1.CategoryModule,
@@ -54,9 +67,13 @@ AppModule = __decorate([
             blog_module_1.BlogModule,
             subscribe_module_1.SubscribeModule,
             utils_module_1.UtilModule,
+            schedule_module_1.ScheduleModule,
+            favourites_module_1.FavouritesModule,
+            views_module_1.ViewsModule,
+            stripe_module_1.StripeModule,
         ],
         controllers: [app_controller_1.AppController],
-        providers: [app_service_1.AppService],
+        providers: [app_service_1.AppService, schedule_service_1.ScheduleService],
     })
 ], AppModule);
 exports.AppModule = AppModule;

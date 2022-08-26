@@ -61,9 +61,11 @@ export interface UsersInterface {
     soldDeals: number;
     countryCode: string;
     leadSource: string;
+    stripeCustomerID: string;
     ratingsAverage: number;
     totalReviews: number;
     maxRating: number;
     minRating: number;
     isSubscribed: boolean;
+    popularCount: number;
 }

@@ -50,6 +50,7 @@ exports.UsersSchema = new mongoose.Schema({
     soldDeals: { type: Number, default: 0 },
     countryCode: { type: String, default: 'BE' },
     leadSource: { type: String, default: 'web' },
+    stripeCustomerID: { type: String, default: '' },
     ratingsAverage: {
         type: Number,
         default: 0,
@@ -66,7 +67,8 @@ exports.UsersSchema = new mongoose.Schema({
         type: Number,
         default: 0,
     },
-    isSubscribed: { type: Boolean, default: false }
+    isSubscribed: { type: Boolean, default: false },
+    popularCount: { type: Number, default: 0 }
 }, {
     collection: 'users',
 });

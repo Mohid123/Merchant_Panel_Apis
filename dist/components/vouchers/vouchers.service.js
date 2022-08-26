@@ -16,11 +16,18 @@ exports.VouchersService = void 0;
 const common_1 = require("@nestjs/common");
 const mongoose_1 = require("@nestjs/mongoose");
 const mongoose_2 = require("mongoose");
+const voucherstatus_enum_1 = require("../../enum/voucher/voucherstatus.enum");
 const sort_enum_1 = require("../../enum/sort/sort.enum");
+const schedule_service_1 = require("../schedule/schedule.service");
+const qr = require('qrcode');
+const fs = require("fs");
 let VouchersService = class VouchersService {
-    constructor(voucherModel, voucherCounterModel) {
+    constructor(voucherModel, voucherCounterModel, userModel, _scheduleModel, _scheduleService) {
         this.voucherModel = voucherModel;
         this.voucherCounterModel = voucherCounterModel;
+        this.userModel = userModel;
+        this._scheduleModel = _scheduleModel;
+        this._scheduleService = _scheduleService;
     }
     async generateVoucherId(sequenceName) {
         const sequenceDocument = await this.voucherCounterModel.findByIdAndUpdate(sequenceName, {
@@ -36,11 +43,39 @@ let VouchersService = class VouchersService {
             let timeStamp = new Date().getTime();
             voucherDto.boughtDate = timeStamp;
             voucherDto.voucherID = await this.generateVoucherId('voucherID');
-            const voucher = new this.voucherModel(voucherDto);
-            return await voucher.save();
+            let voucher = new this.voucherModel(voucherDto);
+            this._scheduleService.scheduleVocuher({
+                scheduleDate: new Date(voucherDto.expiryDate),
+                status: 0,
+                type: 'expireVoucher',
+                dealID: voucherDto.voucherID,
+                deletedCheck: false,
+            });
+            voucher = await voucher.save();
+            let url = `${process.env.webBaseURL}/redeemVoucher/${voucher.id}`;
+            url = await this.generateQRCode(url);
+            await this.voucherModel.findByIdAndUpdate(voucher.id, { redeemQR: url });
         }
         catch (error) {
             throw new common_1.HttpException(error.message, common_1.HttpStatus.BAD_REQUEST);
+        }
+    }
+    async generateQRCode(qrUrl) {
+        try {
+            const qrData = qrUrl;
+            let randomName = Array(32)
+                .fill(null)
+                .map(() => Math.round(Math.random() * 16).toString(16))
+                .join('');
+            const url = `${process.env.URL}media-upload/mediaFiles/qr/${randomName}.png`;
+            const src = await qr.toDataURL(qrData);
+            var base64Data = src.replace(/^data:image\/png;base64,/, '');
+            await fs.promises.writeFile(`./mediaFiles/NFT/qr/${randomName}.png`, base64Data, 'base64');
+            console.log('QR Code generated');
+            return url;
+        }
+        catch (err) {
+            throw new common_1.HttpException(err.message, common_1.HttpStatus.BAD_REQUEST);
         }
     }
     async searchByVoucherId(merchantID, voucherId, offset, limit) {
@@ -53,26 +88,27 @@ let VouchersService = class VouchersService {
                 filters = Object.assign(Object.assign({}, filters), { voucherID: query });
             }
             const totalCount = await this.voucherModel.countDocuments(Object.assign({ merchantMongoID: merchantID, deletedCheck: false }, filters));
-            const vouchers = await this.voucherModel.aggregate([
+            const vouchers = await this.voucherModel
+                .aggregate([
                 {
-                    $match: Object.assign({ merchantMongoID: merchantID, deletedCheck: false }, filters)
+                    $match: Object.assign({ merchantMongoID: merchantID, deletedCheck: false }, filters),
                 },
                 {
                     $addFields: {
-                        id: '$_id'
-                    }
+                        id: '$_id',
+                    },
                 },
                 {
                     $project: {
-                        _id: 0
-                    }
-                }
+                        _id: 0,
+                    },
+                },
             ])
                 .skip(parseInt(offset))
                 .limit(parseInt(limit));
             return {
                 totalCount: totalCount,
-                data: vouchers
+                data: vouchers,
             };
         }
         catch (err) {
@@ -206,7 +242,7 @@ let VouchersService = class VouchersService {
                     $project: {
                         _id: 0,
                     },
-                }
+                },
             ])
                 .skip(parseInt(offset))
                 .limit(parseInt(limit));
@@ -220,13 +256,214 @@ let VouchersService = class VouchersService {
             throw new common_1.HttpException(error.message, common_1.HttpStatus.BAD_REQUEST);
         }
     }
+    async redeemVoucher(voucherId, req) {
+        try {
+            const voucherErrors = {
+                Expired: 'Voucher Expired!',
+                Redeemed: 'Voucher already Reedemed!',
+                Refunded: 'Vocuher Refunded!',
+                'In Dispute': 'Voucher is in dispute!',
+            };
+            const voucher = await this.voucherModel.findOne({
+                voucherID: voucherId,
+                deletedCheck: false,
+            });
+            if (req.user.id != voucher.merchantMongoID) {
+                throw new common_1.UnauthorizedException('Not allowed to redeem voucher!');
+            }
+            if (voucher) {
+                if (voucher.expiryDate < new Date().getTime()) {
+                    voucher.status = 'Expired';
+                }
+                if (voucherErrors[voucher.status]) {
+                    return {
+                        status: 'error',
+                        message: voucherErrors[voucher.status],
+                        voucher,
+                    };
+                }
+            }
+            if (!voucher) {
+                throw new Error('No found!');
+            }
+            let scheduledVoucher = await this._scheduleModel.findOne({
+                dealID: voucher.voucherID,
+                status: 0,
+            });
+            if (scheduledVoucher) {
+                this._scheduleService.cancelJob(scheduledVoucher.id);
+            }
+            const merchant = await this.userModel.findOne({
+                userID: voucher.merchantID,
+            });
+            let redeemDate = new Date().getTime();
+            const net = voucher.dealPrice - 0.05 * voucher.dealPrice;
+            await this.voucherModel.updateOne({ voucherID: voucherId }, {
+                status: voucherstatus_enum_1.VOUCHERSTATUSENUM.redeeemed,
+                redeemDate: redeemDate,
+                net: net,
+            });
+            await this.userModel.updateOne({ userID: voucher.merchantID }, {
+                redeemedVouchers: merchant.redeemedVouchers + 1,
+                totalEarnings: merchant.totalEarnings + net,
+            });
+            const updtaedVoucher = await this.voucherModel.findOne({
+                voucherID: voucherId,
+            });
+            return {
+                status: 'success',
+                message: 'Voucher redeemed successfully',
+                voucher: updtaedVoucher,
+            };
+        }
+        catch (err) {
+            throw new common_1.HttpException(err.message, common_1.HttpStatus.BAD_REQUEST);
+        }
+    }
+    async getVoucherByMongoId(id) {
+        try {
+            const voucher = await this.voucherModel.aggregate([
+                {
+                    $match: {
+                        _id: id,
+                        deletedCheck: false,
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'users',
+                        as: 'merchantDetail',
+                        localField: 'merchantID',
+                        foreignField: 'userID',
+                    },
+                },
+                {
+                    $unwind: '$merchantDetail',
+                },
+                {
+                    $addFields: {
+                        id: '$_id',
+                    },
+                },
+                {
+                    $project: {
+                        id: 1,
+                        voucherID: 1,
+                        voucherHeader: 1,
+                        dealHeader: 1,
+                        dealID: 1,
+                        merchantID: 1,
+                        merchantMongoID: 1,
+                        customerID: 1,
+                        amount: 1,
+                        fee: 1,
+                        net: 1,
+                        status: 1,
+                        paymentStatus: 1,
+                        boughtDate: 1,
+                        expiryDate: 1,
+                        redeemDate: 1,
+                        imageURL: 1,
+                        dealPrice: 1,
+                        originalPrice: 1,
+                        discountedPercentage: 1,
+                        personalDetail: {
+                            firstName: 1,
+                            lastName: 1,
+                        },
+                    },
+                },
+                {
+                    $project: {
+                        _id: 0,
+                    },
+                },
+            ]);
+            if (voucher.length == 0) {
+                throw new Error('No Voucher Found!');
+            }
+            return voucher[0];
+        }
+        catch (err) {
+            throw new common_1.HttpException(err.message, common_1.HttpStatus.BAD_REQUEST);
+        }
+    }
+    async redeemVoucherByMerchantPin(redeemVoucherDto) {
+        try {
+            const voucherErrors = {
+                Expired: 'Voucher Expired!',
+                Redeemed: 'Voucher already Reedemed!',
+                Refunded: 'Vocuher Refunded!',
+                'In Dispute': 'Voucher is in dispute!',
+            };
+            const voucher = await this.voucherModel.findOne({
+                voucherID: redeemVoucherDto.voucherID,
+                deletedCheck: false,
+            });
+            if (voucher) {
+                if (voucher.expiryDate < new Date().getTime()) {
+                    voucher.status = 'Expired';
+                }
+                if (voucherErrors[voucher.status]) {
+                    return {
+                        status: 'error',
+                        message: voucherErrors[voucher.status],
+                        voucher,
+                    };
+                }
+            }
+            if (!voucher) {
+                throw new Error('No found!');
+            }
+            let scheduledVoucher = await this._scheduleModel.findOne({
+                dealID: voucher.voucherID,
+                status: 0,
+            });
+            if (scheduledVoucher) {
+                this._scheduleService.cancelJob(scheduledVoucher.id);
+            }
+            const merchant = await this.userModel.findOne({
+                userID: voucher.merchantID,
+            });
+            if (merchant.voucherPinCode != redeemVoucherDto.pin) {
+                throw new Error('Inavlid Pin Code!');
+            }
+            let redeemDate = new Date().getTime();
+            const net = voucher.dealPrice - 0.05 * voucher.dealPrice;
+            await this.voucherModel.updateOne({ voucherID: redeemVoucherDto.voucherID }, {
+                status: voucherstatus_enum_1.VOUCHERSTATUSENUM.redeeemed,
+                redeemDate: redeemDate,
+                net: net,
+            });
+            await this.userModel.updateOne({ userID: voucher.merchantID }, {
+                redeemedVouchers: merchant.redeemedVouchers + 1,
+                totalEarnings: merchant.totalEarnings + net,
+            });
+            const updtaedVoucher = await this.voucherModel.findOne({
+                voucherID: redeemVoucherDto.voucherID,
+            });
+            return {
+                status: 'success',
+                message: 'Voucher redeemed successfully',
+                voucher: updtaedVoucher,
+            };
+        }
+        catch (err) {
+            throw new common_1.HttpException(err.message, common_1.HttpStatus.BAD_REQUEST);
+        }
+    }
 };
 VouchersService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, mongoose_1.InjectModel)('Voucher')),
     __param(1, (0, mongoose_1.InjectModel)('Counter')),
+    __param(2, (0, mongoose_1.InjectModel)('User')),
+    __param(3, (0, mongoose_1.InjectModel)('Schedule')),
     __metadata("design:paramtypes", [mongoose_2.Model,
-        mongoose_2.Model])
+        mongoose_2.Model,
+        mongoose_2.Model,
+        mongoose_2.Model,
+        schedule_service_1.ScheduleService])
 ], VouchersService);
 exports.VouchersService = VouchersService;
 //# sourceMappingURL=vouchers.service.js.map

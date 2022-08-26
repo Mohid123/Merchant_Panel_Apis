@@ -37,8 +37,11 @@ export declare class AuthService {
     signup(loginDto: any): Promise<import("mongoose").Document<unknown, any, UsersInterface> & UsersInterface & {
         _id: string;
     }>;
-    signupCustomer(signupUserDto: any): Promise<import("mongoose").Document<unknown, any, UsersInterface> & UsersInterface & {
-        _id: string;
+    signupCustomer(signupUserDto: any): Promise<{
+        newUser: import("mongoose").Document<unknown, any, UsersInterface> & UsersInterface & {
+            _id: string;
+        };
+        token: string;
     }>;
     sendMail(emailDto: EmailDTO): Promise<void>;
     isEmailExists(email: any): Promise<boolean>;

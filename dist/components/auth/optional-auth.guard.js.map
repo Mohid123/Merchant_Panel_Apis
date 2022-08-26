@@ -1,0 +1,1 @@
+{"version":3,"file":"optional-auth.guard.js","sourceRoot":"","sources":["../../../src/components/auth/optional-auth.guard.ts"],"names":[],"mappings":";;;AAAA,+CAA6C;AAE7C,MAAa,oBAAqB,SAAQ,IAAA,oBAAS,EAAC,KAAK,CAAC;IAGtD,aAAa,CAAC,GAAG,EAAE,IAAI,EAAE,IAAI,EAAE,OAAO;QACpC,OAAO,IAAI,CAAC;IACd,CAAC;CAEF;AAPH,oDAOG"}

@@ -29,6 +29,7 @@ const utils_1 = require("../file-management/utils/utils");
 const nodemailer = require("nodemailer");
 const axios_1 = require("axios");
 const userrole_enum_1 = require("../../enum/user/userrole.enum");
+const sort_enum_1 = require("../../enum/sort/sort.enum");
 var htmlencode = require('htmlencode');
 var generator = require('generate-password');
 var otpGenerator = require('otp-generator');
@@ -57,6 +58,15 @@ let UsersService = class UsersService {
         }, { new: true });
         const year = new Date().getFullYear() % 2000;
         return `MBE${year}${sequenceDocument.sequenceValue < 100000 ? '0' : ''}${sequenceDocument.sequenceValue < 10000 ? '0' : ''}${sequenceDocument.sequenceValue}`;
+    }
+    async generateAffiliateId(sequenceName) {
+        const sequenceDocument = await this.voucherCounterModel.findByIdAndUpdate(sequenceName, {
+            $inc: {
+                sequenceValue: 1,
+            },
+        }, { new: true });
+        const year = new Date().getFullYear() % 2000;
+        return `ABE${year}${sequenceDocument.sequenceValue < 100000 ? '0' : ''}${sequenceDocument.sequenceValue < 10000 ? '0' : ''}${sequenceDocument.sequenceValue}`;
     }
     async addUser(usersDto) {
         usersDto.profilePicBlurHash = await (0, utils_1.encodeImageToBlurhash)(usersDto.profilePicURL);
@@ -231,7 +241,7 @@ let UsersService = class UsersService {
                     _id: merchantID,
                     deletedCheck: false,
                     status: userstatus_enum_1.USERSTATUS.approved,
-                    role: userrole_enum_1.USERROLE.merchant
+                    role: userrole_enum_1.USERROLE.merchant,
                 },
             },
             {
@@ -344,6 +354,486 @@ let UsersService = class UsersService {
             totalCount: totalCount,
             data: users,
         };
+    }
+    async searchAllAffiliates(searchAffiliates, categories, Affiliates, offset, limit, req) {
+        var _a;
+        try {
+            offset = parseInt(offset) < 0 ? 0 : offset;
+            limit = parseInt(limit) < 1 ? 10 : limit;
+            let matchFilter = {};
+            if (categories) {
+                matchFilter = Object.assign(Object.assign({}, matchFilter), { businessType: categories });
+            }
+            if (searchAffiliates.trim().length) {
+                var query = new RegExp(`${searchAffiliates}`, 'i');
+                matchFilter = Object.assign(Object.assign({}, matchFilter), { firstName: query });
+            }
+            let sort = {};
+            if (Affiliates) {
+                let sortAffiliates = Affiliates == sort_enum_1.SORT.ASC ? 1 : -1;
+                console.log('sortAffiliates');
+                sort = Object.assign(Object.assign({}, sort), { firstName: sortAffiliates });
+            }
+            if (Object.keys(sort).length === 0 && sort.constructor === Object) {
+                sort = {
+                    createdAt: -1,
+                };
+            }
+            console.log(sort);
+            console.log(matchFilter);
+            const totalCount = await this._userModel.countDocuments({
+                role: userrole_enum_1.USERROLE.affiliate,
+                status: userstatus_enum_1.USERSTATUS.approved,
+                deletedCheck: false,
+            });
+            const filteredCount = await this._userModel.countDocuments(Object.assign({ role: userrole_enum_1.USERROLE.affiliate, status: userstatus_enum_1.USERSTATUS.approved, deletedCheck: false }, matchFilter));
+            const affiliates = await this._userModel.aggregate([
+                {
+                    $match: Object.assign({ role: userrole_enum_1.USERROLE.affiliate, status: userstatus_enum_1.USERSTATUS.approved, deletedCheck: false }, matchFilter)
+                },
+                {
+                    $sort: sort
+                },
+                {
+                    $lookup: {
+                        from: 'affiliateFvaourites',
+                        as: 'favouriteAffiliate',
+                        let: {
+                            affiliateID: '$userID',
+                            customerMongoID: (_a = req === null || req === void 0 ? void 0 : req.user) === null || _a === void 0 ? void 0 : _a.id,
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$affiliateID', '$affiliateID']
+                                            },
+                                            {
+                                                $eq: ['$$customerMongoID', '$customerMongoID']
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false]
+                                            }
+                                        ]
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: {
+                        path: '$favouriteAffiliate',
+                        preserveNullAndEmptyArrays: true,
+                    }
+                },
+                {
+                    $addFields: {
+                        id: '$_id',
+                        isFavourite: {
+                            $cond: [
+                                {
+                                    $ifNull: [
+                                        '$favouriteAffiliate', false
+                                    ]
+                                },
+                                true, false
+                            ]
+                        }
+                    }
+                },
+                {
+                    $project: {
+                        _id: 0,
+                        email: 0,
+                        password: 0,
+                        phoneNumber: 0,
+                        businessType: 0,
+                        legalName: 0,
+                        tradeName: 0,
+                        streetAddress: 0,
+                        zipCode: 0,
+                        city: 0,
+                        vatNumber: 0,
+                        iban: 0,
+                        bic_swiftCode: 0,
+                        accountHolder: 0,
+                        bankName: 0,
+                        kycStatus: 0,
+                        province: 0,
+                        website_socialAppLink: 0,
+                        googleMapPin: 0,
+                        businessHours: 0,
+                        finePrint: 0,
+                        aboutUs: 0,
+                        gallery: 0,
+                        newUser: 0,
+                        totalVoucherSales: 0,
+                        redeemedVouchers: 0,
+                        purchasedVouchers: 0,
+                        expiredVouchers: 0,
+                        totalEarnings: 0,
+                        paidEarnings: 0,
+                        pendingEarnings: 0,
+                        soldDeals: 0,
+                        pendingDeals: 0,
+                        totalDeals: 0,
+                        scheduledDeals: 0,
+                        countryCode: 0,
+                        leadSource: 0,
+                        ratingsAverage: 0,
+                        totalReviews: 0,
+                        maxRating: 0,
+                        minRating: 0,
+                        isSubscribed: 0,
+                        __v: 0,
+                        favouriteAffiliate: 0,
+                    }
+                }
+            ])
+                .skip(parseInt(offset))
+                .limit(parseInt(limit));
+            return {
+                totalCount: totalCount,
+                filteredCount: filteredCount,
+                data: affiliates
+            };
+        }
+        catch (err) {
+            throw new common_1.HttpException(err.message, common_1.HttpStatus.BAD_REQUEST);
+        }
+    }
+    async getPopularAffiliates(offset, limit, req) {
+        var _a;
+        try {
+            offset = parseInt(offset) < 0 ? 0 : offset;
+            limit = parseInt(limit) < 1 ? 10 : limit;
+            const totalCount = await this._userModel.countDocuments({
+                role: userrole_enum_1.USERROLE.affiliate,
+                status: userstatus_enum_1.USERSTATUS.approved,
+                deletedCheck: false,
+            });
+            const affiliates = await this._userModel.aggregate([
+                {
+                    $match: {
+                        role: userrole_enum_1.USERROLE.affiliate,
+                        status: userstatus_enum_1.USERSTATUS.approved,
+                        deletedCheck: false,
+                    }
+                },
+                {
+                    $sort: {
+                        popularCount: -1
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'affiliateFvaourites',
+                        as: 'favouriteAffiliate',
+                        let: {
+                            affiliateID: '$userID',
+                            customerMongoID: (_a = req === null || req === void 0 ? void 0 : req.user) === null || _a === void 0 ? void 0 : _a.id,
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$affiliateID', '$affiliateID']
+                                            },
+                                            {
+                                                $eq: ['$$customerMongoID', '$customerMongoID']
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false]
+                                            }
+                                        ]
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: {
+                        path: '$favouriteAffiliate',
+                        preserveNullAndEmptyArrays: true,
+                    }
+                },
+                {
+                    $addFields: {
+                        id: '$_id',
+                        isFavourite: {
+                            $cond: [
+                                {
+                                    $ifNull: [
+                                        '$favouriteAffiliate', false
+                                    ]
+                                },
+                                true, false
+                            ]
+                        }
+                    }
+                },
+                {
+                    $project: {
+                        _id: 0,
+                        email: 0,
+                        password: 0,
+                        phoneNumber: 0,
+                        businessType: 0,
+                        legalName: 0,
+                        tradeName: 0,
+                        streetAddress: 0,
+                        zipCode: 0,
+                        city: 0,
+                        vatNumber: 0,
+                        iban: 0,
+                        bic_swiftCode: 0,
+                        accountHolder: 0,
+                        bankName: 0,
+                        kycStatus: 0,
+                        province: 0,
+                        website_socialAppLink: 0,
+                        googleMapPin: 0,
+                        businessHours: 0,
+                        finePrint: 0,
+                        aboutUs: 0,
+                        gallery: 0,
+                        newUser: 0,
+                        totalVoucherSales: 0,
+                        redeemedVouchers: 0,
+                        purchasedVouchers: 0,
+                        expiredVouchers: 0,
+                        totalEarnings: 0,
+                        paidEarnings: 0,
+                        pendingEarnings: 0,
+                        soldDeals: 0,
+                        pendingDeals: 0,
+                        totalDeals: 0,
+                        scheduledDeals: 0,
+                        countryCode: 0,
+                        leadSource: 0,
+                        ratingsAverage: 0,
+                        totalReviews: 0,
+                        maxRating: 0,
+                        minRating: 0,
+                        isSubscribed: 0,
+                        __v: 0,
+                        favouriteAffiliate: 0,
+                    }
+                }
+            ])
+                .skip(parseInt(offset))
+                .limit(parseInt(limit));
+            return {
+                totalCount: totalCount,
+                data: affiliates
+            };
+        }
+        catch (err) {
+            throw new common_1.HttpException(err.message, common_1.HttpStatus.BAD_REQUEST);
+        }
+    }
+    async getFavouriteAffiliates(offset, limit, req) {
+        var _a, _b;
+        try {
+            offset = parseInt(offset) < 0 ? 0 : offset;
+            limit = parseInt(limit) < 1 ? 10 : limit;
+            let totalCount = await this._userModel.aggregate([
+                {
+                    $match: {
+                        role: userrole_enum_1.USERROLE.affiliate,
+                        status: userstatus_enum_1.USERSTATUS.approved,
+                        deletedCheck: false,
+                    }
+                },
+                {
+                    $sort: {
+                        createdAt: -1
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'affiliateFvaourites',
+                        as: 'favouriteAffiliate',
+                        let: {
+                            affiliateID: '$userID',
+                            customerMongoID: (_a = req === null || req === void 0 ? void 0 : req.user) === null || _a === void 0 ? void 0 : _a.id,
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$affiliateID', '$affiliateID']
+                                            },
+                                            {
+                                                $eq: ['$$customerMongoID', '$customerMongoID']
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false]
+                                            }
+                                        ]
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: {
+                        path: '$favouriteAffiliate',
+                    }
+                },
+                {
+                    $addFields: {
+                        id: '$_id',
+                        isFavourite: {
+                            $cond: [
+                                {
+                                    $ifNull: [
+                                        '$favouriteAffiliate', false
+                                    ]
+                                },
+                                true, false
+                            ]
+                        }
+                    }
+                },
+                {
+                    $count: 'totalCount',
+                },
+            ]);
+            const affiliates = await this._userModel.aggregate([
+                {
+                    $match: {
+                        role: userrole_enum_1.USERROLE.affiliate,
+                        status: userstatus_enum_1.USERSTATUS.approved,
+                        deletedCheck: false,
+                    }
+                },
+                {
+                    $sort: {
+                        createdAt: -1
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'affiliateFvaourites',
+                        as: 'favouriteAffiliate',
+                        let: {
+                            affiliateID: '$userID',
+                            customerMongoID: (_b = req === null || req === void 0 ? void 0 : req.user) === null || _b === void 0 ? void 0 : _b.id,
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$affiliateID', '$affiliateID']
+                                            },
+                                            {
+                                                $eq: ['$$customerMongoID', '$customerMongoID']
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false]
+                                            }
+                                        ]
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: {
+                        path: '$favouriteAffiliate',
+                    }
+                },
+                {
+                    $addFields: {
+                        id: '$_id',
+                        isFavourite: {
+                            $cond: [
+                                {
+                                    $ifNull: [
+                                        '$favouriteAffiliate', false
+                                    ]
+                                },
+                                true, false
+                            ]
+                        }
+                    }
+                },
+                {
+                    $project: {
+                        _id: 0,
+                        email: 0,
+                        password: 0,
+                        phoneNumber: 0,
+                        businessType: 0,
+                        legalName: 0,
+                        tradeName: 0,
+                        streetAddress: 0,
+                        zipCode: 0,
+                        city: 0,
+                        vatNumber: 0,
+                        iban: 0,
+                        bic_swiftCode: 0,
+                        accountHolder: 0,
+                        bankName: 0,
+                        kycStatus: 0,
+                        province: 0,
+                        website_socialAppLink: 0,
+                        googleMapPin: 0,
+                        businessHours: 0,
+                        finePrint: 0,
+                        aboutUs: 0,
+                        gallery: 0,
+                        newUser: 0,
+                        totalVoucherSales: 0,
+                        redeemedVouchers: 0,
+                        purchasedVouchers: 0,
+                        expiredVouchers: 0,
+                        totalEarnings: 0,
+                        paidEarnings: 0,
+                        pendingEarnings: 0,
+                        soldDeals: 0,
+                        pendingDeals: 0,
+                        totalDeals: 0,
+                        scheduledDeals: 0,
+                        countryCode: 0,
+                        leadSource: 0,
+                        ratingsAverage: 0,
+                        totalReviews: 0,
+                        maxRating: 0,
+                        minRating: 0,
+                        isSubscribed: 0,
+                        __v: 0,
+                        favouriteAffiliate: 0,
+                    }
+                }
+            ])
+                .skip(parseInt(offset))
+                .limit(parseInt(limit));
+            return {
+                totalCount: totalCount[0].totalCount,
+                data: affiliates
+            };
+        }
+        catch (err) {
+            throw new common_1.HttpException(err.message, common_1.HttpStatus.BAD_REQUEST);
+        }
     }
     async resetPassword(resetPasswordDto, req) {
         try {
@@ -841,6 +1331,221 @@ let UsersService = class UsersService {
             this.sendMail(emailDto);
             const merchant = await new this._userModel(approveMerchantDto).save();
             return { enquiryID: userID, merchantID: merchant === null || merchant === void 0 ? void 0 : merchant.userID };
+        }
+        catch (err) {
+            throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
+        }
+    }
+    async approveAffiliate(userID, affliateID) {
+        try {
+            let generatedPassword = await this.generatePassword();
+            const salt = await bcrypt.genSalt();
+            let hashedPassword = await bcrypt.hash(generatedPassword, salt);
+            const pinCode = otpGenerator.generate(4, {
+                upperCaseAlphabets: false,
+                lowerCaseAlphabets: false,
+                specialChars: false,
+            });
+            delete affliateID.leadSource;
+            affliateID.legalName = affliateID === null || affliateID === void 0 ? void 0 : affliateID.companyName;
+            affliateID.businessType = affliateID === null || affliateID === void 0 ? void 0 : affliateID.categoryType;
+            affliateID.voucherPinCode = pinCode;
+            affliateID.password = hashedPassword;
+            affliateID.status = userstatus_enum_1.USERSTATUS.approved;
+            affliateID.zipCode = affliateID === null || affliateID === void 0 ? void 0 : affliateID.zipCode.toString();
+            affliateID.userID = await this.generateAffiliateId('affiliateID');
+            const userObj = {
+                ID: new mongoose_2.Types.ObjectId().toHexString(),
+                firstName: affliateID === null || affliateID === void 0 ? void 0 : affliateID.firstName,
+                lastName: affliateID === null || affliateID === void 0 ? void 0 : affliateID.lastName,
+                email: affliateID === null || affliateID === void 0 ? void 0 : affliateID.email.toLowerCase(),
+                password: hashedPassword,
+                legalName: affliateID === null || affliateID === void 0 ? void 0 : affliateID.legalName,
+                vatNumber: affliateID === null || affliateID === void 0 ? void 0 : affliateID.vatNumber,
+                phoneNumber: affliateID === null || affliateID === void 0 ? void 0 : affliateID.phoneNumber,
+                city: affliateID === null || affliateID === void 0 ? void 0 : affliateID.city,
+                streetAddress: affliateID === null || affliateID === void 0 ? void 0 : affliateID.streetAddress,
+                province: affliateID === null || affliateID === void 0 ? void 0 : affliateID.province,
+                zipCode: affliateID === null || affliateID === void 0 ? void 0 : affliateID.zipCode,
+            };
+            const locObj = {
+                merchantID: affliateID === null || affliateID === void 0 ? void 0 : affliateID.userID,
+                tradeName: affliateID === null || affliateID === void 0 ? void 0 : affliateID.legalName,
+                streetAddress: affliateID === null || affliateID === void 0 ? void 0 : affliateID.streetAddress,
+                zipCode: affliateID === null || affliateID === void 0 ? void 0 : affliateID.zipCode,
+                city: affliateID === null || affliateID === void 0 ? void 0 : affliateID.city,
+                googleMapPin: affliateID === null || affliateID === void 0 ? void 0 : affliateID.googleMapPin,
+                province: affliateID === null || affliateID === void 0 ? void 0 : affliateID.province,
+                phoneNumber: affliateID === null || affliateID === void 0 ? void 0 : affliateID.phoneNumber,
+            };
+            if (userID) {
+                await this._leadModel.updateOne({ _id: userID }, { deletedCheck: true });
+            }
+            const location = await new this._locationModel(locObj).save();
+            const emailDto = {
+                from: `"Divideals" <${process.env.EMAIL}>`,
+                to: userObj.email,
+                subject: 'Your password is generated',
+                text: '',
+                html: `
+            <html>
+              <head>
+              <title></title>
+              <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+              <meta name="viewport" content="width=device-width, initial-scale=1">
+              <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+              <style type="text/css">
+                /* FONTS */
+                  @media screen {
+                  @font-face {
+                    font-family: 'Lato';
+                    font-style: normal;
+                    font-weight: 400;
+                    src: local('Lato Regular'), local('Lato-Regular'), url(https://fonts.gstatic.com/s/lato/v11/qIIYRU-oROkIk8vfvxw6QvesZW2xOQ-xsNqO47m55DA.woff) format('woff');
+                  }
+                  
+                  @font-face {
+                    font-family: 'Lato';
+                    font-style: normal;
+                    font-weight: 700;
+                    src: local('Lato Bold'), local('Lato-Bold'), url(https://fonts.gstatic.com/s/lato/v11/qdgUG4U09HnJwhYI-uK18wLUuEpTyoUstqEm5AMlJo4.woff) format('woff');
+                  }
+                  
+                  @font-face {
+                    font-family: 'Lato';
+                    font-style: italic;
+                    font-weight: 400;
+                    src: local('Lato Italic'), local('Lato-Italic'), url(https://fonts.gstatic.com/s/lato/v11/RYyZNoeFgb0l7W3Vu1aSWOvvDin1pK8aKteLpeZ5c0A.woff) format('woff');
+                  }
+                  
+                  @font-face {
+                    font-family: 'Lato';
+                    font-style: italic;
+                    font-weight: 700;
+                    src: local('Lato Bold Italic'), local('Lato-BoldItalic'), url(https://fonts.gstatic.com/s/lato/v11/HkF_qI1x_noxlxhrhMQYELO3LdcAZYWl9Si6vvxL-qU.woff) format('woff');
+                  }
+                  }
+                  /* CLIENT-SPECIFIC STYLES */
+                  body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+                  table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+                  img { -ms-interpolation-mode: bicubic; }
+                  /* RESET STYLES */
+                  img { border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; }
+                  table { border-collapse: collapse !important; }
+                  body { height: 100% !important; margin: 0 !important; padding: 0 !important; width: 100% !important; }
+                  /* iOS BLUE LINKS */
+                  a[x-apple-data-detectors] {
+                      color: inherit !important;
+                      text-decoration: none !important;
+                      font-size: inherit !important;
+                      font-family: inherit !important;
+                      font-weight: inherit !important;
+                      line-height: inherit !important;
+                  }
+                  /* ANDROID CENTER FIX */
+                  div[style*="margin: 16px 0;"] { margin: 0 !important; }
+              </style>
+              </head>
+              <body style="background-color: #0081E9; margin: 0 !important; padding: 0 !important;">
+              <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                  <!-- LOGO -->
+                  <tr>
+                      <td bgcolor="#0081E9" align="center">
+                          <table border="0" cellpadding="0" cellspacing="0" width="480" >
+                              <tr>
+                                  <td align="center" valign="top" style="padding: 40px 10px 40px 10px;">
+                                    <div style="padding: 40px 20px 20px 20px; border-radius: 4px 4px 0px 0px; color: #FFFFFF; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 48px; font-weight: 400; letter-spacing: 4px; line-height: 48px;">
+                                      <h6 style="margin:0px"> DIVIDEALS</h6>
+                                    </div>
+                                  </td>
+                              </tr>
+                          </table>
+                      </td>
+                  </tr>
+                  <!-- HERO -->
+                  <tr>
+                      <td bgcolor="#0081E9" align="center" style="padding: 0px 10px 0px 10px;">
+                          <table border="0" cellpadding="0" cellspacing="0" width="480" >
+                              <tr>
+                                  <td bgcolor="#FFFFFF" align="center" valign="top" style="padding: 40px 20px 20px 20px; border-radius: 4px 4px 0px 0px; color: #111111; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 48px; font-weight: 400; letter-spacing: 4px; line-height: 48px;">
+                                    <h6 style="margin:0px"> Dear</h6>
+                                    <h1 style="font-size: 32px; font-weight: 400; margin: 0;">${userObj.firstName} ${userObj.lastName}</h1>
+                                  </td>
+                              </tr>
+                          </table>
+                      </td>
+                  </tr>
+                  <!-- COPY BLOCK -->
+                  <tr>
+                      <td bgcolor="#F4F4F4" align="center" style="padding: 0px 10px 0px 10px;">
+                          <table border="0" cellpadding="0" cellspacing="0" width="480" >
+                            <!-- COPY -->
+                            <tr>
+                              <td bgcolor="#FFFFFF" align="left" style="padding: 20px 30px 40px 30px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 18px; font-weight: 400; line-height: 25px;" >
+                                <p style="margin: 0;">Your temporary password on <b>Divideals Merchant Panel</b> is generated. Please use this password to login into your account. </p>
+                              </td>
+                            </tr>
+                            <!-- BULLETPROOF BUTTON -->
+                            <tr>
+                              <td bgcolor="#FFFFFF" align="left">
+                                <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                  <tr>
+                                    <td bgcolor="#FFFFFF" align="center" style="padding: 20px 30px 60px 30px;">
+                                      <table border="0" cellspacing="0" cellpadding="0">
+                                        <tr>
+                                            <td align="center" style="border-radius: 3px;" ><a style="font-size: 20px; font-family: Helvetica, Arial, sans-serif; color: #FFFFFF; text-decoration: none; color: black; text-decoration: none; padding: 15px 25px; border-radius: 2px; border: 1px solid #0081E9; display: inline-block;"><b>${htmlencode.htmlEncode(generatedPassword)}</b></a></td>
+                                        </tr>
+                                      </table>
+                                    </td>
+                                  </tr>
+                                </table>
+                              </td>
+                            </tr>
+                          </table>
+                      </td>
+                  </tr>
+                  <!-- COPY CALLOUT -->
+                  <tr>
+                      <td bgcolor="#F4F4F4" align="center" style="padding: 0px 10px 0px 10px;">
+                          <table border="0" cellpadding="0" cellspacing="0" width="480" >
+                          </table>
+                      </td>
+                  </tr>
+                  <!-- SUPPORT CALLOUT -->
+                  <tr>
+                      <td bgcolor="#F4F4F4" align="center" style="padding: 30px 10px 0px 10px;">
+                          <table border="0" cellpadding="0" cellspacing="0" width="480" >
+                              <!-- HEADLINE -->
+                              <tr>
+                                <td bgcolor="#0081E9" align="center" style="padding: 30px 30px 30px 30px; border-radius: 4px 4px 4px 4px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 18px; font-weight: 400; line-height: 25px;" >
+                                  <h2 style="font-size: 20px; font-weight: 400; color: #FFFFFF; margin: 0;">Need more help?</h2>
+                                  <p style="margin: 0;"><a style="color: #FFFFFF;">We&rsquo;re here, ready to talk</a></p>
+                                </td>
+                              </tr>
+                          </table>
+                      </td>
+                  </tr>
+                  <!-- FOOTER -->
+                  <tr>
+                      <td bgcolor="#F4F4F4" align="center" style="padding: 0px 10px 0px 10px;">
+                          <table border="0" cellpadding="0" cellspacing="0" width="480" >
+                            <!-- PERMISSION REMINDER -->
+                            <tr>
+                              <td bgcolor="#F4F4F4" align="left" style="padding: 0px 30px 30px 30px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 14px; font-weight: 400; line-height: 18px;" >
+                                <p style="margin: 0;">You received this email because you requested for a password. If you did not, <a  style="color: #111111; font-weight: 700;">please contact us.</a>.</p>
+                              </td>
+                            </tr>
+                          </table>
+                      </td>
+                  </tr>
+              </table>
+              </body>
+              </html>
+            `,
+            };
+            this.sendMail(emailDto);
+            const affiliate = await new this._userModel(affliateID).save();
+            return { enquiryID: userID, affliateID: affiliate === null || affiliate === void 0 ? void 0 : affiliate.userID };
         }
         catch (err) {
             throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
