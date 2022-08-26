@@ -29,19 +29,22 @@ export class FavouritesService {
                 customerMongoID: req.user.id,
                 deletedCheck:false,
             });
-            debugger
+
             if (alreadyFavourite) {
                 return alreadyFavourite;
-            } else if(alreadyFavourite?.deletedCheck == true) {
-                await this.favouriteModel.updateOne({_id: alreadyFavourite._id},{deletedCheck: false});
-                return {
-                    message: 'Added to favourites'
-                }
             } else {
+
                 favouritesDto.customerMongoID = req.user.id;
                 favouritesDto.customerID = req.user.userID;
 
-                return await new this.favouriteModel(favouritesDto).save();
+                await this.favouriteModel.updateOne(
+                    { dealID: favouritesDto.dealID, customerMongoID: req.user.id},
+                    {...favouritesDto, deletedCheck: false},
+                    {upsert:true}
+                );
+                return {
+                    message: 'Added to favourites'
+                }
             }
 
         } catch (err) {
@@ -61,20 +64,23 @@ export class FavouritesService {
                 customerMongoID: req.user.id,
                 deletedCheck: false,
             });
-            debugger
+
             if (alreadyFavouriteAffiliate) {
                 return alreadyFavouriteAffiliate;
-            } else if(alreadyFavouriteAffiliate?.deletedCheck == true) {
-                await this.affiliateFavouriteModel.updateOne({_id: alreadyFavouriteAffiliate._id}, {deletedCheck: false});
-                return {
-                    message: 'Added to favourites'
-                }
             } else {
+                
                 affiliateFavouritesDto.customerMongoID = req.user.id;
                 affiliateFavouritesDto.customerID = req.user.userID;
 
-                return await new this.affiliateFavouriteModel(affiliateFavouritesDto).save();
-            }
+                await this.affiliateFavouriteModel.updateOne(
+                    {affiliateID: affiliateFavouritesDto.affiliateID, customerMongoID: req.user.id}, 
+                    {...affiliateFavouritesDto ,deletedCheck: false},
+                    {upsert: true}
+                );
+                return {
+                    message: 'Added to favourites'
+                }
+            } 
 
         } catch (err) {
             throw new HttpException(err, HttpStatus.BAD_REQUEST);
