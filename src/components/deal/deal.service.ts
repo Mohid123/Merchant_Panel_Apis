@@ -245,9 +245,9 @@ export class DealService implements OnModuleInit {
 
       let returnedDeal = await this.dealModel.findOne({ _id: dealDto.id });
 
-      // const res = await axios.get(
-      //   `https://www.zohoapis.eu/crm/v2/functions/createdraftdeal/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&dealid=${returnedDeal.dealID}`,
-      // );
+      const res = await axios.get(
+        `https://www.zohoapis.eu/crm/v2/functions/createdraftdeal/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&dealid=${returnedDeal.dealID}`,
+      );
 
       return returnedDeal;
     } catch (err) {
@@ -435,9 +435,9 @@ export class DealService implements OnModuleInit {
 
       await this.dealModel.updateOne({ dealID: updateDealDto.dealID }, deal);
 
-      // const res = await axios.get(
-      //   `https://www.zohoapis.eu/crm/v2/functions/createdraftdeal/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&dealid=${deal.dealID}`,
-      // );
+      const res = await axios.get(
+        `https://www.zohoapis.eu/crm/v2/functions/createdraftdeal/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&dealid=${deal.dealID}`,
+      );
 
       return { message: 'Deal Updated Successfully' };
     } catch (err) {
