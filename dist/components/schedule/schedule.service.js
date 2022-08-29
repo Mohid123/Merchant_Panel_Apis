@@ -111,7 +111,7 @@ let ScheduleService = class ScheduleService {
                 await this._dealModel.updateOne({ dealID: dealID }, { dealStatus: status });
                 await this._scheduleModel.updateOne({ _id: id }, { status: -1 });
             }
-            else if (status == 'Expired' && type == 'expireDeal') {
+            else if (status == 'Expired' && type == 'expireVoucher') {
                 await this._voucherModel.updateOne({ voucherID: dealID }, { status: status });
                 await this._scheduleModel.updateOne({ _id: id }, { status: -1 });
             }
