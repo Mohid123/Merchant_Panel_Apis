@@ -2284,6 +2284,10 @@ export class DealService implements OnModuleInit {
           break;
         }
 
+        if(lat ==33.5705073 && lng==73.1434092){
+          isFound = true;
+        }
+
         lat = 33.5705073;
         lng = 73.1434092;
       }
@@ -3034,65 +3038,80 @@ export class DealService implements OnModuleInit {
 
       // const totalCount = await this.dealModel.countDocuments();
 
-      const deals = await this.dealModel.aggregate([
+      const deals = await this._viewsModel.aggregate([
         {
           $match: {
-            deletedCheck: false,
-            dealStatus: DEALSTATUS.published,
-          }
+            customerMongoID: req.user.id,
+          },
+        },
+        {
+          $group: {
+            _id: '$dealID',
+            viewedTime: { $last: '$viewedTime' },
+          },
+        },
+        {
+          $sort: {
+            viewedTime: -1,
+          },
         },
         {
           $lookup: {
-            from: 'views',
+            from: 'deals',
             as: 'recentlyViewed',
-            let: {
-              dealID: '$dealID',
-              customerMongoID: req?.user?.id,
-            },
-            pipeline: [
-              {
-                $match: {
-                  $expr: { $and: [
-                    {
-                      $eq: ['$$dealID', '$dealID']
-                    },
-                    {
-                      $eq: ['$$customerMongoID', '$customerMongoID']
-                    },
-                  ] },
-                },
-              },
-            ],
+            // let: {
+            //   dealID: '$dealID',
+            // },
+            localField: '_id',
+            foreignField: 'dealID',
           },
         },
         {
-          $unwind: {
-            path: '$recentlyViewed',
-          },
+          $unwind: '$recentlyViewed',
         },
+        // {
+        //   $addFields: {
+        //     'recentlyViewed.mediaUrl': {
+        //       $slice: [
+        //         {
+        //           $filter: {
+        //             input: '$recentlyViewed.mediaUrl',
+        //             as: 'mediaUrl',
+        //             cond: {
+        //               $eq: ['$$mediaUrl.type', 'Image'],
+        //             },
+        //           },
+        //         },
+        //         1,
+        //       ],
+        //     },
+        //   },
+        // },
         {
           $lookup: {
             from: 'favourites',
             as: 'favouriteDeal',
             let: {
-              dealID: '$dealID',
+              dealID: '$recentlyViewed.dealID',
               customerMongoID: req?.user?.id,
-              deletedCheck:'$deletedCheck',
+              deletedCheck: '$recentlyViewed.deletedCheck',
             },
             pipeline: [
               {
                 $match: {
-                  $expr: { $and: [
-                    {
-                      $eq: ['$$dealID', '$dealID']
-                    },
-                    {
-                      $eq: ['$$customerMongoID', '$customerMongoID']
-                    },
-                    {
-                      $eq: ['$deletedCheck', false]
-                    }
-                  ] },
+                  $expr: {
+                    $and: [
+                      {
+                        $eq: ['$$dealID', '$dealID'],
+                      },
+                      {
+                        $eq: ['$$customerMongoID', '$customerMongoID'],
+                      },
+                      {
+                        $eq: ['$deletedCheck', false],
+                      },
+                    ],
+                  },
                 },
               },
             ],
@@ -3105,18 +3124,13 @@ export class DealService implements OnModuleInit {
           },
         },
         {
-          $sort: {
-            createdAt: -1
-          }
-        },
-        {
           $addFields: {
             id: '$_id',
-            mediaUrl: {
+            'recentlyViewed.mediaUrl': {
               $slice: [
                 {
                   $filter: {
-                    input: '$mediaUrl',
+                    input: '$recentlyViewed.mediaUrl',
                     as: 'mediaUrl',
                     cond: {
                       $eq: ['$$mediaUrl.type', 'Image'],
@@ -3135,45 +3149,181 @@ export class DealService implements OnModuleInit {
                 false,
               ],
             },
-          }
+          },
         },
         {
           $project: {
+            id: 0,
             _id: 0,
-            merchantMongoID: 0,
-            merchantID: 0,
-            subTitle: 0,
-            categoryName: 0,
-            subCategoryID: 0,
-            subCategory: 0,
-            subDeals: 0,
-            availableVouchers: 0,
-            aboutThisDeal: 0,
-            readMore: 0,
-            finePrints: 0,
-            netEarnings: 0,
-            isCollapsed: 0,
-            isDuplicate: 0,
-            totalReviews: 0,
-            maxRating: 0,
-            minRating: 0,
-            pageNumber: 0,
-            updatedAt: 0,
-            __v: 0,
-            endDate: 0,
-            startDate: 0,
-            reviewMediaUrl: 0,
             favouriteDeal: 0,
-          }
-        }
-      ])
-      .skip(parseInt(offset))
-      .limit(parseInt(limit))
+            'recentlyViewed.merchantMongoID': 0,
+            'recentlyViewed.merchantID': 0,
+            'recentlyViewed.subTitle': 0,
+            'recentlyViewed.categoryName': 0,
+            'recentlyViewed.subCategoryID': 0,
+            'recentlyViewed.subCategory': 0,
+            'recentlyViewed.subDeals': 0,
+            'recentlyViewed.availableVouchers': 0,
+            'recentlyViewed.aboutThisDeal': 0,
+            'recentlyViewed.readMore': 0,
+            'recentlyViewed.finePrints': 0,
+            'recentlyViewed.netEarnings': 0,
+            'recentlyViewed.isCollapsed': 0,
+            'recentlyViewed.isDuplicate': 0,
+            'recentlyViewed.totalReviews': 0,
+            'recentlyViewed.maxRating': 0,
+            'recentlyViewed.minRating': 0,
+            'recentlyViewed.pageNumber': 0,
+            'recentlyViewed.updatedAt': 0,
+            'recentlyViewed.__v': 0,
+            'recentlyViewed.endDate': 0,
+            'recentlyViewed.startDate': 0,
+            'recentlyViewed.reviewMediaUrl': 0,
+            'recentlyViewed.favouriteDeal': 0,
+          },
+        },
+      ]);
+
+      // const deals = await this.dealModel.aggregate([
+      //   {
+      //     $match: {
+      //       deletedCheck: false,
+      //       dealStatus: DEALSTATUS.published,
+      //     }
+      //   },
+      //   {
+      //     $lookup: {
+      //       from: 'views',
+      //       as: 'recentlyViewed',
+      //       let: {
+      //         dealID: '$dealID',
+      //         customerMongoID: req?.user?.id,
+      //       },
+      //       pipeline: [
+      //         {
+      //           $match: {
+      //             $expr: { $and: [
+      //               {
+      //                 $eq: ['$$dealID', '$dealID']
+      //               },
+      //               {
+      //                 $eq: ['$$customerMongoID', '$customerMongoID']
+      //               },
+      //             ] },
+      //           },
+      //         },
+      //       ],
+      //     },
+      //   },
+      //   {
+      //     $unwind: {
+      //       path: '$recentlyViewed',
+      //     },
+      //   },
+      //   {
+      //     $lookup: {
+      //       from: 'favourites',
+      //       as: 'favouriteDeal',
+      //       let: {
+      //         dealID: '$dealID',
+      //         customerMongoID: req?.user?.id,
+      //         deletedCheck:'$deletedCheck',
+      //       },
+      //       pipeline: [
+      //         {
+      //           $match: {
+      //             $expr: { $and: [
+      //               {
+      //                 $eq: ['$$dealID', '$dealID']
+      //               },
+      //               {
+      //                 $eq: ['$$customerMongoID', '$customerMongoID']
+      //               },
+      //               {
+      //                 $eq: ['$deletedCheck', false]
+      //               }
+      //             ] },
+      //           },
+      //         },
+      //       ],
+      //     },
+      //   },
+      //   {
+      //     $unwind: {
+      //       path: '$favouriteDeal',
+      //       preserveNullAndEmptyArrays: true,
+      //     },
+      //   },
+      //   {
+      //     $sort: {
+      //       createdAt: -1
+      //     }
+      //   },
+      //   {
+      //     $addFields: {
+      //       id: '$_id',
+      //       mediaUrl: {
+      //         $slice: [
+      //           {
+      //             $filter: {
+      //               input: '$mediaUrl',
+      //               as: 'mediaUrl',
+      //               cond: {
+      //                 $eq: ['$$mediaUrl.type', 'Image'],
+      //               },
+      //             },
+      //           },
+      //           1,
+      //         ],
+      //       },
+      //       isFavourite: {
+      //         $cond: [
+      //           {
+      //             $ifNull: ['$favouriteDeal', false],
+      //           },
+      //           true,
+      //           false,
+      //         ],
+      //       },
+      //     }
+      //   },
+      //   {
+      //     $project: {
+      //       _id: 0,
+      //       merchantMongoID: 0,
+      //       merchantID: 0,
+      //       subTitle: 0,
+      //       categoryName: 0,
+      //       subCategoryID: 0,
+      //       subCategory: 0,
+      //       subDeals: 0,
+      //       availableVouchers: 0,
+      //       aboutThisDeal: 0,
+      //       readMore: 0,
+      //       finePrints: 0,
+      //       netEarnings: 0,
+      //       isCollapsed: 0,
+      //       isDuplicate: 0,
+      //       totalReviews: 0,
+      //       maxRating: 0,
+      //       minRating: 0,
+      //       pageNumber: 0,
+      //       updatedAt: 0,
+      //       __v: 0,
+      //       endDate: 0,
+      //       startDate: 0,
+      //       reviewMediaUrl: 0,
+      //       favouriteDeal: 0,
+      //     }
+      //   }
+      // ])
+      // .skip(parseInt(offset))
+      // .limit(parseInt(limit))
 
       return {
         // totalCount: totalCount,
-        data: deals
-      }
+        data: deals,
+      };
     } catch (err) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
     }
