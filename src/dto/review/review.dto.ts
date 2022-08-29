@@ -24,6 +24,9 @@ export class ReviewDto {
   voucherID: string;
 
   @ApiProperty()
+  customerMongoID: string;
+
+  @ApiProperty()
   customerID: string;
 
   @ApiProperty()

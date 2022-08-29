@@ -1293,8 +1293,6 @@ export class DealService implements OnModuleInit {
 
   async getLowPriceDeals(price, offset, limit, req) {
     try {
-      debugger;
-
       price = parseFloat(price);
       offset = parseInt(offset) < 0 ? 0 : offset;
       limit = parseInt(limit) < 1 ? 10 : limit;
@@ -1432,6 +1430,13 @@ export class DealService implements OnModuleInit {
         ])
         .skip(parseInt(offset))
         .limit(parseInt(limit));
+
+
+        if(deals?.length){
+          const updatedFilterValue =Math.ceil(deals?.sort((a,b)=>b?.minDealPrice - a?.minDealPrice)[0]?.minDealPrice/10)*10;
+          filterValue = updatedFilterValue;
+        }
+
       return {
         filterValue,
         totalCount: totalCount,
@@ -1707,6 +1712,11 @@ export class DealService implements OnModuleInit {
         ])
         .skip(parseInt(offset))
         .limit(parseInt(limit));
+        
+        if(deals?.length){
+          const updatedFilterValue =Math.ceil(deals?.sort((a,b)=>b?.minDiscountPercentage - a?.minDiscountPercentage)[0]?.minDiscountPercentage/10)*10;
+          filterValue = updatedFilterValue;
+        }
 
       return {
         filterValue,
@@ -2282,6 +2292,10 @@ export class DealService implements OnModuleInit {
 
         if (deal.length > 0) {
           break;
+        }
+
+        if(lat ==33.5705073 && lng==73.1434092){
+          isFound = true;
         }
 
         lat = 33.5705073;
