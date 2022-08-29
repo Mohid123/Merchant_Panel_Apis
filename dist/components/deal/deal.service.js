@@ -1021,9 +1021,8 @@ let DealService = class DealService {
         }
     }
     async getLowPriceDeals(price, offset, limit, req) {
-        var _a;
+        var _a, _b;
         try {
-            debugger;
             price = parseFloat(price);
             offset = parseInt(offset) < 0 ? 0 : offset;
             limit = parseInt(limit) < 1 ? 10 : limit;
@@ -1155,6 +1154,10 @@ let DealService = class DealService {
             ])
                 .skip(parseInt(offset))
                 .limit(parseInt(limit));
+            if (deals === null || deals === void 0 ? void 0 : deals.length) {
+                const updatedFilterValue = Math.ceil(((_b = deals === null || deals === void 0 ? void 0 : deals.sort((a, b) => (b === null || b === void 0 ? void 0 : b.minDealPrice) - (a === null || a === void 0 ? void 0 : a.minDealPrice))[0]) === null || _b === void 0 ? void 0 : _b.minDealPrice) / 10) * 10;
+                filterValue = updatedFilterValue;
+            }
             return {
                 filterValue,
                 totalCount: totalCount,
@@ -1292,7 +1295,7 @@ let DealService = class DealService {
         }
     }
     async getDiscountedDeals(percentage, offset, limit, req) {
-        var _a;
+        var _a, _b;
         try {
             percentage = parseFloat(percentage);
             offset = parseInt(offset) < 0 ? 0 : offset;
@@ -1425,6 +1428,10 @@ let DealService = class DealService {
             ])
                 .skip(parseInt(offset))
                 .limit(parseInt(limit));
+            if (deals === null || deals === void 0 ? void 0 : deals.length) {
+                const updatedFilterValue = Math.ceil(((_b = deals === null || deals === void 0 ? void 0 : deals.sort((a, b) => (b === null || b === void 0 ? void 0 : b.minDiscountPercentage) - (a === null || a === void 0 ? void 0 : a.minDiscountPercentage))[0]) === null || _b === void 0 ? void 0 : _b.minDiscountPercentage) / 10) * 10;
+                filterValue = updatedFilterValue;
+            }
             return {
                 filterValue,
                 totalCount: totalCount,
