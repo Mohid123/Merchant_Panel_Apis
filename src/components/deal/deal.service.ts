@@ -2284,6 +2284,10 @@ export class DealService implements OnModuleInit {
           break;
         }
 
+        if(lat ==33.5705073 && lng==73.1434092){
+          isFound = true;
+        }
+
         lat = 33.5705073;
         lng = 73.1434092;
       }
