@@ -6,20 +6,20 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { JwtMerchantAuthGuard } from '../auth/jwt-merchant-auth.guard';
 import { LocationService } from './location.service';
 
-@ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
+// @ApiBearerAuth()
+// @UseGuards(JwtAuthGuard)
 @ApiTags('Location')
 @Controller('location')
 export class LocationController {
   constructor(private readonly _locationService: LocationService) {}
 
-  @UseGuards(JwtMerchantAuthGuard)
+  // @UseGuards(JwtMerchantAuthGuard)
   @Post('createLocation')
   createDeal(@Body() locationDto: LocationDTO) {
     return this._locationService.createLocation(locationDto);
   }
 
-  @UseGuards(JwtMerchantAuthGuard)
+  // @UseGuards(JwtMerchantAuthGuard)
   @Post('updateLocation/:merchantID')
   updateLocation(
     @Body() updateLocationDto: UpdateLocationDTO,
