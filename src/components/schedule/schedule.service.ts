@@ -149,7 +149,7 @@ export class ScheduleService {
           { dealStatus: status },
         );
         await this._scheduleModel.updateOne({ _id: id }, { status: -1 });
-      } else if (status == 'Expired' && type == 'expireDeal') {
+      } else if (status == 'Expired' && type == 'expireVoucher') {
         await this._voucherModel.updateOne(
           { voucherID: dealID },
           { status: status },
