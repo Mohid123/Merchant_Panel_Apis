@@ -52,7 +52,7 @@ let VouchersService = class VouchersService {
                 deletedCheck: false,
             });
             voucher = await voucher.save();
-            let url = `${process.env.webBaseURL}/redeemVoucher/${voucher.id}`;
+            let url = `${process.env.merchantPanelURL}/redeemVoucher/${voucher.id}`;
             url = await this.generateQRCode(url);
             await this.voucherModel.findByIdAndUpdate(voucher.id, { redeemQR: url });
         }

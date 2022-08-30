@@ -208,8 +208,13 @@ let DealService = class DealService {
             dealDto.isCollapsed = false;
             if (!savedDeal) {
                 const deal = await this.dealModel.create(dealDto);
+                let dealurl = `${process.env.customerPanelURL}/preview/${deal._id}`;
+                let editUrl = `${process.env.merchantPanelURL}/editDeal/${deal._id}`;
+                await this.dealModel.updateOne({ _id: deal._id }, { dealPreviewURL: dealurl, editDealURL: editUrl });
                 return deal;
             }
+            dealDto === null || dealDto === void 0 ? true : delete dealDto.dealPreviewURL;
+            dealDto === null || dealDto === void 0 ? true : delete dealDto.editDealURL;
             await this.dealModel.updateOne({ _id: dealDto.id }, dealDto);
             let returnedDeal = await this.dealModel.findOne({ _id: dealDto.id });
             const res = await axios_1.default.get(`https://www.zohoapis.eu/crm/v2/functions/createdraftdeal/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&dealid=${returnedDeal.dealID}`);
