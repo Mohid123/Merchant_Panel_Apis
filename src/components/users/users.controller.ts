@@ -233,4 +233,9 @@ export class UsersController {
   ) {
     return this._usersService.approveAffiliate(id, approveAffiliateDto);
   }
+
+  // @Get('updatePasswordForAllMerchant')
+  // updatePasswordForAllMerchant(){
+  //   return this._usersService.updatePasswordForAllMerchant();
+  // }
 }
