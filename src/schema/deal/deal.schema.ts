@@ -34,7 +34,7 @@ export const DealSchema = new mongoose.Schema(
     isDuplicate: { type: Boolean, default: false },
     isSpecialOffer: { type: Boolean, default: false },
     dealPreviewURL: { type: String, default: '' },
-    editDealURL: { String, default: '' },
+    editDealURL: { type: String, default: '' },
     reviewMediaUrl: { type: Array },
     ratingsAverage: {
       type: Number,

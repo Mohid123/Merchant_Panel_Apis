@@ -238,8 +238,16 @@ export class DealService implements OnModuleInit {
 
       if (!savedDeal) {
         const deal = await this.dealModel.create(dealDto);
+
+        let dealurl = `${process.env.customerPanelURL}/preview/${deal._id}`;
+        let editUrl = `${process.env.merchantPanelURL}/editDeal/${deal._id}`;
+        await this.dealModel.updateOne({_id: deal._id},{dealPreviewURL: dealurl, editDealURL: editUrl});
+
         return deal;
       }
+
+      delete dealDto?.dealPreviewURL;
+      delete dealDto?.editDealURL;
 
       await this.dealModel.updateOne({ _id: dealDto.id }, dealDto);
 
