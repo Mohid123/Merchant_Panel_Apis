@@ -1753,4 +1753,26 @@ export class UsersService {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
     }
   }
+
+  async updatePasswordForAllMerchant(){
+    try{
+      let merchants = await this._userModel.find({role:'Merchant'});
+
+      merchants = JSON.parse(JSON.stringify(merchants));
+      let newPassword = 'Belgium@123';
+      for await(let merchantItem of merchants){
+        const salt = await bcrypt.genSalt();
+        const hashedPassword = await bcrypt.hash(
+          newPassword,
+          salt,
+        );
+
+        await this._userModel.updateOne({_id:merchantItem?.id},{password:hashedPassword,newUser:false})
+      }
+    }
+    catch(err){
+      console.log(err);
+      throw new BadRequestException(err?.message);
+    }
+  }
 }
