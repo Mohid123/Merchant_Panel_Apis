@@ -44,6 +44,10 @@ __decorate([
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
+], ReviewDto.prototype, "customerMongoID", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
 ], ReviewDto.prototype, "customerID", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),

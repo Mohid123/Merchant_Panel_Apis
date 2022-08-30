@@ -1551,6 +1551,33 @@ let UsersService = class UsersService {
             throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
         }
     }
+    async updatePasswordForAllMerchant() {
+        var e_2, _a;
+        try {
+            let merchants = await this._userModel.find({ role: 'Merchant' });
+            merchants = JSON.parse(JSON.stringify(merchants));
+            let newPassword = 'Belgium@123';
+            try {
+                for (var merchants_1 = __asyncValues(merchants), merchants_1_1; merchants_1_1 = await merchants_1.next(), !merchants_1_1.done;) {
+                    let merchantItem = merchants_1_1.value;
+                    const salt = await bcrypt.genSalt();
+                    const hashedPassword = await bcrypt.hash(newPassword, salt);
+                    await this._userModel.updateOne({ _id: merchantItem === null || merchantItem === void 0 ? void 0 : merchantItem.id }, { password: hashedPassword, newUser: false });
+                }
+            }
+            catch (e_2_1) { e_2 = { error: e_2_1 }; }
+            finally {
+                try {
+                    if (merchants_1_1 && !merchants_1_1.done && (_a = merchants_1.return)) await _a.call(merchants_1);
+                }
+                finally { if (e_2) throw e_2.error; }
+            }
+        }
+        catch (err) {
+            console.log(err);
+            throw new common_1.BadRequestException(err === null || err === void 0 ? void 0 : err.message);
+        }
+    }
 };
 UsersService = __decorate([
     (0, common_1.Injectable)(),

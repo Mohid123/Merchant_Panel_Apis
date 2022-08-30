@@ -71,4 +71,5 @@ export declare class UsersService {
         enquiryID: any;
         affliateID: string;
     }>;
+    updatePasswordForAllMerchant(): Promise<void>;
 }

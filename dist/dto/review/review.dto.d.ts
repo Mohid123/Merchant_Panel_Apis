@@ -7,6 +7,7 @@ export declare class ReviewDto {
     subDealHeader: string;
     voucherMongoID: string;
     voucherID: string;
+    customerMongoID: string;
     customerID: string;
     merchantMongoID: string;
     merchantID: string;

@@ -20,6 +20,7 @@ export interface ReviewInterface extends Document {
     subDealHeader: string;
     voucherMongoID: string;
     voucherID: string;
+    customerMongoID: string;
     customerID: string;
     merchantMongoID: string;
     merchantID: string;

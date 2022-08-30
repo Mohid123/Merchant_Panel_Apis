@@ -12,6 +12,7 @@ exports.ReviewSchema = new mongoose.Schema({
     subDealHeader: { type: String, default: '' },
     voucherMongoID: { type: String, default: '' },
     voucherID: { type: String, default: '' },
+    customerMongoID: { type: String, default: '' },
     customerID: { type: String, default: '' },
     merchantMongoID: { type: String, default: '' },
     merchantID: { type: String, default: '' },
