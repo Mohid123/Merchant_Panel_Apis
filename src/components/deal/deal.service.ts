@@ -246,6 +246,9 @@ export class DealService implements OnModuleInit {
         return deal;
       }
 
+      delete dealDto?.dealPreviewURL;
+      delete dealDto?.editDealURL;
+
       await this.dealModel.updateOne({ _id: dealDto.id }, dealDto);
 
       let returnedDeal = await this.dealModel.findOne({ _id: dealDto.id });
