@@ -64,7 +64,7 @@ export class VouchersService {
 
       voucher = await voucher.save();
 
-      let url = `${process.env.webBaseURL}/redeemVoucher/${voucher.id}`;
+      let url = `${process.env.merchantPanelURL}/redeemVoucher/${voucher.id}`;
 
       url = await this.generateQRCode(url);
 

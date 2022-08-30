@@ -132,6 +132,7 @@ export class AuthService {
     delete user.aboutUs;
     delete user.finePrint;
     delete user.businessHours;
+    delete user.gallery;
 
     const token = this.generateToken(user);
 
