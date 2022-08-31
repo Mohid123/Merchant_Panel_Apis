@@ -660,13 +660,13 @@ export class DealService implements OnModuleInit {
       rating4 = rating4 / totalReviewCount * 100;
       rating5 = rating5 / totalReviewCount * 100;
 
-      let calculatedReviewCount = {
-        rating1: rating1,
-        rating2: rating2,
-        rating3: rating3,
-        rating4: rating4,
-        rating5: rating5
-      };
+      let calculatedReviewCount = [
+        {rating1: rating1},
+        {rating2: rating2},
+        {rating3: rating3},
+        {rating4: rating4},
+        {rating5: rating5}
+      ];
 
       let ratingFilter = {};
 
@@ -708,7 +708,7 @@ export class DealService implements OnModuleInit {
       }
 
       console.log(ratingFilter['eq']);
-      const deal = await this.dealModel
+      const deal: any = await this.dealModel
         .aggregate([
           {
             $match: {
@@ -775,9 +775,8 @@ export class DealService implements OnModuleInit {
         ])
         .then((items) => items[0]);
 
-      return {
-        calculatedReviewCount, deal
-      };
+        deal['calculatedReviewCount'] = calculatedReviewCount;
+        return deal;
     } catch (err) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
     }
