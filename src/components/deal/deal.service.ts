@@ -660,13 +660,24 @@ export class DealService implements OnModuleInit {
       rating4 = rating4 / totalReviewCount * 100;
       rating5 = rating5 / totalReviewCount * 100;
 
-      let calculatedReviewCount = [
-        {rating1: rating1},
-        {rating2: rating2},
-        {rating3: rating3},
-        {rating4: rating4},
-        {rating5: rating5}
-      ];
+      let calculatedReviewCount;
+      if (totalReviewCount > 0) {
+        calculatedReviewCount = [
+          {rating1: rating1},
+          {rating2: rating2},
+          {rating3: rating3},
+          {rating4: rating4},
+          {rating5: rating5}
+        ];
+      } else {
+        calculatedReviewCount = [
+          {rating1: 0},
+          {rating2: 0},
+          {rating3: 0},
+          {rating4: 0},
+          {rating5: 0}
+        ];
+      }
 
       let ratingFilter = {};
 
