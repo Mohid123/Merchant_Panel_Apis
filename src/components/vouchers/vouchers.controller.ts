@@ -88,6 +88,27 @@ export class VouchersController {
 
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
+  @ApiQuery({ name: 'searchVoucher', required: false })
+  @ApiQuery({ name: 'voucherStatus', enum: VOUCHERSTATUSENUM, required: false })
+  @Get('getVouchersByCustomerID/:customerID')
+  getVouchersByCustomerID (
+    @Param('customerID') customerID: string,
+    @Query('searchVoucher') searchVoucher: string = '',
+    @Query('voucherStatus') voucherStatus: VOUCHERSTATUSENUM,
+    @Query('offset') offset: number = 0,
+    @Query('limit') limit: number = 10,
+  ) {
+    return this.voucherService.getVouchersByCustomerID(
+      customerID,
+      searchVoucher,
+      voucherStatus,
+      offset,
+      limit
+    )
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
   @ApiQuery({ name: 'voucherId', required: false })
   @Get('searchByVoucherId/:merchantID')
   searchByVoucherId(

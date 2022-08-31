@@ -663,11 +663,11 @@ export class DealService implements OnModuleInit {
       let calculatedReviewCount;
       if (totalReviewCount > 0) {
         calculatedReviewCount = [
-          {rating: rating1},
-          {rating: rating2},
-          {rating: rating3},
+          {rating: rating5},
           {rating: rating4},
-          {rating: rating5}
+          {rating: rating3},
+          {rating: rating2},
+          {rating: rating1}
         ];
       } else {
         calculatedReviewCount = [

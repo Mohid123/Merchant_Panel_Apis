@@ -248,6 +248,22 @@ export class UsersService {
     };
   }
 
+  async updateCustomerProfile (customerID, usersDto) {
+    try {
+      let user = await this._userModel.findOne({ _id: customerID });
+      if (!user) {
+        throw new HttpException('Customer not found', HttpStatus.NOT_FOUND);
+      }
+      
+      await this._userModel.updateOne({_id: customerID}, usersDto);
+      return {
+        message: 'Customer has been updated succesfully'
+      }
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
   async updateBusinessHours(updateHoursDTO: UpdateHoursDto) {
     let user = await this._userModel.findOne({ _id: updateHoursDTO.id });
 
