@@ -16,6 +16,7 @@ import { VoucherSchema } from 'src/schema/vouchers/vouchers.schema';
 import { VouchersModule } from '../vouchers/vouchers.module';
 import { ViewsSchema } from 'src/schema/views/views.schema';
 import { ViewsService } from '../views/views.service';
+import { ReviewSchema } from 'src/schema/review/review.schema';
 @Module({
   imports: [
     forwardRef(() => CategoryModule),
@@ -29,6 +30,7 @@ import { ViewsService } from '../views/views.service';
       { name: 'Stripe', schema: StripeSchema },
       { name: 'Voucher', schema: VoucherSchema },
       { name: 'views', schema: ViewsSchema },
+      { name: 'Review', schema: ReviewSchema },
     ]),
     StripeModule,
     VouchersModule,
