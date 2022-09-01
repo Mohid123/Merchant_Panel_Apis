@@ -9,6 +9,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags, ApiQuery } from '@nestjs/swagger';
+import { ThrottlerGuard } from '@nestjs/throttler';
 import { ResetPasswordDto } from 'src/dto/resetPasswordDto/resetPassword.dto';
 import { ApproveMerchantDTO } from 'src/dto/user/approveMerchant.dto';
 import { IsPasswordExistsDto } from 'src/dto/user/is-password-exists.dto';
@@ -38,6 +39,7 @@ export class UsersController {
     return this._usersService.addUser(usersDto);
   }
 
+  @UseGuards(ThrottlerGuard)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @Post('comparePassword/:userID')

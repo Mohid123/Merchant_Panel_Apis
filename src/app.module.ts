@@ -27,6 +27,7 @@ import { StripeModule } from './components/stripe/stripe.module';
 import { FavouritesModule } from './components/favourites/favourites.module';
 import { VoucherSchema } from './schema/vouchers/vouchers.schema';
 import { ViewsModule } from './components/views/views.module';
+import { ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
@@ -41,6 +42,10 @@ import { ViewsModule } from './components/views/views.module';
       { name: 'Deal', schema: DealSchema },
       { name: 'Voucher', schema: VoucherSchema },
     ]),
+    ThrottlerModule.forRoot({
+      ttl: 60,
+      limit: 5,
+    }),
     UsersModule,
     DealModule,
     CategoryModule,
