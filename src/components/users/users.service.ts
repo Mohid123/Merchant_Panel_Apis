@@ -787,7 +787,7 @@ export class UsersService {
       offset = parseInt(offset) < 0 ? 0 : offset;
       limit = parseInt(limit) < 1 ? 10 : limit;
 
-      let totalCount = await this._userModel.aggregate([
+      let totalCount: any = await this._userModel.aggregate([
         {
           $match: {
             role: USERROLE.affiliate,
@@ -974,7 +974,7 @@ export class UsersService {
       .limit(parseInt(limit))
 
       return {
-        totalCount: totalCount[0].totalCount,
+        totalCount: totalCount?.length>0?totalCount[0].totalCount:0,
         data: affiliates
       }
 
