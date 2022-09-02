@@ -38,6 +38,7 @@ import { ViewsService } from '../views/views.service';
 import { ViewsInterface } from 'src/interface/views/views.interface';
 import { PreComputedDealInteface } from 'src/interface/deal/preComputedDeal.interface';
 import { Cache } from 'cache-manager';
+import { ReviewInterface } from 'src/interface/review/review.interface';
 let transporter;
 
 @Injectable()
@@ -57,6 +58,7 @@ export class DealService implements OnModuleInit {
     private readonly _userModel: Model<UsersInterface>,
     @InjectModel('Schedule') private _scheduleModel: Model<Schedule>,
     @InjectModel('views') private _viewsModel: Model<ViewsInterface>,
+    @InjectModel('Review') private readonly reviewModel: Model<ReviewInterface>,
     private _scheduleService: ScheduleService,
     private _stripeService: StripeService,
     private _voucherService: VouchersService,
@@ -245,8 +247,19 @@ export class DealService implements OnModuleInit {
 
       if (!savedDeal) {
         const deal = await this.dealModel.create(dealDto);
+
+        let dealurl = `${process.env.customerPanelURL}/preview/${deal._id}`;
+        let editUrl = `${process.env.merchantPanelURL}/editDeal/${deal._id}`;
+        await this.dealModel.updateOne(
+          { _id: deal._id },
+          { dealPreviewURL: dealurl, editDealURL: editUrl },
+        );
+
         return deal;
       }
+
+      delete dealDto?.dealPreviewURL;
+      delete dealDto?.editDealURL;
 
       await this.dealModel.updateOne({ _id: dealDto.id }, dealDto);
 
@@ -641,6 +654,58 @@ export class DealService implements OnModuleInit {
       offset = parseInt(offset) < 0 ? 0 : offset;
       limit = parseInt(limit) < 1 ? 10 : limit;
 
+      const totalReviewCount = await this.reviewModel.countDocuments({
+        dealMongoID: id,
+      });
+
+      let rating1, rating2, rating3, rating4, rating5;
+
+      rating1 = await this.reviewModel.countDocuments({
+        dealMongoID: id,
+        $and: [{ totalRating: { $gte: 1 } }, { totalRating: { $lt: 2 } }],
+      });
+      rating2 = await this.reviewModel.countDocuments({
+        dealMongoID: id,
+        $and: [{ totalRating: { $gte: 2 } }, { totalRating: { $lt: 3 } }],
+      });
+      rating3 = await this.reviewModel.countDocuments({
+        dealMongoID: id,
+        $and: [{ totalRating: { $gte: 3 } }, { totalRating: { $lt: 4 } }],
+      });
+      rating4 = await this.reviewModel.countDocuments({
+        dealMongoID: id,
+        $and: [{ totalRating: { $gte: 4 } }, { totalRating: { $lt: 5 } }],
+      });
+      rating5 = await this.reviewModel.countDocuments({
+        dealMongoID: id,
+        $and: [{ totalRating: { $gte: 5 } }],
+      });
+
+      rating1 = (rating1 / totalReviewCount) * 100;
+      rating2 = (rating2 / totalReviewCount) * 100;
+      rating3 = (rating3 / totalReviewCount) * 100;
+      rating4 = (rating4 / totalReviewCount) * 100;
+      rating5 = (rating5 / totalReviewCount) * 100;
+
+      let calculatedReviewCount;
+      if (totalReviewCount > 0) {
+        calculatedReviewCount = [
+          { rating: rating5 },
+          { rating: rating4 },
+          { rating: rating3 },
+          { rating: rating2 },
+          { rating: rating1 },
+        ];
+      } else {
+        calculatedReviewCount = [
+          { rating: 0 },
+          { rating: 0 },
+          { rating: 0 },
+          { rating: 0 },
+          { rating: 0 },
+        ];
+      }
+
       let ratingFilter = {};
 
       if (rating) {
@@ -681,7 +746,7 @@ export class DealService implements OnModuleInit {
       }
 
       console.log(ratingFilter['eq']);
-      const deal = await this.dealModel
+      const deal: any = await this.dealModel
         .aggregate([
           {
             $match: {
@@ -748,6 +813,7 @@ export class DealService implements OnModuleInit {
         ])
         .then((items) => items[0]);
 
+      deal['calculatedReviewCount'] = calculatedReviewCount;
       return deal;
     } catch (err) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);

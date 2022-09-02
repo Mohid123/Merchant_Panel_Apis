@@ -17,6 +17,7 @@ import { VouchersModule } from '../vouchers/vouchers.module';
 import { ViewsSchema } from 'src/schema/views/views.schema';
 import { ViewsService } from '../views/views.service';
 import { PreComputedDealSchema } from 'src/schema/deal/preComputed-deals.schema';
+import { ReviewSchema } from 'src/schema/review/review.schema';
 @Module({
   imports: [
     CacheModule.register(),
@@ -32,6 +33,7 @@ import { PreComputedDealSchema } from 'src/schema/deal/preComputed-deals.schema'
       { name: 'Stripe', schema: StripeSchema },
       { name: 'Voucher', schema: VoucherSchema },
       { name: 'views', schema: ViewsSchema },
+      { name: 'Review', schema: ReviewSchema },
     ]),
     StripeModule,
     VouchersModule,

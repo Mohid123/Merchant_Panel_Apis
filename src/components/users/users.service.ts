@@ -248,6 +248,22 @@ export class UsersService {
     };
   }
 
+  async updateCustomerProfile(customerID, usersDto) {
+    try {
+      let user = await this._userModel.findOne({ _id: customerID });
+      if (!user) {
+        throw new HttpException('Customer not found', HttpStatus.NOT_FOUND);
+      }
+
+      await this._userModel.updateOne({ _id: customerID }, usersDto);
+      return {
+        message: 'Customer has been updated succesfully',
+      };
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
   async updateBusinessHours(updateHoursDTO: UpdateHoursDto) {
     let user = await this._userModel.findOne({ _id: updateHoursDTO.id });
 
@@ -768,7 +784,7 @@ export class UsersService {
       offset = parseInt(offset) < 0 ? 0 : offset;
       limit = parseInt(limit) < 1 ? 10 : limit;
 
-      let totalCount = await this._userModel.aggregate([
+      let totalCount: any = await this._userModel.aggregate([
         {
           $match: {
             role: USERROLE.affiliate,
@@ -951,7 +967,7 @@ export class UsersService {
         .limit(parseInt(limit));
 
       return {
-        totalCount: totalCount[0].totalCount,
+        totalCount: totalCount?.length > 0 ? totalCount[0].totalCount : 0,
         data: affiliates,
       };
     } catch (err) {
