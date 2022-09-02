@@ -3553,7 +3553,7 @@ export class DealService implements OnModuleInit {
       let expiryDate;
 
       if (subDeal.voucherStartDate > 0) {
-        expiryDate = subDeal.voucherStartDate;
+        expiryDate = subDeal.voucherEndDate;
       } else {
         expiryDate =
           new Date().getTime() + subDeal?.voucherValidity * 24 * 60 * 60 * 1000;
@@ -3563,7 +3563,9 @@ export class DealService implements OnModuleInit {
         voucherHeader: subDeal.title,
         dealHeader: deal.dealHeader,
         dealID: deal.dealID,
+        dealMongoID: deal._id,
         subDealID: subDeal.subDealID,
+        subDealMongoID: subDeal._id,
         amount: subDeal.dealPrice,
         status: VOUCHERSTATUSENUM.purchased,
         merchantID: deal.merchantID,

@@ -594,7 +594,8 @@ export class VouchersService {
 
       let redeemDate = new Date().getTime();
 
-      const net = voucher.dealPrice - 0.05 * voucher.dealPrice; //five percent gosed to affliate
+      const calculatedFee = voucher.dealPrice * 0.05; //five percent goes to affiliate
+      const net = voucher.dealPrice - 0.05 * voucher.dealPrice;
 
       await this.voucherModel.updateOne(
         { voucherID: voucherId },
@@ -602,6 +603,7 @@ export class VouchersService {
           status: VOUCHERSTATUSENUM.redeeemed,
           redeemDate: redeemDate,
           net: net,
+          fee: calculatedFee
         },
       );
 

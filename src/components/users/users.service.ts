@@ -329,7 +329,7 @@ export class UsersService {
   }
 
   async getMerchantByID(merchantID) {
-    return await this._userModel
+    let merchant = await this._userModel
       .aggregate([
         {
           $match: {
@@ -362,6 +362,23 @@ export class UsersService {
         },
       ])
       .then((items) => items[0]);
+
+    let found = false;
+      debugger
+    merchant.businessHours.forEach((el) => {
+      if (el.firstStartTime != '') {
+        found = true;
+      }
+      if (el.secondStartTime != '') {
+        found = true;
+      }
+    });
+
+    if (!found) {
+      merchant.businessHours = [];
+    }
+
+    return merchant;
   }
 
   async getMerchantStats(id) {
