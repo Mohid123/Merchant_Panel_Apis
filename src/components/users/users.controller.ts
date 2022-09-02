@@ -9,9 +9,11 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags, ApiQuery } from '@nestjs/swagger';
+import { ThrottlerGuard } from '@nestjs/throttler';
 import { ResetPasswordDto } from 'src/dto/resetPasswordDto/resetPassword.dto';
 import { ApproveMerchantDTO } from 'src/dto/user/approveMerchant.dto';
 import { IsPasswordExistsDto } from 'src/dto/user/is-password-exists.dto';
+import { UpdateCustomerProfileDto } from 'src/dto/user/updatecustomerprofile.dto';
 import { UpdatePasswordDto } from 'src/dto/user/updatepassword.dto';
 import { VoucherPinCodeDto } from 'src/dto/user/voucherpincode.dto';
 import { SORT } from 'src/enum/sort/sort.enum';
@@ -37,6 +39,7 @@ export class UsersController {
     return this._usersService.addUser(usersDto);
   }
 
+  @UseGuards(ThrottlerGuard)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @Post('comparePassword/:userID')
@@ -83,6 +86,16 @@ export class UsersController {
     @Body() usersDto: UpdateMerchantProfileDto,
   ) {
     return this._usersService.updateMerchantprofile(merchantID, usersDto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Post('updateCustomerProfile/:customerID')
+  updateCustomerProfile(
+    @Param('customerID') customerID: string,
+    @Body() usersDto: UpdateCustomerProfileDto,
+  ) {
+    return this._usersService.updateCustomerProfile(customerID, usersDto);
   }
 
   @UseGuards(JwtAuthGuard)
