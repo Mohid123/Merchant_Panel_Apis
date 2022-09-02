@@ -40,11 +40,11 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @Post('comparePassword/:userID')
-  comparePassword (
+  comparePassword(
     @Param('userID') userID: string,
-    @Body() isPasswordExistsDto: IsPasswordExistsDto
+    @Body() isPasswordExistsDto: IsPasswordExistsDto,
   ) {
-    return this._usersService.comparePassword(userID, isPasswordExistsDto)
+    return this._usersService.comparePassword(userID, isPasswordExistsDto);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -132,13 +132,13 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @Get('searchAllAffiliates')
-  searchAllAffiliates (
+  searchAllAffiliates(
     @Query('searchAffiliates') searchAffiliates: string = '',
     @Query('categories') categories: string = '',
     @Query('sortAffiliates') sortAffiliates: SORT,
     @Query('offset') offset: number = 0,
     @Query('limit') limit: number = 10,
-    @Req() req
+    @Req() req,
   ) {
     return this._usersService.searchAllAffiliates(
       searchAffiliates,
@@ -146,17 +146,17 @@ export class UsersController {
       sortAffiliates,
       offset,
       limit,
-      req
-    )
+      req,
+    );
   }
 
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @Get('getPopularAffiliates')
-  getPopularAffiliates (
+  getPopularAffiliates(
     @Query('offset') offset: number = 0,
     @Query('limit') limit: number = 10,
-    @Req() req
+    @Req() req,
   ) {
     return this._usersService.getPopularAffiliates(offset, limit, req);
   }
@@ -164,12 +164,12 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @Get('getFavouriteAffiliates')
-  getFavouriteAffiliates (
+  getFavouriteAffiliates(
     @Query('offset') offset: number = 0,
     @Query('limit') limit: number = 10,
-    @Req() req
+    @Req() req,
   ) {
-    return this._usersService.getFavouriteAffiliates(offset, limit, req)
+    return this._usersService.getFavouriteAffiliates(offset, limit, req);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -232,5 +232,13 @@ export class UsersController {
     @Body() approveAffiliateDto: ApproveMerchantDTO,
   ) {
     return this._usersService.approveAffiliate(id, approveAffiliateDto);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtManagerAuthGuard)
+  @UseGuards(JwtAuthGuard)
+  @Post('getCustomerByID/:customerID')
+  getCustomerByID(@Param('customerID') customerID: string) {
+    return this._usersService.getCustomerByID(customerID);
   }
 }
