@@ -4149,7 +4149,7 @@ export class DealService implements OnModuleInit {
       ) {
         throw new Error('Insufficent Quantity of deal present!');
       }
-      debugger
+
       let dealVouchers = 0,
         soldVouchers = 0;
       deal.subDeals = deal.subDeals.map((element) => {

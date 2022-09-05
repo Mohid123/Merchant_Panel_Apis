@@ -16,6 +16,7 @@ import { ScheduleService } from '../schedule/schedule.service';
 const qr = require('qrcode');
 import * as fs from 'fs';
 import { USERSTATUS } from 'src/enum/user/userstatus.enum';
+import { DealInterface } from 'src/interface/deal/deal.interface';
 
 @Injectable()
 export class VouchersService {
@@ -28,6 +29,7 @@ export class VouchersService {
     private readonly userModel: Model<UsersInterface>,
     @InjectModel('Schedule') private _scheduleModel: Model<Schedule>,
     private _scheduleService: ScheduleService,
+    @InjectModel('Deal') private readonly dealModel: Model<DealInterface>,
   ) {}
 
   async generateVoucherId(sequenceName) {
@@ -558,7 +560,7 @@ export class VouchersService {
       });
 
       if (req.user.id != voucher.merchantMongoID) {
-        throw new UnauthorizedException('Not allowed to redeem voucher!');
+        throw new UnauthorizedException('Merchant Not allowed to redeem voucher!');
       }
 
       if (voucher) {
@@ -576,7 +578,7 @@ export class VouchersService {
       }
 
       if (!voucher) {
-        throw new Error('No found!');
+        throw new Error('Voucher Not found!');
       }
 
       let scheduledVoucher = await this._scheduleModel.findOne({
@@ -606,6 +608,17 @@ export class VouchersService {
           fee: calculatedFee
         },
       );
+
+      const deal = await this.dealModel.findOne({dealID: voucher.dealID});
+
+      const subDeal = deal.subDeals.find(
+        (el) => el.subDealID == voucher.subDealID,
+      );
+
+      subDeal.grossEarning += voucher.dealPrice;
+      subDeal.netEarning += net;
+
+      await this.dealModel.updateOne({ dealID: voucher.dealID }, deal);
 
       await this.userModel.updateOne(
         { userID: voucher.merchantID },
@@ -751,7 +764,8 @@ export class VouchersService {
 
       let redeemDate = new Date().getTime();
 
-      const net = voucher.dealPrice - 0.05 * voucher.dealPrice; //five percent gosed to affliate
+      const calculatedFee = voucher.dealPrice * 0.05; //five percent goes to affiliate
+      const net = voucher.dealPrice - 0.05 * voucher.dealPrice;
 
       await this.voucherModel.updateOne(
         { voucherID: redeemVoucherDto.voucherID },
@@ -759,8 +773,20 @@ export class VouchersService {
           status: VOUCHERSTATUSENUM.redeeemed,
           redeemDate: redeemDate,
           net: net,
+          fee: calculatedFee
         },
       );
+
+      const deal = await this.dealModel.findOne({dealID: voucher.dealID});
+
+      const subDeal = deal.subDeals.find(
+        (el) => el.subDealID == voucher.subDealID,
+      );
+
+      subDeal.grossEarning += voucher.dealPrice;
+      subDeal.netEarning += net;
+
+      await this.dealModel.updateOne({ dealID: voucher.dealID }, deal);
 
       await this.userModel.updateOne(
         { userID: voucher.merchantID },
