@@ -594,20 +594,37 @@ export class DealService implements OnModuleInit {
               from: 'users',
               as: 'merchantDetails',
               let: {
-                merchantMongoID: '$merchantMongoID',
+                userID: '$merchantID',
+                deletedCheck: '$deletedCheck',
               },
               pipeline: [
                 {
                   $match: {
-                    $expr: { $eq: ['$$merchantMongoID', '$_id'] },
+                    $expr: {
+                      $and: [
+                        {
+                          $eq: ['$$userID', '$userID'],
+                        },
+                        {
+                          $eq: ['$deletedCheck', false],
+                        },
+                      ],
+                    },
+                  },
+                },
+                {
+                  $addFields: {
+                    id: '$_id',
                   },
                 },
                 {
                   $project: {
-                    _id: 1,
-                    legalName: 1,
+                    _id: 0,
+                    id: 1,
                     totalReviews: 1,
                     ratingsAverage: 1,
+                    legalName: 1,
+                    city: 1,
                   },
                 },
               ],
@@ -1272,6 +1289,50 @@ export class DealService implements OnModuleInit {
             },
           },
           {
+            $lookup: {
+              from: 'users',
+              as: 'merchantDetails',
+              let: {
+                userID: '$merchantID',
+                deletedCheck: '$deletedCheck',
+              },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $and: [
+                        {
+                          $eq: ['$$userID', '$userID'],
+                        },
+                        {
+                          $eq: ['$deletedCheck', false],
+                        },
+                      ],
+                    },
+                  },
+                },
+                {
+                  $addFields: {
+                    id: '$_id',
+                  },
+                },
+                {
+                  $project: {
+                    _id: 0,
+                    id: 1,
+                    totalReviews: 1,
+                    ratingsAverage: 1,
+                    legalName: 1,
+                    city: 1,
+                  },
+                },
+              ],
+            },
+          },
+          {
+            $unwind: '$merchantDetails',
+          },
+          {
             $addFields: {
               id: '$_id',
               mediaUrl: {
@@ -1444,6 +1505,50 @@ export class DealService implements OnModuleInit {
             },
           },
           {
+            $lookup: {
+              from: 'users',
+              as: 'merchantDetails',
+              let: {
+                userID: '$merchantID',
+                deletedCheck: '$deletedCheck',
+              },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $and: [
+                        {
+                          $eq: ['$$userID', '$userID'],
+                        },
+                        {
+                          $eq: ['$deletedCheck', false],
+                        },
+                      ],
+                    },
+                  },
+                },
+                {
+                  $addFields: {
+                    id: '$_id',
+                  },
+                },
+                {
+                  $project: {
+                    _id: 0,
+                    id: 1,
+                    totalReviews: 1,
+                    ratingsAverage: 1,
+                    legalName: 1,
+                    city: 1,
+                  },
+                },
+              ],
+            },
+          },
+          {
+            $unwind: '$merchantDetails',
+          },
+          {
             $addFields: {
               id: '$_id',
               mediaUrl: {
@@ -1611,8 +1716,8 @@ export class DealService implements OnModuleInit {
                   },
                   {
                     $addFields: {
-                      id: '$_id'
-                    }
+                      id: '$_id',
+                    },
                   },
                   {
                     $project: {
@@ -1621,14 +1726,14 @@ export class DealService implements OnModuleInit {
                       totalReviews: 1,
                       ratingsAverage: 1,
                       legalName: 1,
-                      city: 1
-                    }
-                  }
+                      city: 1,
+                    },
+                  },
                 ],
               },
             },
             {
-              $unwind: '$merchantDetails'
+              $unwind: '$merchantDetails',
             },
             {
               $addFields: {
@@ -1785,6 +1890,50 @@ export class DealService implements OnModuleInit {
               path: '$favouriteDeal',
               preserveNullAndEmptyArrays: true,
             },
+          },
+          {
+            $lookup: {
+              from: 'users',
+              as: 'merchantDetails',
+              let: {
+                userID: '$merchantID',
+                deletedCheck: '$deletedCheck',
+              },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $and: [
+                        {
+                          $eq: ['$$userID', '$userID'],
+                        },
+                        {
+                          $eq: ['$deletedCheck', false],
+                        },
+                      ],
+                    },
+                  },
+                },
+                {
+                  $addFields: {
+                    id: '$_id',
+                  },
+                },
+                {
+                  $project: {
+                    _id: 0,
+                    id: 1,
+                    totalReviews: 1,
+                    ratingsAverage: 1,
+                    legalName: 1,
+                    city: 1,
+                  },
+                },
+              ],
+            },
+          },
+          {
+            $unwind: '$merchantDetails',
           },
           {
             $addFields: {
@@ -1975,8 +2124,8 @@ export class DealService implements OnModuleInit {
                   },
                   {
                     $addFields: {
-                      id: '$_id'
-                    }
+                      id: '$_id',
+                    },
                   },
                   {
                     $project: {
@@ -1985,14 +2134,14 @@ export class DealService implements OnModuleInit {
                       totalReviews: 1,
                       ratingsAverage: 1,
                       legalName: 1,
-                      city: 1
-                    }
-                  }
+                      city: 1,
+                    },
+                  },
                 ],
               },
             },
             {
-              $unwind: '$merchantDetails'
+              $unwind: '$merchantDetails',
             },
             {
               $addFields: {
@@ -2135,6 +2284,50 @@ export class DealService implements OnModuleInit {
             },
           },
           {
+            $lookup: {
+              from: 'users',
+              as: 'merchantDetails',
+              let: {
+                userID: '$merchantID',
+                deletedCheck: '$deletedCheck',
+              },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $and: [
+                        {
+                          $eq: ['$$userID', '$userID'],
+                        },
+                        {
+                          $eq: ['$deletedCheck', false],
+                        },
+                      ],
+                    },
+                  },
+                },
+                {
+                  $addFields: {
+                    id: '$_id',
+                  },
+                },
+                {
+                  $project: {
+                    _id: 0,
+                    id: 1,
+                    totalReviews: 1,
+                    ratingsAverage: 1,
+                    legalName: 1,
+                    city: 1,
+                  },
+                },
+              ],
+            },
+          },
+          {
+            $unwind: '$merchantDetails',
+          },
+          {
             $addFields: {
               id: '$_id',
               mediaUrl: {
@@ -2268,6 +2461,50 @@ export class DealService implements OnModuleInit {
               path: '$favouriteDeal',
               preserveNullAndEmptyArrays: true,
             },
+          },
+          {
+            $lookup: {
+              from: 'users',
+              as: 'merchantDetails',
+              let: {
+                userID: '$merchantID',
+                deletedCheck: '$deletedCheck',
+              },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $and: [
+                        {
+                          $eq: ['$$userID', '$userID'],
+                        },
+                        {
+                          $eq: ['$deletedCheck', false],
+                        },
+                      ],
+                    },
+                  },
+                },
+                {
+                  $addFields: {
+                    id: '$_id',
+                  },
+                },
+                {
+                  $project: {
+                    _id: 0,
+                    id: 1,
+                    totalReviews: 1,
+                    ratingsAverage: 1,
+                    legalName: 1,
+                    city: 1,
+                  },
+                },
+              ],
+            },
+          },
+          {
+            $unwind: '$merchantDetails',
           },
           {
             $addFields: {
@@ -2426,6 +2663,50 @@ export class DealService implements OnModuleInit {
                 path: '$favouriteDeal',
                 preserveNullAndEmptyArrays: true,
               },
+            },
+            {
+              $lookup: {
+                from: 'users',
+                as: 'merchantDetails',
+                let: {
+                  userID: '$merchantID',
+                  deletedCheck: '$deletedCheck',
+                },
+                pipeline: [
+                  {
+                    $match: {
+                      $expr: {
+                        $and: [
+                          {
+                            $eq: ['$$userID', '$userID'],
+                          },
+                          {
+                            $eq: ['$deletedCheck', false],
+                          },
+                        ],
+                      },
+                    },
+                  },
+                  {
+                    $addFields: {
+                      id: '$_id',
+                    },
+                  },
+                  {
+                    $project: {
+                      _id: 0,
+                      id: 1,
+                      totalReviews: 1,
+                      ratingsAverage: 1,
+                      legalName: 1,
+                      city: 1,
+                    },
+                  },
+                ],
+              },
+            },
+            {
+              $unwind: '$merchantDetails',
             },
             {
               $addFields: {
@@ -2649,6 +2930,50 @@ export class DealService implements OnModuleInit {
               path: '$favouriteDeal',
               preserveNullAndEmptyArrays: true,
             },
+          },
+          {
+            $lookup: {
+              from: 'users',
+              as: 'merchantDetails',
+              let: {
+                userID: '$merchantID',
+                deletedCheck: '$deletedCheck',
+              },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $and: [
+                        {
+                          $eq: ['$$userID', '$userID'],
+                        },
+                        {
+                          $eq: ['$deletedCheck', false],
+                        },
+                      ],
+                    },
+                  },
+                },
+                {
+                  $addFields: {
+                    id: '$_id',
+                  },
+                },
+                {
+                  $project: {
+                    _id: 0,
+                    id: 1,
+                    totalReviews: 1,
+                    ratingsAverage: 1,
+                    legalName: 1,
+                    city: 1,
+                  },
+                },
+              ],
+            },
+          },
+          {
+            $unwind: '$merchantDetails',
           },
           {
             $addFields: {
@@ -2881,6 +3206,50 @@ export class DealService implements OnModuleInit {
             },
           },
           {
+            $lookup: {
+              from: 'users',
+              as: 'merchantDetails',
+              let: {
+                userID: '$merchantID',
+                deletedCheck: '$deletedCheck',
+              },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $and: [
+                        {
+                          $eq: ['$$userID', '$userID'],
+                        },
+                        {
+                          $eq: ['$deletedCheck', false],
+                        },
+                      ],
+                    },
+                  },
+                },
+                {
+                  $addFields: {
+                    id: '$_id',
+                  },
+                },
+                {
+                  $project: {
+                    _id: 0,
+                    id: 1,
+                    totalReviews: 1,
+                    ratingsAverage: 1,
+                    legalName: 1,
+                    city: 1,
+                  },
+                },
+              ],
+            },
+          },
+          {
+            $unwind: '$merchantDetails',
+          },
+          {
             $addFields: {
               id: '$_id',
               mediaUrl: {
@@ -3031,6 +3400,50 @@ export class DealService implements OnModuleInit {
             },
           },
           {
+            $lookup: {
+              from: 'users',
+              as: 'merchantDetails',
+              let: {
+                userID: '$merchantID',
+                deletedCheck: '$deletedCheck',
+              },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $and: [
+                        {
+                          $eq: ['$$userID', '$userID'],
+                        },
+                        {
+                          $eq: ['$deletedCheck', false],
+                        },
+                      ],
+                    },
+                  },
+                },
+                {
+                  $addFields: {
+                    id: '$_id',
+                  },
+                },
+                {
+                  $project: {
+                    _id: 0,
+                    id: 1,
+                    totalReviews: 1,
+                    ratingsAverage: 1,
+                    legalName: 1,
+                    city: 1,
+                  },
+                },
+              ],
+            },
+          },
+          {
+            $unwind: '$merchantDetails',
+          },
+          {
             $addFields: {
               mediaUrl: {
                 $slice: [
@@ -3168,6 +3581,50 @@ export class DealService implements OnModuleInit {
               path: '$favouriteDeal',
               preserveNullAndEmptyArrays: true,
             },
+          },
+          {
+            $lookup: {
+              from: 'users',
+              as: 'merchantDetails',
+              let: {
+                userID: '$merchantID',
+                deletedCheck: '$deletedCheck',
+              },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $and: [
+                        {
+                          $eq: ['$$userID', '$userID'],
+                        },
+                        {
+                          $eq: ['$deletedCheck', false],
+                        },
+                      ],
+                    },
+                  },
+                },
+                {
+                  $addFields: {
+                    id: '$_id',
+                  },
+                },
+                {
+                  $project: {
+                    _id: 0,
+                    id: 1,
+                    totalReviews: 1,
+                    ratingsAverage: 1,
+                    legalName: 1,
+                    city: 1,
+                  },
+                },
+              ],
+            },
+          },
+          {
+            $unwind: '$merchantDetails',
           },
           {
             $addFields: {
@@ -3312,6 +3769,50 @@ export class DealService implements OnModuleInit {
             },
           },
           {
+            $lookup: {
+              from: 'users',
+              as: 'merchantDetails',
+              let: {
+                userID: '$merchantID',
+                deletedCheck: '$deletedCheck',
+              },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $and: [
+                        {
+                          $eq: ['$$userID', '$userID'],
+                        },
+                        {
+                          $eq: ['$deletedCheck', false],
+                        },
+                      ],
+                    },
+                  },
+                },
+                {
+                  $addFields: {
+                    id: '$_id',
+                  },
+                },
+                {
+                  $project: {
+                    _id: 0,
+                    id: 1,
+                    totalReviews: 1,
+                    ratingsAverage: 1,
+                    legalName: 1,
+                    city: 1,
+                  },
+                },
+              ],
+            },
+          },
+          {
+            $unwind: '$merchantDetails',
+          },
+          {
             $addFields: {
               id: '$_id',
               'recentlyViewed.mediaUrl': {
@@ -3379,6 +3880,7 @@ export class DealService implements OnModuleInit {
           ...el.recentlyViewed,
           isFavourite: el.isFavourite,
           viewedTime: el.viewedTime,
+          merchantDetails: el.merchantDetails,
         };
       });
 
