@@ -4,25 +4,41 @@ import { Model } from 'mongoose';
 import { Location } from 'src/interface/location/location.interface';
 var OpenLocationCode = require('open-location-code').OpenLocationCode;
 var openLocationCode = new OpenLocationCode();
+const NodeGeocoder = require('node-geocoder');
 
 @Injectable()
 export class LocationService {
+  geocoder;
   constructor(
     @InjectModel('Location') private _locationModel: Model<Location>,
-  ) {}
-
-  async createLocation(locationDto) {
-    const coord = await openLocationCode.decode(locationDto.plusCode);
-
-    let coordinates = [coord.longitudeCenter, coord.latitudeCenter];
-    const locationObj = {
-      ...locationDto,
-      location: {
-        coordinates: coordinates,
-      },
+  ) {
+    const options = {
+      provider: 'google',
+      apiKey: process.env.geocodingApiKey,
+      formatter: null, // 'gpx'
     };
 
-    return await new this._locationModel(locationObj).save();
+    this.geocoder = NodeGeocoder(options);
+  }
+
+  async createLocation(locationDto) {
+    try {
+      const res = await this.geocoder.geocode(
+        `${locationDto.streetAddress},${locationDto.city}`,
+      );
+
+      let coordinates = [res[0].longitude, res[0].latitude];
+      const locationObj = {
+        ...locationDto,
+        location: {
+          coordinates: coordinates,
+        },
+      };
+
+      return await new this._locationModel(locationObj).save();
+    } catch (err) {
+      console.log(err + ' ..........');
+    }
   }
 
   async updateLocation(locationDto, merchantID) {

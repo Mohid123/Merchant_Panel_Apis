@@ -1,6 +1,8 @@
 import {
+  CACHE_MANAGER,
   HttpException,
   HttpStatus,
+  Inject,
   Injectable,
   OnModuleInit,
 } from '@nestjs/common';
@@ -34,12 +36,18 @@ import { EmailDTO } from 'src/dto/email/email.dto';
 import { getEmailHTML } from './email/emailHtml';
 import { ViewsService } from '../views/views.service';
 import { ViewsInterface } from 'src/interface/views/views.interface';
+import { PreComputedDealInteface } from 'src/interface/deal/preComputedDeal.interface';
+import { Cache } from 'cache-manager';
+import { ReviewInterface } from 'src/interface/review/review.interface';
 let transporter;
 
 @Injectable()
 export class DealService implements OnModuleInit {
   constructor(
     @InjectModel('Deal') private readonly dealModel: Model<DealInterface>,
+    @InjectModel('PreComputedDeal')
+    private readonly preComputedDealModel: Model<PreComputedDealInteface>,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
     @InjectModel('Category')
     private readonly categorymodel: Model<CategoryInterface>,
     @InjectModel('Counter')
@@ -50,6 +58,7 @@ export class DealService implements OnModuleInit {
     private readonly _userModel: Model<UsersInterface>,
     @InjectModel('Schedule') private _scheduleModel: Model<Schedule>,
     @InjectModel('views') private _viewsModel: Model<ViewsInterface>,
+    @InjectModel('Review') private readonly reviewModel: Model<ReviewInterface>,
     private _scheduleService: ScheduleService,
     private _stripeService: StripeService,
     private _voucherService: VouchersService,
@@ -241,7 +250,10 @@ export class DealService implements OnModuleInit {
 
         let dealurl = `${process.env.customerPanelURL}/preview/${deal._id}`;
         let editUrl = `${process.env.merchantPanelURL}/editDeal/${deal._id}`;
-        await this.dealModel.updateOne({_id: deal._id},{dealPreviewURL: dealurl, editDealURL: editUrl});
+        await this.dealModel.updateOne(
+          { _id: deal._id },
+          { dealPreviewURL: dealurl, editDealURL: editUrl },
+        );
 
         return deal;
       }
@@ -642,6 +654,58 @@ export class DealService implements OnModuleInit {
       offset = parseInt(offset) < 0 ? 0 : offset;
       limit = parseInt(limit) < 1 ? 10 : limit;
 
+      const totalReviewCount = await this.reviewModel.countDocuments({
+        dealMongoID: id,
+      });
+
+      let rating1, rating2, rating3, rating4, rating5;
+
+      rating1 = await this.reviewModel.countDocuments({
+        dealMongoID: id,
+        $and: [{ totalRating: { $gte: 1 } }, { totalRating: { $lt: 2 } }],
+      });
+      rating2 = await this.reviewModel.countDocuments({
+        dealMongoID: id,
+        $and: [{ totalRating: { $gte: 2 } }, { totalRating: { $lt: 3 } }],
+      });
+      rating3 = await this.reviewModel.countDocuments({
+        dealMongoID: id,
+        $and: [{ totalRating: { $gte: 3 } }, { totalRating: { $lt: 4 } }],
+      });
+      rating4 = await this.reviewModel.countDocuments({
+        dealMongoID: id,
+        $and: [{ totalRating: { $gte: 4 } }, { totalRating: { $lt: 5 } }],
+      });
+      rating5 = await this.reviewModel.countDocuments({
+        dealMongoID: id,
+        $and: [{ totalRating: { $gte: 5 } }],
+      });
+
+      rating1 = (rating1 / totalReviewCount) * 100;
+      rating2 = (rating2 / totalReviewCount) * 100;
+      rating3 = (rating3 / totalReviewCount) * 100;
+      rating4 = (rating4 / totalReviewCount) * 100;
+      rating5 = (rating5 / totalReviewCount) * 100;
+
+      let calculatedReviewCount;
+      if (totalReviewCount > 0) {
+        calculatedReviewCount = [
+          { rating: rating5 },
+          { rating: rating4 },
+          { rating: rating3 },
+          { rating: rating2 },
+          { rating: rating1 },
+        ];
+      } else {
+        calculatedReviewCount = [
+          { rating: 0 },
+          { rating: 0 },
+          { rating: 0 },
+          { rating: 0 },
+          { rating: 0 },
+        ];
+      }
+
       let ratingFilter = {};
 
       if (rating) {
@@ -682,7 +746,7 @@ export class DealService implements OnModuleInit {
       }
 
       console.log(ratingFilter['eq']);
-      const deal = await this.dealModel
+      const deal: any = await this.dealModel
         .aggregate([
           {
             $match: {
@@ -749,6 +813,7 @@ export class DealService implements OnModuleInit {
         ])
         .then((items) => items[0]);
 
+      deal['calculatedReviewCount'] = calculatedReviewCount;
       return deal;
     } catch (err) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
@@ -1439,11 +1504,14 @@ export class DealService implements OnModuleInit {
         .skip(parseInt(offset))
         .limit(parseInt(limit));
 
-
-        if(deals?.length){
-          const updatedFilterValue =Math.ceil(deals?.sort((a,b)=>b?.minDealPrice - a?.minDealPrice)[0]?.minDealPrice/10)*10;
-          filterValue = updatedFilterValue;
-        }
+      if (deals?.length) {
+        const updatedFilterValue =
+          Math.ceil(
+            deals?.sort((a, b) => b?.minDealPrice - a?.minDealPrice)[0]
+              ?.minDealPrice / 10,
+          ) * 10;
+        filterValue = updatedFilterValue;
+      }
 
       return {
         filterValue,
@@ -1460,125 +1528,183 @@ export class DealService implements OnModuleInit {
       offset = parseInt(offset) < 0 ? 0 : offset;
       limit = parseInt(limit) < 1 ? 10 : limit;
 
-      const totalCount = await this.dealModel.countDocuments({
-        deletedCheck: false,
-        dealStatus: DEALSTATUS.published,
-      });
+      const value = await this.cacheManager.get(`getNewDeals${offset}${limit}`);
+      let totalCount;
+      let deals;
+      if (!value) {
+        totalCount = await this.dealModel.countDocuments({
+          deletedCheck: false,
+          dealStatus: DEALSTATUS.published,
+        });
 
-      let deals = await this.dealModel
-        .aggregate([
-          {
-            $match: {
-              deletedCheck: false,
-              dealStatus: DEALSTATUS.published,
-            },
-          },
-          {
-            $sort: {
-              createdAt: -1,
-            },
-          },
-          {
-            $lookup: {
-              from: 'favourites',
-              as: 'favouriteDeal',
-              let: {
-                dealID: '$dealID',
-                customerMongoID: req?.user?.id,
-                deletedCheck: '$deletedCheck',
+        deals = await this.dealModel
+          .aggregate([
+            {
+              $match: {
+                deletedCheck: false,
+                dealStatus: DEALSTATUS.published,
               },
-              pipeline: [
-                {
-                  $match: {
-                    $expr: {
-                      $and: [
-                        {
-                          $eq: ['$$dealID', '$dealID'],
-                        },
-                        {
-                          $eq: ['$$customerMongoID', '$customerMongoID'],
-                        },
-                        {
-                          $eq: ['$deletedCheck', false],
-                        },
-                      ],
-                    },
-                  },
+            },
+            {
+              $sort: {
+                createdAt: -1,
+              },
+            },
+            {
+              $lookup: {
+                from: 'favourites',
+                as: 'favouriteDeal',
+                let: {
+                  dealID: '$dealID',
+                  customerMongoID: req?.user?.id,
+                  deletedCheck: '$deletedCheck',
                 },
-              ],
-            },
-          },
-          {
-            $unwind: {
-              path: '$favouriteDeal',
-              preserveNullAndEmptyArrays: true,
-            },
-          },
-          {
-            $addFields: {
-              id: '$_id',
-              mediaUrl: {
-                $slice: [
+                pipeline: [
                   {
-                    $filter: {
-                      input: '$mediaUrl',
-                      as: 'mediaUrl',
-                      cond: {
-                        $eq: ['$$mediaUrl.type', 'Image'],
+                    $match: {
+                      $expr: {
+                        $and: [
+                          {
+                            $eq: ['$$dealID', '$dealID'],
+                          },
+                          {
+                            $eq: ['$$customerMongoID', '$customerMongoID'],
+                          },
+                          {
+                            $eq: ['$deletedCheck', false],
+                          },
+                        ],
                       },
                     },
                   },
-                  1,
                 ],
               },
-              isFavourite: {
-                $cond: [
+            },
+            {
+              $unwind: {
+                path: '$favouriteDeal',
+                preserveNullAndEmptyArrays: true,
+              },
+            },
+            {
+              $lookup: {
+                from: 'users',
+                as: 'merchantDetails',
+                let: {
+                  userID: '$merchantID',
+                  deletedCheck: '$deletedCheck',
+                },
+                pipeline: [
                   {
-                    $ifNull: ['$favouriteDeal', false],
+                    $match: {
+                      $expr: {
+                        $and: [
+                          {
+                            $eq: ['$$userID', '$userID'],
+                          },
+                          {
+                            $eq: ['$deletedCheck', false],
+                          },
+                        ],
+                      },
+                    },
                   },
-                  true,
-                  false,
+                  {
+                    $addFields: {
+                      id: '$_id'
+                    }
+                  },
+                  {
+                    $project: {
+                      _id: 0,
+                      id: 1,
+                      totalReviews: 1,
+                      ratingsAverage: 1,
+                      legalName: 1,
+                      city: 1
+                    }
+                  }
                 ],
               },
             },
-          },
-          {
-            $project: {
-              _id: 0,
-              merchantMongoID: 0,
-              merchantID: 0,
-              subTitle: 0,
-              categoryName: 0,
-              subCategoryID: 0,
-              subCategory: 0,
-              subDeals: 0,
-              availableVouchers: 0,
-              aboutThisDeal: 0,
-              readMore: 0,
-              finePrints: 0,
-              netEarnings: 0,
-              isCollapsed: 0,
-              isDuplicate: 0,
-              totalReviews: 0,
-              maxRating: 0,
-              minRating: 0,
-              pageNumber: 0,
-              updatedAt: 0,
-              __v: 0,
-              endDate: 0,
-              startDate: 0,
-              reviewMediaUrl: 0,
-              // favouriteDeal: 0
+            {
+              $unwind: '$merchantDetails'
             },
-          },
-        ])
-        .skip(parseInt(offset))
-        .limit(parseInt(limit));
+            {
+              $addFields: {
+                id: '$_id',
+                mediaUrl: {
+                  $slice: [
+                    {
+                      $filter: {
+                        input: '$mediaUrl',
+                        as: 'mediaUrl',
+                        cond: {
+                          $eq: ['$$mediaUrl.type', 'Image'],
+                        },
+                      },
+                    },
+                    1,
+                  ],
+                },
+                isFavourite: {
+                  $cond: [
+                    {
+                      $ifNull: ['$favouriteDeal', false],
+                    },
+                    true,
+                    false,
+                  ],
+                },
+              },
+            },
+            {
+              $project: {
+                _id: 0,
+                merchantMongoID: 0,
+                merchantID: 0,
+                subTitle: 0,
+                categoryName: 0,
+                subCategoryID: 0,
+                subCategory: 0,
+                subDeals: 0,
+                availableVouchers: 0,
+                aboutThisDeal: 0,
+                readMore: 0,
+                finePrints: 0,
+                netEarnings: 0,
+                isCollapsed: 0,
+                isDuplicate: 0,
+                totalReviews: 0,
+                maxRating: 0,
+                minRating: 0,
+                pageNumber: 0,
+                updatedAt: 0,
+                __v: 0,
+                endDate: 0,
+                startDate: 0,
+                reviewMediaUrl: 0,
+                // favouriteDeal: 0
+              },
+            },
+          ])
+          .skip(parseInt(offset))
+          .limit(parseInt(limit));
 
-      return {
-        totalCount: totalCount,
-        data: deals,
-      };
+        await this.cacheManager.set(
+          `getNewDeals${offset}${limit}`,
+          {
+            totalCount: totalCount,
+            data: deals,
+          },
+          { ttl: 1000 },
+        );
+        return {
+          totalCount: totalCount,
+          data: deals,
+        };
+      }
+      return value;
     } catch (err) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
     }
@@ -1720,11 +1846,16 @@ export class DealService implements OnModuleInit {
         ])
         .skip(parseInt(offset))
         .limit(parseInt(limit));
-        
-        if(deals?.length){
-          const updatedFilterValue =Math.ceil(deals?.sort((a,b)=>b?.minDiscountPercentage - a?.minDiscountPercentage)[0]?.minDiscountPercentage/10)*10;
-          filterValue = updatedFilterValue;
-        }
+
+      if (deals?.length) {
+        const updatedFilterValue =
+          Math.ceil(
+            deals?.sort(
+              (a, b) => b?.minDiscountPercentage - a?.minDiscountPercentage,
+            )[0]?.minDiscountPercentage / 10,
+          ) * 10;
+        filterValue = updatedFilterValue;
+      }
 
       return {
         filterValue,
@@ -1741,150 +1872,209 @@ export class DealService implements OnModuleInit {
       offset = parseInt(offset) < 0 ? 0 : offset;
       limit = parseInt(limit) < 1 ? 10 : limit;
 
-      const totalCount = await this.dealModel.countDocuments({
-        deletedCheck: false,
-        dealStatus: DEALSTATUS.published,
-        availableVouchers: { $gt: 0 },
-        soldVouchers: { $gt: 0 },
-      });
+      const value = await this.cacheManager.get(`getHotDeals${offset}${limit}`);
+      let totalCount;
+      let deals;
+      if (!value) {
+        totalCount = await this.dealModel.countDocuments({
+          deletedCheck: false,
+          dealStatus: DEALSTATUS.published,
+          availableVouchers: { $gt: 0 },
+          soldVouchers: { $gt: 0 },
+        });
 
-      let deals = await this.dealModel
-        .aggregate([
-          {
-            $match: {
-              deletedCheck: false,
-              dealStatus: DEALSTATUS.published,
-              availableVouchers: { $gt: 0 },
-              soldVouchers: { $gt: 0 },
-            },
-          },
-          {
-            $addFields: {
-              id: '$_id',
-              added: { $add: ['$soldVouchers', '$availableVouchers'] },
-            },
-          },
-          {
-            $addFields: {
-              divided: { $divide: ['$soldVouchers', '$added'] },
-              percent: {
-                $multiply: ['$divided', 100],
+        deals = await this.dealModel
+          .aggregate([
+            {
+              $match: {
+                deletedCheck: false,
+                dealStatus: DEALSTATUS.published,
+                availableVouchers: { $gt: 0 },
+                soldVouchers: { $gt: 0 },
               },
             },
-          },
-          {
-            $addFields: {
-              percent: {
-                $multiply: ['$divided', 100],
+            {
+              $addFields: {
+                id: '$_id',
+                added: { $add: ['$soldVouchers', '$availableVouchers'] },
               },
             },
-          },
-          {
-            $lookup: {
-              from: 'favourites',
-              as: 'favouriteDeal',
-              let: {
-                dealID: '$dealID',
-                customerMongoID: req?.user?.id,
-                deletedCheck: '$deletedCheck',
-              },
-              pipeline: [
-                {
-                  $match: {
-                    $expr: {
-                      $and: [
-                        {
-                          $eq: ['$$dealID', '$dealID'],
-                        },
-                        {
-                          $eq: ['$$customerMongoID', '$customerMongoID'],
-                        },
-                        {
-                          $eq: ['$deletedCheck', false],
-                        },
-                      ],
-                    },
-                  },
+            {
+              $addFields: {
+                divided: { $divide: ['$soldVouchers', '$added'] },
+                percent: {
+                  $multiply: ['$divided', 100],
                 },
-              ],
+              },
             },
-          },
-          {
-            $unwind: {
-              path: '$favouriteDeal',
-              preserveNullAndEmptyArrays: true,
+            {
+              $addFields: {
+                percent: {
+                  $multiply: ['$divided', 100],
+                },
+              },
             },
-          },
-          {
-            $addFields: {
-              mediaUrl: {
-                $slice: [
+            {
+              $lookup: {
+                from: 'favourites',
+                as: 'favouriteDeal',
+                let: {
+                  dealID: '$dealID',
+                  customerMongoID: req?.user?.id,
+                  deletedCheck: '$deletedCheck',
+                },
+                pipeline: [
                   {
-                    $filter: {
-                      input: '$mediaUrl',
-                      as: 'mediaUrl',
-                      cond: {
-                        $eq: ['$$mediaUrl.type', 'Image'],
+                    $match: {
+                      $expr: {
+                        $and: [
+                          {
+                            $eq: ['$$dealID', '$dealID'],
+                          },
+                          {
+                            $eq: ['$$customerMongoID', '$customerMongoID'],
+                          },
+                          {
+                            $eq: ['$deletedCheck', false],
+                          },
+                        ],
                       },
                     },
                   },
-                  1,
                 ],
               },
-              isFavourite: {
-                $cond: [
+            },
+            {
+              $unwind: {
+                path: '$favouriteDeal',
+                preserveNullAndEmptyArrays: true,
+              },
+            },
+            {
+              $lookup: {
+                from: 'users',
+                as: 'merchantDetails',
+                let: {
+                  userID: '$merchantID',
+                  deletedCheck: '$deletedCheck',
+                },
+                pipeline: [
                   {
-                    $ifNull: ['$favouriteDeal', false],
+                    $match: {
+                      $expr: {
+                        $and: [
+                          {
+                            $eq: ['$$userID', '$userID'],
+                          },
+                          {
+                            $eq: ['$deletedCheck', false],
+                          },
+                        ],
+                      },
+                    },
                   },
-                  true,
-                  false,
+                  {
+                    $addFields: {
+                      id: '$_id'
+                    }
+                  },
+                  {
+                    $project: {
+                      _id: 0,
+                      id: 1,
+                      totalReviews: 1,
+                      ratingsAverage: 1,
+                      legalName: 1,
+                      city: 1
+                    }
+                  }
                 ],
               },
             },
-          },
-          {
-            $project: {
-              _id: 0,
-              added: 0,
-              divided: 0,
-              merchantMongoID: 0,
-              merchantID: 0,
-              subTitle: 0,
-              categoryName: 0,
-              subCategoryID: 0,
-              subCategory: 0,
-              subDeals: 0,
-              availableVouchers: 0,
-              aboutThisDeal: 0,
-              readMore: 0,
-              finePrints: 0,
-              netEarnings: 0,
-              isCollapsed: 0,
-              isDuplicate: 0,
-              totalReviews: 0,
-              maxRating: 0,
-              minRating: 0,
-              pageNumber: 0,
-              updatedAt: 0,
-              __v: 0,
-              endDate: 0,
-              startDate: 0,
-              reviewMediaUrl: 0,
-              favouriteDeal: 0,
+            {
+              $unwind: '$merchantDetails'
             },
-          },
-          {
-            $sort: {
-              percent: -1,
+            {
+              $addFields: {
+                mediaUrl: {
+                  $slice: [
+                    {
+                      $filter: {
+                        input: '$mediaUrl',
+                        as: 'mediaUrl',
+                        cond: {
+                          $eq: ['$$mediaUrl.type', 'Image'],
+                        },
+                      },
+                    },
+                    1,
+                  ],
+                },
+                isFavourite: {
+                  $cond: [
+                    {
+                      $ifNull: ['$favouriteDeal', false],
+                    },
+                    true,
+                    false,
+                  ],
+                },
+              },
             },
+            {
+              $project: {
+                _id: 0,
+                added: 0,
+                divided: 0,
+                merchantMongoID: 0,
+                merchantID: 0,
+                subTitle: 0,
+                categoryName: 0,
+                subCategoryID: 0,
+                subCategory: 0,
+                subDeals: 0,
+                availableVouchers: 0,
+                aboutThisDeal: 0,
+                readMore: 0,
+                finePrints: 0,
+                netEarnings: 0,
+                isCollapsed: 0,
+                isDuplicate: 0,
+                totalReviews: 0,
+                maxRating: 0,
+                minRating: 0,
+                pageNumber: 0,
+                updatedAt: 0,
+                __v: 0,
+                endDate: 0,
+                startDate: 0,
+                reviewMediaUrl: 0,
+                favouriteDeal: 0,
+              },
+            },
+            {
+              $sort: {
+                percent: -1,
+              },
+            },
+          ])
+          .skip(parseInt(offset))
+          .limit(parseInt(limit));
+
+        await this.cacheManager.set(
+          `getHotDeals${offset}${limit}`,
+          {
+            totalCount: totalCount,
+            data: deals,
           },
-        ])
-        .skip(parseInt(offset))
-        .limit(parseInt(limit));
-      return {
-        totalCount: totalCount,
-        data: deals,
-      };
+          { ttl: 1000 },
+        );
+        return {
+          totalCount: totalCount,
+          data: deals,
+        };
+      }
+      return value;
     } catch (err) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
     }
@@ -2302,7 +2492,7 @@ export class DealService implements OnModuleInit {
           break;
         }
 
-        if(lat ==33.5705073 && lng==73.1434092){
+        if (lat == 33.5705073 && lng == 73.1434092) {
           isFound = true;
         }
 
@@ -3056,287 +3246,141 @@ export class DealService implements OnModuleInit {
 
       // const totalCount = await this.dealModel.countDocuments();
 
-      const deals = await this._viewsModel.aggregate([
-        {
-          $match: {
-            customerMongoID: req.user.id,
-          },
-        },
-        {
-          $group: {
-            _id: '$dealID',
-            viewedTime: { $last: '$viewedTime' },
-          },
-        },
-        {
-          $sort: {
-            viewedTime: -1,
-          },
-        },
-        {
-          $lookup: {
-            from: 'deals',
-            as: 'recentlyViewed',
-            // let: {
-            //   dealID: '$dealID',
-            // },
-            localField: '_id',
-            foreignField: 'dealID',
-          },
-        },
-        {
-          $unwind: '$recentlyViewed',
-        },
-        // {
-        //   $addFields: {
-        //     'recentlyViewed.mediaUrl': {
-        //       $slice: [
-        //         {
-        //           $filter: {
-        //             input: '$recentlyViewed.mediaUrl',
-        //             as: 'mediaUrl',
-        //             cond: {
-        //               $eq: ['$$mediaUrl.type', 'Image'],
-        //             },
-        //           },
-        //         },
-        //         1,
-        //       ],
-        //     },
-        //   },
-        // },
-        {
-          $lookup: {
-            from: 'favourites',
-            as: 'favouriteDeal',
-            let: {
-              dealID: '$recentlyViewed.dealID',
-              customerMongoID: req?.user?.id,
-              deletedCheck: '$recentlyViewed.deletedCheck',
+      let deals = await this._viewsModel
+        .aggregate([
+          {
+            $match: {
+              customerMongoID: req.user.id,
             },
-            pipeline: [
-              {
-                $match: {
-                  $expr: {
-                    $and: [
-                      {
-                        $eq: ['$$dealID', '$dealID'],
-                      },
-                      {
-                        $eq: ['$$customerMongoID', '$customerMongoID'],
-                      },
-                      {
-                        $eq: ['$deletedCheck', false],
-                      },
-                    ],
-                  },
-                },
+          },
+          {
+            $group: {
+              _id: '$dealID',
+              viewedTime: { $last: '$viewedTime' },
+            },
+          },
+          {
+            $sort: {
+              viewedTime: -1,
+            },
+          },
+          {
+            $lookup: {
+              from: 'deals',
+              as: 'recentlyViewed',
+              localField: '_id',
+              foreignField: 'dealID',
+            },
+          },
+          {
+            $unwind: '$recentlyViewed',
+          },
+          {
+            $lookup: {
+              from: 'favourites',
+              as: 'favouriteDeal',
+              let: {
+                dealID: '$recentlyViewed.dealID',
+                customerMongoID: req?.user?.id,
+                deletedCheck: '$recentlyViewed.deletedCheck',
               },
-            ],
-          },
-        },
-        {
-          $unwind: {
-            path: '$favouriteDeal',
-            preserveNullAndEmptyArrays: true,
-          },
-        },
-        {
-          $addFields: {
-            id: '$_id',
-            'recentlyViewed.mediaUrl': {
-              $slice: [
+              pipeline: [
                 {
-                  $filter: {
-                    input: '$recentlyViewed.mediaUrl',
-                    as: 'mediaUrl',
-                    cond: {
-                      $eq: ['$$mediaUrl.type', 'Image'],
+                  $match: {
+                    $expr: {
+                      $and: [
+                        {
+                          $eq: ['$$dealID', '$dealID'],
+                        },
+                        {
+                          $eq: ['$$customerMongoID', '$customerMongoID'],
+                        },
+                        {
+                          $eq: ['$deletedCheck', false],
+                        },
+                      ],
                     },
                   },
                 },
-                1,
-              ],
-            },
-            isFavourite: {
-              $cond: [
-                {
-                  $ifNull: ['$favouriteDeal', false],
-                },
-                true,
-                false,
               ],
             },
           },
-        },
-        {
-          $project: {
-            id: 0,
-            _id: 0,
-            favouriteDeal: 0,
-            'recentlyViewed.merchantMongoID': 0,
-            'recentlyViewed.merchantID': 0,
-            'recentlyViewed.subTitle': 0,
-            'recentlyViewed.categoryName': 0,
-            'recentlyViewed.subCategoryID': 0,
-            'recentlyViewed.subCategory': 0,
-            'recentlyViewed.subDeals': 0,
-            'recentlyViewed.availableVouchers': 0,
-            'recentlyViewed.aboutThisDeal': 0,
-            'recentlyViewed.readMore': 0,
-            'recentlyViewed.finePrints': 0,
-            'recentlyViewed.netEarnings': 0,
-            'recentlyViewed.isCollapsed': 0,
-            'recentlyViewed.isDuplicate': 0,
-            'recentlyViewed.totalReviews': 0,
-            'recentlyViewed.maxRating': 0,
-            'recentlyViewed.minRating': 0,
-            'recentlyViewed.pageNumber': 0,
-            'recentlyViewed.updatedAt': 0,
-            'recentlyViewed.__v': 0,
-            'recentlyViewed.endDate': 0,
-            'recentlyViewed.startDate': 0,
-            'recentlyViewed.reviewMediaUrl': 0,
-            'recentlyViewed.favouriteDeal': 0,
+          {
+            $unwind: {
+              path: '$favouriteDeal',
+              preserveNullAndEmptyArrays: true,
+            },
           },
-        },
-      ]);
+          {
+            $addFields: {
+              id: '$_id',
+              'recentlyViewed.mediaUrl': {
+                $slice: [
+                  {
+                    $filter: {
+                      input: '$recentlyViewed.mediaUrl',
+                      as: 'mediaUrl',
+                      cond: {
+                        $eq: ['$$mediaUrl.type', 'Image'],
+                      },
+                    },
+                  },
+                  1,
+                ],
+              },
+              isFavourite: {
+                $cond: [
+                  {
+                    $ifNull: ['$favouriteDeal', false],
+                  },
+                  true,
+                  false,
+                ],
+              },
+            },
+          },
+          {
+            $project: {
+              id: 0,
+              _id: 0,
+              favouriteDeal: 0,
+              'recentlyViewed.merchantMongoID': 0,
+              'recentlyViewed.merchantID': 0,
+              'recentlyViewed.subTitle': 0,
+              'recentlyViewed.categoryName': 0,
+              'recentlyViewed.subCategoryID': 0,
+              'recentlyViewed.subCategory': 0,
+              'recentlyViewed.subDeals': 0,
+              'recentlyViewed.availableVouchers': 0,
+              'recentlyViewed.aboutThisDeal': 0,
+              'recentlyViewed.readMore': 0,
+              'recentlyViewed.finePrints': 0,
+              'recentlyViewed.netEarnings': 0,
+              'recentlyViewed.isCollapsed': 0,
+              'recentlyViewed.isDuplicate': 0,
+              'recentlyViewed.totalReviews': 0,
+              'recentlyViewed.maxRating': 0,
+              'recentlyViewed.minRating': 0,
+              'recentlyViewed.pageNumber': 0,
+              'recentlyViewed.updatedAt': 0,
+              'recentlyViewed.__v': 0,
+              'recentlyViewed.endDate': 0,
+              'recentlyViewed.startDate': 0,
+              'recentlyViewed.reviewMediaUrl': 0,
+              'recentlyViewed.favouriteDeal': 0,
+            },
+          },
+        ])
+        .skip(parseInt(offset))
+        .limit(parseInt(limit));
 
-      // const deals = await this.dealModel.aggregate([
-      //   {
-      //     $match: {
-      //       deletedCheck: false,
-      //       dealStatus: DEALSTATUS.published,
-      //     }
-      //   },
-      //   {
-      //     $lookup: {
-      //       from: 'views',
-      //       as: 'recentlyViewed',
-      //       let: {
-      //         dealID: '$dealID',
-      //         customerMongoID: req?.user?.id,
-      //       },
-      //       pipeline: [
-      //         {
-      //           $match: {
-      //             $expr: { $and: [
-      //               {
-      //                 $eq: ['$$dealID', '$dealID']
-      //               },
-      //               {
-      //                 $eq: ['$$customerMongoID', '$customerMongoID']
-      //               },
-      //             ] },
-      //           },
-      //         },
-      //       ],
-      //     },
-      //   },
-      //   {
-      //     $unwind: {
-      //       path: '$recentlyViewed',
-      //     },
-      //   },
-      //   {
-      //     $lookup: {
-      //       from: 'favourites',
-      //       as: 'favouriteDeal',
-      //       let: {
-      //         dealID: '$dealID',
-      //         customerMongoID: req?.user?.id,
-      //         deletedCheck:'$deletedCheck',
-      //       },
-      //       pipeline: [
-      //         {
-      //           $match: {
-      //             $expr: { $and: [
-      //               {
-      //                 $eq: ['$$dealID', '$dealID']
-      //               },
-      //               {
-      //                 $eq: ['$$customerMongoID', '$customerMongoID']
-      //               },
-      //               {
-      //                 $eq: ['$deletedCheck', false]
-      //               }
-      //             ] },
-      //           },
-      //         },
-      //       ],
-      //     },
-      //   },
-      //   {
-      //     $unwind: {
-      //       path: '$favouriteDeal',
-      //       preserveNullAndEmptyArrays: true,
-      //     },
-      //   },
-      //   {
-      //     $sort: {
-      //       createdAt: -1
-      //     }
-      //   },
-      //   {
-      //     $addFields: {
-      //       id: '$_id',
-      //       mediaUrl: {
-      //         $slice: [
-      //           {
-      //             $filter: {
-      //               input: '$mediaUrl',
-      //               as: 'mediaUrl',
-      //               cond: {
-      //                 $eq: ['$$mediaUrl.type', 'Image'],
-      //               },
-      //             },
-      //           },
-      //           1,
-      //         ],
-      //       },
-      //       isFavourite: {
-      //         $cond: [
-      //           {
-      //             $ifNull: ['$favouriteDeal', false],
-      //           },
-      //           true,
-      //           false,
-      //         ],
-      //       },
-      //     }
-      //   },
-      //   {
-      //     $project: {
-      //       _id: 0,
-      //       merchantMongoID: 0,
-      //       merchantID: 0,
-      //       subTitle: 0,
-      //       categoryName: 0,
-      //       subCategoryID: 0,
-      //       subCategory: 0,
-      //       subDeals: 0,
-      //       availableVouchers: 0,
-      //       aboutThisDeal: 0,
-      //       readMore: 0,
-      //       finePrints: 0,
-      //       netEarnings: 0,
-      //       isCollapsed: 0,
-      //       isDuplicate: 0,
-      //       totalReviews: 0,
-      //       maxRating: 0,
-      //       minRating: 0,
-      //       pageNumber: 0,
-      //       updatedAt: 0,
-      //       __v: 0,
-      //       endDate: 0,
-      //       startDate: 0,
-      //       reviewMediaUrl: 0,
-      //       favouriteDeal: 0,
-      //     }
-      //   }
-      // ])
-      // .skip(parseInt(offset))
-      // .limit(parseInt(limit))
+      deals = deals.map((el) => {
+        return {
+          ...el.recentlyViewed,
+          isFavourite: el.isFavourite,
+          viewedTime: el.viewedTime,
+        };
+      });
 
       return {
         // totalCount: totalCount,
@@ -3653,7 +3697,7 @@ export class DealService implements OnModuleInit {
       let expiryDate;
 
       if (subDeal.voucherStartDate > 0) {
-        expiryDate = subDeal.voucherStartDate;
+        expiryDate = subDeal.voucherEndDate;
       } else {
         expiryDate =
           new Date().getTime() + subDeal?.voucherValidity * 24 * 60 * 60 * 1000;
@@ -3663,7 +3707,9 @@ export class DealService implements OnModuleInit {
         voucherHeader: subDeal.title,
         dealHeader: deal.dealHeader,
         dealID: deal.dealID,
+        dealMongoID: deal._id,
         subDealID: subDeal.subDealID,
+        subDealMongoID: subDeal._id,
         amount: subDeal.dealPrice,
         status: VOUCHERSTATUSENUM.purchased,
         merchantID: deal.merchantID,
