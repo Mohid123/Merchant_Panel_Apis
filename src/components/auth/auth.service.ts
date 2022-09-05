@@ -114,7 +114,7 @@ export class AuthService {
       throw new UnauthorizedException('Incorrect email!');
     }
 
-    if (!(user.status == USERSTATUS.approved || user.role == 'Merchant')) {
+    if (!(user.status == USERSTATUS.approved && user.role == 'Merchant')) {
       throw new NotFoundException('Merchant Not Found!');
     }
 
