@@ -15,6 +15,7 @@ import { VoucherCounterInterface } from '../../interface/vouchers/vouchersCounte
 import { ScheduleService } from '../schedule/schedule.service';
 const qr = require('qrcode');
 import * as fs from 'fs';
+import { USERSTATUS } from 'src/enum/user/userstatus.enum';
 
 @Injectable()
 export class VouchersService {
@@ -416,6 +417,132 @@ export class VouchersService {
     }
   }
 
+  async getVouchersByCustomerID (
+    customerID,
+    searchVoucher,
+    voucherStatus,
+    offset,
+    limit
+  ) {
+    try {
+      offset = parseInt(offset) < 0 ? 0 : offset;
+      limit = parseInt(limit) < 1 ? 10 : limit;
+
+      let matchFilter = {};
+
+      if (customerID) {
+        matchFilter = {
+          ...matchFilter,
+          customerMongoID: customerID,
+        };
+      }
+
+      if (voucherStatus) {
+        matchFilter = {
+          ...matchFilter,
+          status: voucherStatus,
+        };
+      }
+
+      let filters = {};
+
+      if (searchVoucher.trim().length) {
+        var query = new RegExp(`${searchVoucher}`, 'i');
+        filters = {
+          ...filters,
+          voucherHeader: query,
+        };
+      }
+
+      const totalCount = await this.voucherModel.countDocuments({
+        customerMongoID: customerID,
+        deletedCheck: false,
+      });
+
+      const filteredCount = await this.voucherModel.countDocuments({
+        customerMongoID: customerID,
+        deletedCheck: false,
+        ...matchFilter,
+        ...filters
+      });
+
+      let customerVouchers = await this.voucherModel.aggregate([
+        {
+          $match: {
+            customerMongoID: customerID,
+            deletedCheck: false,
+            ...matchFilter,
+            ...filters
+          }
+        },
+        {
+          $sort: {
+            createdAt: -1
+          }
+        },
+        {
+          $lookup: {
+            from: 'locations',
+            let: {
+              merchantID: '$merchantID',
+            },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $and: [
+                      {
+                        $eq: ['$merchantID', '$$merchantID'],
+                      },
+                    ],
+                  },
+                },
+              },
+              {
+                $addFields: {
+                  id: '$_id',
+                }
+              },
+              {
+                $project: {
+                  _id: 0,
+                  createdAt: 0,
+                  updatedAt: 0,
+                  __v: 0
+                }
+              }
+            ],
+            as: 'merchantData',
+          },
+        },
+        {
+          $unwind: '$merchantData',
+        },
+        {
+          $addFields: {
+            id: '$_id'
+          }
+        },
+        {
+          $project: {
+            _id: 0
+          }
+        }
+      ])
+      .skip(parseInt(offset))
+      .limit(parseInt(limit))
+
+      return {
+        totalCount: totalCount,
+        filteredCount: filteredCount,
+        data: customerVouchers
+      }
+
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
   async redeemVoucher(voucherId, req) {
     try {
       const voucherErrors = {
@@ -467,7 +594,8 @@ export class VouchersService {
 
       let redeemDate = new Date().getTime();
 
-      const net = voucher.dealPrice - 0.05 * voucher.dealPrice; //five percent gosed to affliate
+      const calculatedFee = voucher.dealPrice * 0.05; //five percent goes to affiliate
+      const net = voucher.dealPrice - 0.05 * voucher.dealPrice;
 
       await this.voucherModel.updateOne(
         { voucherID: voucherId },
@@ -475,6 +603,7 @@ export class VouchersService {
           status: VOUCHERSTATUSENUM.redeeemed,
           redeemDate: redeemDate,
           net: net,
+          fee: calculatedFee
         },
       );
 

@@ -14,6 +14,15 @@ export class VoucherDto {
   dealID: string;
 
   @ApiProperty()
+  dealMongoID: string;
+
+  @ApiProperty()
+  subDealID: string;
+
+  @ApiProperty()
+  subDealMongoID: string;
+  
+  @ApiProperty()
   amount: number;
 
   @ApiProperty()
