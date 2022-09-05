@@ -21,6 +21,7 @@ const bcrypt = require("bcrypt");
 const nodemailer = require("nodemailer");
 const userstatus_enum_1 = require("../../enum/user/userstatus.enum");
 const userrole_enum_1 = require("../../enum/user/userrole.enum");
+const axios_1 = require("axios");
 var htmlencode = require('htmlencode');
 var generator = require('generate-password');
 var otpGenerator = require('otp-generator');
@@ -85,12 +86,12 @@ let AuthService = class AuthService {
     async login(loginDto) {
         let user = await this._usersService.findOne({
             email: loginDto.email.toLowerCase(),
-            deletedCheck: false
+            deletedCheck: false,
         });
         if (!user) {
             throw new common_1.UnauthorizedException('Incorrect email!');
         }
-        if (!(user.status == userstatus_enum_1.USERSTATUS.approved || user.role == 'Merchant')) {
+        if (!(user.status == userstatus_enum_1.USERSTATUS.approved && user.role == 'Merchant')) {
             throw new common_1.NotFoundException('Merchant Not Found!');
         }
         const isValidCredentials = await bcrypt.compare(loginDto.password, user.password);
@@ -109,7 +110,7 @@ let AuthService = class AuthService {
     async loginCustomer(loginDto) {
         let user = await this._usersService.findOne({
             email: loginDto.email.toLowerCase(),
-            deletedCheck: false
+            deletedCheck: false,
         });
         if (!user) {
             throw new common_1.UnauthorizedException('Incorrect email!');
@@ -145,7 +146,7 @@ let AuthService = class AuthService {
         loginDto.email = (_a = loginDto === null || loginDto === void 0 ? void 0 : loginDto.email) === null || _a === void 0 ? void 0 : _a.toLowerCase();
         let user = await this._usersService.findOne({
             email: loginDto.email,
-            deletedCheck: false
+            deletedCheck: false,
         });
         if (user) {
             throw new common_1.ForbiddenException('Email already exists');
@@ -163,7 +164,7 @@ let AuthService = class AuthService {
         signupUserDto.email = (_a = signupUserDto === null || signupUserDto === void 0 ? void 0 : signupUserDto.email) === null || _a === void 0 ? void 0 : _a.toLowerCase();
         let user = await this._usersService.findOne({
             email: signupUserDto.email,
-            deletedCheck: false
+            deletedCheck: false,
         });
         if (user) {
             throw new common_1.ForbiddenException('Email already exists');
@@ -177,6 +178,7 @@ let AuthService = class AuthService {
         signupUserDto.password = hashedPassword;
         let newUser = await new this._usersService(signupUserDto).save();
         newUser = JSON.parse(JSON.stringify(newUser));
+        const res = await axios_1.default.get(`https://www.zohoapis.eu/crm/v2/functions/createcustomer/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&customerid=${newUser.userID}`);
         const token = this.generateToken(newUser);
         return { newUser, token: token.access_token };
     }
@@ -200,12 +202,12 @@ let AuthService = class AuthService {
         const user = await this._usersService.findOne({
             email: email === null || email === void 0 ? void 0 : email.toLowerCase(),
             deletedCheck: false,
-            role: userrole_enum_1.USERROLE.merchant
+            role: userrole_enum_1.USERROLE.merchant,
         });
         const lead = await this._leadModel.findOne({
             email: email === null || email === void 0 ? void 0 : email.toLowerCase(),
             deletedCheck: false,
-            role: userrole_enum_1.USERROLE.merchant
+            role: userrole_enum_1.USERROLE.merchant,
         });
         return user || lead ? true : false;
     }
@@ -213,7 +215,7 @@ let AuthService = class AuthService {
         const user = await this._usersService.findOne({
             email: email === null || email === void 0 ? void 0 : email.toLowerCase(),
             deletedCheck: false,
-            role: userrole_enum_1.USERROLE.customer
+            role: userrole_enum_1.USERROLE.customer,
         });
         return user ? true : false;
     }

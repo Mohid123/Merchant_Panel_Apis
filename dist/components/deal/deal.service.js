@@ -494,20 +494,37 @@ let DealService = class DealService {
                         from: 'users',
                         as: 'merchantDetails',
                         let: {
-                            merchantMongoID: '$merchantMongoID',
+                            userID: '$merchantID',
+                            deletedCheck: '$deletedCheck',
                         },
                         pipeline: [
                             {
                                 $match: {
-                                    $expr: { $eq: ['$$merchantMongoID', '$_id'] },
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$userID', '$userID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                            {
+                                $addFields: {
+                                    id: '$_id',
                                 },
                             },
                             {
                                 $project: {
-                                    _id: 1,
-                                    legalName: 1,
+                                    _id: 0,
+                                    id: 1,
                                     totalReviews: 1,
                                     ratingsAverage: 1,
+                                    legalName: 1,
+                                    city: 1,
                                 },
                             },
                         ],
@@ -987,6 +1004,50 @@ let DealService = class DealService {
                     },
                 },
                 {
+                    $lookup: {
+                        from: 'users',
+                        as: 'merchantDetails',
+                        let: {
+                            userID: '$merchantID',
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$userID', '$userID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                            {
+                                $addFields: {
+                                    id: '$_id',
+                                },
+                            },
+                            {
+                                $project: {
+                                    _id: 0,
+                                    id: 1,
+                                    totalReviews: 1,
+                                    ratingsAverage: 1,
+                                    legalName: 1,
+                                    city: 1,
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: '$merchantDetails',
+                },
+                {
                     $addFields: {
                         id: '$_id',
                         mediaUrl: {
@@ -1152,6 +1213,50 @@ let DealService = class DealService {
                     },
                 },
                 {
+                    $lookup: {
+                        from: 'users',
+                        as: 'merchantDetails',
+                        let: {
+                            userID: '$merchantID',
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$userID', '$userID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                            {
+                                $addFields: {
+                                    id: '$_id',
+                                },
+                            },
+                            {
+                                $project: {
+                                    _id: 0,
+                                    id: 1,
+                                    totalReviews: 1,
+                                    ratingsAverage: 1,
+                                    legalName: 1,
+                                    city: 1,
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: '$merchantDetails',
+                },
+                {
                     $addFields: {
                         id: '$_id',
                         mediaUrl: {
@@ -1312,8 +1417,8 @@ let DealService = class DealService {
                                 },
                                 {
                                     $addFields: {
-                                        id: '$_id'
-                                    }
+                                        id: '$_id',
+                                    },
                                 },
                                 {
                                     $project: {
@@ -1322,14 +1427,14 @@ let DealService = class DealService {
                                         totalReviews: 1,
                                         ratingsAverage: 1,
                                         legalName: 1,
-                                        city: 1
-                                    }
-                                }
+                                        city: 1,
+                                    },
+                                },
                             ],
                         },
                     },
                     {
-                        $unwind: '$merchantDetails'
+                        $unwind: '$merchantDetails',
                     },
                     {
                         $addFields: {
@@ -1478,6 +1583,50 @@ let DealService = class DealService {
                         path: '$favouriteDeal',
                         preserveNullAndEmptyArrays: true,
                     },
+                },
+                {
+                    $lookup: {
+                        from: 'users',
+                        as: 'merchantDetails',
+                        let: {
+                            userID: '$merchantID',
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$userID', '$userID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                            {
+                                $addFields: {
+                                    id: '$_id',
+                                },
+                            },
+                            {
+                                $project: {
+                                    _id: 0,
+                                    id: 1,
+                                    totalReviews: 1,
+                                    ratingsAverage: 1,
+                                    legalName: 1,
+                                    city: 1,
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: '$merchantDetails',
                 },
                 {
                     $addFields: {
@@ -1660,8 +1809,8 @@ let DealService = class DealService {
                                 },
                                 {
                                     $addFields: {
-                                        id: '$_id'
-                                    }
+                                        id: '$_id',
+                                    },
                                 },
                                 {
                                     $project: {
@@ -1670,14 +1819,14 @@ let DealService = class DealService {
                                         totalReviews: 1,
                                         ratingsAverage: 1,
                                         legalName: 1,
-                                        city: 1
-                                    }
-                                }
+                                        city: 1,
+                                    },
+                                },
                             ],
                         },
                     },
                     {
-                        $unwind: '$merchantDetails'
+                        $unwind: '$merchantDetails',
                     },
                     {
                         $addFields: {
@@ -1816,6 +1965,50 @@ let DealService = class DealService {
                     },
                 },
                 {
+                    $lookup: {
+                        from: 'users',
+                        as: 'merchantDetails',
+                        let: {
+                            userID: '$merchantID',
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$userID', '$userID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                            {
+                                $addFields: {
+                                    id: '$_id',
+                                },
+                            },
+                            {
+                                $project: {
+                                    _id: 0,
+                                    id: 1,
+                                    totalReviews: 1,
+                                    ratingsAverage: 1,
+                                    legalName: 1,
+                                    city: 1,
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: '$merchantDetails',
+                },
+                {
                     $addFields: {
                         id: '$_id',
                         mediaUrl: {
@@ -1949,6 +2142,50 @@ let DealService = class DealService {
                         path: '$favouriteDeal',
                         preserveNullAndEmptyArrays: true,
                     },
+                },
+                {
+                    $lookup: {
+                        from: 'users',
+                        as: 'merchantDetails',
+                        let: {
+                            userID: '$merchantID',
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$userID', '$userID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                            {
+                                $addFields: {
+                                    id: '$_id',
+                                },
+                            },
+                            {
+                                $project: {
+                                    _id: 0,
+                                    id: 1,
+                                    totalReviews: 1,
+                                    ratingsAverage: 1,
+                                    legalName: 1,
+                                    city: 1,
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: '$merchantDetails',
                 },
                 {
                     $addFields: {
@@ -2104,6 +2341,50 @@ let DealService = class DealService {
                             path: '$favouriteDeal',
                             preserveNullAndEmptyArrays: true,
                         },
+                    },
+                    {
+                        $lookup: {
+                            from: 'users',
+                            as: 'merchantDetails',
+                            let: {
+                                userID: '$merchantID',
+                                deletedCheck: '$deletedCheck',
+                            },
+                            pipeline: [
+                                {
+                                    $match: {
+                                        $expr: {
+                                            $and: [
+                                                {
+                                                    $eq: ['$$userID', '$userID'],
+                                                },
+                                                {
+                                                    $eq: ['$deletedCheck', false],
+                                                },
+                                            ],
+                                        },
+                                    },
+                                },
+                                {
+                                    $addFields: {
+                                        id: '$_id',
+                                    },
+                                },
+                                {
+                                    $project: {
+                                        _id: 0,
+                                        id: 1,
+                                        totalReviews: 1,
+                                        ratingsAverage: 1,
+                                        legalName: 1,
+                                        city: 1,
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                    {
+                        $unwind: '$merchantDetails',
                     },
                     {
                         $addFields: {
@@ -2272,6 +2553,50 @@ let DealService = class DealService {
                         path: '$favouriteDeal',
                         preserveNullAndEmptyArrays: true,
                     },
+                },
+                {
+                    $lookup: {
+                        from: 'users',
+                        as: 'merchantDetails',
+                        let: {
+                            userID: '$merchantID',
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$userID', '$userID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                            {
+                                $addFields: {
+                                    id: '$_id',
+                                },
+                            },
+                            {
+                                $project: {
+                                    _id: 0,
+                                    id: 1,
+                                    totalReviews: 1,
+                                    ratingsAverage: 1,
+                                    legalName: 1,
+                                    city: 1,
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: '$merchantDetails',
                 },
                 {
                     $addFields: {
@@ -2445,6 +2770,50 @@ let DealService = class DealService {
                     },
                 },
                 {
+                    $lookup: {
+                        from: 'users',
+                        as: 'merchantDetails',
+                        let: {
+                            userID: '$merchantID',
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$userID', '$userID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                            {
+                                $addFields: {
+                                    id: '$_id',
+                                },
+                            },
+                            {
+                                $project: {
+                                    _id: 0,
+                                    id: 1,
+                                    totalReviews: 1,
+                                    ratingsAverage: 1,
+                                    legalName: 1,
+                                    city: 1,
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: '$merchantDetails',
+                },
+                {
                     $addFields: {
                         id: '$_id',
                         mediaUrl: {
@@ -2593,6 +2962,50 @@ let DealService = class DealService {
                     },
                 },
                 {
+                    $lookup: {
+                        from: 'users',
+                        as: 'merchantDetails',
+                        let: {
+                            userID: '$merchantID',
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$userID', '$userID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                            {
+                                $addFields: {
+                                    id: '$_id',
+                                },
+                            },
+                            {
+                                $project: {
+                                    _id: 0,
+                                    id: 1,
+                                    totalReviews: 1,
+                                    ratingsAverage: 1,
+                                    legalName: 1,
+                                    city: 1,
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: '$merchantDetails',
+                },
+                {
                     $addFields: {
                         mediaUrl: {
                             $slice: [
@@ -2728,6 +3141,50 @@ let DealService = class DealService {
                         path: '$favouriteDeal',
                         preserveNullAndEmptyArrays: true,
                     },
+                },
+                {
+                    $lookup: {
+                        from: 'users',
+                        as: 'merchantDetails',
+                        let: {
+                            userID: '$merchantID',
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$userID', '$userID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                            {
+                                $addFields: {
+                                    id: '$_id',
+                                },
+                            },
+                            {
+                                $project: {
+                                    _id: 0,
+                                    id: 1,
+                                    totalReviews: 1,
+                                    ratingsAverage: 1,
+                                    legalName: 1,
+                                    city: 1,
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: '$merchantDetails',
                 },
                 {
                     $addFields: {
@@ -2869,6 +3326,50 @@ let DealService = class DealService {
                     },
                 },
                 {
+                    $lookup: {
+                        from: 'users',
+                        as: 'merchantDetails',
+                        let: {
+                            userID: '$merchantID',
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$userID', '$userID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                            {
+                                $addFields: {
+                                    id: '$_id',
+                                },
+                            },
+                            {
+                                $project: {
+                                    _id: 0,
+                                    id: 1,
+                                    totalReviews: 1,
+                                    ratingsAverage: 1,
+                                    legalName: 1,
+                                    city: 1,
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: '$merchantDetails',
+                },
+                {
                     $addFields: {
                         id: '$_id',
                         'recentlyViewed.mediaUrl': {
@@ -2931,7 +3432,7 @@ let DealService = class DealService {
                 .skip(parseInt(offset))
                 .limit(parseInt(limit));
             deals = deals.map((el) => {
-                return Object.assign(Object.assign({}, el.recentlyViewed), { isFavourite: el.isFavourite, viewedTime: el.viewedTime });
+                return Object.assign(Object.assign({}, el.recentlyViewed), { isFavourite: el.isFavourite, viewedTime: el.viewedTime, merchantDetails: el.merchantDetails });
             });
             return {
                 data: deals,
