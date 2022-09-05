@@ -19,6 +19,7 @@ import { USERSTATUS } from 'src/enum/user/userstatus.enum';
 import { VoucherCounterInterface } from 'src/interface/vouchers/vouchersCounter.interface';
 import { LeadInterface } from 'src/interface/lead/lead.interface';
 import { USERROLE } from 'src/enum/user/userrole.enum';
+import axios from 'axios';
 
 var htmlencode = require('htmlencode');
 var generator = require('generate-password');
@@ -107,7 +108,7 @@ export class AuthService {
   async login(loginDto) {
     let user = await this._usersService.findOne({
       email: loginDto.email.toLowerCase(),
-      deletedCheck: false
+      deletedCheck: false,
     });
 
     if (!user) {
@@ -142,7 +143,7 @@ export class AuthService {
   async loginCustomer(loginDto) {
     let user = await this._usersService.findOne({
       email: loginDto.email.toLowerCase(),
-      deletedCheck: false
+      deletedCheck: false,
     });
 
     if (!user) {
@@ -191,7 +192,7 @@ export class AuthService {
     loginDto.email = loginDto?.email?.toLowerCase();
     let user = await this._usersService.findOne({
       email: loginDto.email,
-      deletedCheck: false
+      deletedCheck: false,
     });
     if (user) {
       throw new ForbiddenException('Email already exists');
@@ -210,7 +211,7 @@ export class AuthService {
     signupUserDto.email = signupUserDto?.email?.toLowerCase();
     let user = await this._usersService.findOne({
       email: signupUserDto.email,
-      deletedCheck: false
+      deletedCheck: false,
     });
     if (user) {
       throw new ForbiddenException('Email already exists');
@@ -228,6 +229,10 @@ export class AuthService {
 
     let newUser = await new this._usersService(signupUserDto).save();
     newUser = JSON.parse(JSON.stringify(newUser));
+
+    const res = await axios.get(
+      `https://www.zohoapis.eu/crm/v2/functions/createcustomer/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&customerid=${newUser.userID}`,
+    );
 
     const token = this.generateToken(newUser);
 
@@ -257,12 +262,12 @@ export class AuthService {
   async isEmailExists(email) {
     const user = await this._usersService.findOne({
       email: email?.toLowerCase(),
-      deletedCheck: false
+      deletedCheck: false,
     });
     const lead = await this._leadModel.findOne({
-      email:email?.toLowerCase(),
-      deletedCheck: false
-    })
+      email: email?.toLowerCase(),
+      deletedCheck: false,
+    });
 
     return user || lead ? true : false;
   }
@@ -423,7 +428,9 @@ export class AuthService {
                         <!-- COPY -->
                         <tr>
                           <td bgcolor="#FFFFFF" align="left" style="padding: 20px 30px 40px 30px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 18px; font-weight: 400; line-height: 25px;" >
-                            <p style="margin: 0;">Your OTP for password reset on <b>Divideals ${user.role} Panel</b> is generated. Please use this OTP to create new password. </p>
+                            <p style="margin: 0;">Your OTP for password reset on <b>Divideals ${
+                              user.role
+                            } Panel</b> is generated. Please use this OTP to create new password. </p>
                           </td>
                         </tr>
                         <!-- BULLETPROOF BUTTON -->
