@@ -183,6 +183,21 @@ let UsersService = class UsersService {
             message: 'User has been updated succesfully',
         };
     }
+    async updateCustomerProfile(customerID, usersDto) {
+        try {
+            let user = await this._userModel.findOne({ _id: customerID });
+            if (!user) {
+                throw new common_1.HttpException('Customer not found', common_1.HttpStatus.NOT_FOUND);
+            }
+            await this._userModel.updateOne({ _id: customerID }, usersDto);
+            return {
+                message: 'Customer has been updated succesfully',
+            };
+        }
+        catch (err) {
+            throw new common_1.HttpException(err.message, common_1.HttpStatus.BAD_REQUEST);
+        }
+    }
     async updateBusinessHours(updateHoursDTO) {
         let user = await this._userModel.findOne({ _id: updateHoursDTO.id });
         const newBusinessHours = user.businessHours.map((hour) => {
@@ -234,7 +249,7 @@ let UsersService = class UsersService {
             .then((items) => items[0]);
     }
     async getMerchantByID(merchantID) {
-        return await this._userModel
+        let merchant = await this._userModel
             .aggregate([
             {
                 $match: {
@@ -267,6 +282,20 @@ let UsersService = class UsersService {
             },
         ])
             .then((items) => items[0]);
+        let foundTime = false;
+        let foundWorkingDay = false;
+        merchant.businessHours.forEach((el) => {
+            if (el.firstStartTime != '' && el.secondStartTime != '') {
+                foundTime = true;
+            }
+            if (el.isWorkingDay != false) {
+                foundWorkingDay = true;
+            }
+        });
+        if (!foundTime || !foundWorkingDay) {
+            merchant.businessHours = [];
+        }
+        return merchant;
     }
     async getMerchantStats(id) {
         return await this._userModel
@@ -387,12 +416,13 @@ let UsersService = class UsersService {
                 deletedCheck: false,
             });
             const filteredCount = await this._userModel.countDocuments(Object.assign({ role: userrole_enum_1.USERROLE.affiliate, status: userstatus_enum_1.USERSTATUS.approved, deletedCheck: false }, matchFilter));
-            const affiliates = await this._userModel.aggregate([
+            const affiliates = await this._userModel
+                .aggregate([
                 {
-                    $match: Object.assign({ role: userrole_enum_1.USERROLE.affiliate, status: userstatus_enum_1.USERSTATUS.approved, deletedCheck: false }, matchFilter)
+                    $match: Object.assign({ role: userrole_enum_1.USERROLE.affiliate, status: userstatus_enum_1.USERSTATUS.approved, deletedCheck: false }, matchFilter),
                 },
                 {
-                    $sort: sort
+                    $sort: sort,
                 },
                 {
                     $lookup: {
@@ -409,15 +439,15 @@ let UsersService = class UsersService {
                                     $expr: {
                                         $and: [
                                             {
-                                                $eq: ['$$affiliateID', '$affiliateID']
+                                                $eq: ['$$affiliateID', '$affiliateID'],
                                             },
                                             {
-                                                $eq: ['$$customerMongoID', '$customerMongoID']
+                                                $eq: ['$$customerMongoID', '$customerMongoID'],
                                             },
                                             {
-                                                $eq: ['$deletedCheck', false]
-                                            }
-                                        ]
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
                                     },
                                 },
                             },
@@ -428,7 +458,7 @@ let UsersService = class UsersService {
                     $unwind: {
                         path: '$favouriteAffiliate',
                         preserveNullAndEmptyArrays: true,
-                    }
+                    },
                 },
                 {
                     $addFields: {
@@ -436,14 +466,13 @@ let UsersService = class UsersService {
                         isFavourite: {
                             $cond: [
                                 {
-                                    $ifNull: [
-                                        '$favouriteAffiliate', false
-                                    ]
+                                    $ifNull: ['$favouriteAffiliate', false],
                                 },
-                                true, false
-                            ]
-                        }
-                    }
+                                true,
+                                false,
+                            ],
+                        },
+                    },
                 },
                 {
                     $project: {
@@ -491,15 +520,15 @@ let UsersService = class UsersService {
                         isSubscribed: 0,
                         __v: 0,
                         favouriteAffiliate: 0,
-                    }
-                }
+                    },
+                },
             ])
                 .skip(parseInt(offset))
                 .limit(parseInt(limit));
             return {
                 totalCount: totalCount,
                 filteredCount: filteredCount,
-                data: affiliates
+                data: affiliates,
             };
         }
         catch (err) {
@@ -516,18 +545,19 @@ let UsersService = class UsersService {
                 status: userstatus_enum_1.USERSTATUS.approved,
                 deletedCheck: false,
             });
-            const affiliates = await this._userModel.aggregate([
+            const affiliates = await this._userModel
+                .aggregate([
                 {
                     $match: {
                         role: userrole_enum_1.USERROLE.affiliate,
                         status: userstatus_enum_1.USERSTATUS.approved,
                         deletedCheck: false,
-                    }
+                    },
                 },
                 {
                     $sort: {
-                        popularCount: -1
-                    }
+                        popularCount: -1,
+                    },
                 },
                 {
                     $lookup: {
@@ -544,15 +574,15 @@ let UsersService = class UsersService {
                                     $expr: {
                                         $and: [
                                             {
-                                                $eq: ['$$affiliateID', '$affiliateID']
+                                                $eq: ['$$affiliateID', '$affiliateID'],
                                             },
                                             {
-                                                $eq: ['$$customerMongoID', '$customerMongoID']
+                                                $eq: ['$$customerMongoID', '$customerMongoID'],
                                             },
                                             {
-                                                $eq: ['$deletedCheck', false]
-                                            }
-                                        ]
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
                                     },
                                 },
                             },
@@ -563,7 +593,7 @@ let UsersService = class UsersService {
                     $unwind: {
                         path: '$favouriteAffiliate',
                         preserveNullAndEmptyArrays: true,
-                    }
+                    },
                 },
                 {
                     $addFields: {
@@ -571,14 +601,13 @@ let UsersService = class UsersService {
                         isFavourite: {
                             $cond: [
                                 {
-                                    $ifNull: [
-                                        '$favouriteAffiliate', false
-                                    ]
+                                    $ifNull: ['$favouriteAffiliate', false],
                                 },
-                                true, false
-                            ]
-                        }
-                    }
+                                true,
+                                false,
+                            ],
+                        },
+                    },
                 },
                 {
                     $project: {
@@ -626,14 +655,14 @@ let UsersService = class UsersService {
                         isSubscribed: 0,
                         __v: 0,
                         favouriteAffiliate: 0,
-                    }
-                }
+                    },
+                },
             ])
                 .skip(parseInt(offset))
                 .limit(parseInt(limit));
             return {
                 totalCount: totalCount,
-                data: affiliates
+                data: affiliates,
             };
         }
         catch (err) {
@@ -651,12 +680,12 @@ let UsersService = class UsersService {
                         role: userrole_enum_1.USERROLE.affiliate,
                         status: userstatus_enum_1.USERSTATUS.approved,
                         deletedCheck: false,
-                    }
+                    },
                 },
                 {
                     $sort: {
-                        createdAt: -1
-                    }
+                        createdAt: -1,
+                    },
                 },
                 {
                     $lookup: {
@@ -673,15 +702,15 @@ let UsersService = class UsersService {
                                     $expr: {
                                         $and: [
                                             {
-                                                $eq: ['$$affiliateID', '$affiliateID']
+                                                $eq: ['$$affiliateID', '$affiliateID'],
                                             },
                                             {
-                                                $eq: ['$$customerMongoID', '$customerMongoID']
+                                                $eq: ['$$customerMongoID', '$customerMongoID'],
                                             },
                                             {
-                                                $eq: ['$deletedCheck', false]
-                                            }
-                                        ]
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
                                     },
                                 },
                             },
@@ -691,7 +720,7 @@ let UsersService = class UsersService {
                 {
                     $unwind: {
                         path: '$favouriteAffiliate',
-                    }
+                    },
                 },
                 {
                     $addFields: {
@@ -699,31 +728,31 @@ let UsersService = class UsersService {
                         isFavourite: {
                             $cond: [
                                 {
-                                    $ifNull: [
-                                        '$favouriteAffiliate', false
-                                    ]
+                                    $ifNull: ['$favouriteAffiliate', false],
                                 },
-                                true, false
-                            ]
-                        }
-                    }
+                                true,
+                                false,
+                            ],
+                        },
+                    },
                 },
                 {
                     $count: 'totalCount',
                 },
             ]);
-            const affiliates = await this._userModel.aggregate([
+            const affiliates = await this._userModel
+                .aggregate([
                 {
                     $match: {
                         role: userrole_enum_1.USERROLE.affiliate,
                         status: userstatus_enum_1.USERSTATUS.approved,
                         deletedCheck: false,
-                    }
+                    },
                 },
                 {
                     $sort: {
-                        createdAt: -1
-                    }
+                        createdAt: -1,
+                    },
                 },
                 {
                     $lookup: {
@@ -740,15 +769,15 @@ let UsersService = class UsersService {
                                     $expr: {
                                         $and: [
                                             {
-                                                $eq: ['$$affiliateID', '$affiliateID']
+                                                $eq: ['$$affiliateID', '$affiliateID'],
                                             },
                                             {
-                                                $eq: ['$$customerMongoID', '$customerMongoID']
+                                                $eq: ['$$customerMongoID', '$customerMongoID'],
                                             },
                                             {
-                                                $eq: ['$deletedCheck', false]
-                                            }
-                                        ]
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
                                     },
                                 },
                             },
@@ -758,7 +787,7 @@ let UsersService = class UsersService {
                 {
                     $unwind: {
                         path: '$favouriteAffiliate',
-                    }
+                    },
                 },
                 {
                     $addFields: {
@@ -766,14 +795,13 @@ let UsersService = class UsersService {
                         isFavourite: {
                             $cond: [
                                 {
-                                    $ifNull: [
-                                        '$favouriteAffiliate', false
-                                    ]
+                                    $ifNull: ['$favouriteAffiliate', false],
                                 },
-                                true, false
-                            ]
-                        }
-                    }
+                                true,
+                                false,
+                            ],
+                        },
+                    },
                 },
                 {
                     $project: {
@@ -821,14 +849,14 @@ let UsersService = class UsersService {
                         isSubscribed: 0,
                         __v: 0,
                         favouriteAffiliate: 0,
-                    }
-                }
+                    },
+                },
             ])
                 .skip(parseInt(offset))
                 .limit(parseInt(limit));
             return {
-                totalCount: totalCount[0].totalCount,
-                data: affiliates
+                totalCount: (totalCount === null || totalCount === void 0 ? void 0 : totalCount.length) > 0 ? totalCount[0].totalCount : 0,
+                data: affiliates,
             };
         }
         catch (err) {
@@ -1549,6 +1577,41 @@ let UsersService = class UsersService {
         }
         catch (err) {
             throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
+        }
+    }
+    async getCustomerByID(customerID) {
+        try {
+            let customer = await this._userModel.aggregate([
+                {
+                    $match: { userID: customerID, role: 'Customer', deletedCheck: false },
+                },
+                {
+                    $project: {
+                        _id: 0,
+                    },
+                },
+                {
+                    $addFields: {
+                        customerID: '$userID',
+                    },
+                },
+                {
+                    $project: {
+                        firstName: 1,
+                        lastName: 1,
+                        email: 1,
+                        role: 1,
+                        customerID: 1,
+                    },
+                },
+            ]);
+            if (customer.length == 0) {
+                throw new Error('Customer not found!');
+            }
+            return customer[0];
+        }
+        catch (err) {
+            throw new common_1.HttpException(err.message, common_1.HttpStatus.BAD_REQUEST);
         }
     }
     async updatePasswordForAllMerchant() {

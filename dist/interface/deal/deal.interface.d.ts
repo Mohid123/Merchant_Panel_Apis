@@ -1,6 +1,6 @@
 import { Document } from 'mongoose';
 export interface SubDealInterface {
-    id: string;
+    _id: string;
     subDealID: string;
     title: string;
     originalPrice: number;

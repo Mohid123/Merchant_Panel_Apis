@@ -3,6 +3,9 @@ export declare class VoucherDto {
     voucherHeader: string;
     dealHeader: string;
     dealID: string;
+    dealMongoID: string;
+    subDealID: string;
+    subDealMongoID: string;
     amount: number;
     fee: number;
     net: number;

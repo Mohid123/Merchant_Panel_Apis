@@ -256,6 +256,97 @@ let VouchersService = class VouchersService {
             throw new common_1.HttpException(error.message, common_1.HttpStatus.BAD_REQUEST);
         }
     }
+    async getVouchersByCustomerID(customerID, searchVoucher, voucherStatus, offset, limit) {
+        try {
+            offset = parseInt(offset) < 0 ? 0 : offset;
+            limit = parseInt(limit) < 1 ? 10 : limit;
+            let matchFilter = {};
+            if (customerID) {
+                matchFilter = Object.assign(Object.assign({}, matchFilter), { customerMongoID: customerID });
+            }
+            if (voucherStatus) {
+                matchFilter = Object.assign(Object.assign({}, matchFilter), { status: voucherStatus });
+            }
+            let filters = {};
+            if (searchVoucher.trim().length) {
+                var query = new RegExp(`${searchVoucher}`, 'i');
+                filters = Object.assign(Object.assign({}, filters), { voucherHeader: query });
+            }
+            const totalCount = await this.voucherModel.countDocuments({
+                customerMongoID: customerID,
+                deletedCheck: false,
+            });
+            const filteredCount = await this.voucherModel.countDocuments(Object.assign(Object.assign({ customerMongoID: customerID, deletedCheck: false }, matchFilter), filters));
+            let customerVouchers = await this.voucherModel.aggregate([
+                {
+                    $match: Object.assign(Object.assign({ customerMongoID: customerID, deletedCheck: false }, matchFilter), filters)
+                },
+                {
+                    $sort: {
+                        createdAt: -1
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'locations',
+                        let: {
+                            merchantID: '$merchantID',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$merchantID', '$$merchantID'],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                            {
+                                $addFields: {
+                                    id: '$_id',
+                                }
+                            },
+                            {
+                                $project: {
+                                    _id: 0,
+                                    createdAt: 0,
+                                    updatedAt: 0,
+                                    __v: 0
+                                }
+                            }
+                        ],
+                        as: 'merchantData',
+                    },
+                },
+                {
+                    $unwind: '$merchantData',
+                },
+                {
+                    $addFields: {
+                        id: '$_id'
+                    }
+                },
+                {
+                    $project: {
+                        _id: 0
+                    }
+                }
+            ])
+                .skip(parseInt(offset))
+                .limit(parseInt(limit));
+            return {
+                totalCount: totalCount,
+                filteredCount: filteredCount,
+                data: customerVouchers
+            };
+        }
+        catch (err) {
+            throw new common_1.HttpException(err.message, common_1.HttpStatus.BAD_REQUEST);
+        }
+    }
     async redeemVoucher(voucherId, req) {
         try {
             const voucherErrors = {
@@ -297,11 +388,13 @@ let VouchersService = class VouchersService {
                 userID: voucher.merchantID,
             });
             let redeemDate = new Date().getTime();
+            const calculatedFee = voucher.dealPrice * 0.05;
             const net = voucher.dealPrice - 0.05 * voucher.dealPrice;
             await this.voucherModel.updateOne({ voucherID: voucherId }, {
                 status: voucherstatus_enum_1.VOUCHERSTATUSENUM.redeeemed,
                 redeemDate: redeemDate,
                 net: net,
+                fee: calculatedFee
             });
             await this.userModel.updateOne({ userID: voucher.merchantID }, {
                 redeemedVouchers: merchant.redeemedVouchers + 1,

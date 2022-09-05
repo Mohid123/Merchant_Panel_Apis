@@ -23,6 +23,11 @@ export declare class VouchersService {
         filteredCount: number;
         data: any[];
     }>;
+    getVouchersByCustomerID(customerID: any, searchVoucher: any, voucherStatus: any, offset: any, limit: any): Promise<{
+        totalCount: number;
+        filteredCount: number;
+        data: any[];
+    }>;
     redeemVoucher(voucherId: any, req: any): Promise<{
         status: string;
         message: any;

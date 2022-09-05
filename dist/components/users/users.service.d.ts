@@ -29,6 +29,9 @@ export declare class UsersService {
     updateMerchantprofile(merchantID: any, usersDto: any): Promise<{
         message: string;
     }>;
+    updateCustomerProfile(customerID: any, usersDto: any): Promise<{
+        message: string;
+    }>;
     updateBusinessHours(updateHoursDTO: UpdateHoursDto): Promise<import("mongodb").UpdateResult>;
     deleteUser(id: any): Promise<import("mongodb").UpdateResult>;
     getUserById(id: any): Promise<any>;
@@ -71,5 +74,6 @@ export declare class UsersService {
         enquiryID: any;
         affliateID: string;
     }>;
+    getCustomerByID(customerID: any): Promise<any>;
     updatePasswordForAllMerchant(): Promise<void>;
 }

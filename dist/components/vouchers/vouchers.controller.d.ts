@@ -14,6 +14,11 @@ export declare class VouchersController {
         filteredCount: number;
         data: any[];
     }>;
+    getVouchersByCustomerID(customerID: string, searchVoucher: string, voucherStatus: VOUCHERSTATUSENUM, offset?: number, limit?: number): Promise<{
+        totalCount: number;
+        filteredCount: number;
+        data: any[];
+    }>;
     searchByVoucherId(merchantID: string, voucherId?: string, offset?: number, limit?: number): Promise<{
         totalCount: number;
         data: any[];

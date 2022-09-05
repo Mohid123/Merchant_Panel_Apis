@@ -17,8 +17,6 @@ const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const location_dto_1 = require("../../dto/location/location.dto");
 const updateLocation_dto_1 = require("../../dto/location/updateLocation.dto");
-const jwt_auth_guard_1 = require("../auth/jwt-auth.guard");
-const jwt_merchant_auth_guard_1 = require("../auth/jwt-merchant-auth.guard");
 const location_service_1 = require("./location.service");
 let LocationController = class LocationController {
     constructor(_locationService) {
@@ -32,7 +30,6 @@ let LocationController = class LocationController {
     }
 };
 __decorate([
-    (0, common_1.UseGuards)(jwt_merchant_auth_guard_1.JwtMerchantAuthGuard),
     (0, common_1.Post)('createLocation'),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
@@ -40,7 +37,6 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], LocationController.prototype, "createDeal", null);
 __decorate([
-    (0, common_1.UseGuards)(jwt_merchant_auth_guard_1.JwtMerchantAuthGuard),
     (0, common_1.Post)('updateLocation/:merchantID'),
     __param(0, (0, common_1.Body)()),
     __param(1, (0, common_1.Param)('merchantID')),
@@ -49,8 +45,6 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], LocationController.prototype, "updateLocation", null);
 LocationController = __decorate([
-    (0, swagger_1.ApiBearerAuth)(),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, swagger_1.ApiTags)('Location'),
     (0, common_1.Controller)('location'),
     __metadata("design:paramtypes", [location_service_1.LocationService])

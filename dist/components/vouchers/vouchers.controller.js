@@ -35,6 +35,9 @@ let VouchersController = class VouchersController {
     getAllVouchers(merchantID, deal, voucher, amount, fee, net, status, paymentStatus, dateFrom, dateTo, voucherID = '', dealHeader = '', voucherHeader = '', voucherStatus = '', invoiceStatus = '', offset = 0, limit = 10, multipleVouchersDto) {
         return this.voucherService.getAllVouchersByMerchantID(deal, voucher, amount, fee, net, status, paymentStatus, dateFrom, dateTo, merchantID, voucherID, dealHeader, voucherHeader, voucherStatus, invoiceStatus, offset, limit, multipleVouchersDto);
     }
+    getVouchersByCustomerID(customerID, searchVoucher = '', voucherStatus, offset = 0, limit = 10) {
+        return this.voucherService.getVouchersByCustomerID(customerID, searchVoucher, voucherStatus, offset, limit);
+    }
     searchByVoucherId(merchantID, voucherId = '', offset = 0, limit = 10) {
         return this.voucherService.searchByVoucherId(merchantID, voucherId, offset, limit);
     }
@@ -92,6 +95,21 @@ __decorate([
     __metadata("design:paramtypes", [String, String, String, String, String, String, String, String, Number, Number, String, String, String, String, String, Number, Number, multiplevouchers_dto_1.MultipleVouchersDto]),
     __metadata("design:returntype", void 0)
 ], VouchersController.prototype, "getAllVouchers", null);
+__decorate([
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiQuery)({ name: 'searchVoucher', required: false }),
+    (0, swagger_1.ApiQuery)({ name: 'voucherStatus', enum: voucherstatus_enum_1.VOUCHERSTATUSENUM, required: false }),
+    (0, common_1.Get)('getVouchersByCustomerID/:customerID'),
+    __param(0, (0, common_1.Param)('customerID')),
+    __param(1, (0, common_1.Query)('searchVoucher')),
+    __param(2, (0, common_1.Query)('voucherStatus')),
+    __param(3, (0, common_1.Query)('offset')),
+    __param(4, (0, common_1.Query)('limit')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, String, Number, Number]),
+    __metadata("design:returntype", void 0)
+], VouchersController.prototype, "getVouchersByCustomerID", null);
 __decorate([
     (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),

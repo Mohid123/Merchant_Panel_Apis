@@ -31,6 +31,18 @@ __decorate([
 ], VoucherDto.prototype, "dealID", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
+], VoucherDto.prototype, "dealMongoID", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
+], VoucherDto.prototype, "subDealID", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
+], VoucherDto.prototype, "subDealMongoID", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
     __metadata("design:type", Number)
 ], VoucherDto.prototype, "amount", void 0);
 __decorate([

@@ -12,19 +12,25 @@ import { VouchersService } from '../vouchers/vouchers.service';
 import { EmailDTO } from 'src/dto/email/email.dto';
 import { ViewsService } from '../views/views.service';
 import { ViewsInterface } from 'src/interface/views/views.interface';
+import { PreComputedDealInteface } from 'src/interface/deal/preComputedDeal.interface';
+import { Cache } from 'cache-manager';
+import { ReviewInterface } from 'src/interface/review/review.interface';
 export declare class DealService implements OnModuleInit {
     private readonly dealModel;
+    private readonly preComputedDealModel;
+    private cacheManager;
     private readonly categorymodel;
     private readonly voucherCounterModel;
     private readonly subCategoryModel;
     private readonly _userModel;
     private _scheduleModel;
     private _viewsModel;
+    private readonly reviewModel;
     private _scheduleService;
     private _stripeService;
     private _voucherService;
     private viewsService;
-    constructor(dealModel: Model<DealInterface>, categorymodel: Model<CategoryInterface>, voucherCounterModel: Model<VoucherCounterInterface>, subCategoryModel: Model<SubCategoryInterface>, _userModel: Model<UsersInterface>, _scheduleModel: Model<Schedule>, _viewsModel: Model<ViewsInterface>, _scheduleService: ScheduleService, _stripeService: StripeService, _voucherService: VouchersService, viewsService: ViewsService);
+    constructor(dealModel: Model<DealInterface>, preComputedDealModel: Model<PreComputedDealInteface>, cacheManager: Cache, categorymodel: Model<CategoryInterface>, voucherCounterModel: Model<VoucherCounterInterface>, subCategoryModel: Model<SubCategoryInterface>, _userModel: Model<UsersInterface>, _scheduleModel: Model<Schedule>, _viewsModel: Model<ViewsInterface>, reviewModel: Model<ReviewInterface>, _scheduleService: ScheduleService, _stripeService: StripeService, _voucherService: VouchersService, viewsService: ViewsService);
     onModuleInit(): void;
     generateVoucherId(sequenceName: any): Promise<string>;
     createDeal(dealDto: any, req: any): Promise<DealInterface & {
@@ -69,19 +75,13 @@ export declare class DealService implements OnModuleInit {
         totalCount: any;
         data: any[];
     }>;
-    getNewDeals(offset: any, limit: any, req: any): Promise<{
-        totalCount: number;
-        data: any[];
-    }>;
+    getNewDeals(offset: any, limit: any, req: any): Promise<unknown>;
     getDiscountedDeals(percentage: any, offset: any, limit: any, req: any): Promise<{
         filterValue: any;
         totalCount: any;
         data: any[];
     }>;
-    getHotDeals(offset: any, limit: any, req: any): Promise<{
-        totalCount: number;
-        data: any[];
-    }>;
+    getHotDeals(offset: any, limit: any, req: any): Promise<unknown>;
     getSpecialOfferDeals(offset: any, limit: any, req: any): Promise<{
         totalCount: number;
         data: any[];

@@ -25,14 +25,18 @@ const vouchers_schema_1 = require("../../schema/vouchers/vouchers.schema");
 const vouchers_module_1 = require("../vouchers/vouchers.module");
 const views_schema_1 = require("../../schema/views/views.schema");
 const views_service_1 = require("../views/views.service");
+const preComputed_deals_schema_1 = require("../../schema/deal/preComputed-deals.schema");
+const review_schema_1 = require("../../schema/review/review.schema");
 let DealModule = class DealModule {
 };
 DealModule = __decorate([
     (0, common_1.Module)({
         imports: [
+            common_1.CacheModule.register(),
             (0, common_1.forwardRef)(() => category_module_1.CategoryModule),
             mongoose_1.MongooseModule.forFeature([
                 { name: 'Deal', schema: deal_schema_1.DealSchema },
+                { name: 'PreComputedDeal', schema: preComputed_deals_schema_1.PreComputedDealSchema },
                 { name: 'Category', schema: category_schema_1.CategorySchema },
                 { name: 'Counter', schema: vouchersCounter_schema_1.VoucherCounterSchema },
                 { name: 'SubCategory', schema: subcategory_schema_1.SubCategorySchema },
@@ -41,6 +45,7 @@ DealModule = __decorate([
                 { name: 'Stripe', schema: stripe_schema_1.StripeSchema },
                 { name: 'Voucher', schema: vouchers_schema_1.VoucherSchema },
                 { name: 'views', schema: views_schema_1.ViewsSchema },
+                { name: 'Review', schema: review_schema_1.ReviewSchema },
             ]),
             stripe_module_1.StripeModule,
             vouchers_module_1.VouchersModule,

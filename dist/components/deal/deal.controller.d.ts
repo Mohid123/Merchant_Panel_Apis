@@ -64,10 +64,7 @@ export declare class DealController {
     }>;
     getDealReviews(dealID: string, createdAt: SORT, totalRating: SORT, rating: number, offset?: number, limit?: number): Promise<any>;
     getTopRatedDeals(merchantID: string): Promise<any[]>;
-    getNewDeals(offset: number, limit: number, req: any): Promise<{
-        totalCount: number;
-        data: any[];
-    }>;
+    getNewDeals(offset: number, limit: number, req: any): Promise<unknown>;
     getLowPriceDeals(price: number, offset: number, limit: number, req: any): Promise<{
         filterValue: any;
         totalCount: any;
@@ -82,10 +79,7 @@ export declare class DealController {
         totalCount: number;
         data: any[];
     }>;
-    getHotDeals(offset: number, limit: number, req: any): Promise<{
-        totalCount: number;
-        data: any[];
-    }>;
+    getHotDeals(offset: number, limit: number, req: any): Promise<unknown>;
     getNewFavouriteDeal(offset: number, limit: number, req: any): Promise<{
         totalCount: number;
         data: any[];

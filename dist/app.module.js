@@ -36,6 +36,7 @@ const stripe_module_1 = require("./components/stripe/stripe.module");
 const favourites_module_1 = require("./components/favourites/favourites.module");
 const vouchers_schema_1 = require("./schema/vouchers/vouchers.schema");
 const views_module_1 = require("./components/views/views.module");
+const throttler_1 = require("@nestjs/throttler");
 let AppModule = class AppModule {
 };
 AppModule = __decorate([
@@ -52,6 +53,10 @@ AppModule = __decorate([
                 { name: 'Deal', schema: deal_schema_1.DealSchema },
                 { name: 'Voucher', schema: vouchers_schema_1.VoucherSchema },
             ]),
+            throttler_1.ThrottlerModule.forRoot({
+                ttl: 60,
+                limit: 5,
+            }),
             users_module_1.UsersModule,
             deal_module_1.DealModule,
             category_module_1.CategoryModule,

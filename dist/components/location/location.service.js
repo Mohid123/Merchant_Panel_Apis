@@ -18,17 +18,29 @@ const mongoose_1 = require("@nestjs/mongoose");
 const mongoose_2 = require("mongoose");
 var OpenLocationCode = require('open-location-code').OpenLocationCode;
 var openLocationCode = new OpenLocationCode();
+const NodeGeocoder = require('node-geocoder');
 let LocationService = class LocationService {
     constructor(_locationModel) {
         this._locationModel = _locationModel;
+        const options = {
+            provider: 'google',
+            apiKey: process.env.geocodingApiKey,
+            formatter: null,
+        };
+        this.geocoder = NodeGeocoder(options);
     }
     async createLocation(locationDto) {
-        const coord = await openLocationCode.decode(locationDto.plusCode);
-        let coordinates = [coord.longitudeCenter, coord.latitudeCenter];
-        const locationObj = Object.assign(Object.assign({}, locationDto), { location: {
-                coordinates: coordinates,
-            } });
-        return await new this._locationModel(locationObj).save();
+        try {
+            const res = await this.geocoder.geocode(`${locationDto.streetAddress},${locationDto.city}`);
+            let coordinates = [res[0].longitude, res[0].latitude];
+            const locationObj = Object.assign(Object.assign({}, locationDto), { location: {
+                    coordinates: coordinates,
+                } });
+            return await new this._locationModel(locationObj).save();
+        }
+        catch (err) {
+            console.log(err + ' ..........');
+        }
     }
     async updateLocation(locationDto, merchantID) {
         try {

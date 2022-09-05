@@ -15,9 +15,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.UsersController = void 0;
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
+const throttler_1 = require("@nestjs/throttler");
 const resetPassword_dto_1 = require("../../dto/resetPasswordDto/resetPassword.dto");
 const approveMerchant_dto_1 = require("../../dto/user/approveMerchant.dto");
 const is_password_exists_dto_1 = require("../../dto/user/is-password-exists.dto");
+const updatecustomerprofile_dto_1 = require("../../dto/user/updatecustomerprofile.dto");
 const updatepassword_dto_1 = require("../../dto/user/updatepassword.dto");
 const voucherpincode_dto_1 = require("../../dto/user/voucherpincode.dto");
 const sort_enum_1 = require("../../enum/sort/sort.enum");
@@ -50,6 +52,9 @@ let UsersController = class UsersController {
     }
     updateMerchantprofile(merchantID, usersDto) {
         return this._usersService.updateMerchantprofile(merchantID, usersDto);
+    }
+    updateCustomerProfile(customerID, usersDto) {
+        return this._usersService.updateCustomerProfile(customerID, usersDto);
     }
     updateBusinessHours(updateHoursDTO) {
         return this._usersService.updateBusinessHours(updateHoursDTO);
@@ -93,6 +98,9 @@ let UsersController = class UsersController {
     approveAffiliate(id, approveAffiliateDto) {
         return this._usersService.approveAffiliate(id, approveAffiliateDto);
     }
+    getCustomerByID(customerID) {
+        return this._usersService.getCustomerByID(customerID);
+    }
 };
 __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
@@ -104,6 +112,7 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "addUser", null);
 __decorate([
+    (0, common_1.UseGuards)(throttler_1.ThrottlerGuard),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.Post)('comparePassword/:userID'),
@@ -151,6 +160,16 @@ __decorate([
     __metadata("design:paramtypes", [String, updatemerchantprofile_dto_1.UpdateMerchantProfileDto]),
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "updateMerchantprofile", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.Post)('updateCustomerProfile/:customerID'),
+    __param(0, (0, common_1.Param)('customerID')),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, updatecustomerprofile_dto_1.UpdateCustomerProfileDto]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "updateCustomerProfile", null);
 __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, swagger_1.ApiBearerAuth)(),
@@ -294,6 +313,16 @@ __decorate([
     __metadata("design:paramtypes", [String, approveMerchant_dto_1.ApproveMerchantDTO]),
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "approveAffiliate", null);
+__decorate([
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)(jwt_manager_auth_guard_1.JwtManagerAuthGuard),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Post)('getCustomerByID/:customerID'),
+    __param(0, (0, common_1.Param)('customerID')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "getCustomerByID", null);
 UsersController = __decorate([
     (0, swagger_1.ApiTags)('Users'),
     (0, common_1.Controller)('users'),
