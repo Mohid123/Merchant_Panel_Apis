@@ -1528,8 +1528,6 @@ export class DealService implements OnModuleInit {
       offset = parseInt(offset) < 0 ? 0 : offset;
       limit = parseInt(limit) < 1 ? 10 : limit;
 
-      debugger;
-
       const value = await this.cacheManager.get(`getNewDeals${offset}${limit}`);
       let totalCount;
       let deals;
@@ -1587,6 +1585,50 @@ export class DealService implements OnModuleInit {
                 path: '$favouriteDeal',
                 preserveNullAndEmptyArrays: true,
               },
+            },
+            {
+              $lookup: {
+                from: 'users',
+                as: 'merchantDetails',
+                let: {
+                  userID: '$merchantID',
+                  deletedCheck: '$deletedCheck',
+                },
+                pipeline: [
+                  {
+                    $match: {
+                      $expr: {
+                        $and: [
+                          {
+                            $eq: ['$$userID', '$userID'],
+                          },
+                          {
+                            $eq: ['$deletedCheck', false],
+                          },
+                        ],
+                      },
+                    },
+                  },
+                  {
+                    $addFields: {
+                      id: '$_id'
+                    }
+                  },
+                  {
+                    $project: {
+                      _id: 0,
+                      id: 1,
+                      totalReviews: 1,
+                      ratingsAverage: 1,
+                      legalName: 1,
+                      city: 1
+                    }
+                  }
+                ],
+              },
+            },
+            {
+              $unwind: '$merchantDetails'
             },
             {
               $addFields: {
@@ -1907,6 +1949,50 @@ export class DealService implements OnModuleInit {
                 path: '$favouriteDeal',
                 preserveNullAndEmptyArrays: true,
               },
+            },
+            {
+              $lookup: {
+                from: 'users',
+                as: 'merchantDetails',
+                let: {
+                  userID: '$merchantID',
+                  deletedCheck: '$deletedCheck',
+                },
+                pipeline: [
+                  {
+                    $match: {
+                      $expr: {
+                        $and: [
+                          {
+                            $eq: ['$$userID', '$userID'],
+                          },
+                          {
+                            $eq: ['$deletedCheck', false],
+                          },
+                        ],
+                      },
+                    },
+                  },
+                  {
+                    $addFields: {
+                      id: '$_id'
+                    }
+                  },
+                  {
+                    $project: {
+                      _id: 0,
+                      id: 1,
+                      totalReviews: 1,
+                      ratingsAverage: 1,
+                      legalName: 1,
+                      city: 1
+                    }
+                  }
+                ],
+              },
+            },
+            {
+              $unwind: '$merchantDetails'
             },
             {
               $addFields: {

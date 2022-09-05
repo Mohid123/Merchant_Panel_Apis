@@ -363,18 +363,19 @@ export class UsersService {
       ])
       .then((items) => items[0]);
 
-    let found = false;
-      debugger
+    let foundTime = false;
+    let foundWorkingDay = false;
+
     merchant.businessHours.forEach((el) => {
-      if (el.firstStartTime != '') {
-        found = true;
+      if (el.firstStartTime != '' && el.secondStartTime != '') {
+        foundTime = true;
       }
-      if (el.secondStartTime != '') {
-        found = true;
+      if (el.isWorkingDay != false) {
+        foundWorkingDay = true;
       }
     });
 
-    if (!found) {
+    if (!foundTime || !foundWorkingDay) {
       merchant.businessHours = [];
     }
 
