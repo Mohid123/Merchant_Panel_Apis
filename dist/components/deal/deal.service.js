@@ -341,13 +341,28 @@ let DealService = class DealService {
                     }
                 }
                 if (updateDealDto.status == 'Scheduled') {
-                    this._scheduleService.scheduleDeal({
-                        scheduleDate: new Date(deal.startDate),
-                        status: 0,
-                        type: 'publishDeal',
-                        dealID: deal.dealID,
-                        deletedCheck: false,
-                    });
+                    if (deal.startDate <= Date.now()) {
+                        deal.dealStatus = statuses['Published'];
+                        this._scheduleService.scheduleDeal({
+                            scheduleDate: new Date(deal.endDate),
+                            status: 0,
+                            type: 'expireDeal',
+                            dealID: deal.dealID,
+                            deletedCheck: false,
+                        });
+                    }
+                    else {
+                        this._scheduleService.scheduleDeal({
+                            scheduleDate: new Date(deal.startDate),
+                            status: 0,
+                            type: 'publishDeal',
+                            dealID: deal.dealID,
+                            deletedCheck: false,
+                        });
+                    }
+                    if (deal.endDate <= Date.now()) {
+                        deal.dealStatus = statuses['Expired'];
+                    }
                 }
             }
             let dealVouchers = 0;
@@ -3671,17 +3686,19 @@ let DealService = class DealService {
                 buyNowDto.quantity) {
                 throw new Error('Insufficent Quantity of deal present!');
             }
+            debugger;
             let dealVouchers = 0, soldVouchers = 0;
             deal.subDeals = deal.subDeals.map((element) => {
                 if (buyNowDto.subDealID === element['subDealID']) {
                     element.soldVouchers += buyNowDto.quantity;
+                    element.numberOfVouchers -= buyNowDto.quantity;
                 }
                 dealVouchers += element.numberOfVouchers;
                 soldVouchers += element.soldVouchers;
                 return element;
             });
             deal.soldVouchers = soldVouchers;
-            deal.availableVouchers = dealVouchers - soldVouchers;
+            deal.availableVouchers -= buyNowDto.quantity;
             let imageURL = {};
             let payment = (subDeal.dealPrice * buyNowDto.quantity).toString();
             let description = `Customer with id ${req.user.id} and email address ${customer.email} is buying ${buyNowDto.quantity} vouchers of sub deal ${subDeal.title}`;
