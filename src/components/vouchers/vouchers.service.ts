@@ -742,7 +742,7 @@ export class VouchersService {
       }
 
       if (!voucher) {
-        throw new Error('No found!');
+        throw new Error(' Voucher Not found!');
       }
 
       let scheduledVoucher = await this._scheduleModel.findOne({
