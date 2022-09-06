@@ -404,13 +404,27 @@ export class DealService implements OnModuleInit {
         }
 
         if (updateDealDto.status == 'Scheduled') {
-          this._scheduleService.scheduleDeal({
-            scheduleDate: new Date(deal.startDate),
-            status: 0,
-            type: 'publishDeal',
-            dealID: deal.dealID,
-            deletedCheck: false,
-          });
+          if (deal.startDate <= Date.now()) {
+            deal.dealStatus = statuses['Published'];
+            this._scheduleService.scheduleDeal({
+              scheduleDate: new Date(deal.endDate),
+              status: 0,
+              type: 'expireDeal',
+              dealID: deal.dealID,
+              deletedCheck: false,
+            });
+          } else {
+            this._scheduleService.scheduleDeal({
+              scheduleDate: new Date(deal.startDate),
+              status: 0,
+              type: 'publishDeal',
+              dealID: deal.dealID,
+              deletedCheck: false,
+            });
+          }
+          if (deal.endDate <= Date.now()) {
+            deal.dealStatus = statuses['Expired'];
+          }
         }
       }
 
@@ -4149,12 +4163,13 @@ export class DealService implements OnModuleInit {
       ) {
         throw new Error('Insufficent Quantity of deal present!');
       }
-
+      debugger;
       let dealVouchers = 0,
         soldVouchers = 0;
       deal.subDeals = deal.subDeals.map((element) => {
         if (buyNowDto.subDealID === element['subDealID']) {
           element.soldVouchers += buyNowDto.quantity;
+          element.numberOfVouchers -= buyNowDto.quantity;
         }
 
         dealVouchers += element.numberOfVouchers;
@@ -4164,7 +4179,7 @@ export class DealService implements OnModuleInit {
       });
 
       deal.soldVouchers = soldVouchers;
-      deal.availableVouchers = dealVouchers - soldVouchers;
+      deal.availableVouchers -= buyNowDto.quantity;
 
       let imageURL = {};
 
