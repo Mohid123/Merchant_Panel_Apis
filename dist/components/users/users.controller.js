@@ -317,7 +317,7 @@ __decorate([
     (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.UseGuards)(jwt_manager_auth_guard_1.JwtManagerAuthGuard),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
-    (0, common_1.Post)('getCustomerByID/:customerID'),
+    (0, common_1.Get)('getCustomerByID/:customerID'),
     __param(0, (0, common_1.Param)('customerID')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
