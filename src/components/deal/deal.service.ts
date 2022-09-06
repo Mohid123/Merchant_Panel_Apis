@@ -404,13 +404,27 @@ export class DealService implements OnModuleInit {
         }
 
         if (updateDealDto.status == 'Scheduled') {
-          this._scheduleService.scheduleDeal({
-            scheduleDate: new Date(deal.startDate),
-            status: 0,
-            type: 'publishDeal',
-            dealID: deal.dealID,
-            deletedCheck: false,
-          });
+          if (deal.startDate <= Date.now()) {
+            deal.dealStatus = statuses['Published'];
+            this._scheduleService.scheduleDeal({
+              scheduleDate: new Date(deal.endDate),
+              status: 0,
+              type: 'expireDeal',
+              dealID: deal.dealID,
+              deletedCheck: false,
+            });
+          } else {
+            this._scheduleService.scheduleDeal({
+              scheduleDate: new Date(deal.startDate),
+              status: 0,
+              type: 'publishDeal',
+              dealID: deal.dealID,
+              deletedCheck: false,
+            });
+          }
+          if (deal.endDate <= Date.now()) {
+            deal.dealStatus = statuses['Expired'];
+          }
         }
       }
 
@@ -614,8 +628,8 @@ export class DealService implements OnModuleInit {
                 },
                 {
                   $addFields: {
-                    id: '$_id'
-                  }
+                    id: '$_id',
+                  },
                 },
                 {
                   $project: {
@@ -624,14 +638,14 @@ export class DealService implements OnModuleInit {
                     totalReviews: 1,
                     ratingsAverage: 1,
                     legalName: 1,
-                    city: 1
-                  }
-                }
+                    city: 1,
+                  },
+                },
               ],
             },
           },
           {
-            $unwind: '$merchantDetails'
+            $unwind: '$merchantDetails',
           },
           {
             $addFields: {
@@ -1313,8 +1327,8 @@ export class DealService implements OnModuleInit {
                 },
                 {
                   $addFields: {
-                    id: '$_id'
-                  }
+                    id: '$_id',
+                  },
                 },
                 {
                   $project: {
@@ -1323,14 +1337,14 @@ export class DealService implements OnModuleInit {
                     totalReviews: 1,
                     ratingsAverage: 1,
                     legalName: 1,
-                    city: 1
-                  }
-                }
+                    city: 1,
+                  },
+                },
               ],
             },
           },
           {
-            $unwind: '$merchantDetails'
+            $unwind: '$merchantDetails',
           },
           {
             $addFields: {
@@ -1529,8 +1543,8 @@ export class DealService implements OnModuleInit {
                 },
                 {
                   $addFields: {
-                    id: '$_id'
-                  }
+                    id: '$_id',
+                  },
                 },
                 {
                   $project: {
@@ -1539,14 +1553,14 @@ export class DealService implements OnModuleInit {
                     totalReviews: 1,
                     ratingsAverage: 1,
                     legalName: 1,
-                    city: 1
-                  }
-                }
+                    city: 1,
+                  },
+                },
               ],
             },
           },
           {
-            $unwind: '$merchantDetails'
+            $unwind: '$merchantDetails',
           },
           {
             $addFields: {
@@ -1716,8 +1730,8 @@ export class DealService implements OnModuleInit {
                   },
                   {
                     $addFields: {
-                      id: '$_id'
-                    }
+                      id: '$_id',
+                    },
                   },
                   {
                     $project: {
@@ -1726,14 +1740,14 @@ export class DealService implements OnModuleInit {
                       totalReviews: 1,
                       ratingsAverage: 1,
                       legalName: 1,
-                      city: 1
-                    }
-                  }
+                      city: 1,
+                    },
+                  },
                 ],
               },
             },
             {
-              $unwind: '$merchantDetails'
+              $unwind: '$merchantDetails',
             },
             {
               $addFields: {
@@ -1916,8 +1930,8 @@ export class DealService implements OnModuleInit {
                 },
                 {
                   $addFields: {
-                    id: '$_id'
-                  }
+                    id: '$_id',
+                  },
                 },
                 {
                   $project: {
@@ -1926,14 +1940,14 @@ export class DealService implements OnModuleInit {
                     totalReviews: 1,
                     ratingsAverage: 1,
                     legalName: 1,
-                    city: 1
-                  }
-                }
+                    city: 1,
+                  },
+                },
               ],
             },
           },
           {
-            $unwind: '$merchantDetails'
+            $unwind: '$merchantDetails',
           },
           {
             $addFields: {
@@ -2124,8 +2138,8 @@ export class DealService implements OnModuleInit {
                   },
                   {
                     $addFields: {
-                      id: '$_id'
-                    }
+                      id: '$_id',
+                    },
                   },
                   {
                     $project: {
@@ -2134,14 +2148,14 @@ export class DealService implements OnModuleInit {
                       totalReviews: 1,
                       ratingsAverage: 1,
                       legalName: 1,
-                      city: 1
-                    }
-                  }
+                      city: 1,
+                    },
+                  },
                 ],
               },
             },
             {
-              $unwind: '$merchantDetails'
+              $unwind: '$merchantDetails',
             },
             {
               $addFields: {
@@ -2308,8 +2322,8 @@ export class DealService implements OnModuleInit {
                 },
                 {
                   $addFields: {
-                    id: '$_id'
-                  }
+                    id: '$_id',
+                  },
                 },
                 {
                   $project: {
@@ -2318,14 +2332,14 @@ export class DealService implements OnModuleInit {
                     totalReviews: 1,
                     ratingsAverage: 1,
                     legalName: 1,
-                    city: 1
-                  }
-                }
+                    city: 1,
+                  },
+                },
               ],
             },
           },
           {
-            $unwind: '$merchantDetails'
+            $unwind: '$merchantDetails',
           },
           {
             $addFields: {
@@ -2487,8 +2501,8 @@ export class DealService implements OnModuleInit {
                 },
                 {
                   $addFields: {
-                    id: '$_id'
-                  }
+                    id: '$_id',
+                  },
                 },
                 {
                   $project: {
@@ -2497,14 +2511,14 @@ export class DealService implements OnModuleInit {
                     totalReviews: 1,
                     ratingsAverage: 1,
                     legalName: 1,
-                    city: 1
-                  }
-                }
+                    city: 1,
+                  },
+                },
               ],
             },
           },
           {
-            $unwind: '$merchantDetails'
+            $unwind: '$merchantDetails',
           },
           {
             $addFields: {
@@ -2689,8 +2703,8 @@ export class DealService implements OnModuleInit {
                   },
                   {
                     $addFields: {
-                      id: '$_id'
-                    }
+                      id: '$_id',
+                    },
                   },
                   {
                     $project: {
@@ -2699,14 +2713,14 @@ export class DealService implements OnModuleInit {
                       totalReviews: 1,
                       ratingsAverage: 1,
                       legalName: 1,
-                      city: 1
-                    }
-                  }
+                      city: 1,
+                    },
+                  },
                 ],
               },
             },
             {
-              $unwind: '$merchantDetails'
+              $unwind: '$merchantDetails',
             },
             {
               $addFields: {
@@ -2956,8 +2970,8 @@ export class DealService implements OnModuleInit {
                 },
                 {
                   $addFields: {
-                    id: '$_id'
-                  }
+                    id: '$_id',
+                  },
                 },
                 {
                   $project: {
@@ -2966,14 +2980,14 @@ export class DealService implements OnModuleInit {
                     totalReviews: 1,
                     ratingsAverage: 1,
                     legalName: 1,
-                    city: 1
-                  }
-                }
+                    city: 1,
+                  },
+                },
               ],
             },
           },
           {
-            $unwind: '$merchantDetails'
+            $unwind: '$merchantDetails',
           },
           {
             $addFields: {
@@ -3230,8 +3244,8 @@ export class DealService implements OnModuleInit {
                 },
                 {
                   $addFields: {
-                    id: '$_id'
-                  }
+                    id: '$_id',
+                  },
                 },
                 {
                   $project: {
@@ -3240,14 +3254,14 @@ export class DealService implements OnModuleInit {
                     totalReviews: 1,
                     ratingsAverage: 1,
                     legalName: 1,
-                    city: 1
-                  }
-                }
+                    city: 1,
+                  },
+                },
               ],
             },
           },
           {
-            $unwind: '$merchantDetails'
+            $unwind: '$merchantDetails',
           },
           {
             $addFields: {
@@ -3424,8 +3438,8 @@ export class DealService implements OnModuleInit {
                 },
                 {
                   $addFields: {
-                    id: '$_id'
-                  }
+                    id: '$_id',
+                  },
                 },
                 {
                   $project: {
@@ -3434,14 +3448,14 @@ export class DealService implements OnModuleInit {
                     totalReviews: 1,
                     ratingsAverage: 1,
                     legalName: 1,
-                    city: 1
-                  }
-                }
+                    city: 1,
+                  },
+                },
               ],
             },
           },
           {
-            $unwind: '$merchantDetails'
+            $unwind: '$merchantDetails',
           },
           {
             $addFields: {
@@ -3607,8 +3621,8 @@ export class DealService implements OnModuleInit {
                 },
                 {
                   $addFields: {
-                    id: '$_id'
-                  }
+                    id: '$_id',
+                  },
                 },
                 {
                   $project: {
@@ -3617,14 +3631,14 @@ export class DealService implements OnModuleInit {
                     totalReviews: 1,
                     ratingsAverage: 1,
                     legalName: 1,
-                    city: 1
-                  }
-                }
+                    city: 1,
+                  },
+                },
               ],
             },
           },
           {
-            $unwind: '$merchantDetails'
+            $unwind: '$merchantDetails',
           },
           {
             $addFields: {
@@ -3793,8 +3807,8 @@ export class DealService implements OnModuleInit {
                 },
                 {
                   $addFields: {
-                    id: '$_id'
-                  }
+                    id: '$_id',
+                  },
                 },
                 {
                   $project: {
@@ -3803,14 +3817,14 @@ export class DealService implements OnModuleInit {
                     totalReviews: 1,
                     ratingsAverage: 1,
                     legalName: 1,
-                    city: 1
-                  }
-                }
+                    city: 1,
+                  },
+                },
               ],
             },
           },
           {
-            $unwind: '$merchantDetails'
+            $unwind: '$merchantDetails',
           },
           {
             $addFields: {
@@ -3880,7 +3894,7 @@ export class DealService implements OnModuleInit {
           ...el.recentlyViewed,
           isFavourite: el.isFavourite,
           viewedTime: el.viewedTime,
-          merchantDetails: el.merchantDetails
+          merchantDetails: el.merchantDetails,
         };
       });
 

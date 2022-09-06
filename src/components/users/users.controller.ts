@@ -250,7 +250,7 @@ export class UsersController {
   @ApiBearerAuth()
   @UseGuards(JwtManagerAuthGuard)
   @UseGuards(JwtAuthGuard)
-  @Post('getCustomerByID/:customerID')
+  @Get('getCustomerByID/:customerID')
   getCustomerByID(@Param('customerID') customerID: string) {
     return this._usersService.getCustomerByID(customerID);
   }
