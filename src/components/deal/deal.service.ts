@@ -4163,12 +4163,13 @@ export class DealService implements OnModuleInit {
       ) {
         throw new Error('Insufficent Quantity of deal present!');
       }
-
+      debugger
       let dealVouchers = 0,
         soldVouchers = 0;
       deal.subDeals = deal.subDeals.map((element) => {
         if (buyNowDto.subDealID === element['subDealID']) {
           element.soldVouchers += buyNowDto.quantity;
+          element.numberOfVouchers -= buyNowDto.quantity;
         }
 
         dealVouchers += element.numberOfVouchers;
@@ -4178,7 +4179,7 @@ export class DealService implements OnModuleInit {
       });
 
       deal.soldVouchers = soldVouchers;
-      deal.availableVouchers = dealVouchers - soldVouchers;
+      deal.availableVouchers -= buyNowDto.quantity;
 
       let imageURL = {};
 
