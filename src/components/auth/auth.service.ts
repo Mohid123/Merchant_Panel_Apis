@@ -230,9 +230,9 @@ export class AuthService {
     let newUser = await new this._usersService(signupUserDto).save();
     newUser = JSON.parse(JSON.stringify(newUser));
 
-    // const res = await axios.get(
-    //   `https://www.zohoapis.eu/crm/v2/functions/createcustomer/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&customerid=${newUser.userID}`,
-    // );
+    const res = await axios.get(
+      `https://www.zohoapis.eu/crm/v2/functions/createcustomer/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&customerid=${newUser.userID}`,
+    );
 
     const token = this.generateToken(newUser);
 
