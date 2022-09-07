@@ -77,6 +77,13 @@ export class DealController {
     return this.dealService.getDeal(id, req);
   }
 
+  @Get('getDealForMerchantPanel/:dealMongoID')
+  getDealForMerchantPanel (
+    @Param('dealMongoID') dealMongoID: string
+  ) {
+    return this.dealService.getDealForMerchantPanel(dealMongoID)
+  }
+
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   // @ApiQuery({ name: 'averageRating', enum: RATINGENUM, required: false })

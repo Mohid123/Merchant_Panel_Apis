@@ -680,6 +680,40 @@ export class DealService implements OnModuleInit {
     }
   }
 
+  async getDealForMerchantPanel (dealMongoID) {
+    try {
+
+      let deal = await this.dealModel
+        .aggregate([
+          {
+            $match: {
+              _id: dealMongoID,
+              deletedCheck: false,
+            },
+          },
+          {
+            $addFields: {
+              id: '$_id',
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+            },
+          },
+        ])
+        .then((items) => items[0]);
+
+      if (!deal) {
+        throw new HttpException('Deal not found!', HttpStatus.BAD_REQUEST);
+      }
+
+      return deal;
+    } catch (err) {
+      throw new HttpException(err, HttpStatus.BAD_REQUEST);
+    }
+  }
+
   async getDealReviews(offset, limit, rating, id, createdAt, totalRating) {
     try {
       offset = parseInt(offset) < 0 ? 0 : offset;
