@@ -3097,6 +3097,7 @@ export class DealService implements OnModuleInit {
   async getDealsByCategories(
     categoryName,
     subCategoryName,
+    province,
     fromPrice,
     toPrice,
     reviewRating,
@@ -3194,16 +3195,24 @@ export class DealService implements OnModuleInit {
         };
       }
 
-      const totalCount = await this.dealModel.countDocuments({
-        deletedCheck: false,
-        dealStatus: DEALSTATUS.published,
-      });
+      let locationFilter = {};
 
-      const filteredCount = await this.dealModel.countDocuments({
-        deletedCheck: false,
-        dealStatus: DEALSTATUS.published,
-        ...matchFilter,
-      });
+      if (province) {
+        locationFilter = {
+          ...locationFilter,
+          province: province,
+        };
+      }
+
+      if (Object.keys(sort).length === 0 && sort.constructor === Object) {
+        sort = {
+          createdAt: -1,
+        };
+      }
+
+      console.log(sort);
+      console.log(matchFilter);
+      console.log(locationFilter);
 
       const deals = await this.dealModel
         .aggregate([
@@ -3289,6 +3298,7 @@ export class DealService implements OnModuleInit {
                     ratingsAverage: 1,
                     legalName: 1,
                     city: 1,
+                    province: 1
                   },
                 },
               ],
@@ -3300,6 +3310,7 @@ export class DealService implements OnModuleInit {
           {
             $addFields: {
               id: '$_id',
+              province: '$merchantDetails.province',
               mediaUrl: {
                 $slice: [
                   {
@@ -3324,6 +3335,11 @@ export class DealService implements OnModuleInit {
                 ],
               },
             },
+          },
+          {
+            $match: {
+              ...locationFilter
+            }
           },
           {
             $project: {
@@ -3358,9 +3374,15 @@ export class DealService implements OnModuleInit {
         .skip(parseInt(offset))
         .limit(parseInt(limit));
 
+        const totalCount = await this.dealModel.countDocuments({
+          deletedCheck: false,
+          dealStatus: DEALSTATUS.published,
+          ...matchFilter,
+          ...locationFilter
+        });
+
       return {
         totalDeals: totalCount,
-        filteredDeals: filteredCount,
         data: deals,
       };
     } catch (err) {
