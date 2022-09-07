@@ -77,6 +77,9 @@ export class DealController {
     return this.dealService.getDeal(id, req);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtMerchantAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Get('getDealForMerchantPanel/:dealMongoID')
   getDealForMerchantPanel (
     @Param('dealMongoID') dealMongoID: string
