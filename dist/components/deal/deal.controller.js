@@ -94,8 +94,8 @@ let DealController = class DealController {
     searchDeals(header = '', categoryName, subCategoryName, fromPrice, toPrice, reviewRating, offset = 0, limit = 10, req) {
         return this.dealService.searchDeals(header, categoryName, subCategoryName, fromPrice, toPrice, reviewRating, offset, limit, req);
     }
-    getDealsByCategories(categoryName, subCategoryName, fromPrice, toPrice, reviewRating, price, ratingSort, createdAt, offset = 0, limit = 10, req) {
-        return this.dealService.getDealsByCategories(categoryName, subCategoryName, fromPrice, toPrice, reviewRating, price, ratingSort, createdAt, offset, limit, req);
+    getDealsByCategories(categoryName, subCategoryName, province, fromPrice, toPrice, reviewRating, price, ratingSort, createdAt, offset = 0, limit = 10, req) {
+        return this.dealService.getDealsByCategories(categoryName, subCategoryName, province, fromPrice, toPrice, reviewRating, price, ratingSort, createdAt, offset, limit, req);
     }
     getTrendingDeals(offset = 0, limit = 10, req) {
         return this.dealService.getTrendingDeals(offset, limit, req);
@@ -376,8 +376,9 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], DealController.prototype, "searchDeals", null);
 __decorate([
-    (0, swagger_1.ApiQuery)({ name: 'categoryName', required: false }),
-    (0, swagger_1.ApiQuery)({ name: 'subCategoryName', required: false }),
+    (0, swagger_1.ApiQuery)({ name: 'categoryName', required: true }),
+    (0, swagger_1.ApiQuery)({ name: 'subCategoryName', required: true }),
+    (0, swagger_1.ApiQuery)({ name: 'province', required: false }),
     (0, swagger_1.ApiQuery)({ name: 'fromPrice', required: false }),
     (0, swagger_1.ApiQuery)({ name: 'toPrice', required: false }),
     (0, swagger_1.ApiQuery)({ name: 'reviewRating', required: false }),
@@ -389,17 +390,18 @@ __decorate([
     (0, common_1.Get)('getDealsByCategories'),
     __param(0, (0, common_1.Query)('categoryName')),
     __param(1, (0, common_1.Query)('subCategoryName')),
-    __param(2, (0, common_1.Query)('fromPrice')),
-    __param(3, (0, common_1.Query)('toPrice')),
-    __param(4, (0, common_1.Query)('reviewRating')),
-    __param(5, (0, common_1.Query)('price')),
-    __param(6, (0, common_1.Query)('ratingSort')),
-    __param(7, (0, common_1.Query)('createdAt')),
-    __param(8, (0, common_1.Query)('offset')),
-    __param(9, (0, common_1.Query)('limit')),
-    __param(10, (0, common_1.Req)()),
+    __param(2, (0, common_1.Query)('province')),
+    __param(3, (0, common_1.Query)('fromPrice')),
+    __param(4, (0, common_1.Query)('toPrice')),
+    __param(5, (0, common_1.Query)('reviewRating')),
+    __param(6, (0, common_1.Query)('price')),
+    __param(7, (0, common_1.Query)('ratingSort')),
+    __param(8, (0, common_1.Query)('createdAt')),
+    __param(9, (0, common_1.Query)('offset')),
+    __param(10, (0, common_1.Query)('limit')),
+    __param(11, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, Number, Number, Number, String, String, String, Number, Number, Object]),
+    __metadata("design:paramtypes", [String, String, String, Number, Number, Number, String, String, String, Number, Number, Object]),
     __metadata("design:returntype", void 0)
 ], DealController.prototype, "getDealsByCategories", null);
 __decorate([

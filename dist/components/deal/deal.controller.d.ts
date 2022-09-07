@@ -90,9 +90,8 @@ export declare class DealController {
         filteredDeals: number;
         data: any[];
     }>;
-    getDealsByCategories(categoryName: string, subCategoryName: string, fromPrice: number, toPrice: number, reviewRating: number, price: SORT, ratingSort: SORT, createdAt: SORT, offset: number, limit: number, req: any): Promise<{
+    getDealsByCategories(categoryName: string, subCategoryName: string, province: string, fromPrice: number, toPrice: number, reviewRating: number, price: SORT, ratingSort: SORT, createdAt: SORT, offset: number, limit: number, req: any): Promise<{
         totalDeals: number;
-        filteredDeals: number;
         data: any[];
     }>;
     getTrendingDeals(offset: number, limit: number, req: any): Promise<{

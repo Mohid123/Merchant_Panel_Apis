@@ -2683,7 +2683,7 @@ let DealService = class DealService {
             throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
         }
     }
-    async getDealsByCategories(categoryName, subCategoryName, fromPrice, toPrice, reviewRating, price, ratingSort, createdAt, offset, limit, req) {
+    async getDealsByCategories(categoryName, subCategoryName, province, fromPrice, toPrice, reviewRating, price, ratingSort, createdAt, offset, limit, req) {
         var _a;
         try {
             offset = parseInt(offset) < 0 ? 0 : offset;
@@ -2735,11 +2735,18 @@ let DealService = class DealService {
                 console.log('createdAt');
                 sort = Object.assign(Object.assign({}, sort), { createdAt: sortTime });
             }
-            const totalCount = await this.dealModel.countDocuments({
-                deletedCheck: false,
-                dealStatus: dealstatus_enum_1.DEALSTATUS.published,
-            });
-            const filteredCount = await this.dealModel.countDocuments(Object.assign({ deletedCheck: false, dealStatus: dealstatus_enum_1.DEALSTATUS.published }, matchFilter));
+            let locationFilter = {};
+            if (province) {
+                locationFilter = Object.assign(Object.assign({}, locationFilter), { province: province });
+            }
+            if (Object.keys(sort).length === 0 && sort.constructor === Object) {
+                sort = {
+                    createdAt: -1,
+                };
+            }
+            console.log(sort);
+            console.log(matchFilter);
+            console.log(locationFilter);
             const deals = await this.dealModel
                 .aggregate([
                 {
@@ -2820,6 +2827,7 @@ let DealService = class DealService {
                                     ratingsAverage: 1,
                                     legalName: 1,
                                     city: 1,
+                                    province: 1
                                 },
                             },
                         ],
@@ -2831,6 +2839,7 @@ let DealService = class DealService {
                 {
                     $addFields: {
                         id: '$_id',
+                        province: '$merchantDetails.province',
                         mediaUrl: {
                             $slice: [
                                 {
@@ -2855,6 +2864,9 @@ let DealService = class DealService {
                             ],
                         },
                     },
+                },
+                {
+                    $match: Object.assign({}, locationFilter)
                 },
                 {
                     $project: {
@@ -2888,9 +2900,9 @@ let DealService = class DealService {
             ])
                 .skip(parseInt(offset))
                 .limit(parseInt(limit));
+            const totalCount = await this.dealModel.countDocuments(Object.assign(Object.assign({ deletedCheck: false, dealStatus: dealstatus_enum_1.DEALSTATUS.published }, matchFilter), locationFilter));
             return {
                 totalDeals: totalCount,
-                filteredDeals: filteredCount,
                 data: deals,
             };
         }
