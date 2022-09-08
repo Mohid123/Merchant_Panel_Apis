@@ -330,8 +330,9 @@ export class DealController {
     );
   }
 
-  @ApiQuery({ name: 'categoryName', required: false })
-  @ApiQuery({ name: 'subCategoryName', required: false })
+  @ApiQuery({ name: 'categoryName', required: true })
+  @ApiQuery({ name: 'subCategoryName', required: true })
+  @ApiQuery({ name: 'province', required: false })
   @ApiQuery({ name: 'fromPrice', required: false })
   @ApiQuery({ name: 'toPrice', required: false })
   @ApiQuery({ name: 'reviewRating', required: false })
@@ -344,6 +345,7 @@ export class DealController {
   getDealsByCategories(
     @Query('categoryName') categoryName: string,
     @Query('subCategoryName') subCategoryName: string,
+    @Query('province') province: string,
     @Query('fromPrice') fromPrice: number,
     @Query('toPrice') toPrice: number,
     @Query('reviewRating') reviewRating: number,
@@ -357,6 +359,7 @@ export class DealController {
     return this.dealService.getDealsByCategories(
       categoryName,
       subCategoryName,
+      province,
       fromPrice,
       toPrice,
       reviewRating,
