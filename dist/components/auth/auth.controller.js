@@ -41,7 +41,7 @@ let AuthController = class AuthController {
         return this._authService.loginCustomer(loginDto);
     }
     signup(signupDto) {
-        return this._authService.signupCustomer(signupDto);
+        return this._authService.signup(signupDto);
     }
     signupUser(signupUserDto) {
         return this._authService.signupCustomer(signupUserDto);

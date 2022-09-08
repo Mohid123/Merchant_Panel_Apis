@@ -25,11 +25,8 @@ export declare class AuthController {
         };
         token: string;
     }>;
-    signup(signupDto: SignUpDTO): Promise<{
-        newUser: import("mongoose").Document<unknown, any, import("../../interface/user/users.interface").UsersInterface> & import("../../interface/user/users.interface").UsersInterface & {
-            _id: string;
-        };
-        token: string;
+    signup(signupDto: SignUpDTO): Promise<import("mongoose").Document<unknown, any, import("../../interface/user/users.interface").UsersInterface> & import("../../interface/user/users.interface").UsersInterface & {
+        _id: string;
     }>;
     signupUser(signupUserDto: SignUpCustomerDTO): Promise<{
         newUser: import("mongoose").Document<unknown, any, import("../../interface/user/users.interface").UsersInterface> & import("../../interface/user/users.interface").UsersInterface & {
