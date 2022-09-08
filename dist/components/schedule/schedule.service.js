@@ -18,6 +18,7 @@ const mongoose_1 = require("@nestjs/mongoose");
 const mongoose_2 = require("mongoose");
 const voucherstatus_enum_1 = require("../../enum/voucher/voucherstatus.enum");
 const nodeSchedule = require('node-schedule');
+const axios_1 = require("axios");
 let ScheduleService = class ScheduleService {
     constructor(_scheduleModel, _dealModel, _voucherModel) {
         this._scheduleModel = _scheduleModel;
@@ -76,6 +77,7 @@ let ScheduleService = class ScheduleService {
             }
             if (status == 'Published') {
                 await this._dealModel.updateOne({ dealID: job.dealID }, { dealStatus: status });
+                await axios_1.default.get(`https://www.zohoapis.eu/crm/v2/functions/createdraftdeal/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&dealid=${job.dealID}`);
                 const deal = await this._dealModel.findOne({ dealID: job.dealID });
                 await new this._scheduleModel({
                     scheduleDate: new Date(deal.endDate),
@@ -88,6 +90,7 @@ let ScheduleService = class ScheduleService {
             }
             else if (status == 'Expired') {
                 await this._dealModel.updateOne({ dealID: job.dealID }, { dealStatus: status });
+                await axios_1.default.get(`https://www.zohoapis.eu/crm/v2/functions/createdraftdeal/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&dealid=${job.dealID}`);
                 await this._scheduleModel.updateOne({ _id: job.id }, { status: -1 });
             }
             console.log(`Deal ${status}...`);
@@ -97,6 +100,7 @@ let ScheduleService = class ScheduleService {
         nodeSchedule.scheduleJob(id, scheduleDate, async () => {
             if (status == 'Published') {
                 await this._dealModel.updateOne({ dealID: dealID }, { dealStatus: status });
+                await axios_1.default.get(`https://www.zohoapis.eu/crm/v2/functions/createdraftdeal/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&dealid=${dealID}`);
                 const deal = await this._dealModel.findOne({ dealID: dealID });
                 await this.scheduleDeal({
                     scheduleDate: new Date(deal.endDate),
@@ -109,6 +113,7 @@ let ScheduleService = class ScheduleService {
             }
             else if (status == 'Expired' && type == 'expireDeal') {
                 await this._dealModel.updateOne({ dealID: dealID }, { dealStatus: status });
+                await axios_1.default.get(`https://www.zohoapis.eu/crm/v2/functions/createdraftdeal/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&dealid=${dealID}`);
                 await this._scheduleModel.updateOne({ _id: id }, { status: -1 });
             }
             else if (status == 'Expired' && type == 'expireVoucher') {

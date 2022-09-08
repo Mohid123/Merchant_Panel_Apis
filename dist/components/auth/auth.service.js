@@ -91,7 +91,7 @@ let AuthService = class AuthService {
         if (!user) {
             throw new common_1.UnauthorizedException('Incorrect email!');
         }
-        if (!(user.status == userstatus_enum_1.USERSTATUS.approved && user.role == 'Merchant')) {
+        if (!(user.status == userstatus_enum_1.USERSTATUS.approved && (user.role == 'Merchant' || user.role == 'Admin'))) {
             throw new common_1.NotFoundException('Merchant Not Found!');
         }
         const isValidCredentials = await bcrypt.compare(loginDto.password, user.password);
