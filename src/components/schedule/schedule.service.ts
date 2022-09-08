@@ -12,6 +12,7 @@ import { DealInterface } from 'src/interface/deal/deal.interface';
 import { Schedule } from 'src/interface/schedule/schedule.interface';
 import { VoucherInterface } from 'src/interface/vouchers/vouchers.interface';
 const nodeSchedule = require('node-schedule');
+import axios from 'axios';
 
 @Injectable()
 export class ScheduleService {
@@ -100,6 +101,10 @@ export class ScheduleService {
           { dealStatus: status },
         );
 
+        await axios.get(
+          `https://www.zohoapis.eu/crm/v2/functions/createdraftdeal/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&dealid=${job.dealID}`,
+        );
+
         const deal = await this._dealModel.findOne({ dealID: job.dealID });
 
         await new this._scheduleModel({
@@ -117,6 +122,10 @@ export class ScheduleService {
           { dealStatus: status },
         );
 
+        await axios.get(
+          `https://www.zohoapis.eu/crm/v2/functions/createdraftdeal/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&dealid=${job.dealID}`,
+        );
+
         await this._scheduleModel.updateOne({ _id: job.id }, { status: -1 });
       }
 
@@ -130,6 +139,10 @@ export class ScheduleService {
         await this._dealModel.updateOne(
           { dealID: dealID },
           { dealStatus: status },
+        );
+
+        await axios.get(
+          `https://www.zohoapis.eu/crm/v2/functions/createdraftdeal/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&dealid=${dealID}`,
         );
 
         const deal = await this._dealModel.findOne({ dealID: dealID });
@@ -148,6 +161,11 @@ export class ScheduleService {
           { dealID: dealID },
           { dealStatus: status },
         );
+
+        await axios.get(
+          `https://www.zohoapis.eu/crm/v2/functions/createdraftdeal/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&dealid=${dealID}`,
+        );
+
         await this._scheduleModel.updateOne({ _id: id }, { status: -1 });
       } else if (status == 'Expired' && type == 'expireVoucher') {
         await this._voucherModel.updateOne(
