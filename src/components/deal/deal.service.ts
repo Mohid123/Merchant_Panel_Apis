@@ -39,6 +39,7 @@ import { ViewsInterface } from 'src/interface/views/views.interface';
 import { PreComputedDealInteface } from 'src/interface/deal/preComputedDeal.interface';
 import { Cache } from 'cache-manager';
 import { ReviewInterface } from 'src/interface/review/review.interface';
+import { AFFILIATEPAYMENTSTATUS } from 'src/enum/affiliate/affiliate.enum';
 let transporter;
 
 @Injectable()
@@ -4193,6 +4194,10 @@ export class DealService implements OnModuleInit {
     try {
       const deal = await this.dealModel.findOne({ dealID: buyNowDto.dealID });
 
+      if (!deal) {
+        throw new Error ('Deal ID not found!')
+      }
+
       const merchant = await this._userModel.findOne({
         userID: deal.merchantID,
         deletedCheck: false,
@@ -4281,13 +4286,19 @@ export class DealService implements OnModuleInit {
         dealHeader: deal.dealHeader,
         dealID: deal.dealID,
         dealMongoID: deal._id,
+        // subDealHeader: subDeal.title,
         subDealID: subDeal.subDealID,
         subDealMongoID: subDeal._id,
         amount: subDeal.dealPrice,
         status: VOUCHERSTATUSENUM.purchased,
         merchantID: deal.merchantID,
         merchantMongoID: merchant.id,
+        // affiliateName: affiliate.firstName + ' ' + affiliate.lastName,
         affiliateID: buyNowDto.affiliateID,
+        affiliatePercentage: merchant.platformPercentage,
+        // affiliateFee: ,
+        // affiliatePaymentStatus: AFFILIATEPAYMENTSTATUS.pending,
+        // platformPercentage: merchant.platformPercentage,
         customerID: customer.userID,
         affiliateMongoID: affiliate.id,
         customerMongoID: customer.id,
