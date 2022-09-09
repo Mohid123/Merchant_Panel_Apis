@@ -32,6 +32,13 @@ export class VouchersController {
     return this.voucherService.createVoucher(voucherDto);
   }
 
+  @Get('getVoucherByID/:voucherID')
+  getVoucherByID (
+    @Param('voucherID') voucherID: string
+  ) {
+    return this.voucherService.getVoucherByID(voucherID)
+  }
+
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @ApiQuery({ name: 'deal', enum: SORT, required: false })
