@@ -24,6 +24,8 @@ import { JwtManagerAuthGuard } from '../auth/jwt-manager-auth.guard';
 import { UpdateDealForCRMDTO } from 'src/dto/deal/updateDealForCrm.dto';
 import { BuyNowDTO } from 'src/dto/deal/buy-now.dto';
 import { OptionalJwtAuthGuard } from '../auth/optional-auth.guard';
+import { SORTINGENUM } from 'src/enum/sort/categoryapisorting.enum';
+import { FilterCategoriesApiDto } from 'src/dto/deal/filtercategoriesapi.dto';
 
 @ApiTags('Deal')
 @Controller('deal')
@@ -341,43 +343,36 @@ export class DealController {
   }
 
   @ApiQuery({ name: 'categoryName', required: true })
-  @ApiQuery({ name: 'subCategoryName', required: true })
-  @ApiQuery({ name: 'province', required: false })
+  @ApiQuery({ name: 'subCategoryName', required: false })
   @ApiQuery({ name: 'fromPrice', required: false })
   @ApiQuery({ name: 'toPrice', required: false })
   @ApiQuery({ name: 'reviewRating', required: false })
-  @ApiQuery({ name: 'price', enum: SORT, required: false })
-  @ApiQuery({ name: 'ratingSort', enum: SORT, required: false })
-  @ApiQuery({ name: 'createdAt', enum: SORT, required: false })
+  @ApiQuery({ name: 'sorting', enum: SORTINGENUM, required: false })
   @UseGuards(OptionalJwtAuthGuard)
   @ApiBearerAuth()
-  @Get('getDealsByCategories')
+  @Post('getDealsByCategories')
   getDealsByCategories(
     @Query('categoryName') categoryName: string,
     @Query('subCategoryName') subCategoryName: string,
-    @Query('province') province: string,
     @Query('fromPrice') fromPrice: number,
     @Query('toPrice') toPrice: number,
     @Query('reviewRating') reviewRating: number,
-    @Query('price') price: SORT,
-    @Query('ratingSort') ratingSort: SORT,
-    @Query('createdAt') createdAt: SORT,
+    @Query('sorting') sorting: SORT,
     @Query('offset') offset: number = 0,
     @Query('limit') limit: number = 10,
+    @Body() filterCategoriesApiDto: FilterCategoriesApiDto,
     @Req() req
   ) {
     return this.dealService.getDealsByCategories(
       categoryName,
       subCategoryName,
-      province,
       fromPrice,
       toPrice,
       reviewRating,
-      price,
-      ratingSort,
-      createdAt,
+      sorting,
       offset,
       limit,
+      filterCategoriesApiDto,
       req
     );
   }
