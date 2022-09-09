@@ -15,7 +15,7 @@ let MediaUploadService = class MediaUploadService {
     async getDominantColor(imageUrl) {
         return await (0, utils_1.getDominantColor)(imageUrl);
     }
-    async compressImageTo300(file) {
+    async compressImageTo300(file, folder = 'compressed/') {
         const img = await jimp.read(file['path']);
         const compressionSizes = [
             {
@@ -42,9 +42,9 @@ let MediaUploadService = class MediaUploadService {
                 file.size >= el.width * 1000) {
                 const heightRatio = height / width;
                 const widthRatio = width / height;
-                file['path'] = file['path'].replace(`compressed`, `${el.width}`);
+                file['path'] = file['path'].replace(`${folder}${file['filename']}`, `${el.width}/${file['filename']}`);
                 img.resize(el.width * widthRatio, jimp.AUTO).write(file['path']);
-                file['path'] = file['path'].replace(`${el.width}`, `compressed`);
+                file['path'] = file['path'].replace(`${el.width}/${file['filename']}`, `${folder}${file['filename']}`);
             }
         });
     }
