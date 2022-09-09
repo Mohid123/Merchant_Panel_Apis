@@ -12,6 +12,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { MultipleVouchersDto } from 'src/dto/vouchers/multiplevouchers.dto';
 import { RedeemVoucherDto } from 'src/dto/vouchers/redeemVoucher.dto';
+import { UpdateVoucherForCRMDto } from 'src/dto/vouchers/updatevoucherforcrom.dto';
 import { VoucherDto } from '../../dto/vouchers/vouchers.dto';
 import { BILLINGSTATUS } from '../../enum/billing/billingStatus.enum';
 import { SORT } from '../../enum/sort/sort.enum';
@@ -37,6 +38,14 @@ export class VouchersController {
     @Param('voucherID') voucherID: string
   ) {
     return this.voucherService.getVoucherByID(voucherID)
+  }
+
+  @Post('updateVoucherByID/:voucherID')
+  updateVoucherByID (
+    @Param('voucherID') voucherID: string,
+    @Body() updateVoucherForCRMDto: UpdateVoucherForCRMDto
+  ) {
+    return this.voucherService.updateVoucherByID(voucherID ,updateVoucherForCRMDto)
   }
 
   @ApiBearerAuth()

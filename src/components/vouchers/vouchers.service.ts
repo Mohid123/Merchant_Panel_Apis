@@ -68,7 +68,7 @@ export class VouchersService {
 
       voucher = await voucher.save();
 
-      const res = await axios.get(``);
+      // const res = await axios.get(``);
 
       let url = `${process.env.merchantPanelURL}/redeemVoucher/${voucher.id}`;
 
@@ -77,6 +77,23 @@ export class VouchersService {
       await this.voucherModel.findByIdAndUpdate(voucher.id, { redeemQR: url });
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async updateVoucherByID (voucherID ,updateVoucherForCRMDto) {
+    try {
+      const voucher = await this.voucherModel.findOne({voucherID: voucherID});
+      if (!voucher) {
+        throw new Error('Voucher not found!')
+      }
+ 
+      await this.voucherModel.updateOne({voucherID: voucherID}, updateVoucherForCRMDto);
+
+      return {
+        message: 'Voucher has been updated successfully!'
+      }
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -123,19 +140,19 @@ export class VouchersService {
       voucher.affiliateName = voucher.affiliateName;
       voucher.affiliateID = voucher.affiliateID;
       voucher.unitPrice = voucher.amount;
-      voucher.voucherStatus = voucherStatus[voucher.voucherStatus];
+      voucher.voucherStatus = voucher.status;
       voucher.affiliatePercentage = voucher.affiliatePercentage;
       voucher.affiliateFee = voucher.affiliateFee;
-      voucher.affiliatePaymentStatus = affiliateStatus[voucher.affiliatePaymentStatus];
+      voucher.affiliatePaymentStatus = voucher.affiliatePaymentStatus;
       voucher.platformPercentage = voucher.platformPercentage;
       voucher.platformFee = voucher.fee;
       voucher.netEarning = voucher.net;
-      voucher.merchantPaymentStatus = merchantStatus[voucher.merchantPaymentStatus];
+      voucher.merchantPaymentStatus = voucher.merchantPaymentStatus;
       voucher.purchaseDate = voucher.boughtDate;
       voucher.redeemDate = voucher.redeemDate;
-      voucher.expiryDate = voucher.expiryDat;
+      voucher.expiryDate = voucher.expiryDate;
 
-      delete voucher?._id;
+      delete voucher?.id;
       delete voucher?.dealMongoID;
       delete voucher?.subDealMongoID;
       delete voucher?.merchantMongoID;
@@ -148,6 +165,13 @@ export class VouchersService {
       delete voucher?.discountedPercentage;
       delete voucher?.deletedCheck;
       delete voucher?.redeemQR;
+      delete voucher?.amount;
+      delete voucher?.createdAt;
+      delete voucher?.updatedAt;
+      delete voucher?.status;
+      delete voucher?.net;
+      delete voucher?.fee;
+      delete voucher?.boughtDate;
 
       return voucher;
 
@@ -845,35 +869,35 @@ export class VouchersService {
 
       let redeemDate = new Date().getTime();
 
-      const calculatedFee = voucher.dealPrice * 0.05; //five percent goes to affiliate
-      const net = voucher.dealPrice - 0.05 * voucher.dealPrice;
+      // const calculatedFee = voucher.dealPrice * 0.05; //five percent goes to affiliate
+      // const net = voucher.dealPrice - 0.05 * voucher.dealPrice;
 
       await this.voucherModel.updateOne(
         { voucherID: redeemVoucherDto.voucherID },
         {
           status: VOUCHERSTATUSENUM.redeeemed,
           redeemDate: redeemDate,
-          net: net,
-          fee: calculatedFee
+          // net: net,
+          // fee: calculatedFee
         },
       );
 
-      const deal = await this.dealModel.findOne({dealID: voucher.dealID});
+      // const deal = await this.dealModel.findOne({dealID: voucher.dealID});
 
-      const subDeal = deal.subDeals.find(
-        (el) => el.subDealID == voucher.subDealID,
-      );
+      // const subDeal = deal.subDeals.find(
+      //   (el) => el.subDealID == voucher.subDealID,
+      // );
 
-      subDeal.grossEarning += voucher.dealPrice;
-      subDeal.netEarning += net;
+      // subDeal.grossEarning += voucher.dealPrice;
+      // subDeal.netEarning += net;
 
-      await this.dealModel.updateOne({ dealID: voucher.dealID }, deal);
+      // await this.dealModel.updateOne({ dealID: voucher.dealID }, deal);
 
       await this.userModel.updateOne(
         { userID: voucher.merchantID },
         {
           redeemedVouchers: merchant.redeemedVouchers + 1,
-          totalEarnings: merchant.totalEarnings + net,
+          // totalEarnings: merchant.totalEarnings + net,
         },
       );
 

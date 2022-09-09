@@ -591,11 +591,6 @@ export class DealService implements OnModuleInit {
 
   async getDeal(id, req) {
     try {
-      // let deal = await this.dealModel.findOne({
-      //   _id: id,
-      //   deletedCheck: false,
-      //   dealStatus: DEALSTATUS.published,
-      // });
 
       let deal = await this.dealModel
         .aggregate([
@@ -4391,43 +4386,39 @@ export class DealService implements OnModuleInit {
           new Date().getTime() + subDeal?.voucherValidity * 24 * 60 * 60 * 1000;
       }
 
-      // const calculatedFee = subDeal.dealPrice * merchant.platformPercentage; // A percentage of amount that will go to divideals from the entire amount
-      // const netFee = subDeal.dealPrice - merchant.platformPercentage * subDeal.dealPrice; // Amount that will be paid to the merchant by the divideals
-      // const calculatedFeeForAffiliate = calculatedFee * affiliate.platformPercentage; // A percentage of amount that will go to affiliate from the the amount earned by the platform
+      let merchantPercentage = merchant.platformPercentage / 100;
+      affiliate.platformPercentage = merchant.platformPercentage / 100;
 
-      // // deal.subDeals = deal.subDeals.map((element) => {
-      // //   if (buyNowDto.subDealID === element['subDealID']) {
-      // //     element.grossEarning += subDeal.dealPrice;
-      // //     element.netEarning += netFee;
-      // //   }
+      const calculatedFee = subDeal.dealPrice * merchantPercentage; // A percentage of amount that will go to divideals from the entire amount
 
-      // //   return element;
-      // // });
+      const netFee = subDeal.dealPrice - merchantPercentage * subDeal.dealPrice; // Amount that will be paid to the merchant by the divideals
 
-      // subDeal.grossEarning += subDeal.dealPrice;
-      // subDeal.netEarning += netFee;
+      const calculatedFeeForAffiliate = calculatedFee * affiliate.platformPercentage; // A percentage of amount that will go to affiliate from the the amount earned by the platform
+
+      subDeal.grossEarning += subDeal.dealPrice;
+      subDeal.netEarning += netFee;
 
       let voucherDto: any = {
         voucherHeader: subDeal.title,
         dealHeader: deal.dealHeader,
         dealID: deal.dealID,
         dealMongoID: deal._id,
-        // subDealHeader: subDeal.title,
+        subDealHeader: subDeal.title,
         subDealID: subDeal.subDealID,
         subDealMongoID: subDeal._id,
         amount: subDeal.dealPrice,
-        // net: netFee,
-        // fee: calculatedFee,
+        net: netFee,
+        fee: calculatedFee,
         status: VOUCHERSTATUSENUM.purchased,
         merchantID: deal.merchantID,
         merchantMongoID: merchant.id,
-        // merchantPaymentStatus: MERCHANTPAYMENTSTATUS.pending,
-        // affiliateName: affiliate.firstName + ' ' + affiliate.lastName,
+        merchantPaymentStatus: MERCHANTPAYMENTSTATUS.pending,
+        affiliateName: affiliate.firstName + ' ' + affiliate.lastName,
         affiliateID: buyNowDto.affiliateID,
         affiliatePercentage: merchant.platformPercentage,
-        // affiliateFee: calculatedFeeForAffiliate,
-        // affiliatePaymentStatus: AFFILIATEPAYMENTSTATUS.pending,
-        // platformPercentage: merchant.platformPercentage,
+        affiliateFee: calculatedFeeForAffiliate,
+        affiliatePaymentStatus: AFFILIATEPAYMENTSTATUS.pending,
+        platformPercentage: merchant.platformPercentage,
         customerID: customer.userID,
         affiliateMongoID: affiliate.id,
         customerMongoID: customer.id,
@@ -4456,7 +4447,7 @@ export class DealService implements OnModuleInit {
 
       await this._userModel.updateOne(
         { userID: deal.merchantID },
-        { purchasedVouchers: merchant.purchasedVouchers + buyNowDto.quantity },
+        { purchasedVouchers: merchant.purchasedVouchers + buyNowDto.quantity, totalEarnings: merchant.totalEarnings + netFee },
       );
 
       this.sendMail(emailDto);
