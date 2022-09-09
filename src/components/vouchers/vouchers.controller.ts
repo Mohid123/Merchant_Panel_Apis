@@ -18,6 +18,7 @@ import { BILLINGSTATUS } from '../../enum/billing/billingStatus.enum';
 import { SORT } from '../../enum/sort/sort.enum';
 import { VOUCHERSTATUSENUM } from '../../enum/voucher/voucherstatus.enum';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { JwtManagerAuthGuard } from '../auth/jwt-manager-auth.guard';
 import { JwtMerchantAuthGuard } from '../auth/jwt-merchant-auth.guard';
 import { VouchersService } from './vouchers.service';
 
@@ -33,6 +34,9 @@ export class VouchersController {
     return this.voucherService.createVoucher(voucherDto);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtManagerAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Get('getVoucherByID/:voucherID')
   getVoucherByID (
     @Param('voucherID') voucherID: string
@@ -40,6 +44,9 @@ export class VouchersController {
     return this.voucherService.getVoucherByID(voucherID)
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtManagerAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Post('updateVoucherByID/:voucherID')
   updateVoucherByID (
     @Param('voucherID') voucherID: string,

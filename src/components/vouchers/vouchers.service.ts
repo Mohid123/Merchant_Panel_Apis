@@ -99,27 +99,6 @@ export class VouchersService {
 
   async getVoucherByID (voucherID) {
     try {
-      let voucherStatus = {
-        purchased: 'Purchased',
-        redeeemed: 'Redeemed',
-        expired: 'Expired'
-      };
-
-      let merchantStatus = {
-        pending: 'Pending',
-        approved:'Approved',
-        inProcess: 'In Process',
-        paid: 'Paid',
-        credited: 'Credited'
-      }
-
-      let affiliateStatus = {
-        pending: 'Pending',
-        approved:'Approved',
-        inProcess: 'In Process',
-        paid: 'Paid',
-        credited: 'Credited'
-      }
 
       let voucher: any = await this.voucherModel.findOne({voucherID: voucherID});
 
@@ -151,6 +130,7 @@ export class VouchersService {
       voucher.purchaseDate = voucher.boughtDate;
       voucher.redeemDate = voucher.redeemDate;
       voucher.expiryDate = voucher.expiryDate;
+      voucher.redeemDate = voucher.redeemData?voucher.redeemData:null;
 
       delete voucher?.id;
       delete voucher?.dealMongoID;
