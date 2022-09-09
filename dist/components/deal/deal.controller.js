@@ -30,6 +30,8 @@ const jwt_manager_auth_guard_1 = require("../auth/jwt-manager-auth.guard");
 const updateDealForCrm_dto_1 = require("../../dto/deal/updateDealForCrm.dto");
 const buy_now_dto_1 = require("../../dto/deal/buy-now.dto");
 const optional_auth_guard_1 = require("../auth/optional-auth.guard");
+const categoryapisorting_enum_1 = require("../../enum/sort/categoryapisorting.enum");
+const filtercategoriesapi_dto_1 = require("../../dto/deal/filtercategoriesapi.dto");
 let DealController = class DealController {
     constructor(dealService) {
         this.dealService = dealService;
@@ -48,6 +50,9 @@ let DealController = class DealController {
     }
     getDeal(id, req) {
         return this.dealService.getDeal(id, req);
+    }
+    getDealForMerchantPanel(dealMongoID) {
+        return this.dealService.getDealForMerchantPanel(dealMongoID);
     }
     getDealsReviewStatsByMerchant(merchantID, dealID = '', offset = 0, limit = 10, multipleReviewsDto) {
         return this.dealService.getDealsReviewStatsByMerchant(merchantID, dealID, offset, limit, multipleReviewsDto);
@@ -94,8 +99,8 @@ let DealController = class DealController {
     searchDeals(header = '', categoryName, subCategoryName, fromPrice, toPrice, reviewRating, offset = 0, limit = 10, req) {
         return this.dealService.searchDeals(header, categoryName, subCategoryName, fromPrice, toPrice, reviewRating, offset, limit, req);
     }
-    getDealsByCategories(categoryName, subCategoryName, province, fromPrice, toPrice, reviewRating, price, ratingSort, createdAt, offset = 0, limit = 10, req) {
-        return this.dealService.getDealsByCategories(categoryName, subCategoryName, province, fromPrice, toPrice, reviewRating, price, ratingSort, createdAt, offset, limit, req);
+    getDealsByCategories(categoryName, subCategoryName, province, fromPrice, toPrice, reviewRating, sorting, offset = 0, limit = 10, filterCategoriesApiDto, req) {
+        return this.dealService.getDealsByCategories(categoryName, subCategoryName, province, fromPrice, toPrice, reviewRating, sorting, offset, limit, filterCategoriesApiDto, req);
     }
     getTrendingDeals(offset = 0, limit = 10, req) {
         return this.dealService.getTrendingDeals(offset, limit, req);
@@ -169,6 +174,16 @@ __decorate([
     __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", void 0)
 ], DealController.prototype, "getDeal", null);
+__decorate([
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)(jwt_merchant_auth_guard_1.JwtMerchantAuthGuard),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Get)(' /:dealMongoID'),
+    __param(0, (0, common_1.Param)('dealMongoID')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], DealController.prototype, "getDealForMerchantPanel", null);
 __decorate([
     (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
@@ -377,31 +392,27 @@ __decorate([
 ], DealController.prototype, "searchDeals", null);
 __decorate([
     (0, swagger_1.ApiQuery)({ name: 'categoryName', required: true }),
-    (0, swagger_1.ApiQuery)({ name: 'subCategoryName', required: true }),
-    (0, swagger_1.ApiQuery)({ name: 'province', required: false }),
+    (0, swagger_1.ApiQuery)({ name: 'subCategoryName', required: false }),
     (0, swagger_1.ApiQuery)({ name: 'fromPrice', required: false }),
     (0, swagger_1.ApiQuery)({ name: 'toPrice', required: false }),
     (0, swagger_1.ApiQuery)({ name: 'reviewRating', required: false }),
-    (0, swagger_1.ApiQuery)({ name: 'price', enum: sort_enum_1.SORT, required: false }),
-    (0, swagger_1.ApiQuery)({ name: 'ratingSort', enum: sort_enum_1.SORT, required: false }),
-    (0, swagger_1.ApiQuery)({ name: 'createdAt', enum: sort_enum_1.SORT, required: false }),
+    (0, swagger_1.ApiQuery)({ name: 'sorting', enum: categoryapisorting_enum_1.SORTINGENUM, required: false }),
     (0, common_1.UseGuards)(optional_auth_guard_1.OptionalJwtAuthGuard),
     (0, swagger_1.ApiBearerAuth)(),
-    (0, common_1.Get)('getDealsByCategories'),
+    (0, common_1.Post)('getDealsByCategories'),
     __param(0, (0, common_1.Query)('categoryName')),
     __param(1, (0, common_1.Query)('subCategoryName')),
     __param(2, (0, common_1.Query)('province')),
     __param(3, (0, common_1.Query)('fromPrice')),
     __param(4, (0, common_1.Query)('toPrice')),
     __param(5, (0, common_1.Query)('reviewRating')),
-    __param(6, (0, common_1.Query)('price')),
-    __param(7, (0, common_1.Query)('ratingSort')),
-    __param(8, (0, common_1.Query)('createdAt')),
-    __param(9, (0, common_1.Query)('offset')),
-    __param(10, (0, common_1.Query)('limit')),
-    __param(11, (0, common_1.Req)()),
+    __param(6, (0, common_1.Query)('sorting')),
+    __param(7, (0, common_1.Query)('offset')),
+    __param(8, (0, common_1.Query)('limit')),
+    __param(9, (0, common_1.Body)()),
+    __param(10, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, String, Number, Number, Number, String, String, String, Number, Number, Object]),
+    __metadata("design:paramtypes", [String, String, String, Number, Number, Number, String, Number, Number, filtercategoriesapi_dto_1.FilterCategoriesApiDto, Object]),
     __metadata("design:returntype", void 0)
 ], DealController.prototype, "getDealsByCategories", null);
 __decorate([

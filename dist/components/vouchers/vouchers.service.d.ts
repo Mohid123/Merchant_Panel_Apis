@@ -4,15 +4,21 @@ import { UsersInterface } from 'src/interface/user/users.interface';
 import { VoucherInterface } from 'src/interface/vouchers/vouchers.interface';
 import { VoucherCounterInterface } from '../../interface/vouchers/vouchersCounter.interface';
 import { ScheduleService } from '../schedule/schedule.service';
+import { DealInterface } from 'src/interface/deal/deal.interface';
 export declare class VouchersService {
     private readonly voucherModel;
     private readonly voucherCounterModel;
     private readonly userModel;
     private _scheduleModel;
     private _scheduleService;
-    constructor(voucherModel: Model<VoucherInterface>, voucherCounterModel: Model<VoucherCounterInterface>, userModel: Model<UsersInterface>, _scheduleModel: Model<Schedule>, _scheduleService: ScheduleService);
+    private readonly dealModel;
+    constructor(voucherModel: Model<VoucherInterface>, voucherCounterModel: Model<VoucherCounterInterface>, userModel: Model<UsersInterface>, _scheduleModel: Model<Schedule>, _scheduleService: ScheduleService, dealModel: Model<DealInterface>);
     generateVoucherId(sequenceName: any): Promise<string>;
     createVoucher(voucherDto: any): Promise<void>;
+    updateVoucherByID(voucherID: any, updateVoucherForCRMDto: any): Promise<{
+        message: string;
+    }>;
+    getVoucherByID(voucherID: any): Promise<any>;
     generateQRCode(qrUrl: any): Promise<string>;
     searchByVoucherId(merchantID: any, voucherId: any, offset: any, limit: any): Promise<{
         totalCount: number;

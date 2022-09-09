@@ -49,6 +49,7 @@ export declare class DealService implements OnModuleInit {
         data: any[];
     }>;
     getDeal(id: any, req: any): Promise<any>;
+    getDealForMerchantPanel(dealMongoID: any): Promise<any>;
     getDealReviews(offset: any, limit: any, rating: any, id: any, createdAt: any, totalRating: any): Promise<any>;
     deleteDeal(dealID: any): Promise<{
         status: string;
@@ -96,8 +97,8 @@ export declare class DealService implements OnModuleInit {
         filteredDeals: number;
         data: any[];
     }>;
-    getDealsByCategories(categoryName: any, subCategoryName: any, province: any, fromPrice: any, toPrice: any, reviewRating: any, price: any, ratingSort: any, createdAt: any, offset: any, limit: any, req: any): Promise<{
-        totalDeals: number;
+    getDealsByCategories(categoryName: any, subCategoryName: any, province: any, fromPrice: any, toPrice: any, reviewRating: any, sorting: any, offset: any, limit: any, filterCategoriesApiDto: any, req: any): Promise<{
+        totalDeals: any;
         data: any[];
     }>;
     getTrendingDeals(offset: any, limit: any, req: any): Promise<{

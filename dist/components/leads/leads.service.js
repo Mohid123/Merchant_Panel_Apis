@@ -17,6 +17,7 @@ const common_1 = require("@nestjs/common");
 const mongoose_1 = require("@nestjs/mongoose");
 const axios_1 = require("axios");
 const mongoose_2 = require("mongoose");
+const userrole_enum_1 = require("../../enum/user/userrole.enum");
 let LeadsService = class LeadsService {
     constructor(_leadModel) {
         this._leadModel = _leadModel;
@@ -33,6 +34,9 @@ let LeadsService = class LeadsService {
         leadDto.tradeName = leadDto.companyName;
         leadDto.countryCode = 'BE';
         leadDto.leadSource = 'web';
+        if (leadDto.role == userrole_enum_1.USERROLE.merchant) {
+            leadDto.platformPercentage = 25;
+        }
         const lead = await new this._leadModel(leadDto).save();
         const res = await axios_1.default.get(`https://www.zohoapis.eu/crm/v2/functions/createleadinzoho/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&enquiryid=${lead.id}`);
         return lead;

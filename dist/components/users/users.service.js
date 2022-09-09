@@ -1357,6 +1357,9 @@ let UsersService = class UsersService {
             `,
             };
             this.sendMail(emailDto);
+            if (!approveMerchantDto.platformPercentage) {
+                approveMerchantDto.platformPercentage = 25;
+            }
             const merchant = await new this._userModel(approveMerchantDto).save();
             return { enquiryID: userID, merchantID: merchant === null || merchant === void 0 ? void 0 : merchant.userID };
         }

@@ -18,11 +18,13 @@ const passport_1 = require("@nestjs/passport");
 const swagger_1 = require("@nestjs/swagger");
 const multiplevouchers_dto_1 = require("../../dto/vouchers/multiplevouchers.dto");
 const redeemVoucher_dto_1 = require("../../dto/vouchers/redeemVoucher.dto");
+const updatevoucherforcrom_dto_1 = require("../../dto/vouchers/updatevoucherforcrom.dto");
 const vouchers_dto_1 = require("../../dto/vouchers/vouchers.dto");
 const billingStatus_enum_1 = require("../../enum/billing/billingStatus.enum");
 const sort_enum_1 = require("../../enum/sort/sort.enum");
 const voucherstatus_enum_1 = require("../../enum/voucher/voucherstatus.enum");
 const jwt_auth_guard_1 = require("../auth/jwt-auth.guard");
+const jwt_manager_auth_guard_1 = require("../auth/jwt-manager-auth.guard");
 const jwt_merchant_auth_guard_1 = require("../auth/jwt-merchant-auth.guard");
 const vouchers_service_1 = require("./vouchers.service");
 let VouchersController = class VouchersController {
@@ -31,6 +33,12 @@ let VouchersController = class VouchersController {
     }
     createVoucher(voucherDto) {
         return this.voucherService.createVoucher(voucherDto);
+    }
+    getVoucherByID(voucherID) {
+        return this.voucherService.getVoucherByID(voucherID);
+    }
+    updateVoucherByID(voucherID, updateVoucherForCRMDto) {
+        return this.voucherService.updateVoucherByID(voucherID, updateVoucherForCRMDto);
     }
     getAllVouchers(merchantID, deal, voucher, amount, fee, net, status, paymentStatus, dateFrom, dateTo, voucherID = '', dealHeader = '', voucherHeader = '', voucherStatus = '', invoiceStatus = '', offset = 0, limit = 10, multipleVouchersDto) {
         return this.voucherService.getAllVouchersByMerchantID(deal, voucher, amount, fee, net, status, paymentStatus, dateFrom, dateTo, merchantID, voucherID, dealHeader, voucherHeader, voucherStatus, invoiceStatus, offset, limit, multipleVouchersDto);
@@ -60,6 +68,27 @@ __decorate([
     __metadata("design:paramtypes", [vouchers_dto_1.VoucherDto]),
     __metadata("design:returntype", void 0)
 ], VouchersController.prototype, "createVoucher", null);
+__decorate([
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)(jwt_manager_auth_guard_1.JwtManagerAuthGuard),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Get)('getVoucherByID/:voucherID'),
+    __param(0, (0, common_1.Param)('voucherID')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], VouchersController.prototype, "getVoucherByID", null);
+__decorate([
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)(jwt_manager_auth_guard_1.JwtManagerAuthGuard),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Post)('updateVoucherByID/:voucherID'),
+    __param(0, (0, common_1.Param)('voucherID')),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, updatevoucherforcrom_dto_1.UpdateVoucherForCRMDto]),
+    __metadata("design:returntype", void 0)
+], VouchersController.prototype, "updateVoucherByID", null);
 __decorate([
     (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),

@@ -88,16 +88,18 @@ let FavouritesService = class FavouritesService {
             message: 'Removed from favourites'
         };
     }
-    async removeFromAffiliateFavourites(id) {
-        const favouriteAffiliate = await this.affiliateFavouriteModel.findOne({ _id: id, deletedCheck: false });
-        if (!favouriteAffiliate) {
-            throw new common_1.HttpException('Favourite affiliate not found', common_1.HttpStatus.BAD_REQUEST);
-        }
-        else {
-            await this.affiliateFavouriteModel.updateOne({ _id: id }, { deletedCheck: true });
+    async removeFromAffiliateFavourites(id, req) {
+        try {
+            await this.affiliateFavouriteModel.updateOne({
+                affiliateMongoID: id,
+                customerMongoID: req.user.id,
+            }, { deletedCheck: true });
             return {
-                message: 'Removed from favourite affiliates'
+                message: 'Removed from favourites'
             };
+        }
+        catch (err) {
+            throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
         }
     }
     async getFavourite(id) {

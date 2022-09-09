@@ -63,6 +63,7 @@ exports.LeadSchema = new mongoose.Schema({
         type: Number,
         default: 0,
     },
+    platformPercentage: { type: Number }
 }, {
     collection: 'leads',
 });

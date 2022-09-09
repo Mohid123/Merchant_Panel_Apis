@@ -22,7 +22,7 @@ export declare class FavouritesService {
     removeFromFavourites(id: any, req: any): Promise<{
         message: string;
     }>;
-    removeFromAffiliateFavourites(id: any): Promise<{
+    removeFromAffiliateFavourites(id: any, req: any): Promise<{
         message: string;
     }>;
     getFavourite(id: any): Promise<any>;

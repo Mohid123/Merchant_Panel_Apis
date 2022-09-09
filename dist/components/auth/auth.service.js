@@ -157,6 +157,9 @@ let AuthService = class AuthService {
         loginDto.tradeName = loginDto.companyName;
         loginDto.countryCode = 'BE';
         loginDto.leadSource = 'web';
+        if (loginDto.role == userrole_enum_1.USERROLE.merchant) {
+            loginDto.platformPercentage = 25;
+        }
         return await new this._usersService(loginDto).save();
     }
     async signupCustomer(signupUserDto) {

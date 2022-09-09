@@ -32,8 +32,8 @@ let FavouritesController = class FavouritesController {
     removeFromFavourites(id, req) {
         return this.favouriteService.removeFromFavourites(id, req);
     }
-    removeFromAffiliateFavourites(id) {
-        return this.favouriteService.removeFromAffiliateFavourites(id);
+    removeFromAffiliateFavourites(affiliateMongoID, req) {
+        return this.favouriteService.removeFromAffiliateFavourites(affiliateMongoID, req);
     }
     getFavourite(id) {
         return this.favouriteService.getFavourite(id);
@@ -67,10 +67,11 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], FavouritesController.prototype, "removeFromFavourites", null);
 __decorate([
-    (0, common_1.Get)('removeFromAffiliateFavourites'),
-    __param(0, (0, common_1.Param)('id')),
+    (0, common_1.Get)('removeFromAffiliateFavourites/:affiliateMongoID'),
+    __param(0, (0, common_1.Param)('affiliateMongoID')),
+    __param(1, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", void 0)
 ], FavouritesController.prototype, "removeFromAffiliateFavourites", null);
 __decorate([

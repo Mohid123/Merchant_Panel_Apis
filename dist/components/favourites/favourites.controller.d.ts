@@ -18,7 +18,7 @@ export declare class FavouritesController {
     removeFromFavourites(id: string, req: any): Promise<{
         message: string;
     }>;
-    removeFromAffiliateFavourites(id: string): Promise<{
+    removeFromAffiliateFavourites(affiliateMongoID: string, req: any): Promise<{
         message: string;
     }>;
     getFavourite(id: string): Promise<any>;

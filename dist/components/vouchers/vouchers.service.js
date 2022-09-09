@@ -22,12 +22,13 @@ const schedule_service_1 = require("../schedule/schedule.service");
 const qr = require('qrcode');
 const fs = require("fs");
 let VouchersService = class VouchersService {
-    constructor(voucherModel, voucherCounterModel, userModel, _scheduleModel, _scheduleService) {
+    constructor(voucherModel, voucherCounterModel, userModel, _scheduleModel, _scheduleService, dealModel) {
         this.voucherModel = voucherModel;
         this.voucherCounterModel = voucherCounterModel;
         this.userModel = userModel;
         this._scheduleModel = _scheduleModel;
         this._scheduleService = _scheduleService;
+        this.dealModel = dealModel;
     }
     async generateVoucherId(sequenceName) {
         const sequenceDocument = await this.voucherCounterModel.findByIdAndUpdate(sequenceName, {
@@ -58,6 +59,77 @@ let VouchersService = class VouchersService {
         }
         catch (error) {
             throw new common_1.HttpException(error.message, common_1.HttpStatus.BAD_REQUEST);
+        }
+    }
+    async updateVoucherByID(voucherID, updateVoucherForCRMDto) {
+        try {
+            const voucher = await this.voucherModel.findOne({ voucherID: voucherID });
+            if (!voucher) {
+                throw new Error('Voucher not found!');
+            }
+            await this.voucherModel.updateOne({ voucherID: voucherID }, updateVoucherForCRMDto);
+            return {
+                message: 'Voucher has been updated successfully!'
+            };
+        }
+        catch (err) {
+            throw new common_1.HttpException(err.message, common_1.HttpStatus.BAD_REQUEST);
+        }
+    }
+    async getVoucherByID(voucherID) {
+        try {
+            let voucher = await this.voucherModel.findOne({ voucherID: voucherID });
+            if (!voucher) {
+                throw new Error('Voucher not found!');
+            }
+            voucher = JSON.parse(JSON.stringify(voucher));
+            voucher.voucherID = voucher.voucherID;
+            voucher.voucherHeader = voucher.voucherHeader;
+            voucher.dealHeader = voucher.dealHeader;
+            voucher.dealID = voucher.dealID;
+            voucher.subDealHeader = voucher.subDealHeader;
+            voucher.subDealID = voucher.subDealID;
+            voucher.merchantID = voucher.merchantID;
+            voucher.customerID = voucher.customerID;
+            voucher.affiliateName = voucher.affiliateName;
+            voucher.affiliateID = voucher.affiliateID;
+            voucher.unitPrice = voucher.amount;
+            voucher.voucherStatus = voucher.status;
+            voucher.affiliatePercentage = voucher.affiliatePercentage;
+            voucher.affiliateFee = voucher.affiliateFee;
+            voucher.affiliatePaymentStatus = voucher.affiliatePaymentStatus;
+            voucher.platformPercentage = voucher.platformPercentage;
+            voucher.platformFee = voucher.fee;
+            voucher.netEarning = voucher.net;
+            voucher.merchantPaymentStatus = voucher.merchantPaymentStatus;
+            voucher.purchaseDate = voucher.boughtDate;
+            voucher.redeemDate = voucher.redeemDate;
+            voucher.expiryDate = voucher.expiryDate;
+            voucher.redeemDate = voucher.redeemData ? voucher.redeemData : null;
+            voucher === null || voucher === void 0 ? true : delete voucher.id;
+            voucher === null || voucher === void 0 ? true : delete voucher.dealMongoID;
+            voucher === null || voucher === void 0 ? true : delete voucher.subDealMongoID;
+            voucher === null || voucher === void 0 ? true : delete voucher.merchantMongoID;
+            voucher === null || voucher === void 0 ? true : delete voucher.customerMongoID;
+            voucher === null || voucher === void 0 ? true : delete voucher.affiliateMongoID;
+            voucher === null || voucher === void 0 ? true : delete voucher.paymentStatus;
+            voucher === null || voucher === void 0 ? true : delete voucher.imageURL;
+            voucher === null || voucher === void 0 ? true : delete voucher.dealPrice;
+            voucher === null || voucher === void 0 ? true : delete voucher.originalPrice;
+            voucher === null || voucher === void 0 ? true : delete voucher.discountedPercentage;
+            voucher === null || voucher === void 0 ? true : delete voucher.deletedCheck;
+            voucher === null || voucher === void 0 ? true : delete voucher.redeemQR;
+            voucher === null || voucher === void 0 ? true : delete voucher.amount;
+            voucher === null || voucher === void 0 ? true : delete voucher.createdAt;
+            voucher === null || voucher === void 0 ? true : delete voucher.updatedAt;
+            voucher === null || voucher === void 0 ? true : delete voucher.status;
+            voucher === null || voucher === void 0 ? true : delete voucher.net;
+            voucher === null || voucher === void 0 ? true : delete voucher.fee;
+            voucher === null || voucher === void 0 ? true : delete voucher.boughtDate;
+            return voucher;
+        }
+        catch (err) {
+            throw new common_1.HttpException(err.message, common_1.HttpStatus.BAD_REQUEST);
         }
     }
     async generateQRCode(qrUrl) {
@@ -360,7 +432,7 @@ let VouchersService = class VouchersService {
                 deletedCheck: false,
             });
             if (req.user.id != voucher.merchantMongoID) {
-                throw new common_1.UnauthorizedException('Not allowed to redeem voucher!');
+                throw new common_1.UnauthorizedException('Merchant Not allowed to redeem voucher!');
             }
             if (voucher) {
                 if (voucher.expiryDate < new Date().getTime()) {
@@ -375,7 +447,7 @@ let VouchersService = class VouchersService {
                 }
             }
             if (!voucher) {
-                throw new Error('No found!');
+                throw new Error('Voucher Not found!');
             }
             let scheduledVoucher = await this._scheduleModel.findOne({
                 dealID: voucher.voucherID,
@@ -388,17 +460,12 @@ let VouchersService = class VouchersService {
                 userID: voucher.merchantID,
             });
             let redeemDate = new Date().getTime();
-            const calculatedFee = voucher.dealPrice * 0.05;
-            const net = voucher.dealPrice - 0.05 * voucher.dealPrice;
             await this.voucherModel.updateOne({ voucherID: voucherId }, {
                 status: voucherstatus_enum_1.VOUCHERSTATUSENUM.redeeemed,
                 redeemDate: redeemDate,
-                net: net,
-                fee: calculatedFee
             });
             await this.userModel.updateOne({ userID: voucher.merchantID }, {
                 redeemedVouchers: merchant.redeemedVouchers + 1,
-                totalEarnings: merchant.totalEarnings + net,
             });
             const updtaedVoucher = await this.voucherModel.findOne({
                 voucherID: voucherId,
@@ -506,7 +573,7 @@ let VouchersService = class VouchersService {
                 }
             }
             if (!voucher) {
-                throw new Error('No found!');
+                throw new Error(' Voucher Not found!');
             }
             let scheduledVoucher = await this._scheduleModel.findOne({
                 dealID: voucher.voucherID,
@@ -522,15 +589,12 @@ let VouchersService = class VouchersService {
                 throw new Error('Inavlid Pin Code!');
             }
             let redeemDate = new Date().getTime();
-            const net = voucher.dealPrice - 0.05 * voucher.dealPrice;
             await this.voucherModel.updateOne({ voucherID: redeemVoucherDto.voucherID }, {
                 status: voucherstatus_enum_1.VOUCHERSTATUSENUM.redeeemed,
                 redeemDate: redeemDate,
-                net: net,
             });
             await this.userModel.updateOne({ userID: voucher.merchantID }, {
                 redeemedVouchers: merchant.redeemedVouchers + 1,
-                totalEarnings: merchant.totalEarnings + net,
             });
             const updtaedVoucher = await this.voucherModel.findOne({
                 voucherID: redeemVoucherDto.voucherID,
@@ -552,11 +616,13 @@ VouchersService = __decorate([
     __param(1, (0, mongoose_1.InjectModel)('Counter')),
     __param(2, (0, mongoose_1.InjectModel)('User')),
     __param(3, (0, mongoose_1.InjectModel)('Schedule')),
+    __param(5, (0, mongoose_1.InjectModel)('Deal')),
     __metadata("design:paramtypes", [mongoose_2.Model,
         mongoose_2.Model,
         mongoose_2.Model,
         mongoose_2.Model,
-        schedule_service_1.ScheduleService])
+        schedule_service_1.ScheduleService,
+        mongoose_2.Model])
 ], VouchersService);
 exports.VouchersService = VouchersService;
 //# sourceMappingURL=vouchers.service.js.map

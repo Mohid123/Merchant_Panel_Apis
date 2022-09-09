@@ -36,6 +36,9 @@ const vouchers_service_1 = require("../vouchers/vouchers.service");
 const nodemailer = require("nodemailer");
 const emailHtml_1 = require("./email/emailHtml");
 const views_service_1 = require("../views/views.service");
+const affiliate_enum_1 = require("../../enum/affiliate/affiliate.enum");
+const merchant_enum_1 = require("../../enum/merchant/merchant.enum");
+const categoryapisorting_enum_1 = require("../../enum/sort/categoryapisorting.enum");
 let transporter;
 let DealService = class DealService {
     constructor(dealModel, preComputedDealModel, cacheManager, categorymodel, voucherCounterModel, subCategoryModel, _userModel, _scheduleModel, _viewsModel, reviewModel, _scheduleService, _stripeService, _voucherService, viewsService) {
@@ -571,6 +574,37 @@ let DealService = class DealService {
                 viewedTime: new Date().getTime(),
             };
             await this.viewsService.createDealView(viewsDto, '');
+            return deal;
+        }
+        catch (err) {
+            throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
+        }
+    }
+    async getDealForMerchantPanel(dealMongoID) {
+        try {
+            let deal = await this.dealModel
+                .aggregate([
+                {
+                    $match: {
+                        _id: dealMongoID,
+                        deletedCheck: false,
+                    },
+                },
+                {
+                    $addFields: {
+                        id: '$_id',
+                    },
+                },
+                {
+                    $project: {
+                        _id: 0,
+                    },
+                },
+            ])
+                .then((items) => items[0]);
+            if (!deal) {
+                throw new common_1.HttpException('Deal not found!', common_1.HttpStatus.BAD_REQUEST);
+            }
             return deal;
         }
         catch (err) {
@@ -2683,8 +2717,8 @@ let DealService = class DealService {
             throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
         }
     }
-    async getDealsByCategories(categoryName, subCategoryName, province, fromPrice, toPrice, reviewRating, price, ratingSort, createdAt, offset, limit, req) {
-        var _a;
+    async getDealsByCategories(categoryName, subCategoryName, province, fromPrice, toPrice, reviewRating, sorting, offset, limit, filterCategoriesApiDto, req) {
+        var _a, _b, _c;
         try {
             offset = parseInt(offset) < 0 ? 0 : offset;
             limit = parseInt(limit) < 1 ? 10 : limit;
@@ -2720,24 +2754,16 @@ let DealService = class DealService {
                     } });
             }
             let sort = {};
-            if (price) {
-                let sortPrice = price == sort_enum_1.SORT.ASC ? 1 : -1;
-                console.log('price');
-                sort = Object.assign(Object.assign({}, sort), { minDealPrice: sortPrice });
-            }
-            if (ratingSort) {
-                let sortRating = ratingSort == sort_enum_1.SORT.ASC ? 1 : -1;
-                console.log('ratingSort');
-                sort = Object.assign(Object.assign({}, sort), { ratingsAverage: sortRating });
-            }
-            if (createdAt) {
-                let sortTime = createdAt == sort_enum_1.SORT.ASC ? 1 : -1;
-                console.log('createdAt');
-                sort = Object.assign(Object.assign({}, sort), { createdAt: sortTime });
+            if (sorting) {
+                let sortPrice = sorting == categoryapisorting_enum_1.SORTINGENUM.priceAsc ? 1 : -1;
+                let sortRating = sorting == categoryapisorting_enum_1.SORTINGENUM.ratingAsc ? 1 : -1;
+                let sortDate = sorting == categoryapisorting_enum_1.SORTINGENUM.dateAsc ? 1 : -1;
+                console.log('sorting');
+                sort = Object.assign(Object.assign({}, sort), { minDealPrice: sortPrice, ratingsAverage: sortRating, createdAt: sortDate });
             }
             let locationFilter = {};
-            if (province) {
-                locationFilter = Object.assign(Object.assign({}, locationFilter), { province: province });
+            if ((_a = filterCategoriesApiDto === null || filterCategoriesApiDto === void 0 ? void 0 : filterCategoriesApiDto.provincesArray) === null || _a === void 0 ? void 0 : _a.length) {
+                locationFilter = Object.assign(Object.assign({}, locationFilter), { province: { $in: filterCategoriesApiDto.provincesArray } });
             }
             if (Object.keys(sort).length === 0 && sort.constructor === Object) {
                 sort = {
@@ -2747,6 +2773,130 @@ let DealService = class DealService {
             console.log(sort);
             console.log(matchFilter);
             console.log(locationFilter);
+            const totalCount = await this.dealModel.aggregate([
+                {
+                    $match: Object.assign({ deletedCheck: false, dealStatus: dealstatus_enum_1.DEALSTATUS.published }, matchFilter),
+                },
+                {
+                    $sort: sort,
+                },
+                {
+                    $lookup: {
+                        from: 'favourites',
+                        as: 'favouriteDeal',
+                        let: {
+                            dealID: '$dealID',
+                            customerMongoID: (_b = req === null || req === void 0 ? void 0 : req.user) === null || _b === void 0 ? void 0 : _b.id,
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$dealID', '$dealID'],
+                                            },
+                                            {
+                                                $eq: ['$$customerMongoID', '$customerMongoID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: {
+                        path: '$favouriteDeal',
+                        preserveNullAndEmptyArrays: true,
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'users',
+                        as: 'merchantDetails',
+                        let: {
+                            userID: '$merchantID',
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$userID', '$userID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                            {
+                                $addFields: {
+                                    id: '$_id',
+                                },
+                            },
+                            {
+                                $project: {
+                                    _id: 0,
+                                    id: 1,
+                                    totalReviews: 1,
+                                    ratingsAverage: 1,
+                                    legalName: 1,
+                                    city: 1,
+                                    province: 1
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: '$merchantDetails',
+                },
+                {
+                    $addFields: {
+                        id: '$_id',
+                        province: '$merchantDetails.province',
+                        mediaUrl: {
+                            $slice: [
+                                {
+                                    $filter: {
+                                        input: '$mediaUrl',
+                                        as: 'mediaUrl',
+                                        cond: {
+                                            $eq: ['$$mediaUrl.type', 'Image'],
+                                        },
+                                    },
+                                },
+                                1,
+                            ],
+                        },
+                        isFavourite: {
+                            $cond: [
+                                {
+                                    $ifNull: ['$favouriteDeal', false],
+                                },
+                                true,
+                                false,
+                            ],
+                        },
+                    },
+                },
+                {
+                    $match: Object.assign({}, locationFilter)
+                },
+                {
+                    $count: 'totalCount'
+                }
+            ]);
             const deals = await this.dealModel
                 .aggregate([
                 {
@@ -2761,7 +2911,7 @@ let DealService = class DealService {
                         as: 'favouriteDeal',
                         let: {
                             dealID: '$dealID',
-                            customerMongoID: (_a = req === null || req === void 0 ? void 0 : req.user) === null || _a === void 0 ? void 0 : _a.id,
+                            customerMongoID: (_c = req === null || req === void 0 ? void 0 : req.user) === null || _c === void 0 ? void 0 : _c.id,
                             deletedCheck: '$deletedCheck',
                         },
                         pipeline: [
@@ -2900,9 +3050,8 @@ let DealService = class DealService {
             ])
                 .skip(parseInt(offset))
                 .limit(parseInt(limit));
-            const totalCount = await this.dealModel.countDocuments(Object.assign(Object.assign({ deletedCheck: false, dealStatus: dealstatus_enum_1.DEALSTATUS.published }, matchFilter), locationFilter));
             return {
-                totalDeals: totalCount,
+                totalDeals: (totalCount === null || totalCount === void 0 ? void 0 : totalCount.length) > 0 ? totalCount[0].totalCount : 0,
                 data: deals,
             };
         }
@@ -3681,6 +3830,9 @@ let DealService = class DealService {
     async buyNow(buyNowDto, req) {
         try {
             const deal = await this.dealModel.findOne({ dealID: buyNowDto.dealID });
+            if (!deal) {
+                throw new Error('Deal ID not found!');
+            }
             const merchant = await this._userModel.findOne({
                 userID: deal.merchantID,
                 deletedCheck: false,
@@ -3698,7 +3850,6 @@ let DealService = class DealService {
                 buyNowDto.quantity) {
                 throw new Error('Insufficent Quantity of deal present!');
             }
-            debugger;
             let dealVouchers = 0, soldVouchers = 0;
             deal.subDeals = deal.subDeals.map((element) => {
                 if (buyNowDto.subDealID === element['subDealID']) {
@@ -3736,18 +3887,34 @@ let DealService = class DealService {
                 expiryDate =
                     new Date().getTime() + (subDeal === null || subDeal === void 0 ? void 0 : subDeal.voucherValidity) * 24 * 60 * 60 * 1000;
             }
+            let merchantPercentage = merchant.platformPercentage / 100;
+            affiliate.platformPercentage = merchant.platformPercentage / 100;
+            const calculatedFee = subDeal.dealPrice * merchantPercentage;
+            const netFee = subDeal.dealPrice - merchantPercentage * subDeal.dealPrice;
+            const calculatedFeeForAffiliate = calculatedFee * affiliate.platformPercentage;
+            subDeal.grossEarning += subDeal.dealPrice;
+            subDeal.netEarning += netFee;
             let voucherDto = {
                 voucherHeader: subDeal.title,
                 dealHeader: deal.dealHeader,
                 dealID: deal.dealID,
                 dealMongoID: deal._id,
+                subDealHeader: subDeal.title,
                 subDealID: subDeal.subDealID,
                 subDealMongoID: subDeal._id,
                 amount: subDeal.dealPrice,
+                net: netFee,
+                fee: calculatedFee,
                 status: voucherstatus_enum_1.VOUCHERSTATUSENUM.purchased,
                 merchantID: deal.merchantID,
                 merchantMongoID: merchant.id,
+                merchantPaymentStatus: merchant_enum_1.MERCHANTPAYMENTSTATUS.pending,
+                affiliateName: affiliate.firstName + ' ' + affiliate.lastName,
                 affiliateID: buyNowDto.affiliateID,
+                affiliatePercentage: merchant.platformPercentage,
+                affiliateFee: calculatedFeeForAffiliate,
+                affiliatePaymentStatus: affiliate_enum_1.AFFILIATEPAYMENTSTATUS.pending,
+                platformPercentage: merchant.platformPercentage,
                 customerID: customer.userID,
                 affiliateMongoID: affiliate.id,
                 customerMongoID: customer.id,
@@ -3766,7 +3933,7 @@ let DealService = class DealService {
             await Promise.all(vouchers);
             const emailDto = (0, emailHtml_1.getEmailHTML)(customer.email, customer.firstName, customer.lastName);
             await this.dealModel.updateOne({ dealID: buyNowDto.dealID }, deal);
-            await this._userModel.updateOne({ userID: deal.merchantID }, { purchasedVouchers: merchant.purchasedVouchers + buyNowDto.quantity });
+            await this._userModel.updateOne({ userID: deal.merchantID }, { purchasedVouchers: merchant.purchasedVouchers + buyNowDto.quantity, totalEarnings: merchant.totalEarnings + netFee });
             this.sendMail(emailDto);
             return { message: 'Purchase Successfull!' };
         }

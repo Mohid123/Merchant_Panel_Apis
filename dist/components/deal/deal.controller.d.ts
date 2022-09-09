@@ -8,6 +8,7 @@ import { MultipleDealsDto } from 'src/dto/deal/multipledeals.dto';
 import { MultipleReviewsDto } from 'src/dto/review/multiplereviews.dto';
 import { UpdateDealForCRMDTO } from 'src/dto/deal/updateDealForCrm.dto';
 import { BuyNowDTO } from 'src/dto/deal/buy-now.dto';
+import { FilterCategoriesApiDto } from 'src/dto/deal/filtercategoriesapi.dto';
 export declare class DealController {
     private readonly dealService;
     constructor(dealService: DealService);
@@ -23,6 +24,7 @@ export declare class DealController {
     }>;
     approveRejectDeal(dealID: string, dealStatusDto: DealStatusDto): Promise<import("mongodb").UpdateResult>;
     getDeal(id: string, req: any): Promise<any>;
+    getDealForMerchantPanel(dealMongoID: string): Promise<any>;
     getDealsReviewStatsByMerchant(merchantID: string, dealID: string, offset: number, limit: number, multipleReviewsDto: MultipleReviewsDto): Promise<{
         totalDeals: number;
         filteredDealCount: number;
@@ -90,8 +92,8 @@ export declare class DealController {
         filteredDeals: number;
         data: any[];
     }>;
-    getDealsByCategories(categoryName: string, subCategoryName: string, province: string, fromPrice: number, toPrice: number, reviewRating: number, price: SORT, ratingSort: SORT, createdAt: SORT, offset: number, limit: number, req: any): Promise<{
-        totalDeals: number;
+    getDealsByCategories(categoryName: string, subCategoryName: string, province: string, fromPrice: number, toPrice: number, reviewRating: number, sorting: SORT, offset: number, limit: number, filterCategoriesApiDto: FilterCategoriesApiDto, req: any): Promise<{
+        totalDeals: any;
         data: any[];
     }>;
     getTrendingDeals(offset: number, limit: number, req: any): Promise<{
