@@ -37,11 +37,12 @@ export class FavouritesController {
         return this.favouriteService.removeFromFavourites(id,req)
     }
 
-    @Get('removeFromAffiliateFavourites')
+    @Get('removeFromAffiliateFavourites/:affiliateMongoID')
     removeFromAffiliateFavourites (
-        @Param('id') id: string,
+        @Param('affiliateMongoID') affiliateMongoID: string,
+        @Req() req
     ) {
-        return this.favouriteService.removeFromAffiliateFavourites(id)
+        return this.favouriteService.removeFromAffiliateFavourites(affiliateMongoID, req)
     }
 
     @Get('getFavourite/:id')
