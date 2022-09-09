@@ -1539,6 +1539,10 @@ export class UsersService {
 
       // user.password = generatedPassword;
 
+      if (!approveMerchantDto.platformPercentage) {
+        approveMerchantDto.platformPercentage = 25;
+      }
+
       const merchant = await new this._userModel(approveMerchantDto).save();
 
       return { enquiryID: userID, merchantID: merchant?.userID };

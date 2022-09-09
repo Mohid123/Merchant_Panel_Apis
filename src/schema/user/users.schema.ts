@@ -73,7 +73,8 @@ export const UsersSchema = new mongoose.Schema(
       default: 0,
     },
     isSubscribed: { type: Boolean, default: false },
-    popularCount: { type: Number, default: 0 }
+    popularCount: { type: Number, default: 0 },
+    platformPercentage: { type: Number }
   },
   {
     collection: 'users',

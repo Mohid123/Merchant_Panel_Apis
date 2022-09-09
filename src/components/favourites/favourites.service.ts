@@ -97,16 +97,17 @@ export class FavouritesService {
         }
     }
 
-    async removeFromAffiliateFavourites (id) {
-        const favouriteAffiliate = await this.affiliateFavouriteModel.findOne({_id: id, deletedCheck: false});
-
-        if (!favouriteAffiliate) {
-            throw new HttpException('Favourite affiliate not found', HttpStatus.BAD_REQUEST);
-        } else {
-            await this.affiliateFavouriteModel.updateOne({_id: id}, {deletedCheck:true});
+    async removeFromAffiliateFavourites (id, req) {
+        try {
+            await this.affiliateFavouriteModel.updateOne({
+                affiliateMongoID: id,
+                customerMongoID: req.user.id,
+            }, { deletedCheck: true });
             return {
-                message: 'Removed from favourite affiliates'
+                message: 'Removed from favourites'
             }
+        } catch (err) {
+            throw new HttpException(err, HttpStatus.BAD_REQUEST);
         }
     }
 
