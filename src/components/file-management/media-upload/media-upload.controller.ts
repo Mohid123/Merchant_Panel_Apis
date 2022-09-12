@@ -116,8 +116,7 @@ export class MediaUploadController {
 
       const height = img.bitmap.height;
       const width = img.bitmap.width;
-
-      this._mediaUploadService.compressImageTo300(file);
+      this._mediaUploadService.compressImageTo300(file,'');
       if ((height < 500 && width < 275) || file.size <= 500 * 1000) {
         return file;
       }
@@ -130,12 +129,12 @@ export class MediaUploadController {
       console.log({ heightRatio });
       console.log({ widthRatio });
 
-      file['path'] = file['path'].replace(
+      const updatedPath = file['path'].replace(
         file['filename'],
         `compressed/${file['filename']}`,
       );
 
-      img.resize(500 * widthRatio, jimp.AUTO).write(file['path']);
+      img.resize(500 * widthRatio, jimp.AUTO).write(updatedPath);
     }
     console.log('***************====================***************');
     console.log(file);

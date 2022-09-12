@@ -71,4 +71,5 @@ export interface UsersInterface {
   minRating: number;
   isSubscribed: boolean;
   popularCount: number;
+  platformPercentage: number;
 }

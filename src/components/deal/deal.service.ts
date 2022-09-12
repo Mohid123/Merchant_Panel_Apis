@@ -39,6 +39,9 @@ import { ViewsInterface } from 'src/interface/views/views.interface';
 import { PreComputedDealInteface } from 'src/interface/deal/preComputedDeal.interface';
 import { Cache } from 'cache-manager';
 import { ReviewInterface } from 'src/interface/review/review.interface';
+import { AFFILIATEPAYMENTSTATUS } from 'src/enum/affiliate/affiliate.enum';
+import { MERCHANTPAYMENTSTATUS } from 'src/enum/merchant/merchant.enum';
+import { SORTINGENUM } from 'src/enum/sort/categoryapisorting.enum';
 let transporter;
 
 @Injectable()
@@ -588,11 +591,6 @@ export class DealService implements OnModuleInit {
 
   async getDeal(id, req) {
     try {
-      // let deal = await this.dealModel.findOne({
-      //   _id: id,
-      //   deletedCheck: false,
-      //   dealStatus: DEALSTATUS.published,
-      // });
 
       let deal = await this.dealModel
         .aggregate([
@@ -673,6 +671,40 @@ export class DealService implements OnModuleInit {
       };
 
       await this.viewsService.createDealView(viewsDto, '');
+
+      return deal;
+    } catch (err) {
+      throw new HttpException(err, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async getDealForMerchantPanel (dealMongoID) {
+    try {
+
+      let deal = await this.dealModel
+        .aggregate([
+          {
+            $match: {
+              _id: dealMongoID,
+              deletedCheck: false,
+            },
+          },
+          {
+            $addFields: {
+              id: '$_id',
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+            },
+          },
+        ])
+        .then((items) => items[0]);
+
+      if (!deal) {
+        throw new HttpException('Deal not found!', HttpStatus.BAD_REQUEST);
+      }
 
       return deal;
     } catch (err) {
@@ -3066,11 +3098,10 @@ export class DealService implements OnModuleInit {
     fromPrice,
     toPrice,
     reviewRating,
-    price,
-    ratingSort,
-    createdAt,
+    sorting,
     offset,
     limit,
+    filterCategoriesApiDto,
     req,
   ) {
     try {
@@ -3133,43 +3164,168 @@ export class DealService implements OnModuleInit {
 
       let sort = {};
 
-      if (price) {
-        let sortPrice = price == SORT.ASC ? 1 : -1;
-        console.log('price');
+      if (sorting) {
+        let sortPrice = sorting == SORTINGENUM.priceAsc ? 1 : -1;
+        let sortRating = sorting == SORTINGENUM.ratingAsc ? 1 : -1;
+        let sortDate = sorting == SORTINGENUM.dateAsc ? 1 : -1;
+        console.log('sorting')
         sort = {
           ...sort,
           minDealPrice: sortPrice,
-        };
-      }
-
-      if (ratingSort) {
-        let sortRating = ratingSort == SORT.ASC ? 1 : -1;
-        console.log('ratingSort');
-        sort = {
-          ...sort,
           ratingsAverage: sortRating,
+          createdAt: sortDate
+        }
+      }
+
+      let locationFilter = {};
+
+      if (filterCategoriesApiDto?.provincesArray?.length) {
+        locationFilter = {
+          ...locationFilter,
+          province: { $in: filterCategoriesApiDto.provincesArray },
         };
       }
 
-      if (createdAt) {
-        let sortTime = createdAt == SORT.ASC ? 1 : -1;
-        console.log('createdAt');
+      if (Object.keys(sort).length === 0 && sort.constructor === Object) {
         sort = {
-          ...sort,
-          createdAt: sortTime,
+          createdAt: -1,
         };
       }
 
-      const totalCount = await this.dealModel.countDocuments({
-        deletedCheck: false,
-        dealStatus: DEALSTATUS.published,
-      });
+      console.log(sort);
+      console.log(matchFilter);
+      console.log(locationFilter);
 
-      const filteredCount = await this.dealModel.countDocuments({
-        deletedCheck: false,
-        dealStatus: DEALSTATUS.published,
-        ...matchFilter,
-      });
+      const totalCount: any = await this.dealModel.aggregate([
+        {
+          $match: {
+            deletedCheck: false,
+            dealStatus: DEALSTATUS.published,
+            ...matchFilter,
+          },
+        },
+        {
+          $sort: sort,
+        },
+        {
+          $lookup: {
+            from: 'favourites',
+            as: 'favouriteDeal',
+            let: {
+              dealID: '$dealID',
+              customerMongoID: req?.user?.id,
+              deletedCheck: '$deletedCheck',
+            },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $and: [
+                      {
+                        $eq: ['$$dealID', '$dealID'],
+                      },
+                      {
+                        $eq: ['$$customerMongoID', '$customerMongoID'],
+                      },
+                      {
+                        $eq: ['$deletedCheck', false],
+                      },
+                    ],
+                  },
+                },
+              },
+            ],
+          },
+        },
+        {
+          $unwind: {
+            path: '$favouriteDeal',
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $lookup: {
+            from: 'users',
+            as: 'merchantDetails',
+            let: {
+              userID: '$merchantID',
+              deletedCheck: '$deletedCheck',
+            },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $and: [
+                      {
+                        $eq: ['$$userID', '$userID'],
+                      },
+                      {
+                        $eq: ['$deletedCheck', false],
+                      },
+                    ],
+                  },
+                },
+              },
+              {
+                $addFields: {
+                  id: '$_id',
+                },
+              },
+              {
+                $project: {
+                  _id: 0,
+                  id: 1,
+                  totalReviews: 1,
+                  ratingsAverage: 1,
+                  legalName: 1,
+                  city: 1,
+                  province: 1
+                },
+              },
+            ],
+          },
+        },
+        {
+          $unwind: '$merchantDetails',
+        },
+        {
+          $addFields: {
+            id: '$_id',
+            province: '$merchantDetails.province',
+            mediaUrl: {
+              $slice: [
+                {
+                  $filter: {
+                    input: '$mediaUrl',
+                    as: 'mediaUrl',
+                    cond: {
+                      $eq: ['$$mediaUrl.type', 'Image'],
+                    },
+                  },
+                },
+                1,
+              ],
+            },
+            isFavourite: {
+              $cond: [
+                {
+                  $ifNull: ['$favouriteDeal', false],
+                },
+                true,
+                false,
+              ],
+            },
+          },
+        },
+        {
+          $match: {
+            ...locationFilter
+          }
+        },
+        {
+          $count: 'totalCount'
+        }
+      ]);
 
       const deals = await this.dealModel
         .aggregate([
@@ -3255,6 +3411,7 @@ export class DealService implements OnModuleInit {
                     ratingsAverage: 1,
                     legalName: 1,
                     city: 1,
+                    province: 1
                   },
                 },
               ],
@@ -3266,6 +3423,7 @@ export class DealService implements OnModuleInit {
           {
             $addFields: {
               id: '$_id',
+              province: '$merchantDetails.province',
               mediaUrl: {
                 $slice: [
                   {
@@ -3290,6 +3448,11 @@ export class DealService implements OnModuleInit {
                 ],
               },
             },
+          },
+          {
+            $match: {
+              ...locationFilter
+            }
           },
           {
             $project: {
@@ -3325,8 +3488,7 @@ export class DealService implements OnModuleInit {
         .limit(parseInt(limit));
 
       return {
-        totalDeals: totalCount,
-        filteredDeals: filteredCount,
+        totalDeals: totalCount?.length > 0 ? totalCount[0].totalCount : 0,
         data: deals,
       };
     } catch (err) {
@@ -4137,6 +4299,10 @@ export class DealService implements OnModuleInit {
     try {
       const deal = await this.dealModel.findOne({ dealID: buyNowDto.dealID });
 
+      if (!deal) {
+        throw new Error ('Deal ID not found!')
+      }
+
       const merchant = await this._userModel.findOne({
         userID: deal.merchantID,
         deletedCheck: false,
@@ -4163,7 +4329,7 @@ export class DealService implements OnModuleInit {
       ) {
         throw new Error('Insufficent Quantity of deal present!');
       }
-      debugger
+
       let dealVouchers = 0,
         soldVouchers = 0;
       deal.subDeals = deal.subDeals.map((element) => {
@@ -4220,18 +4386,39 @@ export class DealService implements OnModuleInit {
           new Date().getTime() + subDeal?.voucherValidity * 24 * 60 * 60 * 1000;
       }
 
+      let merchantPercentage = merchant.platformPercentage / 100;
+      affiliate.platformPercentage = merchant.platformPercentage / 100;
+
+      const calculatedFee = subDeal.dealPrice * merchantPercentage; // A percentage of amount that will go to divideals from the entire amount
+
+      const netFee = subDeal.dealPrice - merchantPercentage * subDeal.dealPrice; // Amount that will be paid to the merchant by the divideals
+
+      const calculatedFeeForAffiliate = calculatedFee * affiliate.platformPercentage; // A percentage of amount that will go to affiliate from the the amount earned by the platform
+
+      subDeal.grossEarning += subDeal.dealPrice;
+      subDeal.netEarning += netFee;
+
       let voucherDto: any = {
         voucherHeader: subDeal.title,
         dealHeader: deal.dealHeader,
         dealID: deal.dealID,
         dealMongoID: deal._id,
+        subDealHeader: subDeal.title,
         subDealID: subDeal.subDealID,
         subDealMongoID: subDeal._id,
         amount: subDeal.dealPrice,
+        net: netFee,
+        fee: calculatedFee,
         status: VOUCHERSTATUSENUM.purchased,
         merchantID: deal.merchantID,
         merchantMongoID: merchant.id,
+        merchantPaymentStatus: MERCHANTPAYMENTSTATUS.pending,
+        affiliateName: affiliate.firstName + ' ' + affiliate.lastName,
         affiliateID: buyNowDto.affiliateID,
+        affiliatePercentage: merchant.platformPercentage,
+        affiliateFee: calculatedFeeForAffiliate,
+        affiliatePaymentStatus: AFFILIATEPAYMENTSTATUS.pending,
+        platformPercentage: merchant.platformPercentage,
         customerID: customer.userID,
         affiliateMongoID: affiliate.id,
         customerMongoID: customer.id,
@@ -4260,7 +4447,7 @@ export class DealService implements OnModuleInit {
 
       await this._userModel.updateOne(
         { userID: deal.merchantID },
-        { purchasedVouchers: merchant.purchasedVouchers + buyNowDto.quantity },
+        { purchasedVouchers: merchant.purchasedVouchers + buyNowDto.quantity, totalEarnings: merchant.totalEarnings + netFee },
       );
 
       this.sendMail(emailDto);

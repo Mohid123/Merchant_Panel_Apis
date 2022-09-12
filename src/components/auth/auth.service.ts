@@ -115,7 +115,7 @@ export class AuthService {
       throw new UnauthorizedException('Incorrect email!');
     }
 
-    if (!(user.status == USERSTATUS.approved && user.role == 'Merchant')) {
+    if (!(user.status == USERSTATUS.approved && (user.role == 'Merchant' || user.role == 'Admin'))) {
       throw new NotFoundException('Merchant Not Found!');
     }
 
@@ -204,6 +204,11 @@ export class AuthService {
     loginDto.tradeName = loginDto.companyName;
     loginDto.countryCode = 'BE';
     loginDto.leadSource = 'web';
+
+    if (loginDto.role == USERROLE.merchant) {
+      loginDto.platformPercentage = 25;
+    }
+
     return await new this._usersService(loginDto).save();
   }
 

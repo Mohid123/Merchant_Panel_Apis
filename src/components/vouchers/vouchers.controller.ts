@@ -12,11 +12,13 @@ import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { MultipleVouchersDto } from 'src/dto/vouchers/multiplevouchers.dto';
 import { RedeemVoucherDto } from 'src/dto/vouchers/redeemVoucher.dto';
+import { UpdateVoucherForCRMDto } from 'src/dto/vouchers/updatevoucherforcrom.dto';
 import { VoucherDto } from '../../dto/vouchers/vouchers.dto';
 import { BILLINGSTATUS } from '../../enum/billing/billingStatus.enum';
 import { SORT } from '../../enum/sort/sort.enum';
 import { VOUCHERSTATUSENUM } from '../../enum/voucher/voucherstatus.enum';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { JwtManagerAuthGuard } from '../auth/jwt-manager-auth.guard';
 import { JwtMerchantAuthGuard } from '../auth/jwt-merchant-auth.guard';
 import { VouchersService } from './vouchers.service';
 
@@ -30,6 +32,27 @@ export class VouchersController {
   @Post('createVoucher')
   createVoucher(@Body() voucherDto: VoucherDto) {
     return this.voucherService.createVoucher(voucherDto);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtManagerAuthGuard)
+  @UseGuards(JwtAuthGuard)
+  @Get('getVoucherByID/:voucherID')
+  getVoucherByID (
+    @Param('voucherID') voucherID: string
+  ) {
+    return this.voucherService.getVoucherByID(voucherID)
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtManagerAuthGuard)
+  @UseGuards(JwtAuthGuard)
+  @Post('updateVoucherByID/:voucherID')
+  updateVoucherByID (
+    @Param('voucherID') voucherID: string,
+    @Body() updateVoucherForCRMDto: UpdateVoucherForCRMDto
+  ) {
+    return this.voucherService.updateVoucherByID(voucherID ,updateVoucherForCRMDto)
   }
 
   @ApiBearerAuth()

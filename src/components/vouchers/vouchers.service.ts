@@ -16,6 +16,8 @@ import { ScheduleService } from '../schedule/schedule.service';
 const qr = require('qrcode');
 import * as fs from 'fs';
 import { USERSTATUS } from 'src/enum/user/userstatus.enum';
+import { DealInterface } from 'src/interface/deal/deal.interface';
+import axios from 'axios';
 
 @Injectable()
 export class VouchersService {
@@ -28,6 +30,7 @@ export class VouchersService {
     private readonly userModel: Model<UsersInterface>,
     @InjectModel('Schedule') private _scheduleModel: Model<Schedule>,
     private _scheduleService: ScheduleService,
+    @InjectModel('Deal') private readonly dealModel: Model<DealInterface>,
   ) {}
 
   async generateVoucherId(sequenceName) {
@@ -65,6 +68,8 @@ export class VouchersService {
 
       voucher = await voucher.save();
 
+      // const res = await axios.get(`https://www.zohoapis.eu/crm/v2/functions/createvoucher/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&voucherid=${voucher.voucherID}`);
+
       let url = `${process.env.merchantPanelURL}/redeemVoucher/${voucher.id}`;
 
       url = await this.generateQRCode(url);
@@ -72,6 +77,86 @@ export class VouchersService {
       await this.voucherModel.findByIdAndUpdate(voucher.id, { redeemQR: url });
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async updateVoucherByID (voucherID ,updateVoucherForCRMDto) {
+    try {
+      const voucher = await this.voucherModel.findOne({voucherID: voucherID});
+      if (!voucher) {
+        throw new Error('Voucher not found!')
+      }
+ 
+      await this.voucherModel.updateOne({voucherID: voucherID}, updateVoucherForCRMDto);
+
+      return {
+        message: 'Voucher has been updated successfully!'
+      }
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async getVoucherByID (voucherID) {
+    try {
+
+      let voucher: any = await this.voucherModel.findOne({voucherID: voucherID});
+
+      if (!voucher) {
+        throw new Error('Voucher not found!');
+      }
+
+      voucher = JSON.parse(JSON.stringify(voucher));
+
+      voucher.voucherID = voucher.voucherID;
+      voucher.voucherHeader = voucher.voucherHeader;
+      voucher.dealHeader = voucher.dealHeader;
+      voucher.dealID = voucher.dealID;
+      voucher.subDealHeader = voucher.subDealHeader;
+      voucher.subDealID = voucher.subDealID;
+      voucher.merchantID = voucher.merchantID;
+      voucher.customerID = voucher.customerID;
+      voucher.affiliateName = voucher.affiliateName;
+      voucher.affiliateID = voucher.affiliateID;
+      voucher.unitPrice = voucher.amount;
+      voucher.voucherStatus = voucher.status;
+      voucher.affiliatePercentage = voucher.affiliatePercentage;
+      voucher.affiliateFee = voucher.affiliateFee;
+      voucher.affiliatePaymentStatus = voucher.affiliatePaymentStatus;
+      voucher.platformPercentage = voucher.platformPercentage;
+      voucher.platformFee = voucher.fee;
+      voucher.netEarning = voucher.net;
+      voucher.merchantPaymentStatus = voucher.merchantPaymentStatus;
+      voucher.purchaseDate = voucher.boughtDate;
+      voucher.redeemDate = voucher.redeemDate;
+      voucher.expiryDate = voucher.expiryDate;
+      voucher.redeemDate = voucher.redeemData?voucher.redeemData:null;
+
+      delete voucher?.id;
+      delete voucher?.dealMongoID;
+      delete voucher?.subDealMongoID;
+      delete voucher?.merchantMongoID;
+      delete voucher?.customerMongoID;
+      delete voucher?.affiliateMongoID;
+      delete voucher?.paymentStatus;
+      delete voucher?.imageURL;
+      delete voucher?.dealPrice;
+      delete voucher?.originalPrice;
+      delete voucher?.discountedPercentage;
+      delete voucher?.deletedCheck;
+      delete voucher?.redeemQR;
+      delete voucher?.amount;
+      delete voucher?.createdAt;
+      delete voucher?.updatedAt;
+      delete voucher?.status;
+      delete voucher?.net;
+      delete voucher?.fee;
+      delete voucher?.boughtDate;
+
+      return voucher;
+
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -558,7 +643,7 @@ export class VouchersService {
       });
 
       if (req.user.id != voucher.merchantMongoID) {
-        throw new UnauthorizedException('Not allowed to redeem voucher!');
+        throw new UnauthorizedException('Merchant Not allowed to redeem voucher!');
       }
 
       if (voucher) {
@@ -576,7 +661,7 @@ export class VouchersService {
       }
 
       if (!voucher) {
-        throw new Error('No found!');
+        throw new Error('Voucher Not found!');
       }
 
       let scheduledVoucher = await this._scheduleModel.findOne({
@@ -594,24 +679,37 @@ export class VouchersService {
 
       let redeemDate = new Date().getTime();
 
-      const calculatedFee = voucher.dealPrice * 0.05; //five percent goes to affiliate
-      const net = voucher.dealPrice - 0.05 * voucher.dealPrice;
+      // const calculatedFee = voucher.dealPrice * merchant.platformPercentage; //five percent goes to affiliate
+      // const net = voucher.dealPrice - merchant.platformPercentage * voucher.dealPrice;
+      // const calculatedFeeForAffiliate = calculatedFee * voucher.affiliatePercentage;
 
       await this.voucherModel.updateOne(
         { voucherID: voucherId },
         {
           status: VOUCHERSTATUSENUM.redeeemed,
           redeemDate: redeemDate,
-          net: net,
-          fee: calculatedFee
+          // net: net,
+          // fee: calculatedFee,
+          // affiliateFee: calculatedFeeForAffiliate
         },
       );
+
+      // const deal = await this.dealModel.findOne({dealID: voucher.dealID});
+
+      // const subDeal = deal.subDeals.find(
+      //   (el) => el.subDealID == voucher.subDealID,
+      // );
+
+      // subDeal.grossEarning += voucher.dealPrice;
+      // subDeal.netEarning += net;
+
+      // await this.dealModel.updateOne({ dealID: voucher.dealID }, deal);
 
       await this.userModel.updateOne(
         { userID: voucher.merchantID },
         {
           redeemedVouchers: merchant.redeemedVouchers + 1,
-          totalEarnings: merchant.totalEarnings + net,
+          // totalEarnings: merchant.totalEarnings + net,
         },
       );
 
@@ -729,7 +827,7 @@ export class VouchersService {
       }
 
       if (!voucher) {
-        throw new Error('No found!');
+        throw new Error(' Voucher Not found!');
       }
 
       let scheduledVoucher = await this._scheduleModel.findOne({
@@ -751,22 +849,35 @@ export class VouchersService {
 
       let redeemDate = new Date().getTime();
 
-      const net = voucher.dealPrice - 0.05 * voucher.dealPrice; //five percent gosed to affliate
+      // const calculatedFee = voucher.dealPrice * 0.05; //five percent goes to affiliate
+      // const net = voucher.dealPrice - 0.05 * voucher.dealPrice;
 
       await this.voucherModel.updateOne(
         { voucherID: redeemVoucherDto.voucherID },
         {
           status: VOUCHERSTATUSENUM.redeeemed,
           redeemDate: redeemDate,
-          net: net,
+          // net: net,
+          // fee: calculatedFee
         },
       );
+
+      // const deal = await this.dealModel.findOne({dealID: voucher.dealID});
+
+      // const subDeal = deal.subDeals.find(
+      //   (el) => el.subDealID == voucher.subDealID,
+      // );
+
+      // subDeal.grossEarning += voucher.dealPrice;
+      // subDeal.netEarning += net;
+
+      // await this.dealModel.updateOne({ dealID: voucher.dealID }, deal);
 
       await this.userModel.updateOne(
         { userID: voucher.merchantID },
         {
           redeemedVouchers: merchant.redeemedVouchers + 1,
-          totalEarnings: merchant.totalEarnings + net,
+          // totalEarnings: merchant.totalEarnings + net,
         },
       );
 
