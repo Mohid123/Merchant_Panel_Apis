@@ -76,4 +76,5 @@ exports.LeadSchema.set('toJSON', {
         delete ret._id;
     },
 });
+exports.LeadSchema.index({ email: 1, deletedCheck: 1 });
 //# sourceMappingURL=lead.schema.js.map

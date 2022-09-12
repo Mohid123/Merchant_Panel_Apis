@@ -21,4 +21,6 @@ mongoose.model('Category', exports.CategorySchema);
 exports.CategorySchema.pre('save', async function (next) {
     next();
 });
+exports.CategorySchema.index({ categoryName: 1 });
+exports.CategorySchema.index({ _id: 1 });
 //# sourceMappingURL=category.schema.js.map

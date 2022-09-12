@@ -57,4 +57,13 @@ mongoose.model('Review', exports.ReviewSchema);
 exports.ReviewSchema.pre('save', async function (next) {
     next();
 });
+exports.ReviewSchema.index({ customerID: 1 });
+exports.ReviewSchema.index({ customerMongoID: 1 });
+exports.ReviewSchema.index({ merchantMongoID: 1, dealID: 1 });
+exports.ReviewSchema.index({ merchantMongoID: 1, dealMongoID: 1 });
+exports.ReviewSchema.index({ merchantID: 1, dealID: 1 });
+exports.ReviewSchema.index({ merchantID: 1, dealMongoID: 1 });
+exports.ReviewSchema.index({ totalRating: 1 });
+exports.ReviewSchema.index({ merchantMongoID: 1, isViewed: 1 });
+exports.ReviewSchema.index({ merchantID: 1, isViewed: 1 });
 //# sourceMappingURL=review.schema.js.map

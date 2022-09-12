@@ -9,9 +9,9 @@ exports.FavouriteSchema = new mongoose.Schema({
     customerID: { type: String, default: '' },
     dealMongoID: { type: String, default: '' },
     dealID: { type: String, default: '' },
-    deletedCheck: { type: Boolean, default: false }
+    deletedCheck: { type: Boolean, default: false },
 }, {
-    collection: 'favourites'
+    collection: 'favourites',
 });
 exports.FavouriteSchema.set('timestamps', true);
 exports.FavouriteSchema.set('toJSON', {
@@ -25,4 +25,7 @@ mongoose.model('favourites', exports.FavouriteSchema);
 exports.FavouriteSchema.pre('save', async function (next) {
     next();
 });
+exports.FavouriteSchema.index({ customerMongoID: 1 });
+exports.FavouriteSchema.index({ customerID: 1 });
+exports.FavouriteSchema.index({ customerMongoID: 1, dealMongoID: 1 });
 //# sourceMappingURL=favourites.schema.js.map

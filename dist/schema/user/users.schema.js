@@ -69,7 +69,7 @@ exports.UsersSchema = new mongoose.Schema({
     },
     isSubscribed: { type: Boolean, default: false },
     popularCount: { type: Number, default: 0 },
-    platformPercentage: { type: Number }
+    platformPercentage: { type: Number },
 }, {
     collection: 'users',
 });
@@ -82,4 +82,10 @@ exports.UsersSchema.set('toJSON', {
         delete ret._id;
     },
 });
+exports.UsersSchema.index({ userID: 1, deletedCheck: 1 });
+exports.UsersSchema.index({ _id: 1, deletedCheck: 1 });
+exports.UsersSchema.index({ _id: 1, deletedCheck: 1, role: 1 });
+exports.UsersSchema.index({ email: 1 });
+exports.UsersSchema.index({ email: 1, deletedCheck: 1 });
+exports.UsersSchema.index({ email: 1, deletedCheck: 1, role: 1 });
 //# sourceMappingURL=users.schema.js.map

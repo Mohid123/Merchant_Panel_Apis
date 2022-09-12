@@ -71,4 +71,8 @@ mongoose.model('Deal', exports.DealSchema);
 exports.DealSchema.pre('save', async function (next) {
     next();
 });
+exports.DealSchema.index({ dealID: 1, deletedCheck: 1, dealStatus: 1 });
+exports.DealSchema.index({ _id: 1, deletedCheck: 1, dealStatus: 1 });
+exports.DealSchema.index({ merchantMongoID: 1, deletedCheck: 1 });
+exports.DealSchema.index({ merchantID: 1, deletedCheck: 1 });
 //# sourceMappingURL=deal.schema.js.map

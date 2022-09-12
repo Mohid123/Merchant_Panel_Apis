@@ -54,4 +54,8 @@ mongoose.model('Voucher', exports.VoucherSchema);
 exports.VoucherSchema.pre('save', async function (next) {
     next();
 });
+exports.VoucherSchema.index({ voucherID: 1 });
+exports.VoucherSchema.index({ customerMongoID: 1 });
+exports.VoucherSchema.index({ merchantMongoID: 1 });
+exports.VoucherSchema.index({ merchantID: 1 });
 //# sourceMappingURL=vouchers.schema.js.map

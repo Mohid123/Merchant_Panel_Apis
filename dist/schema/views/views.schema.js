@@ -11,7 +11,7 @@ exports.ViewsSchema = new mongoose.Schema({
     customerID: { type: String, default: '' },
     viewedTime: { type: Number },
 }, {
-    collection: 'views'
+    collection: 'views',
 });
 exports.ViewsSchema.set('timestamps', true);
 exports.ViewsSchema.set('toJSON', {
@@ -25,4 +25,8 @@ mongoose.model('views', exports.ViewsSchema);
 exports.ViewsSchema.pre('save', async function (next) {
     next();
 });
+exports.ViewsSchema.index({ dealMongoID: 1 });
+exports.ViewsSchema.index({ customerMongoID: 1 });
+exports.ViewsSchema.index({ customerID: 1 });
+exports.ViewsSchema.index({ dealID: 1 });
 //# sourceMappingURL=views.schema.js.map

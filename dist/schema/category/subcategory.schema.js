@@ -7,9 +7,9 @@ exports.SubCategorySchema = new mongoose.Schema({
     _id: { type: String, default: utils_1.generateStringId },
     subCategoryName: { type: String, default: '' },
     categoryID: { type: String, default: '' },
-    categoryName: { type: String, default: '' }
+    categoryName: { type: String, default: '' },
 }, {
-    collection: 'subCategories'
+    collection: 'subCategories',
 });
 mongoose.model('SubCategory', exports.SubCategorySchema);
 exports.SubCategorySchema.set('timestamps', true);
@@ -20,4 +20,6 @@ exports.SubCategorySchema.set('toJSON', {
         delete ret._id;
     },
 });
+exports.SubCategorySchema.index({ categoryID: 1 });
+exports.SubCategorySchema.index({ categoryName: 1 });
 //# sourceMappingURL=subcategory.schema.js.map

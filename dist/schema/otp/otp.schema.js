@@ -22,4 +22,9 @@ exports.OtpSchema.set('toJSON', {
         delete ret._id;
     },
 });
+exports.OtpSchema.index({ userID: 1 });
+exports.OtpSchema.index({ userID: 1, isUsed: 1 });
+exports.OtpSchema.index({ otp: 1 });
+exports.OtpSchema.index({ otp: 1, userID: 1 });
+exports.OtpSchema.index({ otp: 1, userID: 1, isUsed: 1 });
 //# sourceMappingURL=otp.schema.js.map

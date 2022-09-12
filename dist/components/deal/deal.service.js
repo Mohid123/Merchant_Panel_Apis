@@ -3830,6 +3830,7 @@ let DealService = class DealService {
     async buyNow(buyNowDto, req) {
         try {
             const deal = await this.dealModel.findOne({ dealID: buyNowDto.dealID });
+            debugger;
             if (!deal) {
                 throw new Error('Deal ID not found!');
             }
@@ -3846,8 +3847,7 @@ let DealService = class DealService {
                 throw new Error('Affiliate doesnot exist!');
             }
             const subDeal = deal.subDeals.find((el) => el.subDealID == buyNowDto.subDealID);
-            if (subDeal.numberOfVouchers - subDeal.soldVouchers <
-                buyNowDto.quantity) {
+            if (subDeal.numberOfVouchers < buyNowDto.quantity) {
                 throw new Error('Insufficent Quantity of deal present!');
             }
             let dealVouchers = 0, soldVouchers = 0;
@@ -3938,7 +3938,7 @@ let DealService = class DealService {
             return { message: 'Purchase Successfull!' };
         }
         catch (err) {
-            throw new common_1.HttpException(err.message, common_1.HttpStatus.BAD_GATEWAY);
+            throw new common_1.HttpException(err.message, common_1.HttpStatus.BAD_REQUEST);
         }
     }
     async sendMail(emailDto) {
