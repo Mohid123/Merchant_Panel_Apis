@@ -52,3 +52,8 @@ mongoose.model('Voucher', VoucherSchema);
 VoucherSchema.pre<VoucherInterface>('save', async function (next) {
   next();
 });
+
+VoucherSchema.index({ voucherID: 1 });
+VoucherSchema.index({ customerMongoID: 1 });
+VoucherSchema.index({ merchantMongoID: 1 });
+VoucherSchema.index({ merchantID: 1 });
