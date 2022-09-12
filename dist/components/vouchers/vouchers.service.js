@@ -21,6 +21,7 @@ const sort_enum_1 = require("../../enum/sort/sort.enum");
 const schedule_service_1 = require("../schedule/schedule.service");
 const qr = require('qrcode');
 const fs = require("fs");
+const axios_1 = require("axios");
 let VouchersService = class VouchersService {
     constructor(voucherModel, voucherCounterModel, userModel, _scheduleModel, _scheduleService, dealModel) {
         this.voucherModel = voucherModel;
@@ -53,6 +54,7 @@ let VouchersService = class VouchersService {
                 deletedCheck: false,
             });
             voucher = await voucher.save();
+            const res = await axios_1.default.get(`https://www.zohoapis.eu/crm/v2/functions/createvoucher/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&voucherid=${voucher.voucherID}`);
             let url = `${process.env.merchantPanelURL}/redeemVoucher/${voucher.id}`;
             url = await this.generateQRCode(url);
             await this.voucherModel.findByIdAndUpdate(voucher.id, { redeemQR: url });

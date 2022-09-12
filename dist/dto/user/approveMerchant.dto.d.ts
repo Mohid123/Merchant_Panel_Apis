@@ -16,5 +16,5 @@ export declare class ApproveMerchantDTO {
     phoneNumber: string;
     countryCode: string;
     leadSource: string;
-    platformPercentage: string;
+    platformPercentage: number;
 }

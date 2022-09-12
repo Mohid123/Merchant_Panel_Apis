@@ -85,7 +85,7 @@ __decorate([
 ], ApproveMerchantDTO.prototype, "leadSource", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
-    __metadata("design:type", String)
+    __metadata("design:type", Number)
 ], ApproveMerchantDTO.prototype, "platformPercentage", void 0);
 exports.ApproveMerchantDTO = ApproveMerchantDTO;
 //# sourceMappingURL=approveMerchant.dto.js.map
