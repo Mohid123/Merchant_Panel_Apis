@@ -4299,7 +4299,7 @@ export class DealService implements OnModuleInit {
   async buyNow(buyNowDto, req) {
     try {
       const deal = await this.dealModel.findOne({ dealID: buyNowDto.dealID });
-
+      debugger
       if (!deal) {
         throw new Error ('Deal ID not found!')
       }
@@ -4325,8 +4325,7 @@ export class DealService implements OnModuleInit {
       );
 
       if (
-        subDeal.numberOfVouchers - subDeal.soldVouchers <
-        buyNowDto.quantity
+        subDeal.numberOfVouchers < buyNowDto.quantity
       ) {
         throw new Error('Insufficent Quantity of deal present!');
       }
@@ -4455,7 +4454,7 @@ export class DealService implements OnModuleInit {
 
       return { message: 'Purchase Successfull!' };
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.BAD_GATEWAY);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 

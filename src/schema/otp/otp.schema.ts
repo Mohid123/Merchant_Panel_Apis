@@ -26,3 +26,9 @@ OtpSchema.set('toJSON', {
     delete ret._id;
   },
 });
+
+OtpSchema.index({ userID: 1 });
+OtpSchema.index({ userID: 1, isUsed: 1 });
+OtpSchema.index({ otp: 1 });
+OtpSchema.index({ otp: 1, userID: 1 });
+OtpSchema.index({ otp: 1, userID: 1, isUsed: 1 });
