@@ -62,3 +62,13 @@ mongoose.model('Review', ReviewSchema);
 ReviewSchema.pre<ReviewInterface>('save', async function (next) {
   next();
 });
+
+ReviewSchema.index({ customerID: 1 });
+ReviewSchema.index({ customerMongoID: 1 });
+ReviewSchema.index({ merchantMongoID: 1, dealID: 1 });
+ReviewSchema.index({ merchantMongoID: 1, dealMongoID: 1 });
+ReviewSchema.index({ merchantID: 1, dealID: 1 });
+ReviewSchema.index({ merchantID: 1, dealMongoID: 1 });
+ReviewSchema.index({ totalRating: 1 });
+ReviewSchema.index({ merchantMongoID: 1, isViewed: 1 });
+ReviewSchema.index({ merchantID: 1, isViewed: 1 });

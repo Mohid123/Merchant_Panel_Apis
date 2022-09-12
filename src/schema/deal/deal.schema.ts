@@ -11,7 +11,7 @@ export const DealSchema = new mongoose.Schema(
     dealHeader: { type: String, default: '' },
     subTitle: { type: String, default: '' },
     highlights: { type: String, default: '' },
-    categoryID: { type: String , default: '' },
+    categoryID: { type: String, default: '' },
     categoryName: { type: String },
     subCategoryID: { type: String, default: '' },
     subCategory: { type: String, default: '' },
@@ -23,8 +23,8 @@ export const DealSchema = new mongoose.Schema(
     soldVouchers: { type: Number, default: 0 },
     aboutThisDeal: { type: String, default: '' },
     minDealPrice: { type: Number, default: 0 },
-    minOriginalPrice: { type: Number, default: 0},
-    minDiscountPercentage: { type: Number, default: 0},
+    minOriginalPrice: { type: Number, default: 0 },
+    minDiscountPercentage: { type: Number, default: 0 },
     readMore: { type: String, default: '' },
     finePrints: { type: String, default: '' },
     dealStatus: { type: String, default: '' },
@@ -76,3 +76,8 @@ mongoose.model('Deal', DealSchema);
 DealSchema.pre<DealInterface>('save', async function (next) {
   next();
 });
+
+DealSchema.index({ dealID: 1, deletedCheck: 1, dealStatus: 1 });
+DealSchema.index({ _id: 1, deletedCheck: 1, dealStatus: 1 });
+DealSchema.index({ merchantMongoID: 1, deletedCheck: 1 });
+DealSchema.index({ merchantID: 1, deletedCheck: 1 });

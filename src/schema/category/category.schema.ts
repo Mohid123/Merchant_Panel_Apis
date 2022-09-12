@@ -26,3 +26,6 @@ mongoose.model('Category', CategorySchema);
 CategorySchema.pre<CategoryInterface>('save', async function (next) {
   next();
 });
+
+CategorySchema.index({ categoryName: 1 });
+CategorySchema.index({ _id: 1 });

@@ -74,7 +74,7 @@ export const UsersSchema = new mongoose.Schema(
     },
     isSubscribed: { type: Boolean, default: false },
     popularCount: { type: Number, default: 0 },
-    platformPercentage: { type: Number }
+    platformPercentage: { type: Number },
   },
   {
     collection: 'users',
@@ -101,3 +101,10 @@ UsersSchema.set('toJSON', {
 
 //   next();
 // });
+
+UsersSchema.index({ userID: 1, deletedCheck: 1 });
+UsersSchema.index({ _id: 1, deletedCheck: 1 });
+UsersSchema.index({ _id: 1, deletedCheck: 1, role: 1 });
+UsersSchema.index({ email: 1 });
+UsersSchema.index({ email: 1, deletedCheck: 1 });
+UsersSchema.index({ email: 1, deletedCheck: 1, role: 1 });
