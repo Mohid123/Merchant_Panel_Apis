@@ -56,5 +56,5 @@ export class ApproveMerchantDTO {
   leadSource: string;
 
   @ApiProperty()
-  platformPercentage: string;
+  platformPercentage: number;
 }

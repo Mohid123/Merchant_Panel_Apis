@@ -3488,13 +3488,6 @@ export class DealService implements OnModuleInit {
         .skip(parseInt(offset))
         .limit(parseInt(limit));
 
-        const totalCount = await this.dealModel.countDocuments({
-          deletedCheck: false,
-          dealStatus: DEALSTATUS.published,
-          ...matchFilter,
-          ...locationFilter
-        });
-
       return {
         totalDeals: totalCount?.length > 0 ? totalCount[0].totalCount : 0,
         data: deals,
