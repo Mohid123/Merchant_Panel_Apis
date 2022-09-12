@@ -92,7 +92,7 @@ export declare class DealController {
         filteredDeals: number;
         data: any[];
     }>;
-    getDealsByCategories(categoryName: string, subCategoryName: string, province: string, fromPrice: number, toPrice: number, reviewRating: number, sorting: SORT, offset: number, limit: number, filterCategoriesApiDto: FilterCategoriesApiDto, req: any): Promise<{
+    getDealsByCategories(categoryName: string, subCategoryName: string, fromPrice: number, toPrice: number, reviewRating: number, sorting: SORT, offset: number, limit: number, filterCategoriesApiDto: FilterCategoriesApiDto, req: any): Promise<{
         totalDeals: any;
         data: any[];
     }>;

@@ -99,8 +99,8 @@ let DealController = class DealController {
     searchDeals(header = '', categoryName, subCategoryName, fromPrice, toPrice, reviewRating, offset = 0, limit = 10, req) {
         return this.dealService.searchDeals(header, categoryName, subCategoryName, fromPrice, toPrice, reviewRating, offset, limit, req);
     }
-    getDealsByCategories(categoryName, subCategoryName, province, fromPrice, toPrice, reviewRating, sorting, offset = 0, limit = 10, filterCategoriesApiDto, req) {
-        return this.dealService.getDealsByCategories(categoryName, subCategoryName, province, fromPrice, toPrice, reviewRating, sorting, offset, limit, filterCategoriesApiDto, req);
+    getDealsByCategories(categoryName, subCategoryName, fromPrice, toPrice, reviewRating, sorting, offset = 0, limit = 10, filterCategoriesApiDto, req) {
+        return this.dealService.getDealsByCategories(categoryName, subCategoryName, fromPrice, toPrice, reviewRating, sorting, offset, limit, filterCategoriesApiDto, req);
     }
     getTrendingDeals(offset = 0, limit = 10, req) {
         return this.dealService.getTrendingDeals(offset, limit, req);
@@ -402,17 +402,16 @@ __decorate([
     (0, common_1.Post)('getDealsByCategories'),
     __param(0, (0, common_1.Query)('categoryName')),
     __param(1, (0, common_1.Query)('subCategoryName')),
-    __param(2, (0, common_1.Query)('province')),
-    __param(3, (0, common_1.Query)('fromPrice')),
-    __param(4, (0, common_1.Query)('toPrice')),
-    __param(5, (0, common_1.Query)('reviewRating')),
-    __param(6, (0, common_1.Query)('sorting')),
-    __param(7, (0, common_1.Query)('offset')),
-    __param(8, (0, common_1.Query)('limit')),
-    __param(9, (0, common_1.Body)()),
-    __param(10, (0, common_1.Req)()),
+    __param(2, (0, common_1.Query)('fromPrice')),
+    __param(3, (0, common_1.Query)('toPrice')),
+    __param(4, (0, common_1.Query)('reviewRating')),
+    __param(5, (0, common_1.Query)('sorting')),
+    __param(6, (0, common_1.Query)('offset')),
+    __param(7, (0, common_1.Query)('limit')),
+    __param(8, (0, common_1.Body)()),
+    __param(9, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, String, Number, Number, Number, String, Number, Number, filtercategoriesapi_dto_1.FilterCategoriesApiDto, Object]),
+    __metadata("design:paramtypes", [String, String, Number, Number, Number, String, Number, Number, filtercategoriesapi_dto_1.FilterCategoriesApiDto, Object]),
     __metadata("design:returntype", void 0)
 ], DealController.prototype, "getDealsByCategories", null);
 __decorate([

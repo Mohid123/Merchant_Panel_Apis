@@ -2717,7 +2717,7 @@ let DealService = class DealService {
             throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
         }
     }
-    async getDealsByCategories(categoryName, subCategoryName, province, fromPrice, toPrice, reviewRating, sorting, offset, limit, filterCategoriesApiDto, req) {
+    async getDealsByCategories(categoryName, subCategoryName, fromPrice, toPrice, reviewRating, sorting, offset, limit, filterCategoriesApiDto, req) {
         var _a, _b, _c;
         try {
             offset = parseInt(offset) < 0 ? 0 : offset;

@@ -97,7 +97,7 @@ export declare class DealService implements OnModuleInit {
         filteredDeals: number;
         data: any[];
     }>;
-    getDealsByCategories(categoryName: any, subCategoryName: any, province: any, fromPrice: any, toPrice: any, reviewRating: any, sorting: any, offset: any, limit: any, filterCategoriesApiDto: any, req: any): Promise<{
+    getDealsByCategories(categoryName: any, subCategoryName: any, fromPrice: any, toPrice: any, reviewRating: any, sorting: any, offset: any, limit: any, filterCategoriesApiDto: any, req: any): Promise<{
         totalDeals: any;
         data: any[];
     }>;
