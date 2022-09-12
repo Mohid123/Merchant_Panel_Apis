@@ -354,7 +354,6 @@ export class DealController {
   getDealsByCategories(
     @Query('categoryName') categoryName: string,
     @Query('subCategoryName') subCategoryName: string,
-    @Query('province') province: string,
     @Query('fromPrice') fromPrice: number,
     @Query('toPrice') toPrice: number,
     @Query('reviewRating') reviewRating: number,
@@ -367,7 +366,6 @@ export class DealController {
     return this.dealService.getDealsByCategories(
       categoryName,
       subCategoryName,
-      province,
       fromPrice,
       toPrice,
       reviewRating,
