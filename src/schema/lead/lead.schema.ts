@@ -84,3 +84,5 @@ LeadSchema.set('toJSON', {
     delete ret._id;
   },
 });
+
+LeadSchema.index({ email: 1, deletedCheck: 1 });
