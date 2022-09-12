@@ -3095,7 +3095,6 @@ export class DealService implements OnModuleInit {
   async getDealsByCategories(
     categoryName,
     subCategoryName,
-    province,
     fromPrice,
     toPrice,
     reviewRating,
