@@ -33,6 +33,12 @@ export declare class AuthService {
         };
         token: string;
     }>;
+    loginAdmin(loginDto: any): Promise<{
+        user: import("mongoose").Document<unknown, any, UsersInterface> & UsersInterface & {
+            _id: string;
+        };
+        token: string;
+    }>;
     generatePassword(): Promise<any>;
     signup(loginDto: any): Promise<import("mongoose").Document<unknown, any, UsersInterface> & UsersInterface & {
         _id: string;

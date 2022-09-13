@@ -91,7 +91,7 @@ let AuthService = class AuthService {
         if (!user) {
             throw new common_1.UnauthorizedException('Incorrect email!');
         }
-        if (!(user.status == userstatus_enum_1.USERSTATUS.approved && (user.role == 'Merchant' || user.role == 'Admin'))) {
+        if (!(user.status == userstatus_enum_1.USERSTATUS.approved && (user.role == userrole_enum_1.USERROLE.merchant))) {
             throw new common_1.NotFoundException('Merchant Not Found!');
         }
         const isValidCredentials = await bcrypt.compare(loginDto.password, user.password);
@@ -129,6 +129,34 @@ let AuthService = class AuthService {
         delete user.businessHours;
         const token = this.generateToken(user);
         return { user, token: token.access_token };
+    }
+    async loginAdmin(loginDto) {
+        try {
+            let user = await this._usersService.findOne({
+                email: loginDto.email.toLowerCase(),
+                deletedCheck: false,
+            });
+            if (!user) {
+                throw new common_1.UnauthorizedException('Incorrect email!');
+            }
+            if (!(user.role == userrole_enum_1.USERROLE.admin)) {
+                throw new common_1.NotFoundException('This user is not an admin.');
+            }
+            const isValidCredentials = await bcrypt.compare(loginDto.password, user.password);
+            if (!isValidCredentials) {
+                throw new common_1.UnauthorizedException('Incorrect password!');
+            }
+            user = JSON.parse(JSON.stringify(user));
+            delete user.password;
+            delete user.aboutUs;
+            delete user.finePrint;
+            delete user.businessHours;
+            const token = this.generateToken(user);
+            return { user, token: token.access_token };
+        }
+        catch (err) {
+            throw new common_1.HttpException(err === null || err === void 0 ? void 0 : err.message, common_1.HttpStatus.BAD_REQUEST);
+        }
     }
     async generatePassword() {
         let password = generator.generate({
