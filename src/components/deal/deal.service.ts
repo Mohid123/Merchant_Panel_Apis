@@ -597,7 +597,7 @@ export class DealService implements OnModuleInit {
             $match: {
               _id: id,
               deletedCheck: false,
-              dealStatus: DEALSTATUS.published,
+              // dealStatus: DEALSTATUS.published,
             },
           },
           {
