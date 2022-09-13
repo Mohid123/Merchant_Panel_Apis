@@ -51,9 +51,6 @@ let DealController = class DealController {
     getDeal(id, req) {
         return this.dealService.getDeal(id, req);
     }
-    getDealForMerchantPanel(dealMongoID) {
-        return this.dealService.getDealForMerchantPanel(dealMongoID);
-    }
     getDealsReviewStatsByMerchant(merchantID, dealID = '', offset = 0, limit = 10, multipleReviewsDto) {
         return this.dealService.getDealsReviewStatsByMerchant(merchantID, dealID, offset, limit, multipleReviewsDto);
     }
@@ -110,6 +107,9 @@ let DealController = class DealController {
     }
     getRecentlyViewedDeals(offset = 0, limit = 10, req) {
         return this.dealService.getRecentlyViewedDeals(offset, limit, req);
+    }
+    getRecommendedForYouDeals(offset = 0, limit = 10, req) {
+        return this.dealService.getRecommendedForYouDeals(offset, limit, req);
     }
     getDealByID(dealID) {
         return this.dealService.getDealByID(dealID);
@@ -174,16 +174,6 @@ __decorate([
     __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", void 0)
 ], DealController.prototype, "getDeal", null);
-__decorate([
-    (0, swagger_1.ApiBearerAuth)(),
-    (0, common_1.UseGuards)(jwt_merchant_auth_guard_1.JwtMerchantAuthGuard),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
-    (0, common_1.Get)(' /:dealMongoID'),
-    __param(0, (0, common_1.Param)('dealMongoID')),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
-    __metadata("design:returntype", void 0)
-], DealController.prototype, "getDealForMerchantPanel", null);
 __decorate([
     (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
@@ -449,6 +439,17 @@ __decorate([
     __metadata("design:paramtypes", [Number, Number, Object]),
     __metadata("design:returntype", void 0)
 ], DealController.prototype, "getRecentlyViewedDeals", null);
+__decorate([
+    (0, common_1.UseGuards)(optional_auth_guard_1.OptionalJwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.Get)('getRecommendedForYouDeals'),
+    __param(0, (0, common_1.Query)('offset')),
+    __param(1, (0, common_1.Query)('limit')),
+    __param(2, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, Number, Object]),
+    __metadata("design:returntype", void 0)
+], DealController.prototype, "getRecommendedForYouDeals", null);
 __decorate([
     (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.UseGuards)(jwt_manager_auth_guard_1.JwtManagerAuthGuard),

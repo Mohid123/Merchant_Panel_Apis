@@ -92,7 +92,7 @@ let AuthService = class AuthService {
             throw new common_1.UnauthorizedException('Incorrect email!');
         }
         if (!(user.status == userstatus_enum_1.USERSTATUS.approved && (user.role == userrole_enum_1.USERROLE.merchant))) {
-            throw new common_1.NotFoundException('Merchant Not Found!');
+            throw new common_1.NotFoundException('This user is not a merchant!');
         }
         const isValidCredentials = await bcrypt.compare(loginDto.password, user.password);
         if (!isValidCredentials) {
@@ -116,7 +116,7 @@ let AuthService = class AuthService {
             throw new common_1.UnauthorizedException('Incorrect email!');
         }
         if (!(user.role == 'Customer')) {
-            throw new common_1.NotFoundException('Customer Not Found!');
+            throw new common_1.NotFoundException('This user is not a customer!');
         }
         const isValidCredentials = await bcrypt.compare(loginDto.password, user.password);
         if (!isValidCredentials) {
@@ -140,7 +140,7 @@ let AuthService = class AuthService {
                 throw new common_1.UnauthorizedException('Incorrect email!');
             }
             if (!(user.role == userrole_enum_1.USERROLE.admin)) {
-                throw new common_1.NotFoundException('This user is not an admin.');
+                throw new common_1.NotFoundException('This user is not an admin!');
             }
             const isValidCredentials = await bcrypt.compare(loginDto.password, user.password);
             if (!isValidCredentials) {

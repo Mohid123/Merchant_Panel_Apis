@@ -24,7 +24,6 @@ export declare class DealController {
     }>;
     approveRejectDeal(dealID: string, dealStatusDto: DealStatusDto): Promise<import("mongodb").UpdateResult>;
     getDeal(id: string, req: any): Promise<any>;
-    getDealForMerchantPanel(dealMongoID: string): Promise<any>;
     getDealsReviewStatsByMerchant(merchantID: string, dealID: string, offset: number, limit: number, multipleReviewsDto: MultipleReviewsDto): Promise<{
         totalDeals: number;
         filteredDealCount: number;
@@ -92,10 +91,7 @@ export declare class DealController {
         filteredDeals: number;
         data: any[];
     }>;
-    getDealsByCategories(categoryName: string, subCategoryName: string, fromPrice: number, toPrice: number, reviewRating: number, sorting: SORT, offset: number, limit: number, filterCategoriesApiDto: FilterCategoriesApiDto, req: any): Promise<{
-        totalDeals: any;
-        data: any[];
-    }>;
+    getDealsByCategories(categoryName: string, subCategoryName: string, fromPrice: number, toPrice: number, reviewRating: number, sorting: SORT, offset: number, limit: number, filterCategoriesApiDto: FilterCategoriesApiDto, req: any): Promise<any>;
     getTrendingDeals(offset: number, limit: number, req: any): Promise<{
         totalDeals: number;
         data: any[];
@@ -105,6 +101,10 @@ export declare class DealController {
         deals: any[];
     }>;
     getRecentlyViewedDeals(offset: number, limit: number, req: any): Promise<{
+        data: any[];
+    }>;
+    getRecommendedForYouDeals(offset: number, limit: number, req: any): Promise<{
+        totalCount: number;
         data: any[];
     }>;
     getDealByID(dealID: string): Promise<any>;
