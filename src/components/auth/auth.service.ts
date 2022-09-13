@@ -116,7 +116,7 @@ export class AuthService {
     }
 
     if (!(user.status == USERSTATUS.approved && (user.role == USERROLE.merchant))) {
-      throw new NotFoundException('Merchant Not Found!');
+      throw new NotFoundException('This user is not a merchant!');
     }
 
     const isValidCredentials = await bcrypt.compare(
@@ -151,7 +151,7 @@ export class AuthService {
     }
 
     if (!(user.role == 'Customer')) {
-      throw new NotFoundException('Customer Not Found!');
+      throw new NotFoundException('This user is not a customer!');
     }
 
     const isValidCredentials = await bcrypt.compare(
@@ -186,7 +186,7 @@ export class AuthService {
       }
   
       if (!(user.role == USERROLE.admin)) {
-        throw new NotFoundException('This user is not an admin.');
+        throw new NotFoundException('This user is not an admin!');
       }
   
       const isValidCredentials = await bcrypt.compare(
