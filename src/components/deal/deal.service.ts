@@ -4353,7 +4353,7 @@ export class DealService implements OnModuleInit {
           },
           {
             $addFields: {
-              id: '$_id',
+              'recentlyViewed.id': '$recentlyViewed._id',
               'recentlyViewed.mediaUrl': {
                 $slice: [
                   {
@@ -4384,6 +4384,7 @@ export class DealService implements OnModuleInit {
               id: 0,
               _id: 0,
               favouriteDeal: 0,
+              'recentlyViewed._id': 0,
               'recentlyViewed.merchantMongoID': 0,
               'recentlyViewed.merchantID': 0,
               'recentlyViewed.subTitle': 0,

@@ -79,15 +79,15 @@ export class DealController {
     return this.dealService.getDeal(id, req);
   }
 
-  @ApiBearerAuth()
-  @UseGuards(JwtMerchantAuthGuard)
-  @UseGuards(JwtAuthGuard)
-  @Get(' /:dealMongoID')
-  getDealForMerchantPanel (
-    @Param('dealMongoID') dealMongoID: string
-  ) {
-    return this.dealService.getDealForMerchantPanel(dealMongoID)
-  }
+  // @ApiBearerAuth()
+  // @UseGuards(JwtMerchantAuthGuard)
+  // @UseGuards(JwtAuthGuard)
+  // @Get('getDealForMerchantPanel/:dealMongoID')
+  // getDealForMerchantPanel (
+  //   @Param('dealMongoID') dealMongoID: string
+  // ) {
+  //   return this.dealService.getDealForMerchantPanel(dealMongoID)
+  // }
 
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
