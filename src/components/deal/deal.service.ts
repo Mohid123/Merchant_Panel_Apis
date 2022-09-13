@@ -4140,7 +4140,7 @@ export class DealService implements OnModuleInit {
               from: 'users',
               as: 'merchantDetails',
               let: {
-                userID: '$merchantID',
+                userID: '$recentlyViewed.merchantID',
                 deletedCheck: '$deletedCheck',
               },
               pipeline: [
