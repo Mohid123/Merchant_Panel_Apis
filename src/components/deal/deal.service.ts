@@ -591,14 +591,13 @@ export class DealService implements OnModuleInit {
 
   async getDeal(id, req) {
     try {
-
       let deal = await this.dealModel
         .aggregate([
           {
             $match: {
               _id: id,
               deletedCheck: false,
-              dealStatus: DEALSTATUS.published,
+              // dealStatus: DEALSTATUS.published,
             },
           },
           {
@@ -678,9 +677,8 @@ export class DealService implements OnModuleInit {
     }
   }
 
-  async getDealForMerchantPanel (dealMongoID) {
+  async getDealForMerchantPanel(dealMongoID) {
     try {
-
       let deal = await this.dealModel
         .aggregate([
           {
@@ -3168,13 +3166,13 @@ export class DealService implements OnModuleInit {
         let sortPrice = sorting == SORTINGENUM.priceAsc ? 1 : -1;
         let sortRating = sorting == SORTINGENUM.ratingAsc ? 1 : -1;
         let sortDate = sorting == SORTINGENUM.dateAsc ? 1 : -1;
-        console.log('sorting')
+        console.log('sorting');
         sort = {
           ...sort,
           minDealPrice: sortPrice,
           ratingsAverage: sortRating,
-          createdAt: sortDate
-        }
+          createdAt: sortDate,
+        };
       }
 
       let locationFilter = {};
@@ -3279,7 +3277,7 @@ export class DealService implements OnModuleInit {
                   ratingsAverage: 1,
                   legalName: 1,
                   city: 1,
-                  province: 1
+                  province: 1,
                 },
               },
             ],
@@ -3319,12 +3317,205 @@ export class DealService implements OnModuleInit {
         },
         {
           $match: {
-            ...locationFilter
-          }
+            ...locationFilter,
+          },
         },
         {
-          $count: 'totalCount'
-        }
+          $group: {
+            _id: null,
+            totalCount: { $sum: 1 },
+            Between0and50: {
+              $sum: {
+                $cond: [
+                  {
+                    $and: [
+                      {
+                        $gte: ['$minDealPrice', 0],
+                      },
+                      {
+                        $lte: ['$minDealPrice', 50],
+                      },
+                    ],
+                  },
+                  1,
+                  0,
+                ],
+              },
+            },
+            Between50and150: {
+              $sum: {
+                $cond: [
+                  {
+                    $and: [
+                      {
+                        $gte: ['$minDealPrice', 50],
+                      },
+                      {
+                        $lte: ['$minDealPrice', 150],
+                      },
+                    ],
+                  },
+                  1,
+                  0,
+                ],
+              },
+            },
+            Between150and300: {
+              $sum: {
+                $cond: [
+                  {
+                    $and: [
+                      {
+                        $gte: ['$minDealPrice', 150],
+                      },
+                      {
+                        $lte: ['$minDealPrice', 300],
+                      },
+                    ],
+                  },
+                  1,
+                  0,
+                ],
+              },
+            },
+            Between300and450: {
+              $sum: {
+                $cond: [
+                  {
+                    $and: [
+                      {
+                        $gte: ['$minDealPrice', 300],
+                      },
+                      {
+                        $lte: ['$minDealPrice', 450],
+                      },
+                    ],
+                  },
+                  1,
+                  0,
+                ],
+              },
+            },
+            Plus450: {
+              $sum: {
+                $cond: [
+                  {
+                    $gte: ['$minDealPrice', 450],
+                  },
+                  1,
+                  0,
+                ],
+              },
+            },
+            FourUp: {
+              $sum: {
+                $cond: [
+                  {
+                    $gte: ['$ratingsAverage', 4],
+                  },
+                  1,
+                  0,
+                ],
+              },
+            },
+            ThreeUp: {
+              $sum: {
+                $cond: [
+                  {
+                    $gte: ['$ratingsAverage', 3],
+                  },
+                  1,
+                  0,
+                ],
+              },
+            },
+            TwoUp: {
+              $sum: {
+                $cond: [
+                  {
+                    $gte: ['$ratingsAverage', 2],
+                  },
+                  1,
+                  0,
+                ],
+              },
+            },
+            OneUp: {
+              $sum: {
+                $cond: [
+                  {
+                    $gte: ['$ratingsAverage', 1],
+                  },
+                  1,
+                  0,
+                ],
+              },
+            },
+            WestVlaanderen: {
+              $sum: {
+                $cond: [
+                  {
+                    $eq: ['$province', 'West-Vlaanderen'],
+                  },
+                  1,
+                  0,
+                ],
+              },
+            },
+            OostVlaanderen: {
+              $sum: {
+                $cond: [
+                  {
+                    $eq: ['$province', 'Oost-Vlaanderen'],
+                  },
+                  1,
+                  0,
+                ],
+              },
+            },
+            Antwerpen: {
+              $sum: {
+                $cond: [
+                  {
+                    $eq: ['$province', 'Antwerpen'],
+                  },
+                  1,
+                  0,
+                ],
+              },
+            },
+            Limburg: {
+              $sum: {
+                $cond: [
+                  {
+                    $eq: ['$province', 'Limburg'],
+                  },
+                  1,
+                  0,
+                ],
+              },
+            },
+            VlaamsBrabant: {
+              $sum: {
+                $cond: [
+                  {
+                    $eq: ['$province', 'Vlaams-Brabant'],
+                  },
+                  1,
+                  0,
+                ],
+              },
+            },
+          },
+        },
+        {
+          $project: {
+            _id: 0,
+          },
+        },
+        // {
+        //   $count: 'totalCount'
+        // }
       ]);
 
       const deals = await this.dealModel
@@ -3411,7 +3602,7 @@ export class DealService implements OnModuleInit {
                     ratingsAverage: 1,
                     legalName: 1,
                     city: 1,
-                    province: 1
+                    province: 1,
                   },
                 },
               ],
@@ -3451,8 +3642,8 @@ export class DealService implements OnModuleInit {
           },
           {
             $match: {
-              ...locationFilter
-            }
+              ...locationFilter,
+            },
           },
           {
             $project: {
@@ -3488,7 +3679,179 @@ export class DealService implements OnModuleInit {
         .limit(parseInt(limit));
 
       return {
-        totalDeals: totalCount?.length > 0 ? totalCount[0].totalCount : 0,
+        ...totalCount[0],
+        data: deals,
+      };
+    } catch (err) {
+      throw new HttpException(err, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async getRecommendedForYouDeals (offset, limit, req) {
+    try {
+      offset = parseInt(offset) < 0 ? 0 : offset;
+      limit = parseInt(limit) < 1 ? 10 : limit;
+
+
+
+      const totalCount = await this.dealModel.countDocuments({
+        deletedCheck: false,
+        dealStatus: DEALSTATUS.published,
+      });
+
+      const deals = await this.dealModel
+        .aggregate([
+          {
+            $match: {
+              deletedCheck: false,
+              dealStatus: DEALSTATUS.published,
+            },
+          },
+          {
+            $sample: { size: totalCount },
+          },
+          {
+            $lookup: {
+              from: 'favourites',
+              as: 'favouriteDeal',
+              let: {
+                dealID: '$dealID',
+                customerMongoID: req?.user?.id,
+                deletedCheck: '$deletedCheck',
+              },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $and: [
+                        {
+                          $eq: ['$$dealID', '$dealID'],
+                        },
+                        {
+                          $eq: ['$$customerMongoID', '$customerMongoID'],
+                        },
+                        {
+                          $eq: ['$deletedCheck', false],
+                        },
+                      ],
+                    },
+                  },
+                },
+              ],
+            },
+          },
+          {
+            $unwind: {
+              path: '$favouriteDeal',
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          {
+            $lookup: {
+              from: 'users',
+              as: 'merchantDetails',
+              let: {
+                userID: '$merchantID',
+                deletedCheck: '$deletedCheck',
+              },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $and: [
+                        {
+                          $eq: ['$$userID', '$userID'],
+                        },
+                        {
+                          $eq: ['$deletedCheck', false],
+                        },
+                      ],
+                    },
+                  },
+                },
+                {
+                  $addFields: {
+                    id: '$_id',
+                  },
+                },
+                {
+                  $project: {
+                    _id: 0,
+                    id: 1,
+                    totalReviews: 1,
+                    ratingsAverage: 1,
+                    legalName: 1,
+                    city: 1,
+                  },
+                },
+              ],
+            },
+          },
+          {
+            $unwind: '$merchantDetails',
+          },
+          {
+            $addFields: {
+              id: '$_id',
+              mediaUrl: {
+                $slice: [
+                  {
+                    $filter: {
+                      input: '$mediaUrl',
+                      as: 'mediaUrl',
+                      cond: {
+                        $eq: ['$$mediaUrl.type', 'Image'],
+                      },
+                    },
+                  },
+                  1,
+                ],
+              },
+              isFavourite: {
+                $cond: [
+                  {
+                    $ifNull: ['$favouriteDeal', false],
+                  },
+                  true,
+                  false,
+                ],
+              },
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+              merchantMongoID: 0,
+              merchantID: 0,
+              subTitle: 0,
+              categoryName: 0,
+              subCategoryID: 0,
+              subCategory: 0,
+              subDeals: 0,
+              availableVouchers: 0,
+              aboutThisDeal: 0,
+              readMore: 0,
+              finePrints: 0,
+              netEarnings: 0,
+              isCollapsed: 0,
+              isDuplicate: 0,
+              totalReviews: 0,
+              maxRating: 0,
+              minRating: 0,
+              pageNumber: 0,
+              updatedAt: 0,
+              __v: 0,
+              endDate: 0,
+              startDate: 0,
+              reviewMediaUrl: 0,
+              favouriteDeal: 0,
+            },
+          },
+        ])
+        .skip(parseInt(offset))
+        .limit(parseInt(limit));
+      return {
+        totalCount: totalCount,
         data: deals,
       };
     } catch (err) {
@@ -3949,7 +4312,7 @@ export class DealService implements OnModuleInit {
               from: 'users',
               as: 'merchantDetails',
               let: {
-                userID: '$merchantID',
+                userID: '$recentlyViewed.merchantID',
                 deletedCheck: '$deletedCheck',
               },
               pipeline: [
@@ -3990,7 +4353,7 @@ export class DealService implements OnModuleInit {
           },
           {
             $addFields: {
-              id: '$_id',
+              'recentlyViewed.id': '$recentlyViewed._id',
               'recentlyViewed.mediaUrl': {
                 $slice: [
                   {
@@ -4021,6 +4384,7 @@ export class DealService implements OnModuleInit {
               id: 0,
               _id: 0,
               favouriteDeal: 0,
+              'recentlyViewed._id': 0,
               'recentlyViewed.merchantMongoID': 0,
               'recentlyViewed.merchantID': 0,
               'recentlyViewed.subTitle': 0,
@@ -4298,9 +4662,9 @@ export class DealService implements OnModuleInit {
   async buyNow(buyNowDto, req) {
     try {
       const deal = await this.dealModel.findOne({ dealID: buyNowDto.dealID });
-      debugger
+      debugger;
       if (!deal) {
-        throw new Error ('Deal ID not found!')
+        throw new Error('Deal ID not found!');
       }
 
       const merchant = await this._userModel.findOne({
@@ -4323,9 +4687,7 @@ export class DealService implements OnModuleInit {
         (el) => el.subDealID == buyNowDto.subDealID,
       );
 
-      if (
-        subDeal.numberOfVouchers < buyNowDto.quantity
-      ) {
+      if (subDeal.numberOfVouchers < buyNowDto.quantity) {
         throw new Error('Insufficent Quantity of deal present!');
       }
 
@@ -4392,7 +4754,8 @@ export class DealService implements OnModuleInit {
 
       const netFee = subDeal.dealPrice - merchantPercentage * subDeal.dealPrice; // Amount that will be paid to the merchant by the divideals
 
-      const calculatedFeeForAffiliate = calculatedFee * affiliate.platformPercentage; // A percentage of amount that will go to affiliate from the the amount earned by the platform
+      const calculatedFeeForAffiliate =
+        calculatedFee * affiliate.platformPercentage; // A percentage of amount that will go to affiliate from the the amount earned by the platform
 
       subDeal.grossEarning += subDeal.dealPrice;
       subDeal.netEarning += netFee;
@@ -4446,7 +4809,10 @@ export class DealService implements OnModuleInit {
 
       await this._userModel.updateOne(
         { userID: deal.merchantID },
-        { purchasedVouchers: merchant.purchasedVouchers + buyNowDto.quantity, totalEarnings: merchant.totalEarnings + netFee },
+        {
+          purchasedVouchers: merchant.purchasedVouchers + buyNowDto.quantity,
+          totalEarnings: merchant.totalEarnings + netFee,
+        },
       );
 
       this.sendMail(emailDto);

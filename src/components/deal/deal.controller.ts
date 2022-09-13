@@ -79,15 +79,15 @@ export class DealController {
     return this.dealService.getDeal(id, req);
   }
 
-  @ApiBearerAuth()
-  @UseGuards(JwtMerchantAuthGuard)
-  @UseGuards(JwtAuthGuard)
-  @Get(' /:dealMongoID')
-  getDealForMerchantPanel (
-    @Param('dealMongoID') dealMongoID: string
-  ) {
-    return this.dealService.getDealForMerchantPanel(dealMongoID)
-  }
+  // @ApiBearerAuth()
+  // @UseGuards(JwtMerchantAuthGuard)
+  // @UseGuards(JwtAuthGuard)
+  // @Get('getDealForMerchantPanel/:dealMongoID')
+  // getDealForMerchantPanel (
+  //   @Param('dealMongoID') dealMongoID: string
+  // ) {
+  //   return this.dealService.getDealForMerchantPanel(dealMongoID)
+  // }
 
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
@@ -416,6 +416,17 @@ export class DealController {
     @Req() req
   ) {
     return this.dealService.getRecentlyViewedDeals(offset, limit, req)
+  }
+
+  @UseGuards(OptionalJwtAuthGuard)
+  @ApiBearerAuth()
+  @Get('getRecommendedForYouDeals')
+  getRecommendedForYouDeals (
+    @Query('offset') offset: number = 0,
+    @Query('limit') limit: number = 10,
+    @Req() req
+  ) {
+    return this.dealService.getRecommendedForYouDeals(offset, limit, req)
   }
 
   @ApiBearerAuth()
