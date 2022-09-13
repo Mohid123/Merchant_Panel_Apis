@@ -418,6 +418,15 @@ export class DealController {
     return this.dealService.getRecentlyViewedDeals(offset, limit, req)
   }
 
+  @Get('getRecommendedForYouDeals')
+  getRecommendedForYouDeals (
+    @Query('offset') offset: number = 0,
+    @Query('limit') limit: number = 10,
+    @Req() req
+  ) {
+    return this.dealService.getRecommendedForYouDeals(offset, limit, req)
+  }
+
   @ApiBearerAuth()
   @UseGuards(JwtManagerAuthGuard)
   @UseGuards(JwtAuthGuard)

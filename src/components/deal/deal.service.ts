@@ -3687,6 +3687,178 @@ export class DealService implements OnModuleInit {
     }
   }
 
+  async getRecommendedForYouDeals (offset, limit, req) {
+    try {
+      offset = parseInt(offset) < 0 ? 0 : offset;
+      limit = parseInt(limit) < 1 ? 10 : limit;
+
+
+
+      const totalCount = await this.dealModel.countDocuments({
+        deletedCheck: false,
+        dealStatus: DEALSTATUS.published,
+      });
+
+      const deals = await this.dealModel
+        .aggregate([
+          {
+            $match: {
+              deletedCheck: false,
+              dealStatus: DEALSTATUS.published,
+            },
+          },
+          {
+            $sample: { size: totalCount },
+          },
+          {
+            $lookup: {
+              from: 'favourites',
+              as: 'favouriteDeal',
+              let: {
+                dealID: '$dealID',
+                customerMongoID: req?.user?.id,
+                deletedCheck: '$deletedCheck',
+              },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $and: [
+                        {
+                          $eq: ['$$dealID', '$dealID'],
+                        },
+                        {
+                          $eq: ['$$customerMongoID', '$customerMongoID'],
+                        },
+                        {
+                          $eq: ['$deletedCheck', false],
+                        },
+                      ],
+                    },
+                  },
+                },
+              ],
+            },
+          },
+          {
+            $unwind: {
+              path: '$favouriteDeal',
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          {
+            $lookup: {
+              from: 'users',
+              as: 'merchantDetails',
+              let: {
+                userID: '$merchantID',
+                deletedCheck: '$deletedCheck',
+              },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $and: [
+                        {
+                          $eq: ['$$userID', '$userID'],
+                        },
+                        {
+                          $eq: ['$deletedCheck', false],
+                        },
+                      ],
+                    },
+                  },
+                },
+                {
+                  $addFields: {
+                    id: '$_id',
+                  },
+                },
+                {
+                  $project: {
+                    _id: 0,
+                    id: 1,
+                    totalReviews: 1,
+                    ratingsAverage: 1,
+                    legalName: 1,
+                    city: 1,
+                  },
+                },
+              ],
+            },
+          },
+          {
+            $unwind: '$merchantDetails',
+          },
+          {
+            $addFields: {
+              id: '$_id',
+              mediaUrl: {
+                $slice: [
+                  {
+                    $filter: {
+                      input: '$mediaUrl',
+                      as: 'mediaUrl',
+                      cond: {
+                        $eq: ['$$mediaUrl.type', 'Image'],
+                      },
+                    },
+                  },
+                  1,
+                ],
+              },
+              isFavourite: {
+                $cond: [
+                  {
+                    $ifNull: ['$favouriteDeal', false],
+                  },
+                  true,
+                  false,
+                ],
+              },
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+              merchantMongoID: 0,
+              merchantID: 0,
+              subTitle: 0,
+              categoryName: 0,
+              subCategoryID: 0,
+              subCategory: 0,
+              subDeals: 0,
+              availableVouchers: 0,
+              aboutThisDeal: 0,
+              readMore: 0,
+              finePrints: 0,
+              netEarnings: 0,
+              isCollapsed: 0,
+              isDuplicate: 0,
+              totalReviews: 0,
+              maxRating: 0,
+              minRating: 0,
+              pageNumber: 0,
+              updatedAt: 0,
+              __v: 0,
+              endDate: 0,
+              startDate: 0,
+              reviewMediaUrl: 0,
+              favouriteDeal: 0,
+            },
+          },
+        ])
+        .skip(parseInt(offset))
+        .limit(parseInt(limit));
+      return {
+        totalCount: totalCount,
+        data: deals,
+      };
+    } catch (err) {
+      throw new HttpException(err, HttpStatus.BAD_REQUEST);
+    }
+  }
+
   async getTrendingDeals(offset, limit, req) {
     try {
       offset = parseInt(offset) < 0 ? 0 : offset;
