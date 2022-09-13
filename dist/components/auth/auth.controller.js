@@ -55,9 +55,6 @@ let AuthController = class AuthController {
     isEmailExists(isEmailExistsDto) {
         return this._authService.isEmailExists(isEmailExistsDto.email);
     }
-    isEmailExistsForCustomerPanel(isEmailExistsDto) {
-        return this._authService.isEmailExistsForCustomerPanel(isEmailExistsDto.email);
-    }
     sendOtp(emailDto) {
         return this._authService.sendOtp(emailDto);
     }
@@ -125,13 +122,6 @@ __decorate([
     __metadata("design:paramtypes", [is_email_exists_dto_1.IsEmailExistsDTO]),
     __metadata("design:returntype", void 0)
 ], AuthController.prototype, "isEmailExists", null);
-__decorate([
-    (0, common_1.Post)('/isEmailExistsForCustomerPanel'),
-    __param(0, (0, common_1.Body)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [is_email_exists_dto_1.IsEmailExistsDTO]),
-    __metadata("design:returntype", void 0)
-], AuthController.prototype, "isEmailExistsForCustomerPanel", null);
 __decorate([
     (0, common_1.Post)('/sendOtp'),
     __param(0, (0, common_1.Body)()),
