@@ -115,7 +115,7 @@ export class AuthService {
       throw new UnauthorizedException('Incorrect email!');
     }
 
-    if (!(user.status == USERSTATUS.approved && (user.role == 'Merchant' || user.role == 'Admin'))) {
+    if (!(user.status == USERSTATUS.approved && (user.role == USERROLE.merchant))) {
       throw new NotFoundException('Merchant Not Found!');
     }
 
@@ -172,6 +172,44 @@ export class AuthService {
     const token = this.generateToken(user);
 
     return { user, token: token.access_token };
+  }
+
+  async loginAdmin (loginDto) {
+    try {
+      let user = await this._usersService.findOne({
+        email: loginDto.email.toLowerCase(),
+        deletedCheck: false,
+      });
+  
+      if (!user) {
+        throw new UnauthorizedException('Incorrect email!');
+      }
+  
+      if (!(user.role == USERROLE.admin)) {
+        throw new NotFoundException('This user is not an admin.');
+      }
+  
+      const isValidCredentials = await bcrypt.compare(
+        loginDto.password,
+        user.password,
+      );
+  
+      if (!isValidCredentials) {
+        throw new UnauthorizedException('Incorrect password!');
+      }
+      user = JSON.parse(JSON.stringify(user));
+  
+      delete user.password;
+      delete user.aboutUs;
+      delete user.finePrint;
+      delete user.businessHours;
+  
+      const token = this.generateToken(user);
+  
+      return { user, token: token.access_token };
+    } catch (err) {
+      throw new HttpException(err?.message, HttpStatus.BAD_REQUEST);
+    }
   }
 
   async generatePassword() {
