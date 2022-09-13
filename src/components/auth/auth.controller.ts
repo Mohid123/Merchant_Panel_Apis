@@ -69,13 +69,6 @@ export class AuthController {
     return this._authService.isEmailExists(isEmailExistsDto.email);
   }
 
-  @Post('/isEmailExistsForCustomerPanel')
-  isEmailExistsForCustomerPanel(@Body() isEmailExistsDto: IsEmailExistsDTO) {
-    return this._authService.isEmailExistsForCustomerPanel(
-      isEmailExistsDto.email,
-    );
-  }
-
   @Post('/sendOtp')
   sendOtp(@Body() emailDto: OtpEmailDto) {
     return this._authService.sendOtp(emailDto);
