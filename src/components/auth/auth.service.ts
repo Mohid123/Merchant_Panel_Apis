@@ -306,25 +306,13 @@ export class AuthService {
     const user = await this._usersService.findOne({
       email: email?.toLowerCase(),
       deletedCheck: false,
-      role: USERROLE.merchant,
     });
     const lead = await this._leadModel.findOne({
       email: email?.toLowerCase(),
       deletedCheck: false,
-      role: USERROLE.merchant,
     });
 
     return user || lead ? true : false;
-  }
-
-  async isEmailExistsForCustomerPanel(email) {
-    const user = await this._usersService.findOne({
-      email: email?.toLowerCase(),
-      deletedCheck: false,
-      role: USERROLE.customer,
-    });
-
-    return user ? true : false;
   }
 
   async sendOtp(otpEmailDto) {
