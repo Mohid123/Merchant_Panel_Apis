@@ -60,21 +60,21 @@ export class VouchersService {
       let paymentUpdateTimeStamp =
         new Date().getTime() + 15 * 24 * 60 * 60 * 1000;
 
-      this._scheduleService.scheduleVocuher({
-        scheduleDate: new Date(voucherDto.expiryDate),
-        status: 0,
-        type: 'expireVoucher',
-        dealID: voucherDto.voucherID,
-        deletedCheck: false,
-      });
+      // this._scheduleService.scheduleVocuher({
+      //   scheduleDate: new Date(voucherDto.expiryDate),
+      //   status: 0,
+      //   type: 'expireVoucher',
+      //   dealID: voucherDto.voucherID,
+      //   deletedCheck: false,
+      // });
 
-      this._scheduleService.scheduleVocuher({
-        scheduleDate: new Date(paymentUpdateTimeStamp),
-        status: 0,
-        type: 'updateMerchantAffiliatePaymentStatus',
-        dealID: voucherDto.voucherID,
-        deletedCheck: false,
-      });
+      // this._scheduleService.scheduleVocuher({
+      //   scheduleDate: new Date(paymentUpdateTimeStamp),
+      //   status: 0,
+      //   type: 'updateMerchantAffiliatePaymentStatus',
+      //   dealID: voucherDto.voucherID,
+      //   deletedCheck: false,
+      // });
 
       voucher = await voucher.save();
 
@@ -685,7 +685,7 @@ export class VouchersService {
       });
 
       if (scheduledVoucher) {
-        this._scheduleService.cancelJob(scheduledVoucher.id);
+        // this._scheduleService.cancelJob(scheduledVoucher.id);
       }
 
       const merchant = await this.userModel.findOne({
@@ -853,7 +853,7 @@ export class VouchersService {
       });
 
       if (scheduledVoucher) {
-        this._scheduleService.cancelJob(scheduledVoucher.id);
+        // this._scheduleService.cancelJob(scheduledVoucher.id);
       }
 
       const merchant = await this.userModel.findOne({
