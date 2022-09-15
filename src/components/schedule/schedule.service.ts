@@ -7,6 +7,7 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { ScheduleDealDto } from 'src/dto/schedule/scheduleDeal.dto';
+import { BILLINGSTATUS } from 'src/enum/billing/billingStatus.enum';
 import { VOUCHERSTATUSENUM } from 'src/enum/voucher/voucherstatus.enum';
 import { DealInterface } from 'src/interface/deal/deal.interface';
 import { Schedule } from 'src/interface/schedule/schedule.interface';
@@ -65,6 +66,9 @@ export class ScheduleService {
       if (job.type == 'expireVoucher') {
         status = VOUCHERSTATUSENUM.expired;
       }
+      if (job.type == 'updateMerchantAffiliatePaymentStatus') {
+        status = 'Approved';
+      }
 
       if (status == VOUCHERSTATUSENUM.expired) {
         await this._voucherModel.updateOne(
@@ -75,6 +79,23 @@ export class ScheduleService {
         const voucher = await this._voucherModel.findOne({
           voucherID: job.dealID,
         });
+
+        // const res = await axios.get(`https://www.zohoapis.eu/crm/v2/functions/createvoucher/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&voucherid=${voucher.voucherID}`);
+
+        await this._scheduleModel.updateOne({ _id: job.id }, { status: -1 });
+      }
+
+      if (status == 'Approved') {
+        await this._voucherModel.updateOne(
+          { voucherID: job.dealID },
+          { affiliatePaymentStatus: status, merchantPaymentStatus: status },
+        );
+
+        const voucher = await this._voucherModel.findOne({
+          voucherID: job.dealID,
+        });
+
+        // const res = await axios.get(`https://www.zohoapis.eu/crm/v2/functions/createvoucher/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&voucherid=${voucher.voucherID}`);
 
         await this._scheduleModel.updateOne({ _id: job.id }, { status: -1 });
       }
