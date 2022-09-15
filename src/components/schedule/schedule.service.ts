@@ -111,6 +111,20 @@ export class ScheduleService {
         });
 
         console.log('Expired vouchers',vouchersToExpire);
+
+        const paymentClearDate = currentDate - (15*24*60*60*1000);
+
+        const vouchersPaymentUpdate = await this._dealModel.updateMany({
+          deletedCheck:false,
+          boughtDate:{$lte:paymentClearDate},
+        },{
+          $set:{
+            affiliatePaymentStatus:MERCHANTPAYMENTSTATUS?.approved,
+            merchantPaymentStatus:MERCHANTPAYMENTSTATUS?.approved,
+          }
+        });
+
+        console.log('vouchersPaymentUpdate',vouchersPaymentUpdate);
       })
     }
     catch(err){
