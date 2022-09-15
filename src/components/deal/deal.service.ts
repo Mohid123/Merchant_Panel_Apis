@@ -3845,6 +3845,17 @@ export class DealService implements OnModuleInit {
                 ],
               },
             },
+            allRating: {
+              $sum: {
+                $cond: [
+                  {
+                    $gte: ['$ratingsAverage', 0],
+                  },
+                  1,
+                  0,
+                ],
+              },
+            },
             WestVlaanderen: {
               $sum: {
                 $cond: [
