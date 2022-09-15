@@ -127,13 +127,13 @@ export class ScheduleService {
 
         const deal = await this._dealModel.findOne({ dealID: job.dealID });
 
-        await new this._scheduleModel({
+        this.scheduleDeal({
           scheduleDate: new Date(deal.endDate),
           status: 0,
           type: 'expireDeal',
           dealID: deal.dealID,
           deletedCheck: false,
-        }).save();
+        });
 
         await this._scheduleModel.updateOne({ _id: job.id }, { status: -1 });
       } else if (status == 'Expired') {
