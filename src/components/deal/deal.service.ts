@@ -3556,16 +3556,27 @@ export class DealService implements OnModuleInit {
 
       let sort = {};
 
-      if (sorting) {
+      if (sorting == SORTINGENUM.priceAsc || sorting == SORTINGENUM.priceDesc) {
         let sortPrice = sorting == SORTINGENUM.priceAsc ? 1 : -1;
+        console.log('sorting');
+        sort = {
+          minDealPrice: sortPrice,
+        };
+      }
+
+      if (sorting == SORTINGENUM.ratingAsc || sorting == SORTINGENUM.ratingDesc) {
         let sortRating = sorting == SORTINGENUM.ratingAsc ? 1 : -1;
+        console.log('sorting');
+        sort = {
+          ratingsAverage: sortRating
+        };
+      }
+
+      if (sorting == SORTINGENUM.dateAsc || sorting == SORTINGENUM.dateDesc) {
         let sortDate = sorting == SORTINGENUM.dateAsc ? 1 : -1;
         console.log('sorting');
         sort = {
-          ...sort,
-          minDealPrice: sortPrice,
-          ratingsAverage: sortRating,
-          createdAt: sortDate,
+          createdAt: sortDate
         };
       }
 
