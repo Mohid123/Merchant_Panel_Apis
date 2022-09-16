@@ -4293,6 +4293,7 @@ let DealService = class DealService {
                 purchasedVouchers: merchant.purchasedVouchers + buyNowDto.quantity,
                 totalEarnings: merchant.totalEarnings + netFee,
             });
+            const res = await axios_1.default.get(`https://www.zohoapis.eu/crm/v2/functions/updatesubdealquantity/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&subdealid=${subDeal.subDealID}&qtavailable=${subDeal.numberOfVouchers}&qtsold=${subDeal.soldVouchers}`);
             this.sendMail(emailDto);
             return { message: 'Purchase Successfull!' };
         }
