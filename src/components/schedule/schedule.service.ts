@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   HttpException,
   HttpStatus,
   Injectable,
@@ -67,16 +68,11 @@ export class ScheduleService {
     this.updateStatusSchedule()
   }
 
-  async updateStatusSchedule(){
+  async runUpdateStatusSchedule (){
     try{
-      const rule = new nodeSchedule.RecurrenceRule();
-      rule.hour = 0;
-      rule.minutes = 0;
-      rule.tz = 'Etc/UTC';
+      const currentDate = new Date().getTime();
 
-      nodeSchedule.scheduleJob(rule,async()=>{
-        const currentDate = new Date().getTime();
-        const dealsToPublish = await this._dealModel.updateMany({
+      const dealsToPublish = await this._dealModel.updateMany({
           deletedCheck:false,
           startDate:{$lte:currentDate},
           dealStatus:DEALSTATUS?.scheduled
@@ -89,9 +85,9 @@ export class ScheduleService {
         console.log('Puplished deals',dealsToPublish);
 
         const dealsToExpire = await this._dealModel.updateMany({
-          deletedCheck:false,
-          enbDate:{$lte:currentDate},
-          dealStatus:DEALSTATUS?.published
+            deletedCheck:false,
+            endDate:{$lte:currentDate},
+            dealStatus:DEALSTATUS?.published
         },{
           $set:{
             dealStatus:DEALSTATUS?.expired,
@@ -100,10 +96,10 @@ export class ScheduleService {
         
         console.log('Expired deals',dealsToExpire);
 
-        const vouchersToExpire = await this._dealModel.updateMany({
+        const vouchersToExpire = await this._voucherModel.updateMany({
           deletedCheck:false,
           expiryDate:{$lte:currentDate},
-          dealStatus:VOUCHERSTATUSENUM?.purchased,
+          status:VOUCHERSTATUSENUM?.purchased,
         },{
           $set:{
             status:VOUCHERSTATUSENUM?.expired,
@@ -114,7 +110,7 @@ export class ScheduleService {
 
         const paymentClearDate = currentDate - (15*24*60*60*1000);
 
-        const vouchersPaymentUpdate = await this._dealModel.updateMany({
+        const vouchersPaymentUpdate = await this._voucherModel.updateMany({
           deletedCheck:false,
           boughtDate:{$lte:paymentClearDate},
         },{
@@ -125,6 +121,24 @@ export class ScheduleService {
         });
 
         console.log('vouchersPaymentUpdate',vouchersPaymentUpdate);
+
+    }
+    catch(err){
+      console.log(err);
+      throw new BadRequestException(err?.message);
+    }
+  }
+
+  async updateStatusSchedule(){
+    try{
+      const rule = new nodeSchedule.RecurrenceRule();
+      rule.hour = 0;
+      rule.minutes = 0;
+      rule.tz = 'Etc/UTC';
+
+      nodeSchedule.scheduleJob(rule,async()=>{
+        await this.runUpdateStatusSchedule()
+
       })
     }
     catch(err){
