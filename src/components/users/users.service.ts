@@ -1538,6 +1538,10 @@ export class UsersService {
 
       // user.password = generatedPassword;
 
+      const lead = await this._leadModel.findOne({_id: userID});
+
+      approveMerchantDto.businessHours = lead.businessHours;
+
       const merchant = await new this._userModel(approveMerchantDto).save();
 
       return { enquiryID: userID, merchantID: merchant?.userID };
