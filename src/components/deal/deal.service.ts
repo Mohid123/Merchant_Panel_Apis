@@ -404,28 +404,28 @@ export class DealService implements OnModuleInit {
           });
 
           if (scheduledDeal) {
-            this._scheduleService.cancelJob(scheduledDeal.id);
+            // this._scheduleService.cancelJob(scheduledDeal.id);
           }
         }
 
         if (updateDealDto.status == 'Scheduled') {
           if (deal.startDate <= Date.now()) {
             deal.dealStatus = statuses['Published'];
-            this._scheduleService.scheduleDeal({
-              scheduleDate: new Date(deal.endDate),
-              status: 0,
-              type: 'expireDeal',
-              dealID: deal.dealID,
-              deletedCheck: false,
-            });
+            // this._scheduleService.scheduleDeal({
+            //   scheduleDate: new Date(deal.endDate),
+            //   status: 0,
+            //   type: 'expireDeal',
+            //   dealID: deal.dealID,
+            //   deletedCheck: false,
+            // });
           } else {
-            this._scheduleService.scheduleDeal({
-              scheduleDate: new Date(deal.startDate),
-              status: 0,
-              type: 'publishDeal',
-              dealID: deal.dealID,
-              deletedCheck: false,
-            });
+            // this._scheduleService.scheduleDeal({
+            //   scheduleDate: new Date(deal.startDate),
+            //   status: 0,
+            //   type: 'publishDeal',
+            //   dealID: deal.dealID,
+            //   deletedCheck: false,
+            // });
           }
           if (deal.endDate <= Date.now()) {
             deal.dealStatus = statuses['Expired'];
