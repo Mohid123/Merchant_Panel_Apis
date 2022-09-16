@@ -21,6 +21,7 @@ export class LeadsService {
     leadDto.email = leadDto?.email?.toLowerCase();
     let user = await this._leadModel.findOne({
       email: leadDto.email,
+      deletedCheck: true
     });
     if (user) {
       throw new ForbiddenException('Email already exists');
