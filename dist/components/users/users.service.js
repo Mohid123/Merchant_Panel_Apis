@@ -1357,6 +1357,8 @@ let UsersService = class UsersService {
             `,
             };
             this.sendMail(emailDto);
+            const lead = await this._leadModel.findOne({ _id: userID });
+            approveMerchantDto.businessHours = lead.businessHours;
             if (!approveMerchantDto.platformPercentage) {
                 approveMerchantDto.platformPercentage = 25;
             }
