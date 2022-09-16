@@ -78,6 +78,7 @@ export class LeadsService {
           website_socialAppLink: 1,
           countryCode: 1,
           leadSource: 1,
+          platformPercentage: 1
         },
       },
     ]);
