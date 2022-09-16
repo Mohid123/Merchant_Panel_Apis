@@ -1539,6 +1539,10 @@ export class UsersService {
 
       // user.password = generatedPassword;
 
+      const lead = await this._leadModel.findOne({_id: userID});
+
+      approveMerchantDto.businessHours = lead.businessHours;
+
       if (!approveMerchantDto.platformPercentage) {
         approveMerchantDto.platformPercentage = 25;
       }
