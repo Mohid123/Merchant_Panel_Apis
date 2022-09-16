@@ -3215,7 +3215,7 @@ export class DealService implements OnModuleInit {
               $sum: {
                 $cond: [
                   {
-                    $gte: ['$ratingsAverage', 0],
+                    $gte: ['$ratingsAverage', 1],
                   },
                   1,
                   0,
@@ -3849,7 +3849,7 @@ export class DealService implements OnModuleInit {
               $sum: {
                 $cond: [
                   {
-                    $gte: ['$ratingsAverage', 0],
+                    $gte: ['$ratingsAverage', 1],
                   },
                   1,
                   0,
