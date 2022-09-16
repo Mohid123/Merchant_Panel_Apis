@@ -27,7 +27,7 @@ let LeadsService = class LeadsService {
         leadDto.email = (_a = leadDto === null || leadDto === void 0 ? void 0 : leadDto.email) === null || _a === void 0 ? void 0 : _a.toLowerCase();
         let user = await this._leadModel.findOne({
             email: leadDto.email,
-            deletedCheck: true
+            deletedCheck: false
         });
         if (user) {
             throw new common_1.ForbiddenException('Email already exists');
