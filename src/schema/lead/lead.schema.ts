@@ -32,7 +32,7 @@ export const LeadSchema = new mongoose.Schema(
     gallery: { type: [String] },
     voucherPinCode: { type: Number },
     deletedCheck: { type: Boolean, default: false },
-    status: { type: String, default: 'Pending' },
+    status: { type: String, default: 'New' },
     newUser: { type: Boolean, default: true },
     totalVoucherSales: { type: Number, default: 0 },
     redeemedVouchers: { type: Number, default: 0 },

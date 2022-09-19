@@ -1076,7 +1076,7 @@ export class UsersService {
     try {
       let user = await this._userModel.findOne({
         _id: userID,
-        status: USERSTATUS.pending,
+        status: USERSTATUS.new,
       });
 
       if (!user) {
