@@ -1076,7 +1076,7 @@ export class UsersService {
     try {
       let user = await this._userModel.findOne({
         _id: userID,
-        status: USERSTATUS.pending,
+        status: USERSTATUS.new,
       });
 
       if (!user) {
@@ -1537,6 +1537,10 @@ export class UsersService {
       this.sendMail(emailDto);
 
       // user.password = generatedPassword;
+
+      const lead = await this._leadModel.findOne({_id: userID});
+
+      approveMerchantDto.businessHours = lead.businessHours;
 
       const merchant = await new this._userModel(approveMerchantDto).save();
 

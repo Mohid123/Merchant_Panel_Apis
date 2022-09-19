@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   HttpException,
   HttpStatus,
   Injectable,
@@ -8,6 +9,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { ScheduleDealDto } from 'src/dto/schedule/scheduleDeal.dto';
 import { BILLINGSTATUS } from 'src/enum/billing/billingStatus.enum';
+import { DEALSTATUS } from 'src/enum/deal/dealstatus.enum';
 import { MERCHANTPAYMENTSTATUS } from 'src/enum/merchant/merchant.enum';
 import { VOUCHERSTATUSENUM } from 'src/enum/voucher/voucherstatus.enum';
 import { DealInterface } from 'src/interface/deal/deal.interface';
@@ -25,6 +27,7 @@ export class ScheduleService {
   ) {}
 
   async retrieveJobs() {
+    /*
     let jobs = await this._scheduleModel.find({
       status: 0,
       deletedCheck: false,
@@ -60,6 +63,88 @@ export class ScheduleService {
         jobDoc.type,
       );
     });
+    */
+
+    this.updateStatusSchedule()
+  }
+
+  async runUpdateStatusSchedule (){
+    try{
+      const currentDate = new Date().getTime();
+
+      const dealsToPublish = await this._dealModel.updateMany({
+          deletedCheck:false,
+          startDate:{$lte:currentDate},
+          dealStatus:DEALSTATUS?.scheduled
+        },{
+          $set:{
+            dealStatus:DEALSTATUS?.published,
+          }
+        });
+
+        console.log('Puplished deals',dealsToPublish);
+
+        const dealsToExpire = await this._dealModel.updateMany({
+            deletedCheck:false,
+            endDate:{$lte:currentDate},
+            dealStatus:DEALSTATUS?.published
+        },{
+          $set:{
+            dealStatus:DEALSTATUS?.expired,
+          }
+        });
+        
+        console.log('Expired deals',dealsToExpire);
+
+        const vouchersToExpire = await this._voucherModel.updateMany({
+          deletedCheck:false,
+          expiryDate:{$lte:currentDate},
+          status:VOUCHERSTATUSENUM?.purchased,
+        },{
+          $set:{
+            status:VOUCHERSTATUSENUM?.expired,
+          }
+        });
+
+        console.log('Expired vouchers',vouchersToExpire);
+
+        const paymentClearDate = currentDate - (15*24*60*60*1000);
+
+        const vouchersPaymentUpdate = await this._voucherModel.updateMany({
+          deletedCheck:false,
+          boughtDate:{$lte:paymentClearDate},
+        },{
+          $set:{
+            affiliatePaymentStatus:MERCHANTPAYMENTSTATUS?.approved,
+            merchantPaymentStatus:MERCHANTPAYMENTSTATUS?.approved,
+          }
+        });
+
+        console.log('vouchersPaymentUpdate',vouchersPaymentUpdate);
+
+    }
+    catch(err){
+      console.log(err);
+      throw new BadRequestException(err?.message);
+    }
+  }
+
+  async updateStatusSchedule(){
+    try{
+      const rule = new nodeSchedule.RecurrenceRule();
+      rule.hour = 0;
+      rule.minutes = 0;
+      rule.tz = 'Etc/UTC';
+
+      nodeSchedule.scheduleJob(rule,async()=>{
+        await this.runUpdateStatusSchedule()
+
+      })
+    }
+    catch(err){
+      console.log(err);
+      throw new Error(err?.message)
+    }
   }
 
   async scheduleVocuher(scheduleVocuherDto: ScheduleDealDto) {

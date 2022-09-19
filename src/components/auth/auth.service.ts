@@ -237,7 +237,7 @@ export class AuthService {
     }
     loginDto._id = new Types.ObjectId().toString();
 
-    loginDto.status = USERSTATUS.pending;
+    loginDto.status = USERSTATUS.new;
     loginDto.role = USERROLE.merchant;
     loginDto.tradeName = loginDto.companyName;
     loginDto.countryCode = 'BE';

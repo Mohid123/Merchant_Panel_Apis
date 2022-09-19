@@ -405,28 +405,28 @@ export class DealService implements OnModuleInit {
           });
 
           if (scheduledDeal) {
-            this._scheduleService.cancelJob(scheduledDeal.id);
+            // this._scheduleService.cancelJob(scheduledDeal.id);
           }
         }
 
         if (updateDealDto.status == 'Scheduled') {
           if (deal.startDate <= Date.now()) {
             deal.dealStatus = statuses['Published'];
-            this._scheduleService.scheduleDeal({
-              scheduleDate: new Date(deal.endDate),
-              status: 0,
-              type: 'expireDeal',
-              dealID: deal.dealID,
-              deletedCheck: false,
-            });
+            // this._scheduleService.scheduleDeal({
+            //   scheduleDate: new Date(deal.endDate),
+            //   status: 0,
+            //   type: 'expireDeal',
+            //   dealID: deal.dealID,
+            //   deletedCheck: false,
+            // });
           } else {
-            this._scheduleService.scheduleDeal({
-              scheduleDate: new Date(deal.startDate),
-              status: 0,
-              type: 'publishDeal',
-              dealID: deal.dealID,
-              deletedCheck: false,
-            });
+            // this._scheduleService.scheduleDeal({
+            //   scheduleDate: new Date(deal.startDate),
+            //   status: 0,
+            //   type: 'publishDeal',
+            //   dealID: deal.dealID,
+            //   deletedCheck: false,
+            // });
           }
           if (deal.endDate <= Date.now()) {
             deal.dealStatus = statuses['Expired'];
@@ -3222,7 +3222,7 @@ export class DealService implements OnModuleInit {
               $sum: {
                 $cond: [
                   {
-                    $gte: ['$ratingsAverage', 0],
+                    $gte: ['$ratingsAverage', 1],
                   },
                   1,
                   0,
@@ -3569,16 +3569,27 @@ export class DealService implements OnModuleInit {
 
       let sort = {};
 
-      if (sorting) {
+      if (sorting == SORTINGENUM.priceAsc || sorting == SORTINGENUM.priceDesc) {
         let sortPrice = sorting == SORTINGENUM.priceAsc ? 1 : -1;
+        console.log('sorting');
+        sort = {
+          minDealPrice: sortPrice,
+        };
+      }
+
+      if (sorting == SORTINGENUM.ratingAsc || sorting == SORTINGENUM.ratingDesc) {
         let sortRating = sorting == SORTINGENUM.ratingAsc ? 1 : -1;
+        console.log('sorting');
+        sort = {
+          ratingsAverage: sortRating
+        };
+      }
+
+      if (sorting == SORTINGENUM.dateAsc || sorting == SORTINGENUM.dateDesc) {
         let sortDate = sorting == SORTINGENUM.dateAsc ? 1 : -1;
         console.log('sorting');
         sort = {
-          ...sort,
-          minDealPrice: sortPrice,
-          ratingsAverage: sortRating,
-          createdAt: sortDate,
+          createdAt: sortDate
         };
       }
 
@@ -3862,7 +3873,7 @@ export class DealService implements OnModuleInit {
               $sum: {
                 $cond: [
                   {
-                    $gte: ['$ratingsAverage', 0],
+                    $gte: ['$ratingsAverage', 1],
                   },
                   1,
                   0,
@@ -5244,6 +5255,8 @@ export class DealService implements OnModuleInit {
           totalEarnings: merchant.totalEarnings + netFee,
         },
       );
+
+      // const res = await axios.get(`https://www.zohoapis.eu/crm/v2/functions/updatesubdealquantity/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&subdealid=${subDeal.subDealID}&qtavailable=${subDeal.numberOfVouchers}&qtsold=${subDeal.soldVouchers}`);
 
       this.sendMail(emailDto);
 
