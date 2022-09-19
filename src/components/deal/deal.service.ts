@@ -63,7 +63,8 @@ export class DealService implements OnModuleInit {
     @InjectModel('Schedule') private _scheduleModel: Model<Schedule>,
     @InjectModel('views') private _viewsModel: Model<ViewsInterface>,
     @InjectModel('Review') private readonly reviewModel: Model<ReviewInterface>,
-    @InjectModel('categories-Analytics') private readonly categoryAnalyticsModel: Model<DealCategoryAnalyticsInterface>,
+    @InjectModel('categories-Analytics')
+    private readonly categoryAnalyticsModel: Model<DealCategoryAnalyticsInterface>,
     private _scheduleService: ScheduleService,
     private _stripeService: StripeService,
     private _voucherService: VouchersService,
@@ -2633,8 +2634,8 @@ export class DealService implements OnModuleInit {
       let radius = parseFloat(distance) / 6378.1;
 
       if (!lat && !lng) {
-        lat = 50.850346;
-        lng = 4.351721;
+        lat = 51.0397129;
+        lng = 3.7141549000597;
         radius = 20 / 6378.1;
       }
       let deal;
@@ -2943,27 +2944,33 @@ export class DealService implements OnModuleInit {
         },
         {
           $addFields: {
-            isHeader:{ $regexMatch: { input: "$dealHeader" , regex: headerQuery } },
-            isCategory:{ $regexMatch: { input: "$categoryName" , regex: categoryQuery } },
-            isSubCategory:{ $regexMatch: { input: "$subCategory" , regex: subCategoryQuery } }
-          }
+            isHeader: {
+              $regexMatch: { input: '$dealHeader', regex: headerQuery },
+            },
+            isCategory: {
+              $regexMatch: { input: '$categoryName', regex: categoryQuery },
+            },
+            isSubCategory: {
+              $regexMatch: { input: '$subCategory', regex: subCategoryQuery },
+            },
+          },
         },
         {
           $match: {
-            $or:[
-              {isCategory: true},
-              {isSubCategory: true},
-              {isHeader: true},
-            ]   
-          }
+            $or: [
+              { isCategory: true },
+              { isSubCategory: true },
+              { isHeader: true },
+            ],
+          },
         },
         {
-          $sort:{
+          $sort: {
             isCategory: -1,
             isSubCategory: -1,
             isHeader: -1,
-            createdAt: -1
-          }
+            createdAt: -1,
+          },
         },
         {
           $lookup: {
@@ -3303,27 +3310,33 @@ export class DealService implements OnModuleInit {
           // },
           {
             $addFields: {
-              isHeader:{ $regexMatch: { input: "$dealHeader" , regex: headerQuery } },
-              isCategory:{ $regexMatch: { input: "$categoryName" , regex: categoryQuery } },
-              isSubCategory:{ $regexMatch: { input: "$subCategory" , regex: subCategoryQuery } }
-            }
+              isHeader: {
+                $regexMatch: { input: '$dealHeader', regex: headerQuery },
+              },
+              isCategory: {
+                $regexMatch: { input: '$categoryName', regex: categoryQuery },
+              },
+              isSubCategory: {
+                $regexMatch: { input: '$subCategory', regex: subCategoryQuery },
+              },
+            },
           },
           {
             $match: {
-              $or:[
-                {isCategory: true},
-                {isSubCategory: true},
-                {isHeader: true},
-              ]   
-            }
+              $or: [
+                { isCategory: true },
+                { isSubCategory: true },
+                { isHeader: true },
+              ],
+            },
           },
           {
-            $sort:{
+            $sort: {
               isCategory: -1,
               isSubCategory: -1,
               isHeader: -1,
-              createdAt: -1
-            }
+              createdAt: -1,
+            },
           },
           {
             $lookup: {
@@ -4092,12 +4105,10 @@ export class DealService implements OnModuleInit {
     }
   }
 
-  async getRecommendedForYouDeals (offset, limit, req) {
+  async getRecommendedForYouDeals(offset, limit, req) {
     try {
       offset = parseInt(offset) < 0 ? 0 : offset;
       limit = parseInt(limit) < 1 ? 10 : limit;
-
-
 
       const totalCount = await this.dealModel.countDocuments({
         deletedCheck: false,
