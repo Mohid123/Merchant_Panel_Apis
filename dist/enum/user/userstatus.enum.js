@@ -5,6 +5,6 @@ var USERSTATUS;
 (function (USERSTATUS) {
     USERSTATUS["approved"] = "Approved";
     USERSTATUS["unapproved"] = "Unapproved";
-    USERSTATUS["pending"] = "Pending";
+    USERSTATUS["new"] = "New";
 })(USERSTATUS = exports.USERSTATUS || (exports.USERSTATUS = {}));
 //# sourceMappingURL=userstatus.enum.js.map

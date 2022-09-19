@@ -933,7 +933,7 @@ let UsersService = class UsersService {
         try {
             let user = await this._userModel.findOne({
                 _id: userID,
-                status: userstatus_enum_1.USERSTATUS.pending,
+                status: userstatus_enum_1.USERSTATUS.new,
             });
             if (!user) {
                 throw new common_1.HttpException('User not found', common_1.HttpStatus.NOT_FOUND);

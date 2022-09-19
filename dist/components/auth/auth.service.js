@@ -180,7 +180,7 @@ let AuthService = class AuthService {
             throw new common_1.ForbiddenException('Email already exists');
         }
         loginDto._id = new mongoose_2.Types.ObjectId().toString();
-        loginDto.status = userstatus_enum_1.USERSTATUS.pending;
+        loginDto.status = userstatus_enum_1.USERSTATUS.new;
         loginDto.role = userrole_enum_1.USERROLE.merchant;
         loginDto.tradeName = loginDto.companyName;
         loginDto.countryCode = 'BE';
