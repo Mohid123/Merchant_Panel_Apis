@@ -2314,8 +2314,8 @@ let DealService = class DealService {
             }
             let radius = parseFloat(distance) / 6378.1;
             if (!lat && !lng) {
-                lat = 50.850346;
-                lng = 4.351721;
+                lat = 51.0397129;
+                lng = 3.7141549000597;
                 radius = 20 / 6378.1;
             }
             let deal;
