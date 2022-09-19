@@ -2631,8 +2631,8 @@ export class DealService implements OnModuleInit {
       let radius = parseFloat(distance) / 6378.1;
 
       if (!lat && !lng) {
-        lat = 50.850346;
-        lng = 4.351721;
+        lat = 51.0397129;
+        lng = 3.7141549000597;
         radius = 20 / 6378.1;
       }
       let deal;
@@ -3687,12 +3687,10 @@ export class DealService implements OnModuleInit {
     }
   }
 
-  async getRecommendedForYouDeals (offset, limit, req) {
+  async getRecommendedForYouDeals(offset, limit, req) {
     try {
       offset = parseInt(offset) < 0 ? 0 : offset;
       limit = parseInt(limit) < 1 ? 10 : limit;
-
-
 
       const totalCount = await this.dealModel.countDocuments({
         deletedCheck: false,
