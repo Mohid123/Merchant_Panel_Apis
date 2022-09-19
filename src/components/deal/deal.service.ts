@@ -3222,7 +3222,7 @@ export class DealService implements OnModuleInit {
               $sum: {
                 $cond: [
                   {
-                    $gte: ['$ratingsAverage', 1],
+                    $gte: ['$ratingsAverage', 0],
                   },
                   1,
                   0,
@@ -3303,11 +3303,6 @@ export class DealService implements OnModuleInit {
               ...matchFilter,
             },
           },
-          // {
-          //   $sort: {
-          //     createdAt: -1,
-          //   },
-          // },
           {
             $addFields: {
               isHeader: {
@@ -3513,21 +3508,23 @@ export class DealService implements OnModuleInit {
       offset = parseInt(offset) < 0 ? 0 : offset;
       limit = parseInt(limit) < 1 ? 10 : limit;
 
-      let matchFilter = {};
+      let categoryFilters = {};
 
       if (categoryName) {
-        matchFilter = {
-          ...matchFilter,
+        categoryFilters = {
+          ...categoryFilters,
           categoryName: categoryName,
         };
       }
 
       if (subCategoryName) {
-        matchFilter = {
-          ...matchFilter,
+        categoryFilters = {
+          ...categoryFilters,
           subCategory: subCategoryName,
         };
       }
+
+      let matchFilter = {};
 
       let minValue = parseInt(fromPrice);
       let maxValue = parseInt(toPrice);
@@ -3617,7 +3614,8 @@ export class DealService implements OnModuleInit {
           $match: {
             deletedCheck: false,
             dealStatus: DEALSTATUS.published,
-            ...matchFilter,
+            ...categoryFilters,
+            // ...matchFilter,
           },
         },
         {
@@ -3873,7 +3871,7 @@ export class DealService implements OnModuleInit {
               $sum: {
                 $cond: [
                   {
-                    $gte: ['$ratingsAverage', 1],
+                    $gte: ['$ratingsAverage', 0],
                   },
                   1,
                   0,
@@ -3953,6 +3951,7 @@ export class DealService implements OnModuleInit {
             $match: {
               deletedCheck: false,
               dealStatus: DEALSTATUS.published,
+              ...categoryFilters,
               ...matchFilter,
             },
           },
