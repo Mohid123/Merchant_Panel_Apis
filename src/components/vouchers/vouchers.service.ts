@@ -57,14 +57,24 @@ export class VouchersService {
       voucherDto.boughtDate = timeStamp;
       voucherDto.voucherID = await this.generateVoucherId('voucherID');
       let voucher = new this.voucherModel(voucherDto);
+      let paymentUpdateTimeStamp =
+        new Date().getTime() + 15 * 24 * 60 * 60 * 1000;
 
-      this._scheduleService.scheduleVocuher({
-        scheduleDate: new Date(voucherDto.expiryDate),
-        status: 0,
-        type: 'expireVoucher',
-        dealID: voucherDto.voucherID,
-        deletedCheck: false,
-      });
+      // this._scheduleService.scheduleVocuher({
+      //   scheduleDate: new Date(voucherDto.expiryDate),
+      //   status: 0,
+      //   type: 'expireVoucher',
+      //   dealID: voucherDto.voucherID,
+      //   deletedCheck: false,
+      // });
+
+      // this._scheduleService.scheduleVocuher({
+      //   scheduleDate: new Date(paymentUpdateTimeStamp),
+      //   status: 0,
+      //   type: 'updateMerchantAffiliatePaymentStatus',
+      //   dealID: voucherDto.voucherID,
+      //   deletedCheck: false,
+      // });
 
       voucher = await voucher.save();
 
@@ -80,27 +90,31 @@ export class VouchersService {
     }
   }
 
-  async updateVoucherByID (voucherID ,updateVoucherForCRMDto) {
+  async updateVoucherByID(voucherID, updateVoucherForCRMDto) {
     try {
-      const voucher = await this.voucherModel.findOne({voucherID: voucherID});
+      const voucher = await this.voucherModel.findOne({ voucherID: voucherID });
       if (!voucher) {
-        throw new Error('Voucher not found!')
+        throw new Error('Voucher not found!');
       }
- 
-      await this.voucherModel.updateOne({voucherID: voucherID}, updateVoucherForCRMDto);
+
+      await this.voucherModel.updateOne(
+        { voucherID: voucherID },
+        updateVoucherForCRMDto,
+      );
 
       return {
-        message: 'Voucher has been updated successfully!'
-      }
+        message: 'Voucher has been updated successfully!',
+      };
     } catch (err) {
       throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
-  async getVoucherByID (voucherID) {
+  async getVoucherByID(voucherID) {
     try {
-
-      let voucher: any = await this.voucherModel.findOne({voucherID: voucherID});
+      let voucher: any = await this.voucherModel.findOne({
+        voucherID: voucherID,
+      });
 
       if (!voucher) {
         throw new Error('Voucher not found!');
@@ -130,7 +144,7 @@ export class VouchersService {
       voucher.purchaseDate = voucher.boughtDate;
       voucher.redeemDate = voucher.redeemDate;
       voucher.expiryDate = voucher.expiryDate;
-      voucher.redeemDate = voucher.redeemData?voucher.redeemData:null;
+      voucher.redeemDate = voucher.redeemData ? voucher.redeemData : null;
 
       delete voucher?.id;
       delete voucher?.dealMongoID;
@@ -154,7 +168,6 @@ export class VouchersService {
       delete voucher?.boughtDate;
 
       return voucher;
-
     } catch (err) {
       throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
@@ -502,12 +515,12 @@ export class VouchersService {
     }
   }
 
-  async getVouchersByCustomerID (
+  async getVouchersByCustomerID(
     customerID,
     searchVoucher,
     voucherStatus,
     offset,
-    limit
+    limit,
   ) {
     try {
       offset = parseInt(offset) < 0 ? 0 : offset;
@@ -548,81 +561,81 @@ export class VouchersService {
         customerMongoID: customerID,
         deletedCheck: false,
         ...matchFilter,
-        ...filters
+        ...filters,
       });
 
-      let customerVouchers = await this.voucherModel.aggregate([
-        {
-          $match: {
-            customerMongoID: customerID,
-            deletedCheck: false,
-            ...matchFilter,
-            ...filters
-          }
-        },
-        {
-          $sort: {
-            createdAt: -1
-          }
-        },
-        {
-          $lookup: {
-            from: 'locations',
-            let: {
-              merchantID: '$merchantID',
+      let customerVouchers = await this.voucherModel
+        .aggregate([
+          {
+            $match: {
+              customerMongoID: customerID,
+              deletedCheck: false,
+              ...matchFilter,
+              ...filters,
             },
-            pipeline: [
-              {
-                $match: {
-                  $expr: {
-                    $and: [
-                      {
-                        $eq: ['$merchantID', '$$merchantID'],
-                      },
-                    ],
+          },
+          {
+            $sort: {
+              createdAt: -1,
+            },
+          },
+          {
+            $lookup: {
+              from: 'locations',
+              let: {
+                merchantID: '$merchantID',
+              },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $and: [
+                        {
+                          $eq: ['$merchantID', '$$merchantID'],
+                        },
+                      ],
+                    },
                   },
                 },
-              },
-              {
-                $addFields: {
-                  id: '$_id',
-                }
-              },
-              {
-                $project: {
-                  _id: 0,
-                  createdAt: 0,
-                  updatedAt: 0,
-                  __v: 0
-                }
-              }
-            ],
-            as: 'merchantData',
+                {
+                  $addFields: {
+                    id: '$_id',
+                  },
+                },
+                {
+                  $project: {
+                    _id: 0,
+                    createdAt: 0,
+                    updatedAt: 0,
+                    __v: 0,
+                  },
+                },
+              ],
+              as: 'merchantData',
+            },
           },
-        },
-        {
-          $unwind: '$merchantData',
-        },
-        {
-          $addFields: {
-            id: '$_id'
-          }
-        },
-        {
-          $project: {
-            _id: 0
-          }
-        }
-      ])
-      .skip(parseInt(offset))
-      .limit(parseInt(limit))
+          {
+            $unwind: '$merchantData',
+          },
+          {
+            $addFields: {
+              id: '$_id',
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+            },
+          },
+        ])
+        .skip(parseInt(offset))
+        .limit(parseInt(limit));
 
       return {
         totalCount: totalCount,
         filteredCount: filteredCount,
-        data: customerVouchers
-      }
-
+        data: customerVouchers,
+      };
     } catch (err) {
       throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
@@ -643,7 +656,9 @@ export class VouchersService {
       });
 
       if (req.user.id != voucher.merchantMongoID) {
-        throw new UnauthorizedException('Merchant Not allowed to redeem voucher!');
+        throw new UnauthorizedException(
+          'Merchant Not allowed to redeem voucher!',
+        );
       }
 
       if (voucher) {
@@ -670,7 +685,7 @@ export class VouchersService {
       });
 
       if (scheduledVoucher) {
-        this._scheduleService.cancelJob(scheduledVoucher.id);
+        // this._scheduleService.cancelJob(scheduledVoucher.id);
       }
 
       const merchant = await this.userModel.findOne({
@@ -693,6 +708,8 @@ export class VouchersService {
           // affiliateFee: calculatedFeeForAffiliate
         },
       );
+
+      // const res = await axios.get(`https://www.zohoapis.eu/crm/v2/functions/createvoucher/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&voucherid=${voucher.voucherID}`);
 
       // const deal = await this.dealModel.findOne({dealID: voucher.dealID});
 
@@ -836,7 +853,7 @@ export class VouchersService {
       });
 
       if (scheduledVoucher) {
-        this._scheduleService.cancelJob(scheduledVoucher.id);
+        // this._scheduleService.cancelJob(scheduledVoucher.id);
       }
 
       const merchant = await this.userModel.findOne({
@@ -861,6 +878,8 @@ export class VouchersService {
           // fee: calculatedFee
         },
       );
+
+      // const res = await axios.get(`https://www.zohoapis.eu/crm/v2/functions/createvoucher/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&voucherid=${voucher.voucherID}`);
 
       // const deal = await this.dealModel.findOne({dealID: voucher.dealID});
 

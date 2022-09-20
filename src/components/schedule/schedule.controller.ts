@@ -19,4 +19,9 @@ export class ScheduleController {
   cancelJob(@Param('jobId') jobId: string) {
     return this._scheduleService.cancelJob(jobId);
   }
+
+  // @Get('runUpdateStatusSchedule')
+  // runUpdateStatusSchedule(){
+  //   return this._scheduleService.runUpdateStatusSchedule()
+  // }
 }
