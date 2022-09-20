@@ -1141,6 +1141,7 @@ let UsersService = class UsersService {
                 password: hashedPassword,
                 voucherPinCode: pinCode,
                 userID: generatedUserID,
+                finePrint: `<p><strong>Purchase:</strong> let us know how many voucher one person can purchase<br><strong>Reservations:</strong> let us know how/where people can make a reservation<br><strong>Cancellation:</strong> let us know your cancellation policy<br><strong>More info:</strong> is there anything else important people should be aware of?</p>`
             });
             return { message: 'Merchant Approved Successfully!' };
         }
@@ -1167,6 +1168,7 @@ let UsersService = class UsersService {
             approveMerchantDto.status = userstatus_enum_1.USERSTATUS.approved;
             approveMerchantDto.zipCode = approveMerchantDto.zipCode.toString();
             approveMerchantDto.userID = await this.generateMerchantId('merchantID');
+            approveMerchantDto.finePrint = `<p><strong>Purchase:</strong> let us know how many voucher one person can purchase<br><strong>Reservations:</strong> let us know how/where people can make a reservation<br><strong>Cancellation:</strong> let us know your cancellation policy<br><strong>More info:</strong> is there anything else important people should be aware of?</p>`;
             const userObj = {
                 ID: new mongoose_2.Types.ObjectId().toHexString(),
                 firstName: approveMerchantDto.firstName,

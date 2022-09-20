@@ -3273,9 +3273,6 @@ let DealService = class DealService {
                     },
                 },
                 {
-                    $match: Object.assign({}, locationFilter),
-                },
-                {
                     $group: {
                         _id: null,
                         totalCount: { $sum: 1 },
