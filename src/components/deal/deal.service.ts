@@ -4233,7 +4233,7 @@ export class DealService implements OnModuleInit {
 
       return {
         ...totalCount[0],
-        filteredCount: filteredCount,
+        filteredCount: filteredCount?.length > 0 ? filteredCount[0].filteredCount : 0,
         data: deals,
       };
     } catch (err) {
