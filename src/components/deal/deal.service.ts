@@ -3936,7 +3936,7 @@ export class DealService implements OnModuleInit {
         },
       ]);
 
-      const {filteredCount}: any = await this.dealModel
+      const filteredCount: any = await this.dealModel
         .aggregate([
           {
             $match: {
@@ -4067,8 +4067,7 @@ export class DealService implements OnModuleInit {
           {
             $count: 'filteredCount'
           },
-        ])
-        .then(item=>item[0]);
+        ]);
 
       const deals = await this.dealModel
         .aggregate([
