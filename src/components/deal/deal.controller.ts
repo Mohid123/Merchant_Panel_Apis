@@ -310,6 +310,8 @@ export class DealController {
     return this.dealService.getNearByDeals(lat, lng, distance, offset, limit, req);
   }
 
+  @ApiQuery({ name: 'searchBar', required: false})
+  @ApiQuery({ name: 'header', required: false})
   @ApiQuery({ name: 'categoryName', required: false })
   @ApiQuery({ name: 'subCategoryName', required: false })
   @ApiQuery({ name: 'fromPrice', required: false })
@@ -317,8 +319,9 @@ export class DealController {
   @ApiQuery({ name: 'reviewRating', required: false })
   @UseGuards(OptionalJwtAuthGuard)
   @ApiBearerAuth()
-  @Get('searchDeals')
+  @Post('searchDeals')
   searchDeals(
+    @Query('searchBar') searchBar: string = '',
     @Query('header') header: string = '',
     @Query('categoryName') categoryName: string,
     @Query('subCategoryName') subCategoryName: string,
@@ -327,9 +330,11 @@ export class DealController {
     @Query('reviewRating') reviewRating: number,
     @Query('offset') offset: number = 0,
     @Query('limit') limit: number = 10,
+    @Body() filterCategoriesApiDto: FilterCategoriesApiDto,
     @Req() req
   ) {
     return this.dealService.searchDeals(
+      searchBar,
       header,
       categoryName,
       subCategoryName,
@@ -338,6 +343,7 @@ export class DealController {
       reviewRating,
       offset,
       limit,
+      filterCategoriesApiDto,
       req
     );
   }
