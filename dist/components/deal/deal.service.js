@@ -41,7 +41,7 @@ const merchant_enum_1 = require("../../enum/merchant/merchant.enum");
 const categoryapisorting_enum_1 = require("../../enum/sort/categoryapisorting.enum");
 let transporter;
 let DealService = class DealService {
-    constructor(dealModel, preComputedDealModel, cacheManager, categorymodel, voucherCounterModel, subCategoryModel, _userModel, _scheduleModel, _viewsModel, reviewModel, _scheduleService, _stripeService, _voucherService, viewsService) {
+    constructor(dealModel, preComputedDealModel, cacheManager, categorymodel, voucherCounterModel, subCategoryModel, _userModel, _scheduleModel, _viewsModel, reviewModel, categoryAnalyticsModel, _scheduleService, _stripeService, _voucherService, viewsService) {
         this.dealModel = dealModel;
         this.preComputedDealModel = preComputedDealModel;
         this.cacheManager = cacheManager;
@@ -52,6 +52,7 @@ let DealService = class DealService {
         this._scheduleModel = _scheduleModel;
         this._viewsModel = _viewsModel;
         this.reviewModel = reviewModel;
+        this.categoryAnalyticsModel = categoryAnalyticsModel;
         this._scheduleService = _scheduleService;
         this._stripeService = _stripeService;
         this._voucherService = _voucherService;
@@ -340,28 +341,13 @@ let DealService = class DealService {
                         status: 0,
                     });
                     if (scheduledDeal) {
-                        this._scheduleService.cancelJob(scheduledDeal.id);
                     }
                 }
                 if (updateDealDto.status == 'Scheduled') {
                     if (deal.startDate <= Date.now()) {
                         deal.dealStatus = statuses['Published'];
-                        this._scheduleService.scheduleDeal({
-                            scheduleDate: new Date(deal.endDate),
-                            status: 0,
-                            type: 'expireDeal',
-                            dealID: deal.dealID,
-                            deletedCheck: false,
-                        });
                     }
                     else {
-                        this._scheduleService.scheduleDeal({
-                            scheduleDate: new Date(deal.startDate),
-                            status: 0,
-                            type: 'publishDeal',
-                            dealID: deal.dealID,
-                            deletedCheck: false,
-                        });
                     }
                     if (deal.endDate <= Date.now()) {
                         deal.dealStatus = statuses['Expired'];
@@ -2509,13 +2495,16 @@ let DealService = class DealService {
             console.log(err);
         }
     }
-    async searchDeals(header, categoryName, subCategoryName, fromPrice, toPrice, reviewRating, offset, limit, req) {
-        var _a;
+    async searchDeals(searchBar, header, categoryName, subCategoryName, fromPrice, toPrice, reviewRating, offset, limit, filterCategoriesApiDto, req) {
+        var _a, _b, _c;
         try {
             offset = parseInt(offset) < 0 ? 0 : offset;
             limit = parseInt(limit) < 1 ? 10 : limit;
-            header = header.trim();
             let filters = {};
+            searchBar = searchBar.trim();
+            var headerQuery = new RegExp(`${searchBar}`, 'i');
+            var categoryQuery = new RegExp(`${searchBar}`, 'i');
+            var subCategoryQuery = new RegExp(`${searchBar}`, 'i');
             if (header.trim().length) {
                 var query = new RegExp(`${header}`, 'i');
                 filters = Object.assign(Object.assign({}, filters), { dealHeader: query });
@@ -2551,18 +2540,43 @@ let DealService = class DealService {
                         $gte: rating,
                     } });
             }
-            const totalCount = await this.dealModel.countDocuments({
-                deletedCheck: false,
-                dealStatus: dealstatus_enum_1.DEALSTATUS.published,
-            });
-            const filteredCount = await this.dealModel.countDocuments(Object.assign(Object.assign({ deletedCheck: false, dealStatus: dealstatus_enum_1.DEALSTATUS.published }, filters), matchFilter));
-            const deals = await this.dealModel
-                .aggregate([
+            let locationFilter = {};
+            if ((_a = filterCategoriesApiDto === null || filterCategoriesApiDto === void 0 ? void 0 : filterCategoriesApiDto.provincesArray) === null || _a === void 0 ? void 0 : _a.length) {
+                locationFilter = Object.assign(Object.assign({}, locationFilter), { province: { $in: filterCategoriesApiDto.provincesArray } });
+            }
+            console.log(filters);
+            console.log(locationFilter);
+            const totalCount = await this.dealModel.aggregate([
                 {
                     $match: Object.assign(Object.assign({ deletedCheck: false, dealStatus: dealstatus_enum_1.DEALSTATUS.published }, filters), matchFilter),
                 },
                 {
+                    $addFields: {
+                        isHeader: {
+                            $regexMatch: { input: '$dealHeader', regex: headerQuery },
+                        },
+                        isCategory: {
+                            $regexMatch: { input: '$categoryName', regex: categoryQuery },
+                        },
+                        isSubCategory: {
+                            $regexMatch: { input: '$subCategory', regex: subCategoryQuery },
+                        },
+                    },
+                },
+                {
+                    $match: {
+                        $or: [
+                            { isCategory: true },
+                            { isSubCategory: true },
+                            { isHeader: true },
+                        ],
+                    },
+                },
+                {
                     $sort: {
+                        isCategory: -1,
+                        isSubCategory: -1,
+                        isHeader: -1,
                         createdAt: -1,
                     },
                 },
@@ -2572,7 +2586,7 @@ let DealService = class DealService {
                         as: 'favouriteDeal',
                         let: {
                             dealID: '$dealID',
-                            customerMongoID: (_a = req === null || req === void 0 ? void 0 : req.user) === null || _a === void 0 ? void 0 : _a.id,
+                            customerMongoID: (_b = req === null || req === void 0 ? void 0 : req.user) === null || _b === void 0 ? void 0 : _b.id,
                             deletedCheck: '$deletedCheck',
                         },
                         pipeline: [
@@ -2638,6 +2652,7 @@ let DealService = class DealService {
                                     ratingsAverage: 1,
                                     legalName: 1,
                                     city: 1,
+                                    province: 1,
                                 },
                             },
                         ],
@@ -2649,6 +2664,7 @@ let DealService = class DealService {
                 {
                     $addFields: {
                         id: '$_id',
+                        province: '$merchantDetails.province',
                         mediaUrl: {
                             $slice: [
                                 {
@@ -2673,6 +2689,362 @@ let DealService = class DealService {
                             ],
                         },
                     },
+                },
+                {
+                    $match: Object.assign({}, locationFilter),
+                },
+                {
+                    $group: {
+                        _id: null,
+                        totalCount: { $sum: 1 },
+                        Between0and50: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            {
+                                                $gte: ['$minDealPrice', 0],
+                                            },
+                                            {
+                                                $lte: ['$minDealPrice', 50],
+                                            },
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        Between50and150: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            {
+                                                $gte: ['$minDealPrice', 50],
+                                            },
+                                            {
+                                                $lte: ['$minDealPrice', 150],
+                                            },
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        Between150and300: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            {
+                                                $gte: ['$minDealPrice', 150],
+                                            },
+                                            {
+                                                $lte: ['$minDealPrice', 300],
+                                            },
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        Between300and450: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            {
+                                                $gte: ['$minDealPrice', 300],
+                                            },
+                                            {
+                                                $lte: ['$minDealPrice', 450],
+                                            },
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        Plus450: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $gte: ['$minDealPrice', 450],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        FourUp: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $gte: ['$ratingsAverage', 4],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        ThreeUp: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $gte: ['$ratingsAverage', 3],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        TwoUp: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $gte: ['$ratingsAverage', 2],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        OneUp: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $gte: ['$ratingsAverage', 1],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        allRating: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $gte: ['$ratingsAverage', 0],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        WestVlaanderen: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $eq: ['$province', 'West-Vlaanderen'],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        OostVlaanderen: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $eq: ['$province', 'Oost-Vlaanderen'],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        Antwerpen: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $eq: ['$province', 'Antwerpen'],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        Limburg: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $eq: ['$province', 'Limburg'],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        VlaamsBrabant: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $eq: ['$province', 'Vlaams-Brabant'],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                    },
+                },
+                {
+                    $project: {
+                        _id: 0,
+                    },
+                },
+            ]);
+            const deals = await this.dealModel
+                .aggregate([
+                {
+                    $match: Object.assign(Object.assign({ deletedCheck: false, dealStatus: dealstatus_enum_1.DEALSTATUS.published }, filters), matchFilter),
+                },
+                {
+                    $addFields: {
+                        isHeader: {
+                            $regexMatch: { input: '$dealHeader', regex: headerQuery },
+                        },
+                        isCategory: {
+                            $regexMatch: { input: '$categoryName', regex: categoryQuery },
+                        },
+                        isSubCategory: {
+                            $regexMatch: { input: '$subCategory', regex: subCategoryQuery },
+                        },
+                    },
+                },
+                {
+                    $match: {
+                        $or: [
+                            { isCategory: true },
+                            { isSubCategory: true },
+                            { isHeader: true },
+                        ],
+                    },
+                },
+                {
+                    $sort: {
+                        isCategory: -1,
+                        isSubCategory: -1,
+                        isHeader: -1,
+                        createdAt: -1,
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'favourites',
+                        as: 'favouriteDeal',
+                        let: {
+                            dealID: '$dealID',
+                            customerMongoID: (_c = req === null || req === void 0 ? void 0 : req.user) === null || _c === void 0 ? void 0 : _c.id,
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$dealID', '$dealID'],
+                                            },
+                                            {
+                                                $eq: ['$$customerMongoID', '$customerMongoID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: {
+                        path: '$favouriteDeal',
+                        preserveNullAndEmptyArrays: true,
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'users',
+                        as: 'merchantDetails',
+                        let: {
+                            userID: '$merchantID',
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$userID', '$userID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                            {
+                                $addFields: {
+                                    id: '$_id',
+                                },
+                            },
+                            {
+                                $project: {
+                                    _id: 0,
+                                    id: 1,
+                                    totalReviews: 1,
+                                    ratingsAverage: 1,
+                                    legalName: 1,
+                                    city: 1,
+                                    province: 1,
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: '$merchantDetails',
+                },
+                {
+                    $addFields: {
+                        id: '$_id',
+                        province: '$merchantDetails.province',
+                        mediaUrl: {
+                            $slice: [
+                                {
+                                    $filter: {
+                                        input: '$mediaUrl',
+                                        as: 'mediaUrl',
+                                        cond: {
+                                            $eq: ['$$mediaUrl.type', 'Image'],
+                                        },
+                                    },
+                                },
+                                1,
+                            ],
+                        },
+                        isFavourite: {
+                            $cond: [
+                                {
+                                    $ifNull: ['$favouriteDeal', false],
+                                },
+                                true,
+                                false,
+                            ],
+                        },
+                    },
+                },
+                {
+                    $match: Object.assign({}, locationFilter),
                 },
                 {
                     $project: {
@@ -2706,11 +3078,7 @@ let DealService = class DealService {
             ])
                 .skip(parseInt(offset))
                 .limit(parseInt(limit));
-            return {
-                totalDeals: totalCount,
-                filteredDeals: filteredCount,
-                data: deals,
-            };
+            return Object.assign(Object.assign({}, totalCount[0]), { data: deals });
         }
         catch (err) {
             throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
@@ -2721,13 +3089,14 @@ let DealService = class DealService {
         try {
             offset = parseInt(offset) < 0 ? 0 : offset;
             limit = parseInt(limit) < 1 ? 10 : limit;
-            let matchFilter = {};
+            let categoryFilters = {};
             if (categoryName) {
-                matchFilter = Object.assign(Object.assign({}, matchFilter), { categoryName: categoryName });
+                categoryFilters = Object.assign(Object.assign({}, categoryFilters), { categoryName: categoryName });
             }
             if (subCategoryName) {
-                matchFilter = Object.assign(Object.assign({}, matchFilter), { subCategory: subCategoryName });
+                categoryFilters = Object.assign(Object.assign({}, categoryFilters), { subCategory: subCategoryName });
             }
+            let matchFilter = {};
             let minValue = parseInt(fromPrice);
             let maxValue = parseInt(toPrice);
             if (fromPrice && toPrice) {
@@ -2753,12 +3122,26 @@ let DealService = class DealService {
                     } });
             }
             let sort = {};
-            if (sorting) {
+            if (sorting == categoryapisorting_enum_1.SORTINGENUM.priceAsc || sorting == categoryapisorting_enum_1.SORTINGENUM.priceDesc) {
                 let sortPrice = sorting == categoryapisorting_enum_1.SORTINGENUM.priceAsc ? 1 : -1;
+                console.log('sorting');
+                sort = {
+                    minDealPrice: sortPrice,
+                };
+            }
+            if (sorting == categoryapisorting_enum_1.SORTINGENUM.ratingAsc || sorting == categoryapisorting_enum_1.SORTINGENUM.ratingDesc) {
                 let sortRating = sorting == categoryapisorting_enum_1.SORTINGENUM.ratingAsc ? 1 : -1;
+                console.log('sorting');
+                sort = {
+                    ratingsAverage: sortRating
+                };
+            }
+            if (sorting == categoryapisorting_enum_1.SORTINGENUM.dateAsc || sorting == categoryapisorting_enum_1.SORTINGENUM.dateDesc) {
                 let sortDate = sorting == categoryapisorting_enum_1.SORTINGENUM.dateAsc ? 1 : -1;
                 console.log('sorting');
-                sort = Object.assign(Object.assign({}, sort), { minDealPrice: sortPrice, ratingsAverage: sortRating, createdAt: sortDate });
+                sort = {
+                    createdAt: sortDate
+                };
             }
             let locationFilter = {};
             if ((_a = filterCategoriesApiDto === null || filterCategoriesApiDto === void 0 ? void 0 : filterCategoriesApiDto.provincesArray) === null || _a === void 0 ? void 0 : _a.length) {
@@ -2774,7 +3157,7 @@ let DealService = class DealService {
             console.log(locationFilter);
             const totalCount = await this.dealModel.aggregate([
                 {
-                    $match: Object.assign({ deletedCheck: false, dealStatus: dealstatus_enum_1.DEALSTATUS.published }, matchFilter),
+                    $match: Object.assign({ deletedCheck: false, dealStatus: dealstatus_enum_1.DEALSTATUS.published }, categoryFilters),
                 },
                 {
                     $sort: sort,
@@ -3023,6 +3406,17 @@ let DealService = class DealService {
                                 ],
                             },
                         },
+                        allRating: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $gte: ['$ratingsAverage', 0],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
                         WestVlaanderen: {
                             $sum: {
                                 $cond: [
@@ -3089,7 +3483,7 @@ let DealService = class DealService {
             const deals = await this.dealModel
                 .aggregate([
                 {
-                    $match: Object.assign({ deletedCheck: false, dealStatus: dealstatus_enum_1.DEALSTATUS.published }, matchFilter),
+                    $match: Object.assign(Object.assign({ deletedCheck: false, dealStatus: dealstatus_enum_1.DEALSTATUS.published }, categoryFilters), matchFilter),
                 },
                 {
                     $sort: sort,
@@ -4259,8 +4653,8 @@ let DealService = class DealService {
                 subDealID: subDeal.subDealID,
                 subDealMongoID: subDeal._id,
                 amount: subDeal.dealPrice,
-                net: netFee,
-                fee: calculatedFee,
+                net: netFee.toFixed(2),
+                fee: calculatedFee.toFixed(2),
                 status: voucherstatus_enum_1.VOUCHERSTATUSENUM.purchased,
                 merchantID: deal.merchantID,
                 merchantMongoID: merchant.id,
@@ -4268,7 +4662,7 @@ let DealService = class DealService {
                 affiliateName: affiliate.firstName + ' ' + affiliate.lastName,
                 affiliateID: buyNowDto.affiliateID,
                 affiliatePercentage: merchant.platformPercentage,
-                affiliateFee: calculatedFeeForAffiliate,
+                affiliateFee: calculatedFeeForAffiliate.toFixed(2),
                 affiliatePaymentStatus: affiliate_enum_1.AFFILIATEPAYMENTSTATUS.pending,
                 platformPercentage: merchant.platformPercentage,
                 customerID: customer.userID,
@@ -4330,8 +4724,10 @@ DealService = __decorate([
     __param(7, (0, mongoose_1.InjectModel)('Schedule')),
     __param(8, (0, mongoose_1.InjectModel)('views')),
     __param(9, (0, mongoose_1.InjectModel)('Review')),
+    __param(10, (0, mongoose_1.InjectModel)('categories-Analytics')),
     __metadata("design:paramtypes", [mongoose_2.Model,
         mongoose_2.Model, Object, mongoose_2.Model,
+        mongoose_2.Model,
         mongoose_2.Model,
         mongoose_2.Model,
         mongoose_2.Model,

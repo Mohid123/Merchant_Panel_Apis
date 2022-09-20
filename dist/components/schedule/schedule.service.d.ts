@@ -9,6 +9,8 @@ export declare class ScheduleService {
     private readonly _voucherModel;
     constructor(_scheduleModel: Model<Schedule>, _dealModel: Model<DealInterface>, _voucherModel: Model<VoucherInterface>);
     retrieveJobs(): Promise<void>;
+    runUpdateStatusSchedule(): Promise<void>;
+    updateStatusSchedule(): Promise<void>;
     scheduleVocuher(scheduleVocuherDto: ScheduleDealDto): Promise<void>;
     scheduleDeal(scheduleDealDto: ScheduleDealDto): Promise<void>;
     scheduleDealsFromDatabase(id: any, dealID: any, scheduleDate: any, status: any, type: any): Promise<void>;

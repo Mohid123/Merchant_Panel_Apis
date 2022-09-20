@@ -27,6 +27,7 @@ const views_schema_1 = require("../../schema/views/views.schema");
 const views_service_1 = require("../views/views.service");
 const preComputed_deals_schema_1 = require("../../schema/deal/preComputed-deals.schema");
 const review_schema_1 = require("../../schema/review/review.schema");
+const dealcategoryanalytics_schema_1 = require("../../schema/deal/dealcategoryanalytics.schema");
 let DealModule = class DealModule {
 };
 DealModule = __decorate([
@@ -46,6 +47,7 @@ DealModule = __decorate([
                 { name: 'Voucher', schema: vouchers_schema_1.VoucherSchema },
                 { name: 'views', schema: views_schema_1.ViewsSchema },
                 { name: 'Review', schema: review_schema_1.ReviewSchema },
+                { name: 'categories-Analytics', schema: dealcategoryanalytics_schema_1.DealCategoryAnalyticsSchema }
             ]),
             stripe_module_1.StripeModule,
             vouchers_module_1.VouchersModule,

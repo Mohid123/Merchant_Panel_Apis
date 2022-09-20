@@ -86,11 +86,7 @@ export declare class DealController {
         data: any[];
     }>;
     getNearByDeals(lat: number, lng: number, distance: number, offset: number, limit: number, req: any): Promise<any>;
-    searchDeals(header: string, categoryName: string, subCategoryName: string, fromPrice: number, toPrice: number, reviewRating: number, offset: number, limit: number, req: any): Promise<{
-        totalDeals: number;
-        filteredDeals: number;
-        data: any[];
-    }>;
+    searchDeals(searchBar: string, header: string, categoryName: string, subCategoryName: string, fromPrice: number, toPrice: number, reviewRating: number, offset: number, limit: number, filterCategoriesApiDto: FilterCategoriesApiDto, req: any): Promise<any>;
     getDealsByCategories(categoryName: string, subCategoryName: string, fromPrice: number, toPrice: number, reviewRating: number, sorting: SORT, offset: number, limit: number, filterCategoriesApiDto: FilterCategoriesApiDto, req: any): Promise<any>;
     getTrendingDeals(offset: number, limit: number, req: any): Promise<{
         totalDeals: number;

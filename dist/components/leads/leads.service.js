@@ -18,6 +18,7 @@ const mongoose_1 = require("@nestjs/mongoose");
 const axios_1 = require("axios");
 const mongoose_2 = require("mongoose");
 const userrole_enum_1 = require("../../enum/user/userrole.enum");
+const userstatus_enum_1 = require("../../enum/user/userstatus.enum");
 let LeadsService = class LeadsService {
     constructor(_leadModel) {
         this._leadModel = _leadModel;
@@ -33,6 +34,7 @@ let LeadsService = class LeadsService {
             throw new common_1.ForbiddenException('Email already exists');
         }
         leadDto.tradeName = leadDto.companyName;
+        leadDto.status = userstatus_enum_1.USERSTATUS.new;
         leadDto.countryCode = 'BE';
         leadDto.leadSource = 'web';
         if (leadDto.role == userrole_enum_1.USERROLE.merchant) {

@@ -15,6 +15,7 @@ import { ViewsInterface } from 'src/interface/views/views.interface';
 import { PreComputedDealInteface } from 'src/interface/deal/preComputedDeal.interface';
 import { Cache } from 'cache-manager';
 import { ReviewInterface } from 'src/interface/review/review.interface';
+import { DealCategoryAnalyticsInterface } from 'src/interface/deal/dealcategoryanalytics.interface';
 export declare class DealService implements OnModuleInit {
     private readonly dealModel;
     private readonly preComputedDealModel;
@@ -26,11 +27,12 @@ export declare class DealService implements OnModuleInit {
     private _scheduleModel;
     private _viewsModel;
     private readonly reviewModel;
+    private readonly categoryAnalyticsModel;
     private _scheduleService;
     private _stripeService;
     private _voucherService;
     private viewsService;
-    constructor(dealModel: Model<DealInterface>, preComputedDealModel: Model<PreComputedDealInteface>, cacheManager: Cache, categorymodel: Model<CategoryInterface>, voucherCounterModel: Model<VoucherCounterInterface>, subCategoryModel: Model<SubCategoryInterface>, _userModel: Model<UsersInterface>, _scheduleModel: Model<Schedule>, _viewsModel: Model<ViewsInterface>, reviewModel: Model<ReviewInterface>, _scheduleService: ScheduleService, _stripeService: StripeService, _voucherService: VouchersService, viewsService: ViewsService);
+    constructor(dealModel: Model<DealInterface>, preComputedDealModel: Model<PreComputedDealInteface>, cacheManager: Cache, categorymodel: Model<CategoryInterface>, voucherCounterModel: Model<VoucherCounterInterface>, subCategoryModel: Model<SubCategoryInterface>, _userModel: Model<UsersInterface>, _scheduleModel: Model<Schedule>, _viewsModel: Model<ViewsInterface>, reviewModel: Model<ReviewInterface>, categoryAnalyticsModel: Model<DealCategoryAnalyticsInterface>, _scheduleService: ScheduleService, _stripeService: StripeService, _voucherService: VouchersService, viewsService: ViewsService);
     onModuleInit(): void;
     generateVoucherId(sequenceName: any): Promise<string>;
     createDeal(dealDto: any, req: any): Promise<DealInterface & {
@@ -92,11 +94,7 @@ export declare class DealService implements OnModuleInit {
         data: any[];
     }>;
     getNearByDeals(lat: any, lng: any, distance: any, offset: any, limit: any, req: any): Promise<any>;
-    searchDeals(header: any, categoryName: any, subCategoryName: any, fromPrice: any, toPrice: any, reviewRating: any, offset: any, limit: any, req: any): Promise<{
-        totalDeals: number;
-        filteredDeals: number;
-        data: any[];
-    }>;
+    searchDeals(searchBar: any, header: any, categoryName: any, subCategoryName: any, fromPrice: any, toPrice: any, reviewRating: any, offset: any, limit: any, filterCategoriesApiDto: any, req: any): Promise<any>;
     getDealsByCategories(categoryName: any, subCategoryName: any, fromPrice: any, toPrice: any, reviewRating: any, sorting: any, offset: any, limit: any, filterCategoriesApiDto: any, req: any): Promise<any>;
     getRecommendedForYouDeals(offset: any, limit: any, req: any): Promise<{
         totalCount: number;

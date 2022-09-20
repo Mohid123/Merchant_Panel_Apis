@@ -46,13 +46,7 @@ let VouchersService = class VouchersService {
             voucherDto.boughtDate = timeStamp;
             voucherDto.voucherID = await this.generateVoucherId('voucherID');
             let voucher = new this.voucherModel(voucherDto);
-            this._scheduleService.scheduleVocuher({
-                scheduleDate: new Date(voucherDto.expiryDate),
-                status: 0,
-                type: 'expireVoucher',
-                dealID: voucherDto.voucherID,
-                deletedCheck: false,
-            });
+            let paymentUpdateTimeStamp = new Date().getTime() + 15 * 24 * 60 * 60 * 1000;
             voucher = await voucher.save();
             const res = await axios_1.default.get(`https://www.zohoapis.eu/crm/v2/functions/createvoucher/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&voucherid=${voucher.voucherID}`);
             let url = `${process.env.merchantPanelURL}/redeemVoucher/${voucher.id}`;
@@ -71,7 +65,7 @@ let VouchersService = class VouchersService {
             }
             await this.voucherModel.updateOne({ voucherID: voucherID }, updateVoucherForCRMDto);
             return {
-                message: 'Voucher has been updated successfully!'
+                message: 'Voucher has been updated successfully!',
             };
         }
         catch (err) {
@@ -80,7 +74,9 @@ let VouchersService = class VouchersService {
     }
     async getVoucherByID(voucherID) {
         try {
-            let voucher = await this.voucherModel.findOne({ voucherID: voucherID });
+            let voucher = await this.voucherModel.findOne({
+                voucherID: voucherID,
+            });
             if (!voucher) {
                 throw new Error('Voucher not found!');
             }
@@ -351,14 +347,15 @@ let VouchersService = class VouchersService {
                 deletedCheck: false,
             });
             const filteredCount = await this.voucherModel.countDocuments(Object.assign(Object.assign({ customerMongoID: customerID, deletedCheck: false }, matchFilter), filters));
-            let customerVouchers = await this.voucherModel.aggregate([
+            let customerVouchers = await this.voucherModel
+                .aggregate([
                 {
-                    $match: Object.assign(Object.assign({ customerMongoID: customerID, deletedCheck: false }, matchFilter), filters)
+                    $match: Object.assign(Object.assign({ customerMongoID: customerID, deletedCheck: false }, matchFilter), filters),
                 },
                 {
                     $sort: {
-                        createdAt: -1
-                    }
+                        createdAt: -1,
+                    },
                 },
                 {
                     $lookup: {
@@ -381,16 +378,16 @@ let VouchersService = class VouchersService {
                             {
                                 $addFields: {
                                     id: '$_id',
-                                }
+                                },
                             },
                             {
                                 $project: {
                                     _id: 0,
                                     createdAt: 0,
                                     updatedAt: 0,
-                                    __v: 0
-                                }
-                            }
+                                    __v: 0,
+                                },
+                            },
                         ],
                         as: 'merchantData',
                     },
@@ -400,21 +397,21 @@ let VouchersService = class VouchersService {
                 },
                 {
                     $addFields: {
-                        id: '$_id'
-                    }
+                        id: '$_id',
+                    },
                 },
                 {
                     $project: {
-                        _id: 0
-                    }
-                }
+                        _id: 0,
+                    },
+                },
             ])
                 .skip(parseInt(offset))
                 .limit(parseInt(limit));
             return {
                 totalCount: totalCount,
                 filteredCount: filteredCount,
-                data: customerVouchers
+                data: customerVouchers,
             };
         }
         catch (err) {
@@ -456,7 +453,6 @@ let VouchersService = class VouchersService {
                 status: 0,
             });
             if (scheduledVoucher) {
-                this._scheduleService.cancelJob(scheduledVoucher.id);
             }
             const merchant = await this.userModel.findOne({
                 userID: voucher.merchantID,
@@ -582,7 +578,6 @@ let VouchersService = class VouchersService {
                 status: 0,
             });
             if (scheduledVoucher) {
-                this._scheduleService.cancelJob(scheduledVoucher.id);
             }
             const merchant = await this.userModel.findOne({
                 userID: voucher.merchantID,

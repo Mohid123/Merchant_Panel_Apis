@@ -23,7 +23,8 @@ async function bootstrap() {
     const document = swagger_1.SwaggerModule.createDocument(app, config);
     swagger_1.SwaggerModule.setup('swagger', app, document);
     const port = 5200;
-    await app.listen(port);
+    const server = await app.listen(port);
+    server.setTimeout(60000);
     console.warn(`API is running on ${port}`);
 }
 bootstrap();

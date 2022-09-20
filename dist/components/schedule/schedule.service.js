@@ -16,6 +16,8 @@ exports.ScheduleService = void 0;
 const common_1 = require("@nestjs/common");
 const mongoose_1 = require("@nestjs/mongoose");
 const mongoose_2 = require("mongoose");
+const dealstatus_enum_1 = require("../../enum/deal/dealstatus.enum");
+const merchant_enum_1 = require("../../enum/merchant/merchant.enum");
 const voucherstatus_enum_1 = require("../../enum/voucher/voucherstatus.enum");
 const nodeSchedule = require('node-schedule');
 const axios_1 = require("axios");
@@ -26,27 +28,72 @@ let ScheduleService = class ScheduleService {
         this._voucherModel = _voucherModel;
     }
     async retrieveJobs() {
-        let jobs = await this._scheduleModel.find({
-            status: 0,
-            deletedCheck: false,
-            scheduleDate: { $gt: new Date() },
-        });
-        console.log(`${jobs.length} jobs scheduled...`);
-        await this._scheduleModel.updateMany({ status: 0, scheduleDate: { $lte: new Date() } }, { $set: { status: -1 } });
-        jobs = JSON.parse(JSON.stringify(jobs));
-        jobs.forEach(async (jobDoc) => {
-            let status = '';
-            if (jobDoc.type == 'publishDeal') {
-                status = 'Published';
-            }
-            else if (jobDoc.type == 'expireDeal') {
-                status = 'Expired';
-            }
-            else if (jobDoc.type == 'expireVoucher') {
-                status = 'Expired';
-            }
-            await this.scheduleDealsFromDatabase(jobDoc.id, jobDoc.dealID, jobDoc.scheduleDate, status, jobDoc.type);
-        });
+        this.updateStatusSchedule();
+    }
+    async runUpdateStatusSchedule() {
+        try {
+            const currentDate = new Date().getTime();
+            const dealsToPublish = await this._dealModel.updateMany({
+                deletedCheck: false,
+                startDate: { $lte: currentDate },
+                dealStatus: dealstatus_enum_1.DEALSTATUS === null || dealstatus_enum_1.DEALSTATUS === void 0 ? void 0 : dealstatus_enum_1.DEALSTATUS.scheduled
+            }, {
+                $set: {
+                    dealStatus: dealstatus_enum_1.DEALSTATUS === null || dealstatus_enum_1.DEALSTATUS === void 0 ? void 0 : dealstatus_enum_1.DEALSTATUS.published,
+                }
+            });
+            console.log('Puplished deals', dealsToPublish);
+            const dealsToExpire = await this._dealModel.updateMany({
+                deletedCheck: false,
+                endDate: { $lte: currentDate },
+                dealStatus: dealstatus_enum_1.DEALSTATUS === null || dealstatus_enum_1.DEALSTATUS === void 0 ? void 0 : dealstatus_enum_1.DEALSTATUS.published
+            }, {
+                $set: {
+                    dealStatus: dealstatus_enum_1.DEALSTATUS === null || dealstatus_enum_1.DEALSTATUS === void 0 ? void 0 : dealstatus_enum_1.DEALSTATUS.expired,
+                }
+            });
+            console.log('Expired deals', dealsToExpire);
+            const vouchersToExpire = await this._voucherModel.updateMany({
+                deletedCheck: false,
+                expiryDate: { $lte: currentDate },
+                status: voucherstatus_enum_1.VOUCHERSTATUSENUM === null || voucherstatus_enum_1.VOUCHERSTATUSENUM === void 0 ? void 0 : voucherstatus_enum_1.VOUCHERSTATUSENUM.purchased,
+            }, {
+                $set: {
+                    status: voucherstatus_enum_1.VOUCHERSTATUSENUM === null || voucherstatus_enum_1.VOUCHERSTATUSENUM === void 0 ? void 0 : voucherstatus_enum_1.VOUCHERSTATUSENUM.expired,
+                }
+            });
+            console.log('Expired vouchers', vouchersToExpire);
+            const paymentClearDate = currentDate - (15 * 24 * 60 * 60 * 1000);
+            const vouchersPaymentUpdate = await this._voucherModel.updateMany({
+                deletedCheck: false,
+                boughtDate: { $lte: paymentClearDate },
+            }, {
+                $set: {
+                    affiliatePaymentStatus: merchant_enum_1.MERCHANTPAYMENTSTATUS === null || merchant_enum_1.MERCHANTPAYMENTSTATUS === void 0 ? void 0 : merchant_enum_1.MERCHANTPAYMENTSTATUS.approved,
+                    merchantPaymentStatus: merchant_enum_1.MERCHANTPAYMENTSTATUS === null || merchant_enum_1.MERCHANTPAYMENTSTATUS === void 0 ? void 0 : merchant_enum_1.MERCHANTPAYMENTSTATUS.approved,
+                }
+            });
+            console.log('vouchersPaymentUpdate', vouchersPaymentUpdate);
+        }
+        catch (err) {
+            console.log(err);
+            throw new common_1.BadRequestException(err === null || err === void 0 ? void 0 : err.message);
+        }
+    }
+    async updateStatusSchedule() {
+        try {
+            const rule = new nodeSchedule.RecurrenceRule();
+            rule.hour = 0;
+            rule.minutes = 0;
+            rule.tz = 'Etc/UTC';
+            nodeSchedule.scheduleJob(rule, async () => {
+                await this.runUpdateStatusSchedule();
+            });
+        }
+        catch (err) {
+            console.log(err);
+            throw new Error(err === null || err === void 0 ? void 0 : err.message);
+        }
     }
     async scheduleVocuher(scheduleVocuherDto) {
         const job = await new this._scheduleModel(scheduleVocuherDto).save();
@@ -55,8 +102,18 @@ let ScheduleService = class ScheduleService {
             if (job.type == 'expireVoucher') {
                 status = voucherstatus_enum_1.VOUCHERSTATUSENUM.expired;
             }
+            if (job.type == 'updateMerchantAffiliatePaymentStatus') {
+                status = merchant_enum_1.MERCHANTPAYMENTSTATUS.approved;
+            }
             if (status == voucherstatus_enum_1.VOUCHERSTATUSENUM.expired) {
                 await this._voucherModel.updateOne({ voucherID: job.dealID }, { status: status });
+                const voucher = await this._voucherModel.findOne({
+                    voucherID: job.dealID,
+                });
+                await this._scheduleModel.updateOne({ _id: job.id }, { status: -1 });
+            }
+            if (status == merchant_enum_1.MERCHANTPAYMENTSTATUS.approved) {
+                await this._voucherModel.updateOne({ voucherID: job.dealID }, { affiliatePaymentStatus: status, merchantPaymentStatus: status });
                 const voucher = await this._voucherModel.findOne({
                     voucherID: job.dealID,
                 });
@@ -79,13 +136,13 @@ let ScheduleService = class ScheduleService {
                 await this._dealModel.updateOne({ dealID: job.dealID }, { dealStatus: status });
                 await axios_1.default.get(`https://www.zohoapis.eu/crm/v2/functions/createdraftdeal/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&dealid=${job.dealID}`);
                 const deal = await this._dealModel.findOne({ dealID: job.dealID });
-                await new this._scheduleModel({
+                this.scheduleDeal({
                     scheduleDate: new Date(deal.endDate),
                     status: 0,
                     type: 'expireDeal',
                     dealID: deal.dealID,
                     deletedCheck: false,
-                }).save();
+                });
                 await this._scheduleModel.updateOne({ _id: job.id }, { status: -1 });
             }
             else if (status == 'Expired') {
@@ -118,6 +175,11 @@ let ScheduleService = class ScheduleService {
             }
             else if (status == 'Expired' && type == 'expireVoucher') {
                 await this._voucherModel.updateOne({ voucherID: dealID }, { status: status });
+                await this._scheduleModel.updateOne({ _id: id }, { status: -1 });
+            }
+            else if (status == merchant_enum_1.MERCHANTPAYMENTSTATUS.approved &&
+                type == 'updateMerchantAffiliatePaymentStatus') {
+                await this._voucherModel.updateOne({ voucherID: dealID }, { affiliatePaymentStatus: status, merchantPaymentStatus: status });
                 await this._scheduleModel.updateOne({ _id: id }, { status: -1 });
             }
             console.log(`Deal ${status}...`);
