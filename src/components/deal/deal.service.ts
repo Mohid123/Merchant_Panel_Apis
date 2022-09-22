@@ -5213,7 +5213,7 @@ export class DealService implements OnModuleInit {
   async buyNow(buyNowDto, req) {
     try {
       const deal = await this.dealModel.findOne({ dealID: buyNowDto.dealID });
-      debugger;
+
       if (!deal) {
         throw new Error('Deal ID not found!');
       }
@@ -5310,6 +5310,9 @@ export class DealService implements OnModuleInit {
 
       subDeal.grossEarning += subDeal.dealPrice;
       subDeal.netEarning += netFee;
+      subDeal.platformNetEarning += calculatedFee;
+
+      deal.netEarnings += netFee;
 
       let voucherDto: any = {
         voucherHeader: subDeal.title,
