@@ -1,5 +1,5 @@
-import { Controller, Get, Param, Post } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { Controller, Get, Param, Post, Query } from '@nestjs/common';
+import { ApiQuery, ApiTags } from '@nestjs/swagger';
 import { UtilService } from './utils.service';
 
 @ApiTags('Utils')
@@ -23,4 +23,12 @@ export class UtilController {
     @Param('vatNumber') vatNumber: string) {
     return this.UtilService.validateVatNumber(vatNumber)
   }
+
+  // @ApiQuery({ name: 'searchCategory', required: false })
+    @Get('searchCategory')
+    searchAllCities (
+        @Query('searchCategory') searchCategory: string
+        ) {
+        return this.UtilService.searchCategory(searchCategory)
+    }
 }

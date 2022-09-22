@@ -43,6 +43,15 @@ let UtilService = class UtilService {
             throw new common_1.BadRequestException(err === null || err === void 0 ? void 0 : err.message);
         }
     }
+    async searchCategory(searchCategory) {
+        const data = categories_1.categoriesDataSet;
+        if (searchCategory) {
+            searchCategory = searchCategory.trim();
+            var query = new RegExp(`${searchCategory}`, 'i');
+            const categoryData = data.filter((el) => query.test(el.category));
+            return categoryData;
+        }
+    }
 };
 UtilService = __decorate([
     (0, common_1.Injectable)()

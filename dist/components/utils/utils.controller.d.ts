@@ -9,12 +9,12 @@ export declare class UtilController {
         lat: number;
     }[]>;
     getAllCategoriesAndSubCategories(): Promise<{
-        id: string;
-        name: string;
-        subCategories: {
-            id: string;
-            name: string;
-        }[];
+        category: string;
+        subCategories: string[];
     }[]>;
     validateVatNumber(vatNumber: string): Promise<any>;
+    searchAllCities(searchCategory: string): Promise<{
+        category: string;
+        subCategories: string[];
+    }[]>;
 }
