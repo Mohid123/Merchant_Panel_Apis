@@ -164,4 +164,9 @@ export class VouchersController {
   redeemVoucherByMerchantPin(@Body() redeemVoucherDto: RedeemVoucherDto) {
     return this.voucherService.redeemVoucherByMerchantPin(redeemVoucherDto);
   }
+
+  @Get('getVoucherSoldPerDay/:days')
+  getVoucherSoldPerDay(@Param('days') days:number) {
+    return this.voucherService.getVoucherSoldPerDay(days);
+  }
 }
