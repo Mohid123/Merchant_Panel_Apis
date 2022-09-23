@@ -138,7 +138,7 @@ export class UsersService {
   }
 
   async changePassword(id, updatepasswordDto) {
-    let user = await this._userModel.findOne({ _id: id });
+    let user = await this._userModel.findOne({ _id: id, deletedCheck: false });
     if (!user) {
       throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
     }
