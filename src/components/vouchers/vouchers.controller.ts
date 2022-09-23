@@ -165,8 +165,11 @@ export class VouchersController {
     return this.voucherService.redeemVoucherByMerchantPin(redeemVoucherDto);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtMerchantAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Get('getVoucherSoldPerDay/:days')
-  getVoucherSoldPerDay(@Param('days') days:number) {
-    return this.voucherService.getVoucherSoldPerDay(days);
+  getVoucherSoldPerDay(@Param('days') days:number,@Req() req) {
+    return this.voucherService.getVoucherSoldPerDay(days,req);
   }
 }

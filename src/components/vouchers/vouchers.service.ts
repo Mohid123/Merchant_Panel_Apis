@@ -915,7 +915,7 @@ export class VouchersService {
     }
   }
   
-  async getVoucherSoldPerDay(numberOfDays){
+  async getVoucherSoldPerDay(numberOfDays,req){
     try{
       let startTime = Date.now() - (numberOfDays * 24*60*60*1000);
       
@@ -924,6 +924,7 @@ export class VouchersService {
       const data = await this.voucherModel.aggregate([
         {
             $match:{
+                merchantMongoID:req.user.id,
                 createdAt:{$gte:new Date(startTime)}
             }
         },
