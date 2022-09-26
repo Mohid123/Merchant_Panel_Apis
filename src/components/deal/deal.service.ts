@@ -855,9 +855,50 @@ export class DealService implements OnModuleInit {
                 },
                 {
                   $lookup: {
+                    from: 'users',
+                    let: {
+                      userID: '$customerID',
+                    },
+                    pipeline: [
+                      {
+                        $match: {
+                          $expr: {
+                            $and: [
+                              {
+                                $eq: ['$userID', '$$userID'],
+                              },
+                            ],
+                          },
+                        },
+                      },
+                    ],
+                    as: 'customerData',
+                  },
+                },
+                {
+                  $unwind: '$customerData',
+                },
+                {
+                  $addFields: {
+                    id: '$_id',
+                    customerName: {
+                      $concat: [
+                        '$customerData.firstName', ' ', '$customerData.lastName'
+                      ]
+                    }
+                  },
+                },
+                {
+                  $project: {
+                    customerData: 0,
+                    _id: 0
+                  }
+                },
+                {
+                  $lookup: {
                     from: 'reviewText',
                     as: 'merchantReplyText',
-                    localField: '_id',
+                    localField: 'id',
                     foreignField: 'reviewID',
                   },
                 },
