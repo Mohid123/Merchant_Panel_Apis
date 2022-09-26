@@ -2,8 +2,6 @@ import { ApiProperty } from '@nestjs/swagger';
 import { MedialUrl, multipleRatings } from 'src/interface/review/review.interface';
 
 export class ReviewDto {
-  @ApiProperty()
-  id: string;
 
   @ApiProperty()
   voucherMongoID: string;
@@ -28,9 +26,6 @@ export class ReviewDto {
     ],
   })
   mediaUrl: MedialUrl[];
-
-  @ApiProperty()
-  totalRating: number;
 
   @ApiProperty({
     example: [

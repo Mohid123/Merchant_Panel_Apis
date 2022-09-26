@@ -606,14 +606,56 @@ export class VouchersService {
             $unwind: '$merchantData',
           },
           {
+            $lookup: {
+              from: 'reviews',
+              let: {
+                customerID: '$customerID',
+                voucherID: '$voucherID',
+              },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $and: [
+                        {
+                          $eq: ['$customerID', '$$customerID'],
+                        },
+                        {
+                          $eq: ['$voucherID', '$$voucherID'],
+                        },
+                      ],
+                    },
+                  },
+                },
+              ],
+              as: 'reviewData',
+            },
+          },
+          {
+            $unwind: {
+              path: '$reviewData',
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          {
             $addFields: {
               id: '$_id',
-              tradeName: '$merchantData.tradeName'
+              tradeName: '$merchantData.tradeName',
+              isReviewed: {
+                $cond: [
+                  {
+                    $ifNull: ['$reviewData', false],
+                  },
+                  true,
+                  false,
+                ],
+              },
             },
           },
           {
             $project: {
               merchantData: 0,
+              reviewData: 0,
               _id: 0,
               dealHeader: 0,
               dealID: 0,
