@@ -223,24 +223,6 @@ export class ReviewService {
 
   async createReviewReply(reviewTextDto) {
     try {
-      // await this.reviewTextModel.findOneAndUpdate(
-      //   {
-      //     reviewID: reviewTextDto.reviewID,
-      //     merchantMongoID: reviewTextDto.merchantID,
-      //   },
-      //   {
-      //     ...reviewTextDto,
-      //   },
-      //   {
-      //     upsert: true,
-      //   },
-      // );
-
-      // return await this.reviewTextModel.findOne({
-      //   reviewID: reviewTextDto.reviewID,
-      //   merchantMongoID: reviewTextDto.merchantID,
-      // });
-
       const voucher = await this.voucherModel.findOne({
         voucherID: reviewTextDto.voucherID,
         deletedCheck: false
@@ -253,7 +235,44 @@ export class ReviewService {
       reviewTextDto.merchantMongoID = voucher.merchantMongoID;
       reviewTextDto.merchantID = voucher.merchantID;
 
-      let merchantReply = await new this.reviewTextModel(reviewTextDto).save();
+      let reply = await new this.reviewTextModel(reviewTextDto).save();
+
+      const merchantReply = await this.reviewTextModel.aggregate([
+        {
+          $match: {
+            _id: reply._id
+          }
+        },
+        {
+          $lookup: {
+            from: 'users',
+            as: 'merchantData',
+            localField: 'merchantID',
+            foreignField: 'userID'
+          }
+        },
+        {
+          $unwind: '$merchantData'
+        },
+        {
+          $addFields: {
+            id: '$_id',
+            legalName: '$merchantData.legalName',
+            merchantName: {
+              $concat: [
+                '$merchantData.firstName', ' ', '$merchantData.lastName'
+              ]
+            }
+          }
+        },
+        {
+          $project: {
+            _id: 0,
+            merchantData: 0
+          }
+        }
+      ]).then(items=>items[0]);
+
       return merchantReply;
 
     } catch (err) {
