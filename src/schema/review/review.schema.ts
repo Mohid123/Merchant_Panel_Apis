@@ -38,9 +38,9 @@ export const ReviewSchema = new mongoose.Schema(
       lowercase: true,
       validate: [validator.isEmail, 'Please provide a valid email'],
     },
-    customerName: { type: String, default: '' },
-    profilePicURL: { type: String, default: '' },
-    voucherRedeemedDate: { type: Number },
+    // customerName: { type: String, default: '' },
+    // customerProfilePicURL: { type: String, default: '' },
+    // voucherRedeemedDate: { type: Number },
     isViewed: { type: Boolean, default: false },
   },
   {
