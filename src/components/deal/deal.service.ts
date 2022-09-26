@@ -891,20 +891,74 @@ export class DealService implements OnModuleInit {
                 {
                   $project: {
                     customerData: 0,
-                    _id: 0
+                    _id: 0,
+                    mediaUrl: 0
                   }
                 },
                 {
                   $lookup: {
                     from: 'reviewText',
+                    let: {
+                      reviewID: '$id',
+                    },
+                    pipeline: [
+                      {
+                        $match: {
+                          $expr: {
+                            $and: [
+                              {
+                                $eq: ['$reviewID', '$$reviewID'],
+                              },
+                            ],
+                          },
+                        },
+                      },
+                      {
+                        $lookup: {
+                          from: 'users',
+                          let: {
+                            userID: '$merchantID',
+                          },
+                          pipeline: [
+                            {
+                              $match: {
+                                $expr: {
+                                  $and: [
+                                    {
+                                      $eq: ['$userID', '$$userID'],
+                                    },
+                                  ],
+                                },
+                              },
+                            },
+                          ],
+                          as: 'merchantData',
+                        },
+                      },
+                      {
+                        $unwind: '$merchantData',
+                      },
+                      {
+                        $addFields: {
+                          id: '$_id',
+                          legalName: '$merchantData.legalName',
+                          merchantName: {
+                            $concat: [
+                              '$merchantData.firstName', ' ', '$merchantData.lastName'
+                            ]
+                          }
+                        }
+                      },
+                      {
+                        $project: {
+                          _id: 0,
+                          merchantData: 0
+                        }
+                      }
+                    ],
                     as: 'merchantReplyText',
-                    localField: 'id',
-                    foreignField: 'reviewID',
                   },
                 },
-                // {
-                //   $unwind: '$merchantReplyText',
-                // },
                 {
                   $skip: parseInt(offset),
                 },
