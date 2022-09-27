@@ -3185,11 +3185,11 @@ export class DealService implements OnModuleInit {
             },
           },
         },
-        {
-          $match: {
-            ...locationFilter,
-          },
-        },
+        // {
+        //   $match: {
+        //     ...locationFilter,
+        //   },
+        // },
         {
           $group: {
             _id: null,
