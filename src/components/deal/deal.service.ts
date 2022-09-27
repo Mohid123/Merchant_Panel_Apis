@@ -5396,16 +5396,21 @@ export class DealService implements OnModuleInit {
       let merchantPercentage = merchant.platformPercentage / 100;
       affiliate.platformPercentage = merchant.platformPercentage / 100;
 
-      const calculatedFee = subDeal.dealPrice * merchantPercentage; // A percentage of amount that will go to divideals from the entire amount
+      const calculatedFee = subDeal.dealPrice * buyNowDto.quantity * merchantPercentage; // A percentage of amount that will go to divideals from the entire amount
 
-      const netFee = subDeal.dealPrice - merchantPercentage * subDeal.dealPrice; // Amount that will be paid to the merchant by the divideals
+      const netFee = buyNowDto.quantity * subDeal.dealPrice - merchantPercentage * subDeal.dealPrice * buyNowDto.quantity; // Amount that will be paid to the merchant by the divideals
 
       const calculatedFeeForAffiliate =
         calculatedFee * affiliate.platformPercentage; // A percentage of amount that will go to affiliate from the the amount earned by the platform
 
-      subDeal.grossEarning += subDeal.dealPrice;
+      subDeal.grossEarning += subDeal.dealPrice * buyNowDto.quantity;
       subDeal.netEarning += netFee;
-      subDeal.platformNetEarning += calculatedFee;
+      if (subDeal.platformNetEarning) {
+        subDeal.platformNetEarning += calculatedFee;
+      } else {
+        subDeal.platformNetEarning = 0;
+        subDeal.platformNetEarning += calculatedFee;
+      }
 
       deal.netEarnings += netFee;
 
