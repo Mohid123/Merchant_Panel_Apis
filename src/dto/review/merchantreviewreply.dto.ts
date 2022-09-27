@@ -6,19 +6,19 @@ export class ReviewTextDto {
     reviewID: string;
 
     @ApiProperty()
-    merchantID: string;
+    voucherMongoID: string;
 
     @ApiProperty()
     voucherID: string;
 
-    @ApiProperty()
-    merchantName: string;
+    // @ApiProperty()
+    // merchantName: string;
 
-    @ApiProperty()
-    legalName: string;
+    // @ApiProperty()
+    // legalName: string;
 
-    @ApiProperty()
-    profilePicURL: string;
+    // @ApiProperty()
+    // merchantProfilePicURL: string;
 
     @ApiProperty()
     merchantReplyText: string;

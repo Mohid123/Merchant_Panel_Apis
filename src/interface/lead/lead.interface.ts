@@ -60,5 +60,4 @@ export interface LeadInterface {
   totalReviews: number;
   maxRating: number;
   minRating: number;
-  platformPercentage: number;
 }

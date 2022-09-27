@@ -1,137 +1,69 @@
 export const categoriesDataSet = [
     {
-        "id": "0", 
-        "name": "Accommodation",
+        
+        "category": "Accommodation",
         "subCategories": [
-            {
-                "id": "0",
-                "name": "City trips"
-            },
-            {
-                "id": "1",
-                "name": "Nature"
-            }
+            "City trips",
+            "Nature"
         ]
     },
     {
-        "id": "1", 
-        "name": "Dining",
+        "category": "Dining",
         "subCategories": [
-            {
-                "id": "0",
-                "name": "Dinners"
-            },
-            {
-                "id": "1",
-                "name": "Lunches"
-            },
-            {
-                "id": "2",
-                "name": "Catering"
-            }
+            "Dinners",
+            "Lunches",
+            "Catering"
         ]
     },
     {
-        "id": "2", 
-        "name": "Sports & Adventures",
+        "category": "Sports & Adventures",
         "subCategories": [
-            {
-                "id": "0",
-                "name": "Outdoors"
-            },
-            {
-                "id": "1",
-                "name": "Indoors"
-            }
+            "Outdoors",
+            "Indoors"
         ]
     },
     {
-        "id": "3", 
-        "name": "Experiences at Home",
+        "category": "Experiences at Home",
         "subCategories": [
-            {
-                "id": "0",
-                "name": "Catering"
-            },
-            {
-                "id": "1",
-                "name": "Parties"
-            },
-            {
-                "id": "2",
-                "name": "Girls night at home"
-            },
-            {
-                "id": "3",
-                "name": "Games"
-            }
+            "Catering",
+            "Parties",
+            "Girls night at home",
+            "Games"
         ]
     },
     {
-        "id": "4", 
-        "name": "Spa & Holistic",
+        "category": "Spa & Holistic",
         "subCategories": [
-            {
-                "id": "0",
-                "name": "Holistic treatments"
-            },
-            {
-                "id": "1",
-                "name": "Beauty treatments"
-            },
-            {
-                "id": "2",
-                "name": "Spa treatments"
-            }
+            "Holistic treatments",
+            "Beauty treatments",
+            "Spa treatments"
         ]
     },
     {
-        "id": "5", 
-        "name": "Personal Development",
+        "category": "Personal Development",
         "subCategories": [
-            {
-                "id": "0",
-                "name": "Courses & Training"
-            },
-            {
-                "id": "1",
-                "name": "Workshops & Retreats"
-            },
-            {
-                "id": "2",
-                "name": "Coaching"
-            }
+            "Courses & Training",
+            "Workshops & Retreats",
+            "Coaching"
         ]
     },
     {
-        "id": "6", 
-        "name": "Concerts & Event Tickets",
+        "category": "Concerts & Event Tickets",
         "subCategories": [
-            {
-                "id": "0",
-                "name": "Concerts & Event Tickets"
-            }
+            "Concerts & Event Tickets"
         ]
     },
     {
-        "id": "7", 
-        "name": "Pet Treatments",
+        "category": "Pet Treatments",
         "subCategories": [
-            {
-                "id": "0",
-                "name": "Pet Treatments"
-            }
+            "Pet Treatments"
         ]
     },
-    {
-        "id": "8", 
-        "name": "Metaverse",
-        "subCategories": [
-            {
-                "id": "0",
-                "name": "Metaverse(Coming soon)"
-            }
-        ]
-    }
+    // {
+    //     "category": "Metaverse",
+    //     "subCategories": [
+    //        "Metaverse(Coming soon)"
+    //     ]
+    // }
 ]
 
