@@ -1333,6 +1333,13 @@ export class DealService implements OnModuleInit {
         // ...filters,
       });
 
+      const filteredCount = await this.dealModel.countDocuments({
+        merchantMongoID: merchantID,
+        deletedCheck: false,
+        ...matchFilter,
+        ...filters,
+      })
+
       const deals = await this.dealModel
         .aggregate([
           {
@@ -1362,6 +1369,7 @@ export class DealService implements OnModuleInit {
 
       return {
         totalDeals: totalCount,
+        filteredCount: filteredCount,
         data: deals,
       };
     } catch (err) {
