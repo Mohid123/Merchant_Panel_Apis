@@ -4858,12 +4858,18 @@ let DealService = class DealService {
             }
             let merchantPercentage = merchant.platformPercentage / 100;
             affiliate.platformPercentage = merchant.platformPercentage / 100;
-            const calculatedFee = subDeal.dealPrice * merchantPercentage;
-            const netFee = subDeal.dealPrice - merchantPercentage * subDeal.dealPrice;
+            const calculatedFee = subDeal.dealPrice * buyNowDto.quantity * merchantPercentage;
+            const netFee = buyNowDto.quantity * subDeal.dealPrice - merchantPercentage * subDeal.dealPrice * buyNowDto.quantity;
             const calculatedFeeForAffiliate = calculatedFee * affiliate.platformPercentage;
-            subDeal.grossEarning += subDeal.dealPrice;
+            subDeal.grossEarning += subDeal.dealPrice * buyNowDto.quantity;
             subDeal.netEarning += netFee;
-            subDeal.platformNetEarning += calculatedFee;
+            if (subDeal.platformNetEarning) {
+                subDeal.platformNetEarning += calculatedFee;
+            }
+            else {
+                subDeal.platformNetEarning = 0;
+                subDeal.platformNetEarning += calculatedFee;
+            }
             deal.netEarnings += netFee;
             let voucherDto = {
                 voucherHeader: subDeal.title,
