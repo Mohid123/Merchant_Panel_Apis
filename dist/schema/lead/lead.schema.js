@@ -62,8 +62,7 @@ exports.LeadSchema = new mongoose.Schema({
     minRating: {
         type: Number,
         default: 0,
-    },
-    platformPercentage: { type: Number }
+    }
 }, {
     collection: 'leads',
 });

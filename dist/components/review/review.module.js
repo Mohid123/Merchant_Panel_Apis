@@ -15,6 +15,7 @@ const review_schema_1 = require("../../schema/review/review.schema");
 const deal_schema_1 = require("../../schema/deal/deal.schema");
 const users_schema_1 = require("../../schema/user/users.schema");
 const merchantreviewreply_schema_1 = require("../../schema/review/merchantreviewreply.schema");
+const vouchers_schema_1 = require("../../schema/vouchers/vouchers.schema");
 let ReviewModule = class ReviewModule {
 };
 ReviewModule = __decorate([
@@ -24,7 +25,8 @@ ReviewModule = __decorate([
                 { name: 'Review', schema: review_schema_1.ReviewSchema },
                 { name: 'Deal', schema: deal_schema_1.DealSchema },
                 { name: 'User', schema: users_schema_1.UsersSchema },
-                { name: 'reviewText', schema: merchantreviewreply_schema_1.ReviewTextSchema }
+                { name: 'reviewText', schema: merchantreviewreply_schema_1.ReviewTextSchema },
+                { name: 'Voucher', schema: vouchers_schema_1.VoucherSchema },
             ]),
         ],
         controllers: [review_controller_1.ReviewController],

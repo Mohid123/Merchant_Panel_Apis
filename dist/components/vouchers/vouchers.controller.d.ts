@@ -43,4 +43,5 @@ export declare class VouchersController {
             _id: string;
         };
     }>;
+    getVoucherSoldPerDay(days: number, req: any): Promise<any[]>;
 }

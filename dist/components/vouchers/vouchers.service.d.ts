@@ -49,4 +49,5 @@ export declare class VouchersService {
             _id: string;
         };
     }>;
+    getVoucherSoldPerDay(numberOfDays: any, req: any): Promise<any[]>;
 }

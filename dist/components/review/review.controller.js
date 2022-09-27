@@ -23,8 +23,11 @@ let ReviewController = class ReviewController {
     constructor(reviewService) {
         this.reviewService = reviewService;
     }
-    createReview(revieDto) {
-        return this.reviewService.createReview(revieDto);
+    createReview(revieDto, req) {
+        return this.reviewService.createReview(revieDto, req);
+    }
+    getReviewforCustomerProfile(voucherID) {
+        return this.reviewService.getReviewforCustomerProfile(voucherID);
     }
     createReviewReply(reviewTextDto) {
         return this.reviewService.createReviewReply(reviewTextDto);
@@ -51,10 +54,18 @@ let ReviewController = class ReviewController {
 __decorate([
     (0, common_1.Post)('createReview'),
     __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [review_dto_1.ReviewDto]),
+    __metadata("design:paramtypes", [review_dto_1.ReviewDto, Object]),
     __metadata("design:returntype", void 0)
 ], ReviewController.prototype, "createReview", null);
+__decorate([
+    (0, common_1.Get)('getReviewforCustomerProfile/:voucherID'),
+    __param(0, (0, common_1.Param)('voucherID')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], ReviewController.prototype, "getReviewforCustomerProfile", null);
 __decorate([
     (0, common_1.Post)('createReviewReply'),
     __param(0, (0, common_1.Body)()),

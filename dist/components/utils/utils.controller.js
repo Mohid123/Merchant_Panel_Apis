@@ -29,6 +29,9 @@ let UtilController = class UtilController {
     validateVatNumber(vatNumber) {
         return this.UtilService.validateVatNumber(vatNumber);
     }
+    searchAllCities(searchCategory) {
+        return this.UtilService.searchCategory(searchCategory);
+    }
 };
 __decorate([
     (0, common_1.Get)('getCity/:zipCode'),
@@ -50,6 +53,13 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], UtilController.prototype, "validateVatNumber", null);
+__decorate([
+    (0, common_1.Get)('searchCategory'),
+    __param(0, (0, common_1.Query)('searchCategory')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], UtilController.prototype, "searchAllCities", null);
 UtilController = __decorate([
     (0, swagger_1.ApiTags)('Utils'),
     (0, common_1.Controller)('utils'),

@@ -6,12 +6,12 @@ export declare class UtilService {
         lat: number;
     }[]>;
     getAllCategoriesAndSubCategories(): Promise<{
-        id: string;
-        name: string;
-        subCategories: {
-            id: string;
-            name: string;
-        }[];
+        category: string;
+        subCategories: string[];
     }[]>;
     validateVatNumber(vatNumber: any): Promise<any>;
+    searchCategory(searchCategory: any): Promise<{
+        category: string;
+        subCategories: string[];
+    }[]>;
 }

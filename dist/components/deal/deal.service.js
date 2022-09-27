@@ -719,10 +719,108 @@ let DealService = class DealService {
                             },
                             {
                                 $lookup: {
+                                    from: 'users',
+                                    let: {
+                                        userID: '$customerID',
+                                    },
+                                    pipeline: [
+                                        {
+                                            $match: {
+                                                $expr: {
+                                                    $and: [
+                                                        {
+                                                            $eq: ['$userID', '$$userID'],
+                                                        },
+                                                    ],
+                                                },
+                                            },
+                                        },
+                                    ],
+                                    as: 'customerData',
+                                },
+                            },
+                            {
+                                $unwind: '$customerData',
+                            },
+                            {
+                                $addFields: {
+                                    id: '$_id',
+                                    customerName: {
+                                        $concat: [
+                                            '$customerData.firstName', ' ', '$customerData.lastName'
+                                        ]
+                                    }
+                                },
+                            },
+                            {
+                                $project: {
+                                    customerData: 0,
+                                    _id: 0,
+                                    mediaUrl: 0
+                                }
+                            },
+                            {
+                                $lookup: {
                                     from: 'reviewText',
+                                    let: {
+                                        reviewID: '$id',
+                                    },
+                                    pipeline: [
+                                        {
+                                            $match: {
+                                                $expr: {
+                                                    $and: [
+                                                        {
+                                                            $eq: ['$reviewID', '$$reviewID'],
+                                                        },
+                                                    ],
+                                                },
+                                            },
+                                        },
+                                        {
+                                            $lookup: {
+                                                from: 'users',
+                                                let: {
+                                                    userID: '$merchantID',
+                                                },
+                                                pipeline: [
+                                                    {
+                                                        $match: {
+                                                            $expr: {
+                                                                $and: [
+                                                                    {
+                                                                        $eq: ['$userID', '$$userID'],
+                                                                    },
+                                                                ],
+                                                            },
+                                                        },
+                                                    },
+                                                ],
+                                                as: 'merchantData',
+                                            },
+                                        },
+                                        {
+                                            $unwind: '$merchantData',
+                                        },
+                                        {
+                                            $addFields: {
+                                                id: '$_id',
+                                                legalName: '$merchantData.legalName',
+                                                merchantName: {
+                                                    $concat: [
+                                                        '$merchantData.firstName', ' ', '$merchantData.lastName'
+                                                    ]
+                                                }
+                                            }
+                                        },
+                                        {
+                                            $project: {
+                                                _id: 0,
+                                                merchantData: 0
+                                            }
+                                        }
+                                    ],
                                     as: 'merchantReplyText',
-                                    localField: '_id',
-                                    foreignField: 'reviewID',
                                 },
                             },
                             {
@@ -3085,7 +3183,7 @@ let DealService = class DealService {
         }
     }
     async getDealsByCategories(categoryName, subCategoryName, fromPrice, toPrice, reviewRating, sorting, offset, limit, filterCategoriesApiDto, req) {
-        var _a, _b, _c;
+        var _a, _b, _c, _d;
         try {
             offset = parseInt(offset) < 0 ? 0 : offset;
             limit = parseInt(limit) < 1 ? 10 : limit;
@@ -3477,7 +3575,7 @@ let DealService = class DealService {
                     },
                 },
             ]);
-            const deals = await this.dealModel
+            const filteredCount = await this.dealModel
                 .aggregate([
                 {
                     $match: Object.assign(Object.assign({ deletedCheck: false, dealStatus: dealstatus_enum_1.DEALSTATUS.published }, categoryFilters), matchFilter),
@@ -3492,6 +3590,131 @@ let DealService = class DealService {
                         let: {
                             dealID: '$dealID',
                             customerMongoID: (_c = req === null || req === void 0 ? void 0 : req.user) === null || _c === void 0 ? void 0 : _c.id,
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$dealID', '$dealID'],
+                                            },
+                                            {
+                                                $eq: ['$$customerMongoID', '$customerMongoID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: {
+                        path: '$favouriteDeal',
+                        preserveNullAndEmptyArrays: true,
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'users',
+                        as: 'merchantDetails',
+                        let: {
+                            userID: '$merchantID',
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$userID', '$userID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                            {
+                                $addFields: {
+                                    id: '$_id',
+                                },
+                            },
+                            {
+                                $project: {
+                                    _id: 0,
+                                    id: 1,
+                                    totalReviews: 1,
+                                    ratingsAverage: 1,
+                                    legalName: 1,
+                                    city: 1,
+                                    province: 1,
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: '$merchantDetails',
+                },
+                {
+                    $addFields: {
+                        id: '$_id',
+                        province: '$merchantDetails.province',
+                        mediaUrl: {
+                            $slice: [
+                                {
+                                    $filter: {
+                                        input: '$mediaUrl',
+                                        as: 'mediaUrl',
+                                        cond: {
+                                            $eq: ['$$mediaUrl.type', 'Image'],
+                                        },
+                                    },
+                                },
+                                1,
+                            ],
+                        },
+                        isFavourite: {
+                            $cond: [
+                                {
+                                    $ifNull: ['$favouriteDeal', false],
+                                },
+                                true,
+                                false,
+                            ],
+                        },
+                    },
+                },
+                {
+                    $match: Object.assign({}, locationFilter),
+                },
+                {
+                    $count: 'filteredCount'
+                },
+            ]);
+            const deals = await this.dealModel
+                .aggregate([
+                {
+                    $match: Object.assign(Object.assign({ deletedCheck: false, dealStatus: dealstatus_enum_1.DEALSTATUS.published }, categoryFilters), matchFilter),
+                },
+                {
+                    $sort: sort,
+                },
+                {
+                    $lookup: {
+                        from: 'favourites',
+                        as: 'favouriteDeal',
+                        let: {
+                            dealID: '$dealID',
+                            customerMongoID: (_d = req === null || req === void 0 ? void 0 : req.user) === null || _d === void 0 ? void 0 : _d.id,
                             deletedCheck: '$deletedCheck',
                         },
                         pipeline: [
@@ -3630,7 +3853,7 @@ let DealService = class DealService {
             ])
                 .skip(parseInt(offset))
                 .limit(parseInt(limit));
-            return Object.assign(Object.assign({}, totalCount[0]), { data: deals });
+            return Object.assign(Object.assign({}, totalCount[0]), { filteredCount: (filteredCount === null || filteredCount === void 0 ? void 0 : filteredCount.length) > 0 ? filteredCount[0].filteredCount : 0, data: deals });
         }
         catch (err) {
             throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
@@ -4577,7 +4800,6 @@ let DealService = class DealService {
     async buyNow(buyNowDto, req) {
         try {
             const deal = await this.dealModel.findOne({ dealID: buyNowDto.dealID });
-            debugger;
             if (!deal) {
                 throw new Error('Deal ID not found!');
             }
@@ -4641,6 +4863,8 @@ let DealService = class DealService {
             const calculatedFeeForAffiliate = calculatedFee * affiliate.platformPercentage;
             subDeal.grossEarning += subDeal.dealPrice;
             subDeal.netEarning += netFee;
+            subDeal.platformNetEarning += calculatedFee;
+            deal.netEarnings += netFee;
             let voucherDto = {
                 voucherHeader: subDeal.title,
                 dealHeader: deal.dealHeader,
@@ -4684,7 +4908,7 @@ let DealService = class DealService {
                 purchasedVouchers: merchant.purchasedVouchers + buyNowDto.quantity,
                 totalEarnings: merchant.totalEarnings + netFee,
             });
-            const res = await axios_1.default.get(`https://www.zohoapis.eu/crm/v2/functions/updatesubdealquantity/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&subdealid=${subDeal.subDealID}&qtavailable=${subDeal.numberOfVouchers}&qtsold=${subDeal.soldVouchers}`);
+            const res = await axios_1.default.get(`https://www.zohoapis.eu/crm/v2/functions/updatesubdealquantity/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&subdealid=${subDeal.subDealID}&qtavailable=${subDeal.numberOfVouchers}&qtsold=${subDeal.soldVouchers}&merchantER=${subDeal.netEarning}&platformER=${subDeal.platformNetEarning}`);
             this.sendMail(emailDto);
             return { message: 'Purchase Successfull!' };
         }

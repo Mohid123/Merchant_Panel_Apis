@@ -24,24 +24,44 @@ const common_1 = require("@nestjs/common");
 const mongoose_1 = require("@nestjs/mongoose");
 const mongoose_2 = require("mongoose");
 const utils_1 = require("../file-management/utils/utils");
+const voucherstatus_enum_1 = require("../../enum/voucher/voucherstatus.enum");
 let ReviewService = class ReviewService {
-    constructor(reviewModel, reviewTextModel, dealModel, userModel) {
+    constructor(reviewModel, reviewTextModel, dealModel, userModel, voucherModel) {
         this.reviewModel = reviewModel;
         this.reviewTextModel = reviewTextModel;
         this.dealModel = dealModel;
         this.userModel = userModel;
+        this.voucherModel = voucherModel;
     }
-    async createReview(reviewDto) {
+    async createReview(reviewDto, req) {
         var e_1, _a;
         var _b;
         try {
+            const voucher = await this.voucherModel.findOne({
+                voucherID: reviewDto.voucherID,
+                deletedCheck: false,
+                status: voucherstatus_enum_1.VOUCHERSTATUSENUM.redeeemed
+            });
+            if (!voucher) {
+                throw new Error('Voucher not found!');
+            }
+            ;
+            reviewDto.dealMongoID = voucher.dealMongoID;
+            reviewDto.dealID = voucher.dealID;
+            reviewDto.dealHeader = voucher.dealHeader;
+            reviewDto.subDealHeader = voucher.subDealHeader;
+            reviewDto.merchantMongoID = voucher.merchantMongoID;
+            reviewDto.merchantID = voucher.merchantID;
+            reviewDto.voucherRedeemedDate = voucher.redeemDate;
+            reviewDto.customerMongoID = req.user.id;
+            reviewDto.customerID = req.user.userID;
             const reviewAlreadyGiven = await this.reviewModel.findOne().and([
-                { dealMongoID: reviewDto.dealMongoID },
                 { voucherMongoID: reviewDto.voucherMongoID },
-                { customerID: reviewDto.customerID },
+                { voucherID: reviewDto.voucherID },
+                { customerID: req.user.userID },
             ]);
             if (reviewAlreadyGiven) {
-                throw new common_1.HttpException('Customer has already reviewed this deal.', common_1.HttpStatus.CONFLICT);
+                throw new common_1.HttpException('Customer has already reviewed this voucher', common_1.HttpStatus.CONFLICT);
             }
             reviewDto.totalRating =
                 reviewDto.multipleRating.reduce((a, b) => {
@@ -156,18 +176,104 @@ let ReviewService = class ReviewService {
             throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
         }
     }
+    async getReviewforCustomerProfile(voucherID) {
+        try {
+            let review = await this.reviewModel.aggregate([
+                {
+                    $match: {
+                        voucherID: voucherID,
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'users',
+                        as: 'customerData',
+                        localField: 'customerID',
+                        foreignField: 'userID',
+                    },
+                },
+                {
+                    $unwind: '$customerData'
+                },
+                {
+                    $addFields: {
+                        id: '$_id',
+                        customerName: {
+                            $concat: [
+                                '$customerData.firstName', ' ', '$customerData.lastName'
+                            ]
+                        }
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'reviewText',
+                        as: 'merchantReplyText',
+                        localField: '_id',
+                        foreignField: 'reviewID',
+                    },
+                },
+                {
+                    $project: {
+                        _id: 0,
+                        customerData: 0
+                    }
+                }
+            ]).then(items => items[0]);
+            return review;
+        }
+        catch (err) {
+            throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
+        }
+    }
     async createReviewReply(reviewTextDto) {
         try {
-            await this.reviewTextModel.findOneAndUpdate({
-                reviewID: reviewTextDto.reviewID,
-                merchantMongoID: reviewTextDto.merchantID,
-            }, Object.assign({}, reviewTextDto), {
-                upsert: true,
+            const voucher = await this.voucherModel.findOne({
+                voucherID: reviewTextDto.voucherID,
+                deletedCheck: false
             });
-            return await this.reviewTextModel.findOne({
-                reviewID: reviewTextDto.reviewID,
-                merchantMongoID: reviewTextDto.merchantID,
-            });
+            if (!voucher) {
+                throw new common_1.HttpException('Voucher not found!', common_1.HttpStatus.BAD_REQUEST);
+            }
+            reviewTextDto.merchantMongoID = voucher.merchantMongoID;
+            reviewTextDto.merchantID = voucher.merchantID;
+            let reply = await new this.reviewTextModel(reviewTextDto).save();
+            const merchantReply = await this.reviewTextModel.aggregate([
+                {
+                    $match: {
+                        _id: reply._id
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'users',
+                        as: 'merchantData',
+                        localField: 'merchantID',
+                        foreignField: 'userID'
+                    }
+                },
+                {
+                    $unwind: '$merchantData'
+                },
+                {
+                    $addFields: {
+                        id: '$_id',
+                        legalName: '$merchantData.legalName',
+                        merchantName: {
+                            $concat: [
+                                '$merchantData.firstName', ' ', '$merchantData.lastName'
+                            ]
+                        }
+                    }
+                },
+                {
+                    $project: {
+                        _id: 0,
+                        merchantData: 0
+                    }
+                }
+            ]).then(items => items[0]);
+            return merchantReply;
         }
         catch (err) {
             throw new common_1.HttpException(err.message, common_1.HttpStatus.BAD_REQUEST);
@@ -355,7 +461,9 @@ ReviewService = __decorate([
     __param(1, (0, mongoose_1.InjectModel)('reviewText')),
     __param(2, (0, mongoose_1.InjectModel)('Deal')),
     __param(3, (0, mongoose_1.InjectModel)('User')),
+    __param(4, (0, mongoose_1.InjectModel)('Voucher')),
     __metadata("design:paramtypes", [mongoose_2.Model,
+        mongoose_2.Model,
         mongoose_2.Model,
         mongoose_2.Model,
         mongoose_2.Model])

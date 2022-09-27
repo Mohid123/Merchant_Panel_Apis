@@ -6,11 +6,10 @@ const utils_1 = require("../../components/file-management/utils/utils");
 exports.ReviewTextSchema = new mongoose.Schema({
     _id: { type: String, default: utils_1.generateStringId },
     reviewID: { type: String, default: '' },
+    merchantMongoID: { type: String, default: '' },
     merchantID: { type: String, default: '' },
-    voucherID: { type: String, default: "" },
-    merchantName: { type: String, default: '' },
-    legalName: { type: String, default: '' },
-    profilePicURL: { type: String, default: '' },
+    voucherMongoID: { type: String, default: '' },
+    voucherID: { type: String, default: '' },
     merchantReplyText: {
         type: String,
         required: [true, 'A review must not be empty.'],
