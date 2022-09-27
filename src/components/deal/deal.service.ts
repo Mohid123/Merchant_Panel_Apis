@@ -855,15 +855,110 @@ export class DealService implements OnModuleInit {
                 },
                 {
                   $lookup: {
-                    from: 'reviewText',
-                    as: 'merchantReplyText',
-                    localField: '_id',
-                    foreignField: 'reviewID',
+                    from: 'users',
+                    let: {
+                      userID: '$customerID',
+                    },
+                    pipeline: [
+                      {
+                        $match: {
+                          $expr: {
+                            $and: [
+                              {
+                                $eq: ['$userID', '$$userID'],
+                              },
+                            ],
+                          },
+                        },
+                      },
+                    ],
+                    as: 'customerData',
                   },
                 },
-                // {
-                //   $unwind: '$merchantReplyText',
-                // },
+                {
+                  $unwind: '$customerData',
+                },
+                {
+                  $addFields: {
+                    id: '$_id',
+                    customerName: {
+                      $concat: [
+                        '$customerData.firstName', ' ', '$customerData.lastName'
+                      ]
+                    }
+                  },
+                },
+                {
+                  $project: {
+                    customerData: 0,
+                    _id: 0,
+                    mediaUrl: 0
+                  }
+                },
+                {
+                  $lookup: {
+                    from: 'reviewText',
+                    let: {
+                      reviewID: '$id',
+                    },
+                    pipeline: [
+                      {
+                        $match: {
+                          $expr: {
+                            $and: [
+                              {
+                                $eq: ['$reviewID', '$$reviewID'],
+                              },
+                            ],
+                          },
+                        },
+                      },
+                      {
+                        $lookup: {
+                          from: 'users',
+                          let: {
+                            userID: '$merchantID',
+                          },
+                          pipeline: [
+                            {
+                              $match: {
+                                $expr: {
+                                  $and: [
+                                    {
+                                      $eq: ['$userID', '$$userID'],
+                                    },
+                                  ],
+                                },
+                              },
+                            },
+                          ],
+                          as: 'merchantData',
+                        },
+                      },
+                      {
+                        $unwind: '$merchantData',
+                      },
+                      {
+                        $addFields: {
+                          id: '$_id',
+                          legalName: '$merchantData.legalName',
+                          merchantName: {
+                            $concat: [
+                              '$merchantData.firstName', ' ', '$merchantData.lastName'
+                            ]
+                          }
+                        }
+                      },
+                      {
+                        $project: {
+                          _id: 0,
+                          merchantData: 0
+                        }
+                      }
+                    ],
+                    as: 'merchantReplyText',
+                  },
+                },
                 {
                   $skip: parseInt(offset),
                 },
@@ -3615,7 +3710,6 @@ export class DealService implements OnModuleInit {
             deletedCheck: false,
             dealStatus: DEALSTATUS.published,
             ...categoryFilters,
-            // ...matchFilter,
           },
         },
         {
@@ -3731,11 +3825,6 @@ export class DealService implements OnModuleInit {
             },
           },
         },
-        // {
-        //   $match: {
-        //     ...locationFilter,
-        //   },
-        // },
         {
           $group: {
             _id: null,
@@ -3940,10 +4029,140 @@ export class DealService implements OnModuleInit {
             _id: 0,
           },
         },
-        // {
-        //   $count: 'totalCount'
-        // }
       ]);
+
+      const filteredCount: any = await this.dealModel
+        .aggregate([
+          {
+            $match: {
+              deletedCheck: false,
+              dealStatus: DEALSTATUS.published,
+              ...categoryFilters,
+              ...matchFilter,
+            },
+          },
+          {
+            $sort: sort,
+          },
+          {
+            $lookup: {
+              from: 'favourites',
+              as: 'favouriteDeal',
+              let: {
+                dealID: '$dealID',
+                customerMongoID: req?.user?.id,
+                deletedCheck: '$deletedCheck',
+              },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $and: [
+                        {
+                          $eq: ['$$dealID', '$dealID'],
+                        },
+                        {
+                          $eq: ['$$customerMongoID', '$customerMongoID'],
+                        },
+                        {
+                          $eq: ['$deletedCheck', false],
+                        },
+                      ],
+                    },
+                  },
+                },
+              ],
+            },
+          },
+          {
+            $unwind: {
+              path: '$favouriteDeal',
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          {
+            $lookup: {
+              from: 'users',
+              as: 'merchantDetails',
+              let: {
+                userID: '$merchantID',
+                deletedCheck: '$deletedCheck',
+              },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $and: [
+                        {
+                          $eq: ['$$userID', '$userID'],
+                        },
+                        {
+                          $eq: ['$deletedCheck', false],
+                        },
+                      ],
+                    },
+                  },
+                },
+                {
+                  $addFields: {
+                    id: '$_id',
+                  },
+                },
+                {
+                  $project: {
+                    _id: 0,
+                    id: 1,
+                    totalReviews: 1,
+                    ratingsAverage: 1,
+                    legalName: 1,
+                    city: 1,
+                    province: 1,
+                  },
+                },
+              ],
+            },
+          },
+          {
+            $unwind: '$merchantDetails',
+          },
+          {
+            $addFields: {
+              id: '$_id',
+              province: '$merchantDetails.province',
+              mediaUrl: {
+                $slice: [
+                  {
+                    $filter: {
+                      input: '$mediaUrl',
+                      as: 'mediaUrl',
+                      cond: {
+                        $eq: ['$$mediaUrl.type', 'Image'],
+                      },
+                    },
+                  },
+                  1,
+                ],
+              },
+              isFavourite: {
+                $cond: [
+                  {
+                    $ifNull: ['$favouriteDeal', false],
+                  },
+                  true,
+                  false,
+                ],
+              },
+            },
+          },
+          {
+            $match: {
+              ...locationFilter,
+            },
+          },
+          {
+            $count: 'filteredCount'
+          },
+        ]);
 
       const deals = await this.dealModel
         .aggregate([
@@ -4108,6 +4327,7 @@ export class DealService implements OnModuleInit {
 
       return {
         ...totalCount[0],
+        filteredCount: filteredCount?.length > 0 ? filteredCount[0].filteredCount : 0,
         data: deals,
       };
     } catch (err) {
@@ -5088,7 +5308,7 @@ export class DealService implements OnModuleInit {
   async buyNow(buyNowDto, req) {
     try {
       const deal = await this.dealModel.findOne({ dealID: buyNowDto.dealID });
-      debugger;
+
       if (!deal) {
         throw new Error('Deal ID not found!');
       }
@@ -5185,6 +5405,9 @@ export class DealService implements OnModuleInit {
 
       subDeal.grossEarning += subDeal.dealPrice;
       subDeal.netEarning += netFee;
+      subDeal.platformNetEarning += calculatedFee;
+
+      deal.netEarnings += netFee;
 
       let voucherDto: any = {
         voucherHeader: subDeal.title,
@@ -5255,7 +5478,7 @@ export class DealService implements OnModuleInit {
         },
       );
 
-      const res = await axios.get(`https://www.zohoapis.eu/crm/v2/functions/updatesubdealquantity/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&subdealid=${subDeal.subDealID}&qtavailable=${subDeal.numberOfVouchers}&qtsold=${subDeal.soldVouchers}`);
+      const res = await axios.get(`https://www.zohoapis.eu/crm/v2/functions/updatesubdealquantity/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&subdealid=${subDeal.subDealID}&qtavailable=${subDeal.numberOfVouchers}&qtsold=${subDeal.soldVouchers}&merchantER=${subDeal.netEarning}&platformER=${subDeal.platformNetEarning}`);
 
       this.sendMail(emailDto);
 

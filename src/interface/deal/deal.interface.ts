@@ -11,6 +11,7 @@ export interface SubDealInterface {
   numberOfVouchers: number;
   grossEarning: number;
   netEarning: number;
+  platformNetEarning: number;
   voucherValidity: number;
   voucherStartDate: number;
   voucherEndDate: number;

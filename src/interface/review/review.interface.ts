@@ -18,7 +18,7 @@ export interface MedialUrl {
 export interface ReviewInterface extends Document {
   _id: string;
   dealMongoID: string;
-  dealId: string;
+  dealID: string;
   dealHeader: string;
   subDealHeader: string;
   voucherMongoID: string;
@@ -31,9 +31,9 @@ export interface ReviewInterface extends Document {
   mediaUrl: MedialUrl[];
   totalRating: number;
   multipleRating: multipleRatings[];
-  customerEmail: string;
-  customerName: string;
-  profilePicURL: string;
+  // customerEmail: string;
+  // customerName: string;
+  // customerProfilePicURL: string;
   voucherRedeemedDate: number;
   isViewed: boolean;
 }

@@ -114,7 +114,9 @@ export class CategoryService {
             as: 'subCategories',
           },
         },
-      ]);
+      ])
+      .skip(parseInt(offset))
+      .limit(parseInt(limit));
 
       return {
         totalCount: totalCount,

@@ -38,4 +38,19 @@ export class UtilService {
       throw new BadRequestException(err?.message);
     }
   }
+  
+  async searchCategory (searchCategory) {
+    const data = categoriesDataSet;
+
+    if (searchCategory) {
+      searchCategory = searchCategory.trim();
+      var query = new RegExp(`${searchCategory}`, 'i');
+
+      const categoryData = data.filter((el) => query.test(el.category));
+      // let subCategories = categoryData.map((a) => [a.category,...a.subCategories.map(item=>item)]);
+      // let category = categoryData.map(a=> a.name);
+
+      return categoryData;
+    }
+  }
 }

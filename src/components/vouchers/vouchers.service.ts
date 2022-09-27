@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   HttpException,
   HttpStatus,
   Injectable,
@@ -18,6 +19,7 @@ import * as fs from 'fs';
 import { USERSTATUS } from 'src/enum/user/userstatus.enum';
 import { DealInterface } from 'src/interface/deal/deal.interface';
 import axios from 'axios';
+import { pipeline } from 'stream';
 
 @Injectable()
 export class VouchersService {
@@ -597,19 +599,6 @@ export class VouchersService {
                     },
                   },
                 },
-                {
-                  $addFields: {
-                    id: '$_id',
-                  },
-                },
-                {
-                  $project: {
-                    _id: 0,
-                    createdAt: 0,
-                    updatedAt: 0,
-                    __v: 0,
-                  },
-                },
               ],
               as: 'merchantData',
             },
@@ -618,13 +607,125 @@ export class VouchersService {
             $unwind: '$merchantData',
           },
           {
+            $lookup: {
+              from: 'reviews',
+              let: {
+                customerID: '$customerID',
+                voucherID: '$voucherID',
+              },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $and: [
+                        {
+                          $eq: ['$customerID', '$$customerID'],
+                        },
+                        {
+                          $eq: ['$voucherID', '$$voucherID'],
+                        },
+                      ],
+                    },
+                  },
+                },
+              ],
+              as: 'reviewData',
+            },
+          },
+          {
+            $unwind: {
+              path: '$reviewData',
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          {
+            $lookup: {
+              from: 'deals',
+              let: {
+                dealID: '$dealID'
+              },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $and: [
+                        {
+                          $eq: ['$dealID', '$$dealID'],
+                        },
+                      ],
+                    },
+                  },
+                },
+                {
+                  $lookup: {
+                    from: 'categories',
+                    as: 'categoryData',
+                    foreignField: 'categoryName',
+                    localField: 'categoryName'
+                  }
+                },
+                {
+                  $unwind: '$categoryData'
+                },
+              ],
+              as: 'dealData'
+            }
+          },
+          {
+            $unwind: '$dealData'
+          },
+          {
             $addFields: {
               id: '$_id',
+              tradeName: '$merchantData.tradeName',
+              ratingParameters: '$dealData.categoryData.ratingParameters',
+              isReviewed: {
+                $cond: [
+                  {
+                    $ifNull: ['$reviewData', false],
+                  },
+                  true,
+                  false,
+                ],
+              },
             },
           },
           {
             $project: {
+              dealData: 0,
+              merchantData: 0,
+              reviewData: 0,
               _id: 0,
+              dealHeader: 0,
+              dealID: 0,
+              dealMongoID: 0,
+              subDealHeader: 0,
+              subDealID: 0,
+              subDealMongoID: 0,
+              merchantID: 0,
+              merchantMongoID: 0,
+              merchantPaymentStatus: 0,
+              customerID: 0,
+              customerMongoID: 0,
+              affiliateName: 0,
+              affiliateID: 0,
+              affiliateMongoID: 0,
+              affiliatePercentage: 0,
+              affiliateFee: 0,
+              affiliatePaymentStatus: 0,
+              amount: 0,
+              platformPercentage: 0,
+              fee: 0,
+              net: 0,
+              paymentStatus: 0,
+              boughtDate: 0,
+              originalPrice: 0,
+              discountedPercentage: 0,
+              deletedCheck: 0,
+              redeemQR: 0,
+              createdAt: 0,
+              updatedAt: 0,
+              __v: 0,
             },
           },
         ])
@@ -755,15 +856,42 @@ export class VouchersService {
         },
         {
           $lookup: {
-            from: 'users',
-            as: 'merchantDetail',
-            localField: 'merchantID',
-            foreignField: 'userID',
-            // pipeline: [{ $project: { firstName: 1, lastName: 1 } }],
+            from: 'locations',
+            let: {
+              merchantID: '$merchantID',
+            },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $and: [
+                      {
+                        $eq: ['$merchantID', '$$merchantID'],
+                      },
+                    ],
+                  },
+                },
+              },
+              {
+                $project: {
+                  _id: 0,
+                  createdAt: 0,
+                  updatedAt: 0,
+                  plusCode: 0,
+                  location: 0,
+                  locationName: 0,
+                  zipCode: 0,
+                  city: 0,
+                  province: 0,
+                  __v: 0,
+                },
+              },
+            ],
+            as: 'merchantData',
           },
         },
         {
-          $unwind: '$merchantDetail',
+          $unwind: '$merchantData',
         },
         {
           $addFields: {
@@ -772,35 +900,36 @@ export class VouchersService {
         },
         {
           $project: {
-            id: 1,
-            voucherID: 1,
-            voucherHeader: 1,
-            dealHeader: 1,
-            dealID: 1,
-            merchantID: 1,
-            merchantMongoID: 1,
-            customerID: 1,
-            amount: 1,
-            fee: 1,
-            net: 1,
-            status: 1,
-            paymentStatus: 1,
-            boughtDate: 1,
-            expiryDate: 1,
-            redeemDate: 1,
-            imageURL: 1,
-            dealPrice: 1,
-            originalPrice: 1,
-            discountedPercentage: 1,
-            personalDetail: {
-              firstName: 1,
-              lastName: 1,
-            },
-          },
-        },
-        {
-          $project: {
             _id: 0,
+            __v: 0,
+            updatedAt: 0,
+            createdAt: 0,
+            imageURL: 0,
+            dealHeader: 0,
+            dealID: 0,
+            dealMongoID: 0,
+            subDealHeader: 0,
+            subDealID: 0,
+            subDealMongoID: 0,
+            merchantID: 0,
+            merchantMongoID: 0,
+            merchantPaymentStatus: 0,
+            customerID: 0,
+            customerMongoID: 0,
+            affiliateName: 0,
+            affiliateID: 0,
+            affiliateMongoID: 0,
+            affiliatePercentage: 0,
+            affiliateFee: 0,
+            affiliatePaymentStatus: 0,
+            amount: 0,
+            platformPercentage: 0,
+            fee: 0,
+            net: 0,
+            status: 0,
+            paymentStatus: 0,
+            boughtDate: 0,
+            deletedCheck: 0,
           },
         },
       ]);
@@ -911,6 +1040,55 @@ export class VouchersService {
       };
     } catch (err) {
       throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+  
+  async getVoucherSoldPerDay(numberOfDays,req){
+    try{
+      let startTime = Date.now() - (numberOfDays * 24*60*60*1000);
+      
+      startTime = Math.floor(startTime/(24*60*60*1000))*(24*60*60*1000);
+
+      const data = await this.voucherModel.aggregate([
+        {
+            $match:{
+                merchantMongoID:req.user.id,
+                createdAt:{$gte:new Date(startTime)}
+            }
+        },
+        {
+            $group:{
+                _id:{$dayOfYear: "$createdAt"},
+                createdAt: { $last: '$createdAt' },
+                count:{$sum:1}
+            }
+        },
+        {
+            $sort:{_id:1}
+    
+        }
+    ])
+    
+    let counts = []
+    for(let i=0;i<numberOfDays;i++){
+      let tempDate = Date.now() - ((numberOfDays - i) * 24*60*60*1000);
+      
+      let tempNextDate = tempDate + (24*60*60*1000)
+
+      const filtered = data?.filter(item=>new Date(item?.createdAt).getTime()>=tempDate &&new Date(item?.createdAt).getTime()<=tempNextDate)
+
+      if(filtered?.length){
+        counts.push({createdAt:filtered[0]?.createdAt,count:filtered[0]?.count})
+      }else{
+        counts.push({createdAt:new Date(tempDate),count:0})
+      }
+      
+    }
+
+    return counts;
+    }catch(err){
+      console.log(err);
+      throw new BadRequestException(err);
     }
   }
 }

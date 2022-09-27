@@ -70,6 +70,7 @@ export class DealDto {
         numberOfVouchers: 0,
         grossEarning: 0,
         netEarning: 0,
+        platformNetEarning: 0,
         voucherValidity: 0,
         voucherStartDate: 0,
         voucherEndDate: 0,

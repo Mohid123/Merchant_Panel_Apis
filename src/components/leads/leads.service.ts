@@ -7,10 +7,8 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import axios from 'axios';
 import { Model } from 'mongoose';
-import { USERROLE } from 'src/enum/user/userrole.enum';
 import { USERSTATUS } from 'src/enum/user/userstatus.enum';
 import { LeadInterface } from 'src/interface/lead/lead.interface';
-import { generateStringId } from '../file-management/utils/utils';
 
 @Injectable()
 export class LeadsService {
@@ -35,10 +33,6 @@ export class LeadsService {
     leadDto.countryCode = 'BE';
 
     leadDto.leadSource = 'web';
-
-    if (leadDto.role == USERROLE.merchant) {
-      leadDto.platformPercentage = 25;
-    }
 
     const lead = await new this._leadModel(leadDto).save();
 
