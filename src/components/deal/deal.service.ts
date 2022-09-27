@@ -3033,8 +3033,8 @@ export class DealService implements OnModuleInit {
           $match: {
             deletedCheck: false,
             dealStatus: DEALSTATUS.published,
-            ...filters,
-            ...matchFilter,
+            // ...filters,
+            // ...matchFilter,
           },
         },
         {
