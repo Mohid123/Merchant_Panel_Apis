@@ -19,6 +19,7 @@ import * as fs from 'fs';
 import { USERSTATUS } from 'src/enum/user/userstatus.enum';
 import { DealInterface } from 'src/interface/deal/deal.interface';
 import axios from 'axios';
+import { pipeline } from 'stream';
 
 @Injectable()
 export class VouchersService {
@@ -638,9 +639,46 @@ export class VouchersService {
             },
           },
           {
+            $lookup: {
+              from: 'deals',
+              let: {
+                dealID: '$dealID'
+              },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $and: [
+                        {
+                          $eq: ['$dealID', '$$dealID'],
+                        },
+                      ],
+                    },
+                  },
+                },
+                {
+                  $lookup: {
+                    from: 'categories',
+                    as: 'categoryData',
+                    foreignField: 'categoryName',
+                    localField: 'categoryName'
+                  }
+                },
+                {
+                  $unwind: '$categoryData'
+                },
+              ],
+              as: 'dealData'
+            }
+          },
+          {
+            $unwind: '$dealData'
+          },
+          {
             $addFields: {
               id: '$_id',
               tradeName: '$merchantData.tradeName',
+              ratingParameters: '$dealData.categoryData.ratingParameters',
               isReviewed: {
                 $cond: [
                   {
@@ -654,6 +692,7 @@ export class VouchersService {
           },
           {
             $project: {
+              dealData: 0,
               merchantData: 0,
               reviewData: 0,
               _id: 0,
