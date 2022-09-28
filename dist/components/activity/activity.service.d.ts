@@ -13,7 +13,7 @@ export declare class ActivityService {
         totalActivities: number;
         data: any[];
     }>;
-    getActivitiesByMerchant(id: any, offset: any, limit: any): Promise<{
+    getActivitiesByMerchant(req: any, offset: any, limit: any): Promise<{
         totalActivities: number;
         data: any[];
     }>;

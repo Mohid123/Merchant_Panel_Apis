@@ -747,17 +747,19 @@ let DealService = class DealService {
                                     id: '$_id',
                                     customerName: {
                                         $concat: [
-                                            '$customerData.firstName', ' ', '$customerData.lastName'
-                                        ]
-                                    }
+                                            '$customerData.firstName',
+                                            ' ',
+                                            '$customerData.lastName',
+                                        ],
+                                    },
                                 },
                             },
                             {
                                 $project: {
                                     customerData: 0,
                                     _id: 0,
-                                    mediaUrl: 0
-                                }
+                                    mediaUrl: 0,
+                                },
                             },
                             {
                                 $lookup: {
@@ -808,17 +810,19 @@ let DealService = class DealService {
                                                 legalName: '$merchantData.legalName',
                                                 merchantName: {
                                                     $concat: [
-                                                        '$merchantData.firstName', ' ', '$merchantData.lastName'
-                                                    ]
-                                                }
-                                            }
+                                                        '$merchantData.firstName',
+                                                        ' ',
+                                                        '$merchantData.lastName',
+                                                    ],
+                                                },
+                                            },
                                         },
                                         {
                                             $project: {
                                                 _id: 0,
-                                                merchantData: 0
-                                            }
-                                        }
+                                                merchantData: 0,
+                                            },
+                                        },
                                     ],
                                     as: 'merchantReplyText',
                                 },
@@ -1045,6 +1049,7 @@ let DealService = class DealService {
             console.log(sort);
             console.log(matchFilter);
             const totalCount = await this.dealModel.countDocuments(Object.assign({ merchantMongoID: merchantID, deletedCheck: false }, matchFilter));
+            const filteredCount = await this.dealModel.countDocuments(Object.assign(Object.assign({ merchantMongoID: merchantID, deletedCheck: false }, matchFilter), filters));
             const deals = await this.dealModel
                 .aggregate([
                 {
@@ -1068,6 +1073,7 @@ let DealService = class DealService {
                 .limit(parseInt(limit));
             return {
                 totalDeals: totalCount,
+                filteredCount: filteredCount,
                 data: deals,
             };
         }
@@ -2594,7 +2600,7 @@ let DealService = class DealService {
         }
     }
     async searchDeals(searchBar, header, categoryName, subCategoryName, fromPrice, toPrice, reviewRating, offset, limit, filterCategoriesApiDto, req) {
-        var _a, _b, _c;
+        var _a, _b, _c, _d;
         try {
             offset = parseInt(offset) < 0 ? 0 : offset;
             limit = parseInt(limit) < 1 ? 10 : limit;
@@ -2646,7 +2652,10 @@ let DealService = class DealService {
             console.log(locationFilter);
             const totalCount = await this.dealModel.aggregate([
                 {
-                    $match: Object.assign(Object.assign({ deletedCheck: false, dealStatus: dealstatus_enum_1.DEALSTATUS.published }, filters), matchFilter),
+                    $match: {
+                        deletedCheck: false,
+                        dealStatus: dealstatus_enum_1.DEALSTATUS.published,
+                    },
                 },
                 {
                     $addFields: {
@@ -2787,9 +2796,6 @@ let DealService = class DealService {
                             ],
                         },
                     },
-                },
-                {
-                    $match: Object.assign({}, locationFilter),
                 },
                 {
                     $group: {
@@ -2996,8 +3002,7 @@ let DealService = class DealService {
                     },
                 },
             ]);
-            const deals = await this.dealModel
-                .aggregate([
+            const filteredCount = await this.dealModel.aggregate([
                 {
                     $match: Object.assign(Object.assign({ deletedCheck: false, dealStatus: dealstatus_enum_1.DEALSTATUS.published }, filters), matchFilter),
                 },
@@ -3145,6 +3150,158 @@ let DealService = class DealService {
                     $match: Object.assign({}, locationFilter),
                 },
                 {
+                    $count: 'filteredCount'
+                }
+            ]);
+            const deals = await this.dealModel
+                .aggregate([
+                {
+                    $match: Object.assign(Object.assign({ deletedCheck: false, dealStatus: dealstatus_enum_1.DEALSTATUS.published }, filters), matchFilter),
+                },
+                {
+                    $addFields: {
+                        isHeader: {
+                            $regexMatch: { input: '$dealHeader', regex: headerQuery },
+                        },
+                        isCategory: {
+                            $regexMatch: { input: '$categoryName', regex: categoryQuery },
+                        },
+                        isSubCategory: {
+                            $regexMatch: { input: '$subCategory', regex: subCategoryQuery },
+                        },
+                    },
+                },
+                {
+                    $match: {
+                        $or: [
+                            { isCategory: true },
+                            { isSubCategory: true },
+                            { isHeader: true },
+                        ],
+                    },
+                },
+                {
+                    $sort: {
+                        isCategory: -1,
+                        isSubCategory: -1,
+                        isHeader: -1,
+                        createdAt: -1,
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'favourites',
+                        as: 'favouriteDeal',
+                        let: {
+                            dealID: '$dealID',
+                            customerMongoID: (_d = req === null || req === void 0 ? void 0 : req.user) === null || _d === void 0 ? void 0 : _d.id,
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$dealID', '$dealID'],
+                                            },
+                                            {
+                                                $eq: ['$$customerMongoID', '$customerMongoID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: {
+                        path: '$favouriteDeal',
+                        preserveNullAndEmptyArrays: true,
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'users',
+                        as: 'merchantDetails',
+                        let: {
+                            userID: '$merchantID',
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$userID', '$userID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                            {
+                                $addFields: {
+                                    id: '$_id',
+                                },
+                            },
+                            {
+                                $project: {
+                                    _id: 0,
+                                    id: 1,
+                                    totalReviews: 1,
+                                    ratingsAverage: 1,
+                                    legalName: 1,
+                                    city: 1,
+                                    province: 1,
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: '$merchantDetails',
+                },
+                {
+                    $addFields: {
+                        id: '$_id',
+                        province: '$merchantDetails.province',
+                        mediaUrl: {
+                            $slice: [
+                                {
+                                    $filter: {
+                                        input: '$mediaUrl',
+                                        as: 'mediaUrl',
+                                        cond: {
+                                            $eq: ['$$mediaUrl.type', 'Image'],
+                                        },
+                                    },
+                                },
+                                1,
+                            ],
+                        },
+                        isFavourite: {
+                            $cond: [
+                                {
+                                    $ifNull: ['$favouriteDeal', false],
+                                },
+                                true,
+                                false,
+                            ],
+                        },
+                    },
+                },
+                {
+                    $match: Object.assign({}, locationFilter),
+                },
+                {
                     $project: {
                         _id: 0,
                         merchantMongoID: 0,
@@ -3176,7 +3333,7 @@ let DealService = class DealService {
             ])
                 .skip(parseInt(offset))
                 .limit(parseInt(limit));
-            return Object.assign(Object.assign({}, totalCount[0]), { data: deals });
+            return Object.assign(Object.assign({}, totalCount[0]), { filteredCount: (filteredCount === null || filteredCount === void 0 ? void 0 : filteredCount.length) > 0 ? filteredCount[0].filteredCount : 0, data: deals });
         }
         catch (err) {
             throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
@@ -3227,18 +3384,19 @@ let DealService = class DealService {
                     minDealPrice: sortPrice,
                 };
             }
-            if (sorting == categoryapisorting_enum_1.SORTINGENUM.ratingAsc || sorting == categoryapisorting_enum_1.SORTINGENUM.ratingDesc) {
+            if (sorting == categoryapisorting_enum_1.SORTINGENUM.ratingAsc ||
+                sorting == categoryapisorting_enum_1.SORTINGENUM.ratingDesc) {
                 let sortRating = sorting == categoryapisorting_enum_1.SORTINGENUM.ratingAsc ? 1 : -1;
                 console.log('sorting');
                 sort = {
-                    ratingsAverage: sortRating
+                    ratingsAverage: sortRating,
                 };
             }
             if (sorting == categoryapisorting_enum_1.SORTINGENUM.dateAsc || sorting == categoryapisorting_enum_1.SORTINGENUM.dateDesc) {
                 let sortDate = sorting == categoryapisorting_enum_1.SORTINGENUM.dateAsc ? 1 : -1;
                 console.log('sorting');
                 sort = {
-                    createdAt: sortDate
+                    createdAt: sortDate,
                 };
             }
             let locationFilter = {};
@@ -3575,8 +3733,7 @@ let DealService = class DealService {
                     },
                 },
             ]);
-            const filteredCount = await this.dealModel
-                .aggregate([
+            const filteredCount = await this.dealModel.aggregate([
                 {
                     $match: Object.assign(Object.assign({ deletedCheck: false, dealStatus: dealstatus_enum_1.DEALSTATUS.published }, categoryFilters), matchFilter),
                 },
@@ -3697,7 +3854,7 @@ let DealService = class DealService {
                     $match: Object.assign({}, locationFilter),
                 },
                 {
-                    $count: 'filteredCount'
+                    $count: 'filteredCount',
                 },
             ]);
             const deals = await this.dealModel
@@ -4937,6 +5094,48 @@ let DealService = class DealService {
             else {
             }
         });
+    }
+    async getPublishedDealsForMerchant(req, offset, limit) {
+        try {
+            offset = parseInt(offset) < 0 ? 0 : offset;
+            limit = parseInt(limit) < 1 ? 10 : limit;
+            let totalCount = await this.dealModel.countDocuments({
+                merchantMongoID: req.user.id,
+                dealStatus: dealstatus_enum_1.DEALSTATUS.published,
+                deletedCheck: false
+            });
+            let deals = await this.dealModel
+                .aggregate([
+                {
+                    $match: {
+                        merchantMongoID: req.user.id,
+                        dealStatus: dealstatus_enum_1.DEALSTATUS.published,
+                        deletedCheck: false
+                    },
+                },
+                {
+                    $sort: {
+                        createdAt: -1,
+                    },
+                },
+                {
+                    $addFields: {
+                        id: '$_id'
+                    }
+                },
+                {
+                    $project: {
+                        _id: 0
+                    }
+                }
+            ])
+                .skip(parseInt(offset))
+                .limit(parseInt(limit));
+            return { totalCount, deals };
+        }
+        catch (err) {
+            throw new common_1.HttpException(err.message, common_1.HttpStatus.BAD_REQUEST);
+        }
     }
 };
 DealService = __decorate([

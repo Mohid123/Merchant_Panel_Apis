@@ -32,6 +32,7 @@ export declare class UsersController {
     updateCustomerProfile(customerID: string, usersDto: UpdateCustomerProfileDto): Promise<{
         message: string;
     }>;
+    getCustomer(id: string): Promise<any>;
     updateBusinessHours(updateHoursDTO: UpdateHoursDto): Promise<import("mongodb").UpdateResult>;
     geUserById(id: string): Promise<any>;
     getMerchantByID(merchantID: string): Promise<any>;

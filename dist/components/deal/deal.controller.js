@@ -120,6 +120,9 @@ let DealController = class DealController {
     buyNow(buyNowDto, req) {
         return this.dealService.buyNow(buyNowDto, req);
     }
+    getPublishedDealsForMerchant(offset = 0, limit = 10, req) {
+        return this.dealService.getPublishedDealsForMerchant(req, offset, limit);
+    }
 };
 __decorate([
     (0, swagger_1.ApiBearerAuth)(),
@@ -484,6 +487,18 @@ __decorate([
     __metadata("design:paramtypes", [buy_now_dto_1.BuyNowDTO, Object]),
     __metadata("design:returntype", void 0)
 ], DealController.prototype, "buyNow", null);
+__decorate([
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)(jwt_merchant_auth_guard_1.JwtMerchantAuthGuard),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Get)('getPublishedDealsForMerchant'),
+    __param(0, (0, common_1.Query)('offset')),
+    __param(1, (0, common_1.Query)('limit')),
+    __param(2, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, Number, Object]),
+    __metadata("design:returntype", void 0)
+], DealController.prototype, "getPublishedDealsForMerchant", null);
 DealController = __decorate([
     (0, swagger_1.ApiTags)('Deal'),
     (0, common_1.Controller)('deal'),

@@ -22,13 +22,17 @@ const schedule_service_1 = require("../schedule/schedule.service");
 const qr = require('qrcode');
 const fs = require("fs");
 const axios_1 = require("axios");
+const dealstatus_enum_1 = require("../../enum/deal/dealstatus.enum");
+const activity_service_1 = require("../activity/activity.service");
+const activity_enum_1 = require("../../enum/activity/activity.enum");
 let VouchersService = class VouchersService {
-    constructor(voucherModel, voucherCounterModel, userModel, _scheduleModel, _scheduleService, dealModel) {
+    constructor(voucherModel, voucherCounterModel, userModel, _scheduleModel, _scheduleService, _activityService, dealModel) {
         this.voucherModel = voucherModel;
         this.voucherCounterModel = voucherCounterModel;
         this.userModel = userModel;
         this._scheduleModel = _scheduleModel;
         this._scheduleService = _scheduleService;
+        this._activityService = _activityService;
         this.dealModel = dealModel;
     }
     async generateVoucherId(sequenceName) {
@@ -48,6 +52,15 @@ let VouchersService = class VouchersService {
             let voucher = new this.voucherModel(voucherDto);
             let paymentUpdateTimeStamp = new Date().getTime() + 15 * 24 * 60 * 60 * 1000;
             voucher = await voucher.save();
+            let activityMessage = `Customer with ${voucher.customerID} purchased voucher for sub deal ${voucher.subDealID}`;
+            this._activityService.createActivity({
+                activityType: activity_enum_1.ACTIVITYENUM.voucherPurchased,
+                activityTime: Date.now(),
+                merchantID: voucher.merchantID,
+                merchantMongoID: voucher.merchantMongoID,
+                message: activityMessage,
+                deletedCheck: false,
+            });
             const res = await axios_1.default.get(`https://www.zohoapis.eu/crm/v2/functions/createvoucher/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&voucherid=${voucher.voucherID}`);
             let url = `${process.env.merchantPanelURL}/redeemVoucher/${voucher.id}`;
             url = await this.generateQRCode(url);
@@ -418,7 +431,7 @@ let VouchersService = class VouchersService {
                     $lookup: {
                         from: 'deals',
                         let: {
-                            dealID: '$dealID'
+                            dealID: '$dealID',
                         },
                         pipeline: [
                             {
@@ -437,24 +450,25 @@ let VouchersService = class VouchersService {
                                     from: 'categories',
                                     as: 'categoryData',
                                     foreignField: 'categoryName',
-                                    localField: 'categoryName'
-                                }
+                                    localField: 'categoryName',
+                                },
                             },
                             {
-                                $unwind: '$categoryData'
+                                $unwind: '$categoryData',
                             },
                         ],
-                        as: 'dealData'
-                    }
+                        as: 'dealData',
+                    },
                 },
                 {
-                    $unwind: '$dealData'
+                    $unwind: '$dealData',
                 },
                 {
                     $addFields: {
                         id: '$_id',
                         tradeName: '$merchantData.tradeName',
                         ratingParameters: '$dealData.categoryData.ratingParameters',
+                        totalRating: '$reviewData.totalRating',
                         isReviewed: {
                             $cond: [
                                 {
@@ -529,7 +543,7 @@ let VouchersService = class VouchersService {
                 voucherID: voucherId,
                 deletedCheck: false,
             });
-            if (req.user.id != voucher.merchantMongoID) {
+            if (req.user.id != (voucher === null || voucher === void 0 ? void 0 : voucher.merchantMongoID)) {
                 throw new common_1.UnauthorizedException('Merchant Not allowed to redeem voucher!');
             }
             if (voucher) {
@@ -560,6 +574,15 @@ let VouchersService = class VouchersService {
             await this.voucherModel.updateOne({ voucherID: voucherId }, {
                 status: voucherstatus_enum_1.VOUCHERSTATUSENUM.redeeemed,
                 redeemDate: redeemDate,
+            });
+            let activityMessage = `Voucher ${voucher.voucherID} redeemed.`;
+            this._activityService.createActivity({
+                activityType: activity_enum_1.ACTIVITYENUM.voucherRedeemed,
+                activityTime: Date.now(),
+                merchantID: voucher.merchantID,
+                merchantMongoID: voucher.merchantMongoID,
+                message: activityMessage,
+                deletedCheck: false,
             });
             await this.userModel.updateOne({ userID: voucher.merchantID }, {
                 redeemedVouchers: merchant.redeemedVouchers + 1,
@@ -718,6 +741,15 @@ let VouchersService = class VouchersService {
                 status: voucherstatus_enum_1.VOUCHERSTATUSENUM.redeeemed,
                 redeemDate: redeemDate,
             });
+            let activityMessage = `Voucher ${voucher.voucherID} redeemed.`;
+            this._activityService.createActivity({
+                activityType: activity_enum_1.ACTIVITYENUM.voucherRedeemed,
+                activityTime: Date.now(),
+                merchantID: voucher.merchantID,
+                merchantMongoID: voucher.merchantMongoID,
+                message: activityMessage,
+                deletedCheck: false,
+            });
             await this.userModel.updateOne({ userID: voucher.merchantID }, {
                 redeemedVouchers: merchant.redeemedVouchers + 1,
             });
@@ -737,33 +769,38 @@ let VouchersService = class VouchersService {
     async getVoucherSoldPerDay(numberOfDays, req) {
         var _a, _b;
         try {
-            let startTime = Date.now() - (numberOfDays * 24 * 60 * 60 * 1000);
-            startTime = Math.floor(startTime / (24 * 60 * 60 * 1000)) * (24 * 60 * 60 * 1000);
+            let startTime = Date.now() - numberOfDays * 24 * 60 * 60 * 1000;
+            startTime =
+                Math.floor(startTime / (24 * 60 * 60 * 1000)) * (24 * 60 * 60 * 1000);
             const data = await this.voucherModel.aggregate([
                 {
                     $match: {
                         merchantMongoID: req.user.id,
-                        createdAt: { $gte: new Date(startTime) }
-                    }
+                        createdAt: { $gte: new Date(startTime) },
+                    },
                 },
                 {
                     $group: {
-                        _id: { $dayOfYear: "$createdAt" },
+                        _id: { $dayOfYear: '$createdAt' },
                         createdAt: { $last: '$createdAt' },
-                        count: { $sum: 1 }
-                    }
+                        count: { $sum: 1 },
+                    },
                 },
                 {
-                    $sort: { _id: 1 }
-                }
+                    $sort: { _id: 1 },
+                },
             ]);
             let counts = [];
             for (let i = 0; i < numberOfDays; i++) {
-                let tempDate = Date.now() - ((numberOfDays - i) * 24 * 60 * 60 * 1000);
-                let tempNextDate = tempDate + (24 * 60 * 60 * 1000);
-                const filtered = data === null || data === void 0 ? void 0 : data.filter(item => new Date(item === null || item === void 0 ? void 0 : item.createdAt).getTime() >= tempDate && new Date(item === null || item === void 0 ? void 0 : item.createdAt).getTime() <= tempNextDate);
+                let tempDate = Date.now() - (numberOfDays - i) * 24 * 60 * 60 * 1000;
+                let tempNextDate = tempDate + 24 * 60 * 60 * 1000;
+                const filtered = data === null || data === void 0 ? void 0 : data.filter((item) => new Date(item === null || item === void 0 ? void 0 : item.createdAt).getTime() >= tempDate &&
+                    new Date(item === null || item === void 0 ? void 0 : item.createdAt).getTime() <= tempNextDate);
                 if (filtered === null || filtered === void 0 ? void 0 : filtered.length) {
-                    counts.push({ createdAt: (_a = filtered[0]) === null || _a === void 0 ? void 0 : _a.createdAt, count: (_b = filtered[0]) === null || _b === void 0 ? void 0 : _b.count });
+                    counts.push({
+                        createdAt: (_a = filtered[0]) === null || _a === void 0 ? void 0 : _a.createdAt,
+                        count: (_b = filtered[0]) === null || _b === void 0 ? void 0 : _b.count,
+                    });
                 }
                 else {
                     counts.push({ createdAt: new Date(tempDate), count: 0 });
@@ -776,6 +813,82 @@ let VouchersService = class VouchersService {
             throw new common_1.BadRequestException(err);
         }
     }
+    async getNetRevenue(req) {
+        var _a;
+        try {
+            const timeStamp = Date.now() - 365 * 24 * 60 * 60 * 1000;
+            const totalDeals = await this.dealModel.countDocuments({
+                merchantMongoID: req.user.id,
+                dealStatus: dealstatus_enum_1.DEALSTATUS.published,
+            });
+            const totalVouchersSold = req.user.purchasedVouchers;
+            const overallRating = req.user.ratingsAverage;
+            const netRevenue = req.user.totalEarnings;
+            let vouchers = await this.voucherModel.aggregate([
+                {
+                    $match: {
+                        merchantMongoID: req.user.id,
+                        createdAt: { $gte: new Date(timeStamp) },
+                    },
+                },
+                {
+                    $group: {
+                        _id: { $substr: ['$createdAt', 0, 7] },
+                        netRevenue: { $sum: '$net' },
+                    },
+                },
+                {
+                    $addFields: {
+                        month: '$_id',
+                    },
+                },
+                {
+                    $project: {
+                        _id: 0,
+                    },
+                },
+                {
+                    $sort: {
+                        month: -1,
+                    },
+                },
+            ]);
+            let month = new Date().getMonth() + 2;
+            let year = new Date().getFullYear();
+            let yearlyRevenue = 0;
+            for (let i = 0; i < 12; i++) {
+                console.log(month);
+                month = month - 1;
+                if (month == 0) {
+                    month = 12;
+                    year = year - 1;
+                }
+                let checkMonth = month < 10
+                    ? year.toString() + '-' + '0' + month.toString()
+                    : year.toString() + '-' + month.toString();
+                if (((_a = vouchers[i]) === null || _a === void 0 ? void 0 : _a.month) != checkMonth) {
+                    vouchers.splice(i, 0, {
+                        netRevenue: 0,
+                        month: checkMonth,
+                    });
+                }
+                yearlyRevenue += vouchers[i].netRevenue;
+            }
+            let fromToYear = `${new Date().getMonth() + 2} ${new Date().getFullYear() - 1} to ${new Date().getMonth() + 1} ${new Date().getFullYear()}`;
+            return {
+                totalDeals,
+                totalVouchersSold,
+                overallRating,
+                netRevenue,
+                fromToYear,
+                yearlyRevenue,
+                vouchers,
+            };
+        }
+        catch (err) {
+            throw new common_1.HttpException(err.message, common_1.HttpStatus.BAD_REQUEST);
+        }
+    }
 };
 VouchersService = __decorate([
     (0, common_1.Injectable)(),
@@ -783,12 +896,13 @@ VouchersService = __decorate([
     __param(1, (0, mongoose_1.InjectModel)('Counter')),
     __param(2, (0, mongoose_1.InjectModel)('User')),
     __param(3, (0, mongoose_1.InjectModel)('Schedule')),
-    __param(5, (0, mongoose_1.InjectModel)('Deal')),
+    __param(6, (0, mongoose_1.InjectModel)('Deal')),
     __metadata("design:paramtypes", [mongoose_2.Model,
         mongoose_2.Model,
         mongoose_2.Model,
         mongoose_2.Model,
         schedule_service_1.ScheduleService,
+        activity_service_1.ActivityService,
         mongoose_2.Model])
 ], VouchersService);
 exports.VouchersService = VouchersService;

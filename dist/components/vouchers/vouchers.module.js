@@ -14,6 +14,7 @@ const schedule_schema_1 = require("../../schema/schedule/schedule.schema");
 const users_schema_1 = require("../../schema/user/users.schema");
 const vouchers_schema_1 = require("../../schema/vouchers/vouchers.schema");
 const vouchersCounter_schema_1 = require("../../schema/vouchers/vouchersCounter.schema");
+const activity_module_1 = require("../activity/activity.module");
 const schedule_service_1 = require("../schedule/schedule.service");
 const vouchers_controller_1 = require("./vouchers.controller");
 const vouchers_service_1 = require("./vouchers.service");
@@ -29,6 +30,7 @@ VouchersModule = __decorate([
                 { name: 'Schedule', schema: schedule_schema_1.ScheduleSchema },
                 { name: 'Deal', schema: deal_schema_1.DealSchema },
             ]),
+            activity_module_1.ActivityModule,
         ],
         controllers: [vouchers_controller_1.VouchersController],
         providers: [vouchers_service_1.VouchersService, schedule_service_1.ScheduleService],

@@ -13,7 +13,7 @@ export declare class ActivityController {
         totalActivities: number;
         data: any[];
     }>;
-    getActivityByMerchant(offset: number, limit: number, id: string): Promise<{
+    getActivityByMerchant(offset: number, limit: number, req: any): Promise<{
         totalActivities: number;
         data: any[];
     }>;

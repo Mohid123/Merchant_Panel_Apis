@@ -66,6 +66,7 @@ export declare class DealService implements OnModuleInit {
     }>;
     getDealsByMerchantID(merchantID: any, dealHeader: any, price: any, startDate: any, endDate: any, availableVoucher: any, soldVoucher: any, status: any, dateFrom: any, dateTo: any, dealID: any, header: any, dealStatus: any, offset: any, limit: any, multipleDealsDto: any): Promise<{
         totalDeals: number;
+        filteredCount: number;
         data: any[];
     }>;
     getDealsByMerchantIDForCustomerPanel(merchantID: any, offset: any, limit: any, req: any): Promise<{
@@ -136,4 +137,8 @@ export declare class DealService implements OnModuleInit {
         message: string;
     }>;
     sendMail(emailDto: EmailDTO): Promise<void>;
+    getPublishedDealsForMerchant(req: any, offset: any, limit: any): Promise<{
+        totalCount: number;
+        deals: any[];
+    }>;
 }

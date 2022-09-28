@@ -61,6 +61,9 @@ let VouchersController = class VouchersController {
     getVoucherSoldPerDay(days, req) {
         return this.voucherService.getVoucherSoldPerDay(days, req);
     }
+    getNetRevenue(req) {
+        return this.voucherService.getNetRevenue(req);
+    }
 };
 __decorate([
     (0, swagger_1.ApiBearerAuth)(),
@@ -190,6 +193,16 @@ __decorate([
     __metadata("design:paramtypes", [Number, Object]),
     __metadata("design:returntype", void 0)
 ], VouchersController.prototype, "getVoucherSoldPerDay", null);
+__decorate([
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)(jwt_merchant_auth_guard_1.JwtMerchantAuthGuard),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Get)('getNetRevenue'),
+    __param(0, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], VouchersController.prototype, "getNetRevenue", null);
 VouchersController = __decorate([
     (0, swagger_1.ApiTags)('Voucher'),
     (0, common_1.Controller)('voucher'),

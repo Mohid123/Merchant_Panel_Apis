@@ -37,6 +37,7 @@ export declare class DealController {
     }>;
     getDealsByMerchantID(merchantID: string, dealHeader: SORT, price: SORT, startDate: SORT, endDate: SORT, availableVoucher: SORT, soldVoucher: SORT, status: DEALSTATUS, dateFrom: number, dateTo: number, dealID: string, header: string, dealStatus: string, offset: number, limit: number, multipleDealsDto: MultipleDealsDto): Promise<{
         totalDeals: number;
+        filteredCount: number;
         data: any[];
     }>;
     getDealsByMerchantIDForCustomerPanel(merchantID: string, offset: number, limit: number, req: any): Promise<{
@@ -109,5 +110,9 @@ export declare class DealController {
     }>;
     buyNow(buyNowDto: BuyNowDTO, req: any): Promise<{
         message: string;
+    }>;
+    getPublishedDealsForMerchant(offset: number, limit: number, req: any): Promise<{
+        totalCount: number;
+        deals: any[];
     }>;
 }

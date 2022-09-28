@@ -56,6 +56,9 @@ let UsersController = class UsersController {
     updateCustomerProfile(customerID, usersDto) {
         return this._usersService.updateCustomerProfile(customerID, usersDto);
     }
+    getCustomer(id) {
+        return this._usersService.getCustomer(id);
+    }
     updateBusinessHours(updateHoursDTO) {
         return this._usersService.updateBusinessHours(updateHoursDTO);
     }
@@ -170,6 +173,15 @@ __decorate([
     __metadata("design:paramtypes", [String, updatecustomerprofile_dto_1.UpdateCustomerProfileDto]),
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "updateCustomerProfile", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.Get)('getCustomer/:id'),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "getCustomer", null);
 __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, swagger_1.ApiBearerAuth)(),

@@ -28,11 +28,11 @@ __decorate([
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
-], ActivityDto.prototype, "customerID", void 0);
+], ActivityDto.prototype, "merchantMongoID", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
-], ActivityDto.prototype, "dealID", void 0);
+], ActivityDto.prototype, "message", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", Boolean)

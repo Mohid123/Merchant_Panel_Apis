@@ -5,14 +5,16 @@ import { VoucherInterface } from 'src/interface/vouchers/vouchers.interface';
 import { VoucherCounterInterface } from '../../interface/vouchers/vouchersCounter.interface';
 import { ScheduleService } from '../schedule/schedule.service';
 import { DealInterface } from 'src/interface/deal/deal.interface';
+import { ActivityService } from '../activity/activity.service';
 export declare class VouchersService {
     private readonly voucherModel;
     private readonly voucherCounterModel;
     private readonly userModel;
     private _scheduleModel;
     private _scheduleService;
+    private _activityService;
     private readonly dealModel;
-    constructor(voucherModel: Model<VoucherInterface>, voucherCounterModel: Model<VoucherCounterInterface>, userModel: Model<UsersInterface>, _scheduleModel: Model<Schedule>, _scheduleService: ScheduleService, dealModel: Model<DealInterface>);
+    constructor(voucherModel: Model<VoucherInterface>, voucherCounterModel: Model<VoucherCounterInterface>, userModel: Model<UsersInterface>, _scheduleModel: Model<Schedule>, _scheduleService: ScheduleService, _activityService: ActivityService, dealModel: Model<DealInterface>);
     generateVoucherId(sequenceName: any): Promise<string>;
     createVoucher(voucherDto: any): Promise<void>;
     updateVoucherByID(voucherID: any, updateVoucherForCRMDto: any): Promise<{
@@ -50,4 +52,13 @@ export declare class VouchersService {
         };
     }>;
     getVoucherSoldPerDay(numberOfDays: any, req: any): Promise<any[]>;
+    getNetRevenue(req: any): Promise<{
+        totalDeals: number;
+        totalVouchersSold: any;
+        overallRating: any;
+        netRevenue: any;
+        fromToYear: string;
+        yearlyRevenue: number;
+        vouchers: any[];
+    }>;
 }

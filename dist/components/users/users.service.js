@@ -198,6 +198,36 @@ let UsersService = class UsersService {
             throw new common_1.HttpException(err.message, common_1.HttpStatus.BAD_REQUEST);
         }
     }
+    async getCustomer(id) {
+        try {
+            let customer = await this._userModel.aggregate([
+                {
+                    $match: {
+                        _id: id,
+                        deletedCheck: false,
+                        role: userrole_enum_1.USERROLE.customer
+                    }
+                },
+                {
+                    $addFields: {
+                        id: '$_id'
+                    }
+                },
+                {
+                    $project: {
+                        _id: 0
+                    }
+                }
+            ]).then(items => items[0]);
+            if (!customer) {
+                throw new common_1.HttpException('Customer not found', common_1.HttpStatus.NOT_FOUND);
+            }
+            return customer;
+        }
+        catch (err) {
+            throw new common_1.HttpException(err.message, common_1.HttpStatus.BAD_REQUEST);
+        }
+    }
     async updateBusinessHours(updateHoursDTO) {
         let user = await this._userModel.findOne({ _id: updateHoursDTO.id });
         const newBusinessHours = user.businessHours.map((hour) => {

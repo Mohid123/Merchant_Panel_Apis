@@ -32,6 +32,7 @@ export declare class UsersService {
     updateCustomerProfile(customerID: any, usersDto: any): Promise<{
         message: string;
     }>;
+    getCustomer(id: any): Promise<any>;
     updateBusinessHours(updateHoursDTO: UpdateHoursDto): Promise<import("mongodb").UpdateResult>;
     deleteUser(id: any): Promise<import("mongodb").UpdateResult>;
     getUserById(id: any): Promise<any>;

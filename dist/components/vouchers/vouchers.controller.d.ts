@@ -44,4 +44,13 @@ export declare class VouchersController {
         };
     }>;
     getVoucherSoldPerDay(days: number, req: any): Promise<any[]>;
+    getNetRevenue(req: any): Promise<{
+        totalDeals: number;
+        totalVouchersSold: any;
+        overallRating: any;
+        netRevenue: any;
+        fromToYear: string;
+        yearlyRevenue: number;
+        vouchers: any[];
+    }>;
 }

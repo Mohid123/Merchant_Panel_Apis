@@ -78,18 +78,18 @@ let ActivityService = class ActivityService {
             throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
         }
     }
-    async getActivitiesByMerchant(id, offset, limit) {
+    async getActivitiesByMerchant(req, offset, limit) {
         try {
             offset = parseInt(offset) < 0 ? 0 : offset;
             limit = parseInt(limit) < 1 ? 10 : limit;
             const totalActivities = await this.activityModel.countDocuments({
-                merchantID: id,
+                merchantMongoID: req.user.id,
             });
             let activities = await this.activityModel
                 .aggregate([
                 {
                     $match: {
-                        merchantID: id,
+                        merchantMongoID: req.user.id,
                     },
                 },
                 {
@@ -105,6 +105,11 @@ let ActivityService = class ActivityService {
                 {
                     $project: {
                         _id: 0,
+                    },
+                },
+                {
+                    $sort: {
+                        createdAt: -1,
                     },
                 },
             ])

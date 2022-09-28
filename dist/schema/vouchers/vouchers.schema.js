@@ -58,4 +58,5 @@ exports.VoucherSchema.index({ voucherID: 1 });
 exports.VoucherSchema.index({ customerMongoID: 1 });
 exports.VoucherSchema.index({ merchantMongoID: 1 });
 exports.VoucherSchema.index({ merchantID: 1 });
+exports.VoucherSchema.index({ merchantMongoID: 1, createdAt: 1 });
 //# sourceMappingURL=vouchers.schema.js.map
