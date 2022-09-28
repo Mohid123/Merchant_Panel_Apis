@@ -682,6 +682,7 @@ export class VouchersService {
               id: '$_id',
               tradeName: '$merchantData.tradeName',
               ratingParameters: '$dealData.categoryData.ratingParameters',
+              totalRating: '$reviewData.totalRating',
               isReviewed: {
                 $cond: [
                   {
