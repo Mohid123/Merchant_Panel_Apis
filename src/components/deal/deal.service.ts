@@ -5694,6 +5694,7 @@ export class DealService implements OnModuleInit {
       let totalCount = await this.dealModel.countDocuments({
         merchantMongoID: req.user.id,
         dealStatus: DEALSTATUS.published,
+        deletedCheck: false
       });
 
       let deals = await this.dealModel
@@ -5702,6 +5703,7 @@ export class DealService implements OnModuleInit {
             $match: {
               merchantMongoID: req.user.id,
               dealStatus: DEALSTATUS.published,
+              deletedCheck: false
             },
           },
           {
@@ -5709,6 +5711,16 @@ export class DealService implements OnModuleInit {
               createdAt: -1,
             },
           },
+          {
+            $addFields: {
+              id: '$_id'
+            }
+          },
+          {
+            $project: {
+              _id: 0
+            }
+          }
         ])
         .skip(parseInt(offset))
         .limit(parseInt(limit));
