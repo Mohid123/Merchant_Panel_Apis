@@ -32,7 +32,7 @@ export const categoriesDataSet = [
         ]
     },
     {
-        "category": "Spa & Holistic",
+        "category": "Beauty & Wellness",
         "subCategories": [
             "Holistic treatments",
             "Beauty treatments",
