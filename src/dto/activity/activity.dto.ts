@@ -8,9 +8,9 @@ export class ActivityDto {
   @ApiProperty()
   merchantID: string;
   @ApiProperty()
-  customerID: string;
+  merchantMongoID: string;
   @ApiProperty()
-  dealID: string;
+  message: string;
   @ApiProperty()
   deletedCheck: boolean;
 }

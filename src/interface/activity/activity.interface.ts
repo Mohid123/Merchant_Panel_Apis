@@ -5,7 +5,7 @@ export interface ActivityInterface extends Document {
   activityType: string;
   activityTime: number;
   merchantID: string;
-  customerID: string;
-  dealID: string;
+  merchantMongoID: string;
+  message: string;
   deletedCheck: boolean;
 }

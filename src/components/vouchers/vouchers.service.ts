@@ -22,6 +22,7 @@ import axios from 'axios';
 import { pipeline } from 'stream';
 import { DEALSTATUS } from 'src/enum/deal/dealstatus.enum';
 import { ActivityService } from '../activity/activity.service';
+import { ACTIVITYENUM } from 'src/enum/activity/activity.enum';
 
 @Injectable()
 export class VouchersService {
@@ -82,6 +83,17 @@ export class VouchersService {
       // });
 
       voucher = await voucher.save();
+
+      let activityMessage = `Customer with ${voucher.customerID} purchased voucher for sub deal ${voucher.subDealID}`;
+
+      this._activityService.createActivity({
+        activityType: ACTIVITYENUM.voucherPurchased,
+        activityTime: Date.now(),
+        merchantID: voucher.merchantID,
+        merchantMongoID: voucher.merchantMongoID,
+        message: activityMessage,
+        deletedCheck: false,
+      });
 
       // const res = await axios.get(`https://www.zohoapis.eu/crm/v2/functions/createvoucher/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&voucherid=${voucher.voucherID}`);
 
@@ -760,7 +772,7 @@ export class VouchersService {
         deletedCheck: false,
       });
 
-      if (req.user.id != voucher.merchantMongoID) {
+      if (req.user.id != voucher?.merchantMongoID) {
         throw new UnauthorizedException(
           'Merchant Not allowed to redeem voucher!',
         );
@@ -813,6 +825,17 @@ export class VouchersService {
           // affiliateFee: calculatedFeeForAffiliate
         },
       );
+
+      let activityMessage = `Voucher ${voucher.voucherID} redeemed.`;
+
+      this._activityService.createActivity({
+        activityType: ACTIVITYENUM.voucherRedeemed,
+        activityTime: Date.now(),
+        merchantID: voucher.merchantID,
+        merchantMongoID: voucher.merchantMongoID,
+        message: activityMessage,
+        deletedCheck: false,
+      });
 
       // const res = await axios.get(`https://www.zohoapis.eu/crm/v2/functions/createvoucher/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&voucherid=${voucher.voucherID}`);
 
@@ -1011,6 +1034,17 @@ export class VouchersService {
           // fee: calculatedFee
         },
       );
+
+      let activityMessage = `Voucher ${voucher.voucherID} redeemed.`;
+
+      this._activityService.createActivity({
+        activityType: ACTIVITYENUM.voucherRedeemed,
+        activityTime: Date.now(),
+        merchantID: voucher.merchantID,
+        merchantMongoID: voucher.merchantMongoID,
+        message: activityMessage,
+        deletedCheck: false,
+      });
 
       // const res = await axios.get(`https://www.zohoapis.eu/crm/v2/functions/createvoucher/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&voucherid=${voucher.voucherID}`);
 
