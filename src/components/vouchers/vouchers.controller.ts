@@ -38,21 +38,22 @@ export class VouchersController {
   @UseGuards(JwtManagerAuthGuard)
   @UseGuards(JwtAuthGuard)
   @Get('getVoucherByID/:voucherID')
-  getVoucherByID (
-    @Param('voucherID') voucherID: string
-  ) {
-    return this.voucherService.getVoucherByID(voucherID)
+  getVoucherByID(@Param('voucherID') voucherID: string) {
+    return this.voucherService.getVoucherByID(voucherID);
   }
 
   @ApiBearerAuth()
   @UseGuards(JwtManagerAuthGuard)
   @UseGuards(JwtAuthGuard)
   @Post('updateVoucherByID/:voucherID')
-  updateVoucherByID (
+  updateVoucherByID(
     @Param('voucherID') voucherID: string,
-    @Body() updateVoucherForCRMDto: UpdateVoucherForCRMDto
+    @Body() updateVoucherForCRMDto: UpdateVoucherForCRMDto,
   ) {
-    return this.voucherService.updateVoucherByID(voucherID ,updateVoucherForCRMDto)
+    return this.voucherService.updateVoucherByID(
+      voucherID,
+      updateVoucherForCRMDto,
+    );
   }
 
   @ApiBearerAuth()
@@ -114,7 +115,7 @@ export class VouchersController {
   @ApiQuery({ name: 'searchVoucher', required: false })
   @ApiQuery({ name: 'voucherStatus', enum: VOUCHERSTATUSENUM, required: false })
   @Get('getVouchersByCustomerID/:customerID')
-  getVouchersByCustomerID (
+  getVouchersByCustomerID(
     @Param('customerID') customerID: string,
     @Query('searchVoucher') searchVoucher: string = '',
     @Query('voucherStatus') voucherStatus: VOUCHERSTATUSENUM,
@@ -126,8 +127,8 @@ export class VouchersController {
       searchVoucher,
       voucherStatus,
       offset,
-      limit
-    )
+      limit,
+    );
   }
 
   @ApiBearerAuth()
@@ -169,7 +170,15 @@ export class VouchersController {
   @UseGuards(JwtMerchantAuthGuard)
   @UseGuards(JwtAuthGuard)
   @Get('getVoucherSoldPerDay/:days')
-  getVoucherSoldPerDay(@Param('days') days:number,@Req() req) {
-    return this.voucherService.getVoucherSoldPerDay(days,req);
+  getVoucherSoldPerDay(@Param('days') days: number, @Req() req) {
+    return this.voucherService.getVoucherSoldPerDay(days, req);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtMerchantAuthGuard)
+  @UseGuards(JwtAuthGuard)
+  @Get('getNetRevenue')
+  getNetRevenue(@Req() req) {
+    return this.voucherService.getNetRevenue(req);
   }
 }

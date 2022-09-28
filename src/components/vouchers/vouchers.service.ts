@@ -20,6 +20,9 @@ import { USERSTATUS } from 'src/enum/user/userstatus.enum';
 import { DealInterface } from 'src/interface/deal/deal.interface';
 import axios from 'axios';
 import { pipeline } from 'stream';
+import { DEALSTATUS } from 'src/enum/deal/dealstatus.enum';
+import { ActivityService } from '../activity/activity.service';
+import { ACTIVITYENUM } from 'src/enum/activity/activity.enum';
 
 @Injectable()
 export class VouchersService {
@@ -32,6 +35,7 @@ export class VouchersService {
     private readonly userModel: Model<UsersInterface>,
     @InjectModel('Schedule') private _scheduleModel: Model<Schedule>,
     private _scheduleService: ScheduleService,
+    private _activityService: ActivityService,
     @InjectModel('Deal') private readonly dealModel: Model<DealInterface>,
   ) {}
 
@@ -79,6 +83,17 @@ export class VouchersService {
       // });
 
       voucher = await voucher.save();
+
+      let activityMessage = `Customer with ${voucher.customerID} purchased voucher for sub deal ${voucher.subDealID}`;
+
+      this._activityService.createActivity({
+        activityType: ACTIVITYENUM.voucherPurchased,
+        activityTime: Date.now(),
+        merchantID: voucher.merchantID,
+        merchantMongoID: voucher.merchantMongoID,
+        message: activityMessage,
+        deletedCheck: false,
+      });
 
       // const res = await axios.get(`https://www.zohoapis.eu/crm/v2/functions/createvoucher/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&voucherid=${voucher.voucherID}`);
 
@@ -642,7 +657,7 @@ export class VouchersService {
             $lookup: {
               from: 'deals',
               let: {
-                dealID: '$dealID'
+                dealID: '$dealID',
               },
               pipeline: [
                 {
@@ -661,18 +676,18 @@ export class VouchersService {
                     from: 'categories',
                     as: 'categoryData',
                     foreignField: 'categoryName',
-                    localField: 'categoryName'
-                  }
+                    localField: 'categoryName',
+                  },
                 },
                 {
-                  $unwind: '$categoryData'
+                  $unwind: '$categoryData',
                 },
               ],
-              as: 'dealData'
-            }
+              as: 'dealData',
+            },
           },
           {
-            $unwind: '$dealData'
+            $unwind: '$dealData',
           },
           {
             $addFields: {
@@ -757,7 +772,7 @@ export class VouchersService {
         deletedCheck: false,
       });
 
-      if (req.user.id != voucher.merchantMongoID) {
+      if (req.user.id != voucher?.merchantMongoID) {
         throw new UnauthorizedException(
           'Merchant Not allowed to redeem voucher!',
         );
@@ -810,6 +825,17 @@ export class VouchersService {
           // affiliateFee: calculatedFeeForAffiliate
         },
       );
+
+      let activityMessage = `Voucher ${voucher.voucherID} redeemed.`;
+
+      this._activityService.createActivity({
+        activityType: ACTIVITYENUM.voucherRedeemed,
+        activityTime: Date.now(),
+        merchantID: voucher.merchantID,
+        merchantMongoID: voucher.merchantMongoID,
+        message: activityMessage,
+        deletedCheck: false,
+      });
 
       // const res = await axios.get(`https://www.zohoapis.eu/crm/v2/functions/createvoucher/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&voucherid=${voucher.voucherID}`);
 
@@ -1009,6 +1035,17 @@ export class VouchersService {
         },
       );
 
+      let activityMessage = `Voucher ${voucher.voucherID} redeemed.`;
+
+      this._activityService.createActivity({
+        activityType: ACTIVITYENUM.voucherRedeemed,
+        activityTime: Date.now(),
+        merchantID: voucher.merchantID,
+        merchantMongoID: voucher.merchantMongoID,
+        message: activityMessage,
+        deletedCheck: false,
+      });
+
       // const res = await axios.get(`https://www.zohoapis.eu/crm/v2/functions/createvoucher/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&voucherid=${voucher.voucherID}`);
 
       // const deal = await this.dealModel.findOne({dealID: voucher.dealID});
@@ -1043,53 +1080,146 @@ export class VouchersService {
       throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
-  
-  async getVoucherSoldPerDay(numberOfDays,req){
-    try{
-      let startTime = Date.now() - (numberOfDays * 24*60*60*1000);
-      
-      startTime = Math.floor(startTime/(24*60*60*1000))*(24*60*60*1000);
+
+  async getVoucherSoldPerDay(numberOfDays, req) {
+    try {
+      let startTime = Date.now() - numberOfDays * 24 * 60 * 60 * 1000;
+
+      startTime =
+        Math.floor(startTime / (24 * 60 * 60 * 1000)) * (24 * 60 * 60 * 1000);
 
       const data = await this.voucherModel.aggregate([
         {
-            $match:{
-                merchantMongoID:req.user.id,
-                createdAt:{$gte:new Date(startTime)}
-            }
+          $match: {
+            merchantMongoID: req.user.id,
+            createdAt: { $gte: new Date(startTime) },
+          },
         },
         {
-            $group:{
-                _id:{$dayOfYear: "$createdAt"},
-                createdAt: { $last: '$createdAt' },
-                count:{$sum:1}
-            }
+          $group: {
+            _id: { $dayOfYear: '$createdAt' },
+            createdAt: { $last: '$createdAt' },
+            count: { $sum: 1 },
+          },
         },
         {
-            $sort:{_id:1}
-    
+          $sort: { _id: 1 },
+        },
+      ]);
+
+      let counts = [];
+      for (let i = 0; i < numberOfDays; i++) {
+        let tempDate = Date.now() - (numberOfDays - i) * 24 * 60 * 60 * 1000;
+
+        let tempNextDate = tempDate + 24 * 60 * 60 * 1000;
+
+        const filtered = data?.filter(
+          (item) =>
+            new Date(item?.createdAt).getTime() >= tempDate &&
+            new Date(item?.createdAt).getTime() <= tempNextDate,
+        );
+
+        if (filtered?.length) {
+          counts.push({
+            createdAt: filtered[0]?.createdAt,
+            count: filtered[0]?.count,
+          });
+        } else {
+          counts.push({ createdAt: new Date(tempDate), count: 0 });
         }
-    ])
-    
-    let counts = []
-    for(let i=0;i<numberOfDays;i++){
-      let tempDate = Date.now() - ((numberOfDays - i) * 24*60*60*1000);
-      
-      let tempNextDate = tempDate + (24*60*60*1000)
-
-      const filtered = data?.filter(item=>new Date(item?.createdAt).getTime()>=tempDate &&new Date(item?.createdAt).getTime()<=tempNextDate)
-
-      if(filtered?.length){
-        counts.push({createdAt:filtered[0]?.createdAt,count:filtered[0]?.count})
-      }else{
-        counts.push({createdAt:new Date(tempDate),count:0})
       }
-      
-    }
 
-    return counts;
-    }catch(err){
+      return counts;
+    } catch (err) {
       console.log(err);
       throw new BadRequestException(err);
+    }
+  }
+
+  async getNetRevenue(req) {
+    try {
+      const timeStamp = Date.now() - 365 * 24 * 60 * 60 * 1000;
+
+      const totalDeals = await this.dealModel.countDocuments({
+        merchantMongoID: req.user.id,
+        dealStatus: DEALSTATUS.published,
+      });
+
+      const totalVouchersSold = req.user.purchasedVouchers;
+      const overallRating = req.user.ratingsAverage;
+      const netRevenue = req.user.totalEarnings;
+
+      let vouchers = await this.voucherModel.aggregate([
+        {
+          $match: {
+            merchantMongoID: req.user.id,
+            createdAt: { $gte: new Date(timeStamp) },
+          },
+        },
+        {
+          $group: {
+            _id: { $substr: ['$createdAt', 0, 7] },
+            netRevenue: { $sum: '$net' },
+          },
+        },
+        {
+          $addFields: {
+            month: '$_id',
+          },
+        },
+        {
+          $project: {
+            _id: 0,
+          },
+        },
+        {
+          $sort: {
+            month: -1,
+          },
+        },
+      ]);
+
+      let month = new Date().getMonth() + 2;
+      let year = new Date().getFullYear();
+      let yearlyRevenue = 0;
+
+      for (let i = 0; i < 12; i++) {
+        console.log(month);
+        month = month - 1;
+        if (month == 0) {
+          month = 12;
+          year = year - 1;
+        }
+
+        let checkMonth =
+          month < 10
+            ? year.toString() + '-' + '0' + month.toString()
+            : year.toString() + '-' + month.toString();
+
+        if (vouchers[i]?.month != checkMonth) {
+          vouchers.splice(i, 0, {
+            netRevenue: 0,
+            month: checkMonth,
+          });
+        }
+        yearlyRevenue += vouchers[i].netRevenue;
+      }
+
+      let fromToYear = `${new Date().getMonth() + 2} ${
+        new Date().getFullYear() - 1
+      } to ${new Date().getMonth() + 1} ${new Date().getFullYear()}`;
+
+      return {
+        totalDeals,
+        totalVouchersSold,
+        overallRating,
+        netRevenue,
+        fromToYear,
+        yearlyRevenue,
+        vouchers,
+      };
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 }
