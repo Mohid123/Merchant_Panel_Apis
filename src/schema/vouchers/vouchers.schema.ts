@@ -18,7 +18,7 @@ export const VoucherSchema = new mongoose.Schema(
     merchantPaymentStatus: { type: String, default: '' },
     customerID: { type: String, default: '' },
     customerMongoID: { type: String, default: '' },
-    affiliateName: { type: String, default: ''},
+    affiliateName: { type: String, default: '' },
     affiliateID: { type: String, default: '' },
     affiliateMongoID: { type: String, default: '' },
     affiliatePercentage: { type: Number },
@@ -64,3 +64,4 @@ VoucherSchema.index({ voucherID: 1 });
 VoucherSchema.index({ customerMongoID: 1 });
 VoucherSchema.index({ merchantMongoID: 1 });
 VoucherSchema.index({ merchantID: 1 });
+VoucherSchema.index({ merchantMongoID: 1, createdAt: 1 });
