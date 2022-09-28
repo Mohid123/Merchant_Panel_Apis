@@ -5,6 +5,7 @@ import { ScheduleSchema } from 'src/schema/schedule/schedule.schema';
 import { UsersSchema } from 'src/schema/user/users.schema';
 import { VoucherSchema } from '../../schema/vouchers/vouchers.schema';
 import { VoucherCounterSchema } from '../../schema/vouchers/vouchersCounter.schema';
+import { ActivityModule } from '../activity/activity.module';
 import { ScheduleService } from '../schedule/schedule.service';
 import { VouchersController } from './vouchers.controller';
 import { VouchersService } from './vouchers.service';
@@ -18,6 +19,7 @@ import { VouchersService } from './vouchers.service';
       { name: 'Schedule', schema: ScheduleSchema },
       { name: 'Deal', schema: DealSchema },
     ]),
+    ActivityModule,
   ],
   controllers: [VouchersController],
   providers: [VouchersService, ScheduleService],

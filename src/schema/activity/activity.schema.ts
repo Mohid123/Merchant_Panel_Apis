@@ -7,9 +7,9 @@ export const ActivitySchema = new mongoose.Schema(
     activityType: { type: String, default: '' },
     activityTime: { type: Number },
     merchantID: { type: String, default: '' },
-    customerID: { type: String, default: '' },
-    dealID: { type: String, default: '' },
-    deletedCheck: { type: Boolean, default: false }
+    merchantMongoID: { type: String, default: '' },
+    message: { type: String, default: '' },
+    deletedCheck: { type: Boolean, default: false },
   },
   {
     collection: 'activities',
