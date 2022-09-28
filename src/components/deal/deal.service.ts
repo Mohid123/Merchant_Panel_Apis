@@ -3396,6 +3396,165 @@ export class DealService implements OnModuleInit {
         },
       ]);
 
+      const filteredCount = await this.dealModel.aggregate([
+        {
+          $match: {
+            deletedCheck: false,
+            dealStatus: DEALSTATUS.published,
+            ...filters,
+            ...matchFilter,
+          },
+        },
+        {
+          $addFields: {
+            isHeader: {
+              $regexMatch: { input: '$dealHeader', regex: headerQuery },
+            },
+            isCategory: {
+              $regexMatch: { input: '$categoryName', regex: categoryQuery },
+            },
+            isSubCategory: {
+              $regexMatch: { input: '$subCategory', regex: subCategoryQuery },
+            },
+          },
+        },
+        {
+          $match: {
+            $or: [
+              { isCategory: true },
+              { isSubCategory: true },
+              { isHeader: true },
+            ],
+          },
+        },
+        {
+          $sort: {
+            isCategory: -1,
+            isSubCategory: -1,
+            isHeader: -1,
+            createdAt: -1,
+          },
+        },
+        {
+          $lookup: {
+            from: 'favourites',
+            as: 'favouriteDeal',
+            let: {
+              dealID: '$dealID',
+              customerMongoID: req?.user?.id,
+              deletedCheck: '$deletedCheck',
+            },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $and: [
+                      {
+                        $eq: ['$$dealID', '$dealID'],
+                      },
+                      {
+                        $eq: ['$$customerMongoID', '$customerMongoID'],
+                      },
+                      {
+                        $eq: ['$deletedCheck', false],
+                      },
+                    ],
+                  },
+                },
+              },
+            ],
+          },
+        },
+        {
+          $unwind: {
+            path: '$favouriteDeal',
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $lookup: {
+            from: 'users',
+            as: 'merchantDetails',
+            let: {
+              userID: '$merchantID',
+              deletedCheck: '$deletedCheck',
+            },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $and: [
+                      {
+                        $eq: ['$$userID', '$userID'],
+                      },
+                      {
+                        $eq: ['$deletedCheck', false],
+                      },
+                    ],
+                  },
+                },
+              },
+              {
+                $addFields: {
+                  id: '$_id',
+                },
+              },
+              {
+                $project: {
+                  _id: 0,
+                  id: 1,
+                  totalReviews: 1,
+                  ratingsAverage: 1,
+                  legalName: 1,
+                  city: 1,
+                  province: 1,
+                },
+              },
+            ],
+          },
+        },
+        {
+          $unwind: '$merchantDetails',
+        },
+        {
+          $addFields: {
+            id: '$_id',
+            province: '$merchantDetails.province',
+            mediaUrl: {
+              $slice: [
+                {
+                  $filter: {
+                    input: '$mediaUrl',
+                    as: 'mediaUrl',
+                    cond: {
+                      $eq: ['$$mediaUrl.type', 'Image'],
+                    },
+                  },
+                },
+                1,
+              ],
+            },
+            isFavourite: {
+              $cond: [
+                {
+                  $ifNull: ['$favouriteDeal', false],
+                },
+                true,
+                false,
+              ],
+            },
+          },
+        },
+        {
+          $match: {
+            ...locationFilter,
+          },
+        },
+        {
+          $count: 'filteredCount'
+        }
+      ]);
+
       const deals = await this.dealModel
         .aggregate([
           {
@@ -3585,9 +3744,8 @@ export class DealService implements OnModuleInit {
         .limit(parseInt(limit));
 
       return {
-        // totalDeals: totalCount,
-        // filteredDeals: filteredCount,
         ...totalCount[0],
+        filteredCount: filteredCount?.length > 0 ? filteredCount[0].filteredCount : 0,
         data: deals,
       };
     } catch (err) {
