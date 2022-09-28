@@ -100,6 +100,15 @@ export class UsersController {
 
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
+  @Get('getCustomer/:id')
+  getCustomer (
+    @Param('id') id:string
+  ) {
+    return this._usersService.getCustomer(id)
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @Post('updateBusinessHours')
   updateBusinessHours(@Body() updateHoursDTO: UpdateHoursDto) {
     return this._usersService.updateBusinessHours(updateHoursDTO);

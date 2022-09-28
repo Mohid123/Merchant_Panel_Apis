@@ -264,6 +264,38 @@ export class UsersService {
     }
   }
 
+  async getCustomer (id) {
+    try {
+      let customer = await this._userModel.aggregate([
+        {
+          $match: {
+            _id: id,
+            deletedCheck: false,
+            role: USERROLE.customer
+          }
+        },
+        {
+          $addFields: {
+            id: '$_id'
+          }
+        },
+        {
+          $project: {
+            _id: 0
+          }
+        }
+      ]).then(items=>items[0]);
+
+      if (!customer) {
+        throw new HttpException('Customer not found', HttpStatus.NOT_FOUND);
+      }
+
+      return customer;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
   async updateBusinessHours(updateHoursDTO: UpdateHoursDto) {
     let user = await this._userModel.findOne({ _id: updateHoursDTO.id });
 
