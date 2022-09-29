@@ -57,7 +57,8 @@ export declare class VouchersService {
         totalVouchersSold: any;
         overallRating: any;
         netRevenue: any;
-        fromToYear: string;
+        from: string;
+        to: string;
         yearlyRevenue: number;
         vouchers: any[];
     }>;

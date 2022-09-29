@@ -49,7 +49,8 @@ export declare class VouchersController {
         totalVouchersSold: any;
         overallRating: any;
         netRevenue: any;
-        fromToYear: string;
+        from: string;
+        to: string;
         yearlyRevenue: number;
         vouchers: any[];
     }>;

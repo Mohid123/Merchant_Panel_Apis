@@ -189,10 +189,14 @@ let DealService = class DealService {
                                 else {
                                     urlMedia = mediaObj.captureFileURL;
                                 }
-                                mediaObj['blurHash'] = await (0, utils_1.encodeImageToBlurhash)(urlMedia);
-                                let data = (mediaObj['backgroundColorHex'] =
-                                    await (0, utils_1.getDominantColor)(urlMedia));
-                                mediaObj['backgroundColorHex'] = data.hexCode;
+                                if (!mediaObj['blurHash']) {
+                                    mediaObj['blurHash'] = await (0, utils_1.encodeImageToBlurhash)(urlMedia);
+                                }
+                                if (!mediaObj['backgroundColorHex']) {
+                                    let data = (mediaObj['backgroundColorHex'] =
+                                        await (0, utils_1.getDominantColor)(urlMedia));
+                                    mediaObj['backgroundColorHex'] = data.hexCode;
+                                }
                                 resolve({});
                             }
                             catch (err) {
@@ -516,8 +520,20 @@ let DealService = class DealService {
                                 },
                             },
                             {
+                                $lookup: {
+                                    from: 'locations',
+                                    as: 'locationData',
+                                    localField: 'userID',
+                                    foreignField: 'merchantID'
+                                }
+                            },
+                            {
+                                $unwind: '$locationData'
+                            },
+                            {
                                 $addFields: {
                                     id: '$_id',
+                                    tradeName: '$locationData.tradeName'
                                 },
                             },
                             {
@@ -526,7 +542,7 @@ let DealService = class DealService {
                                     id: 1,
                                     totalReviews: 1,
                                     ratingsAverage: 1,
-                                    legalName: 1,
+                                    tradeName: 1,
                                     city: 1,
                                 },
                             },
@@ -535,6 +551,17 @@ let DealService = class DealService {
                 },
                 {
                     $unwind: '$merchantDetails',
+                },
+                {
+                    $lookup: {
+                        from: 'locations',
+                        as: 'locationData',
+                        localField: 'merchantID',
+                        foreignField: 'merchantID',
+                    },
+                },
+                {
+                    $unwind: '$locationData',
                 },
                 {
                     $addFields: {
@@ -1165,8 +1192,20 @@ let DealService = class DealService {
                                 },
                             },
                             {
+                                $lookup: {
+                                    from: 'locations',
+                                    as: 'locationData',
+                                    localField: 'userID',
+                                    foreignField: 'merchantID'
+                                }
+                            },
+                            {
+                                $unwind: '$locationData'
+                            },
+                            {
                                 $addFields: {
                                     id: '$_id',
+                                    tradeName: '$locationData.tradeName'
                                 },
                             },
                             {
@@ -1175,7 +1214,7 @@ let DealService = class DealService {
                                     id: 1,
                                     totalReviews: 1,
                                     ratingsAverage: 1,
-                                    legalName: 1,
+                                    tradeName: 1,
                                     city: 1,
                                 },
                             },
@@ -1374,8 +1413,20 @@ let DealService = class DealService {
                                 },
                             },
                             {
+                                $lookup: {
+                                    from: 'locations',
+                                    as: 'locationData',
+                                    localField: 'userID',
+                                    foreignField: 'merchantID'
+                                }
+                            },
+                            {
+                                $unwind: '$locationData'
+                            },
+                            {
                                 $addFields: {
                                     id: '$_id',
+                                    tradeName: '$locationData.tradeName'
                                 },
                             },
                             {
@@ -1384,7 +1435,7 @@ let DealService = class DealService {
                                     id: 1,
                                     totalReviews: 1,
                                     ratingsAverage: 1,
-                                    legalName: 1,
+                                    tradeName: 1,
                                     city: 1,
                                 },
                             },
@@ -1554,8 +1605,20 @@ let DealService = class DealService {
                                     },
                                 },
                                 {
+                                    $lookup: {
+                                        from: 'locations',
+                                        as: 'locationData',
+                                        localField: 'userID',
+                                        foreignField: 'merchantID'
+                                    }
+                                },
+                                {
+                                    $unwind: '$locationData'
+                                },
+                                {
                                     $addFields: {
                                         id: '$_id',
+                                        tradeName: '$locationData.tradeName'
                                     },
                                 },
                                 {
@@ -1564,7 +1627,7 @@ let DealService = class DealService {
                                         id: 1,
                                         totalReviews: 1,
                                         ratingsAverage: 1,
-                                        legalName: 1,
+                                        tradeName: 1,
                                         city: 1,
                                     },
                                 },
@@ -1746,8 +1809,20 @@ let DealService = class DealService {
                                 },
                             },
                             {
+                                $lookup: {
+                                    from: 'locations',
+                                    as: 'locationData',
+                                    localField: 'userID',
+                                    foreignField: 'merchantID'
+                                }
+                            },
+                            {
+                                $unwind: '$locationData'
+                            },
+                            {
                                 $addFields: {
                                     id: '$_id',
+                                    tradeName: '$locationData.tradeName'
                                 },
                             },
                             {
@@ -1756,7 +1831,7 @@ let DealService = class DealService {
                                     id: 1,
                                     totalReviews: 1,
                                     ratingsAverage: 1,
-                                    legalName: 1,
+                                    tradeName: 1,
                                     city: 1,
                                 },
                             },
@@ -1946,8 +2021,20 @@ let DealService = class DealService {
                                     },
                                 },
                                 {
+                                    $lookup: {
+                                        from: 'locations',
+                                        as: 'locationData',
+                                        localField: 'userID',
+                                        foreignField: 'merchantID'
+                                    }
+                                },
+                                {
+                                    $unwind: '$locationData'
+                                },
+                                {
                                     $addFields: {
                                         id: '$_id',
+                                        tradeName: '$locationData.tradeName'
                                     },
                                 },
                                 {
@@ -1956,7 +2043,7 @@ let DealService = class DealService {
                                         id: 1,
                                         totalReviews: 1,
                                         ratingsAverage: 1,
-                                        legalName: 1,
+                                        tradeName: 1,
                                         city: 1,
                                     },
                                 },
@@ -2126,8 +2213,20 @@ let DealService = class DealService {
                                 },
                             },
                             {
+                                $lookup: {
+                                    from: 'locations',
+                                    as: 'locationData',
+                                    localField: 'userID',
+                                    foreignField: 'merchantID'
+                                }
+                            },
+                            {
+                                $unwind: '$locationData'
+                            },
+                            {
                                 $addFields: {
                                     id: '$_id',
+                                    tradeName: '$locationData.tradeName'
                                 },
                             },
                             {
@@ -2136,7 +2235,7 @@ let DealService = class DealService {
                                     id: 1,
                                     totalReviews: 1,
                                     ratingsAverage: 1,
-                                    legalName: 1,
+                                    tradeName: 1,
                                     city: 1,
                                 },
                             },
@@ -2305,8 +2404,20 @@ let DealService = class DealService {
                                 },
                             },
                             {
+                                $lookup: {
+                                    from: 'locations',
+                                    as: 'locationData',
+                                    localField: 'userID',
+                                    foreignField: 'merchantID'
+                                }
+                            },
+                            {
+                                $unwind: '$locationData'
+                            },
+                            {
                                 $addFields: {
                                     id: '$_id',
+                                    tradeName: '$locationData.tradeName'
                                 },
                             },
                             {
@@ -2315,7 +2426,7 @@ let DealService = class DealService {
                                     id: 1,
                                     totalReviews: 1,
                                     ratingsAverage: 1,
-                                    legalName: 1,
+                                    tradeName: 1,
                                     city: 1,
                                 },
                             },
@@ -2504,8 +2615,20 @@ let DealService = class DealService {
                                     },
                                 },
                                 {
+                                    $lookup: {
+                                        from: 'locations',
+                                        as: 'locationData',
+                                        localField: 'userID',
+                                        foreignField: 'merchantID'
+                                    }
+                                },
+                                {
+                                    $unwind: '$locationData'
+                                },
+                                {
                                     $addFields: {
                                         id: '$_id',
+                                        tradeName: '$locationData.tradeName'
                                     },
                                 },
                                 {
@@ -2514,7 +2637,7 @@ let DealService = class DealService {
                                         id: 1,
                                         totalReviews: 1,
                                         ratingsAverage: 1,
-                                        legalName: 1,
+                                        tradeName: 1,
                                         city: 1,
                                     },
                                 },
@@ -2747,8 +2870,20 @@ let DealService = class DealService {
                                 },
                             },
                             {
+                                $lookup: {
+                                    from: 'locations',
+                                    as: 'locationData',
+                                    localField: 'userID',
+                                    foreignField: 'merchantID'
+                                }
+                            },
+                            {
+                                $unwind: '$locationData'
+                            },
+                            {
                                 $addFields: {
                                     id: '$_id',
+                                    tradeName: '$locationData.tradeName'
                                 },
                             },
                             {
@@ -2757,7 +2892,7 @@ let DealService = class DealService {
                                     id: 1,
                                     totalReviews: 1,
                                     ratingsAverage: 1,
-                                    legalName: 1,
+                                    tradeName: 1,
                                     city: 1,
                                     province: 1,
                                 },
@@ -3096,8 +3231,20 @@ let DealService = class DealService {
                                 },
                             },
                             {
+                                $lookup: {
+                                    from: 'locations',
+                                    as: 'locationData',
+                                    localField: 'userID',
+                                    foreignField: 'merchantID'
+                                }
+                            },
+                            {
+                                $unwind: '$locationData'
+                            },
+                            {
                                 $addFields: {
                                     id: '$_id',
+                                    tradeName: '$locationData.tradeName'
                                 },
                             },
                             {
@@ -3106,7 +3253,7 @@ let DealService = class DealService {
                                     id: 1,
                                     totalReviews: 1,
                                     ratingsAverage: 1,
-                                    legalName: 1,
+                                    tradeName: 1,
                                     city: 1,
                                     province: 1,
                                 },
@@ -3150,8 +3297,8 @@ let DealService = class DealService {
                     $match: Object.assign({}, locationFilter),
                 },
                 {
-                    $count: 'filteredCount'
-                }
+                    $count: 'filteredCount',
+                },
             ]);
             const deals = await this.dealModel
                 .aggregate([
@@ -3248,8 +3395,20 @@ let DealService = class DealService {
                                 },
                             },
                             {
+                                $lookup: {
+                                    from: 'locations',
+                                    as: 'locationData',
+                                    localField: 'userID',
+                                    foreignField: 'merchantID'
+                                }
+                            },
+                            {
+                                $unwind: '$locationData'
+                            },
+                            {
                                 $addFields: {
                                     id: '$_id',
+                                    tradeName: '$locationData.tradeName'
                                 },
                             },
                             {
@@ -3258,7 +3417,7 @@ let DealService = class DealService {
                                     id: 1,
                                     totalReviews: 1,
                                     ratingsAverage: 1,
-                                    legalName: 1,
+                                    tradeName: 1,
                                     city: 1,
                                     province: 1,
                                 },
@@ -3478,8 +3637,20 @@ let DealService = class DealService {
                                 },
                             },
                             {
+                                $lookup: {
+                                    from: 'locations',
+                                    as: 'locationData',
+                                    localField: 'userID',
+                                    foreignField: 'merchantID'
+                                }
+                            },
+                            {
+                                $unwind: '$locationData'
+                            },
+                            {
                                 $addFields: {
                                     id: '$_id',
+                                    tradeName: '$locationData.tradeName'
                                 },
                             },
                             {
@@ -3488,7 +3659,7 @@ let DealService = class DealService {
                                     id: 1,
                                     totalReviews: 1,
                                     ratingsAverage: 1,
-                                    legalName: 1,
+                                    tradeName: 1,
                                     city: 1,
                                     province: 1,
                                 },
@@ -3800,8 +3971,20 @@ let DealService = class DealService {
                                 },
                             },
                             {
+                                $lookup: {
+                                    from: 'locations',
+                                    as: 'locationData',
+                                    localField: 'userID',
+                                    foreignField: 'merchantID'
+                                }
+                            },
+                            {
+                                $unwind: '$locationData'
+                            },
+                            {
                                 $addFields: {
                                     id: '$_id',
+                                    tradeName: '$locationData.tradeName'
                                 },
                             },
                             {
@@ -3810,7 +3993,7 @@ let DealService = class DealService {
                                     id: 1,
                                     totalReviews: 1,
                                     ratingsAverage: 1,
-                                    legalName: 1,
+                                    tradeName: 1,
                                     city: 1,
                                     province: 1,
                                 },
@@ -3925,8 +4108,20 @@ let DealService = class DealService {
                                 },
                             },
                             {
+                                $lookup: {
+                                    from: 'locations',
+                                    as: 'locationData',
+                                    localField: 'userID',
+                                    foreignField: 'merchantID'
+                                }
+                            },
+                            {
+                                $unwind: '$locationData'
+                            },
+                            {
                                 $addFields: {
                                     id: '$_id',
+                                    tradeName: '$locationData.tradeName'
                                 },
                             },
                             {
@@ -3935,7 +4130,7 @@ let DealService = class DealService {
                                     id: 1,
                                     totalReviews: 1,
                                     ratingsAverage: 1,
-                                    legalName: 1,
+                                    tradeName: 1,
                                     city: 1,
                                     province: 1,
                                 },
@@ -4096,8 +4291,20 @@ let DealService = class DealService {
                                 },
                             },
                             {
+                                $lookup: {
+                                    from: 'locations',
+                                    as: 'locationData',
+                                    localField: 'userID',
+                                    foreignField: 'merchantID'
+                                }
+                            },
+                            {
+                                $unwind: '$locationData'
+                            },
+                            {
                                 $addFields: {
                                     id: '$_id',
+                                    tradeName: '$locationData.tradeName'
                                 },
                             },
                             {
@@ -4106,7 +4313,7 @@ let DealService = class DealService {
                                     id: 1,
                                     totalReviews: 1,
                                     ratingsAverage: 1,
-                                    legalName: 1,
+                                    tradeName: 1,
                                     city: 1,
                                 },
                             },
@@ -4287,8 +4494,20 @@ let DealService = class DealService {
                                 },
                             },
                             {
+                                $lookup: {
+                                    from: 'locations',
+                                    as: 'locationData',
+                                    localField: 'userID',
+                                    foreignField: 'merchantID'
+                                }
+                            },
+                            {
+                                $unwind: '$locationData'
+                            },
+                            {
                                 $addFields: {
                                     id: '$_id',
+                                    tradeName: '$locationData.tradeName'
                                 },
                             },
                             {
@@ -4297,7 +4516,7 @@ let DealService = class DealService {
                                     id: 1,
                                     totalReviews: 1,
                                     ratingsAverage: 1,
-                                    legalName: 1,
+                                    tradeName: 1,
                                     city: 1,
                                 },
                             },
@@ -4468,8 +4687,20 @@ let DealService = class DealService {
                                 },
                             },
                             {
+                                $lookup: {
+                                    from: 'locations',
+                                    as: 'locationData',
+                                    localField: 'userID',
+                                    foreignField: 'merchantID'
+                                }
+                            },
+                            {
+                                $unwind: '$locationData'
+                            },
+                            {
                                 $addFields: {
                                     id: '$_id',
+                                    tradeName: '$locationData.tradeName'
                                 },
                             },
                             {
@@ -4478,7 +4709,7 @@ let DealService = class DealService {
                                     id: 1,
                                     totalReviews: 1,
                                     ratingsAverage: 1,
-                                    legalName: 1,
+                                    tradeName: 1,
                                     city: 1,
                                 },
                             },
@@ -4651,8 +4882,20 @@ let DealService = class DealService {
                                 },
                             },
                             {
+                                $lookup: {
+                                    from: 'locations',
+                                    as: 'locationData',
+                                    localField: 'userID',
+                                    foreignField: 'merchantID'
+                                }
+                            },
+                            {
+                                $unwind: '$locationData'
+                            },
+                            {
                                 $addFields: {
                                     id: '$_id',
+                                    tradeName: '$locationData.tradeName'
                                 },
                             },
                             {
@@ -4661,7 +4904,7 @@ let DealService = class DealService {
                                     id: 1,
                                     totalReviews: 1,
                                     ratingsAverage: 1,
-                                    legalName: 1,
+                                    tradeName: 1,
                                     city: 1,
                                 },
                             },
@@ -5007,7 +5250,12 @@ let DealService = class DealService {
             });
             let expiryDate;
             if (subDeal.voucherStartDate > 0) {
-                expiryDate = subDeal.voucherEndDate;
+                if (subDeal.voucherEndDate < new Date().getTime()) {
+                    throw new common_1.HttpException('Sub Deal has expired!', common_1.HttpStatus.BAD_REQUEST);
+                }
+                else {
+                    expiryDate = subDeal.voucherEndDate;
+                }
             }
             else {
                 expiryDate =
@@ -5015,19 +5263,22 @@ let DealService = class DealService {
             }
             let merchantPercentage = merchant.platformPercentage / 100;
             affiliate.platformPercentage = merchant.platformPercentage / 100;
-            const calculatedFee = subDeal.dealPrice * buyNowDto.quantity * merchantPercentage;
-            const netFee = buyNowDto.quantity * subDeal.dealPrice - merchantPercentage * subDeal.dealPrice * buyNowDto.quantity;
-            const calculatedFeeForAffiliate = calculatedFee * affiliate.platformPercentage;
+            const calculatedFeeForSubDeal = subDeal.dealPrice * buyNowDto.quantity * merchantPercentage;
+            const calculatedFeeForVoucher = subDeal.dealPrice * merchantPercentage;
+            const netFeeForSubDeal = buyNowDto.quantity * subDeal.dealPrice -
+                merchantPercentage * subDeal.dealPrice * buyNowDto.quantity;
+            const netFeeForVoucher = subDeal.dealPrice - merchantPercentage * subDeal.dealPrice;
+            const calculatedFeeForAffiliate = calculatedFeeForVoucher * affiliate.platformPercentage;
             subDeal.grossEarning += subDeal.dealPrice * buyNowDto.quantity;
-            subDeal.netEarning += netFee;
+            subDeal.netEarning += netFeeForSubDeal;
             if (subDeal.platformNetEarning) {
-                subDeal.platformNetEarning += calculatedFee;
+                subDeal.platformNetEarning += calculatedFeeForSubDeal;
             }
             else {
                 subDeal.platformNetEarning = 0;
-                subDeal.platformNetEarning += calculatedFee;
+                subDeal.platformNetEarning += calculatedFeeForSubDeal;
             }
-            deal.netEarnings += netFee;
+            deal.netEarnings += netFeeForSubDeal;
             let voucherDto = {
                 voucherHeader: subDeal.title,
                 dealHeader: deal.dealHeader,
@@ -5037,8 +5288,8 @@ let DealService = class DealService {
                 subDealID: subDeal.subDealID,
                 subDealMongoID: subDeal._id,
                 amount: subDeal.dealPrice,
-                net: netFee.toFixed(2),
-                fee: calculatedFee.toFixed(2),
+                net: netFeeForVoucher.toFixed(2),
+                fee: calculatedFeeForVoucher.toFixed(2),
                 status: voucherstatus_enum_1.VOUCHERSTATUSENUM.purchased,
                 merchantID: deal.merchantID,
                 merchantMongoID: merchant.id,
@@ -5069,7 +5320,7 @@ let DealService = class DealService {
             await this.dealModel.updateOne({ dealID: buyNowDto.dealID }, deal);
             await this._userModel.updateOne({ userID: deal.merchantID }, {
                 purchasedVouchers: merchant.purchasedVouchers + buyNowDto.quantity,
-                totalEarnings: merchant.totalEarnings + netFee,
+                totalEarnings: merchant.totalEarnings + netFeeForSubDeal,
             });
             const res = await axios_1.default.get(`https://www.zohoapis.eu/crm/v2/functions/updatesubdealquantity/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&subdealid=${subDeal.subDealID}&qtavailable=${subDeal.numberOfVouchers}&qtsold=${subDeal.soldVouchers}&merchantER=${subDeal.netEarning}&platformER=${subDeal.platformNetEarning}`);
             this.sendMail(emailDto);
@@ -5102,7 +5353,7 @@ let DealService = class DealService {
             let totalCount = await this.dealModel.countDocuments({
                 merchantMongoID: req.user.id,
                 dealStatus: dealstatus_enum_1.DEALSTATUS.published,
-                deletedCheck: false
+                deletedCheck: false,
             });
             let deals = await this.dealModel
                 .aggregate([
@@ -5110,7 +5361,7 @@ let DealService = class DealService {
                     $match: {
                         merchantMongoID: req.user.id,
                         dealStatus: dealstatus_enum_1.DEALSTATUS.published,
-                        deletedCheck: false
+                        deletedCheck: false,
                     },
                 },
                 {
@@ -5120,14 +5371,14 @@ let DealService = class DealService {
                 },
                 {
                     $addFields: {
-                        id: '$_id'
-                    }
+                        id: '$_id',
+                    },
                 },
                 {
                     $project: {
-                        _id: 0
-                    }
-                }
+                        _id: 0,
+                    },
+                },
             ])
                 .skip(parseInt(offset))
                 .limit(parseInt(limit));
