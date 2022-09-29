@@ -653,6 +653,17 @@ export class DealService implements OnModuleInit {
             $unwind: '$merchantDetails',
           },
           {
+            $lookup: {
+              from: 'locations',
+              as: 'locationData',
+              localField: 'merchantID',
+              foreignField: 'merchantID',
+            },
+          },
+          {
+            $unwind: '$locationData',
+          },
+          {
             $addFields: {
               id: '$_id',
             },
@@ -5507,7 +5518,7 @@ export class DealService implements OnModuleInit {
       if (!affiliate) {
         throw new Error('Affiliate doesnot exist!');
       }
-
+      debugger;
       const subDeal = deal.subDeals.find(
         (el) => el.subDealID == buyNowDto.subDealID,
       );
@@ -5575,26 +5586,29 @@ export class DealService implements OnModuleInit {
       let merchantPercentage = merchant.platformPercentage / 100;
       affiliate.platformPercentage = merchant.platformPercentage / 100;
 
-      const calculatedFee =
-        subDeal.dealPrice * buyNowDto.quantity * merchantPercentage; // A percentage of amount that will go to divideals from the entire amount
+      const calculatedFeeForSubDeal =
+        subDeal.dealPrice * buyNowDto.quantity * merchantPercentage; // A percentage of amount that will go to divideals from the entire amount, stored in subDeal
+      const calculatedFeeForVoucher = subDeal.dealPrice * merchantPercentage; // A percentage of amount that will go to divideals from the entire amount, stored in vouchers
 
-      const netFee =
+      const netFeeForSubDeal =
         buyNowDto.quantity * subDeal.dealPrice -
-        merchantPercentage * subDeal.dealPrice * buyNowDto.quantity; // Amount that will be paid to the merchant by the divideals
+        merchantPercentage * subDeal.dealPrice * buyNowDto.quantity; // Amount that will be paid to the merchant by the divideals, stored in subDeal
+      const netFeeForVoucher =
+        subDeal.dealPrice - merchantPercentage * subDeal.dealPrice; // Amount that will be paid to the merchant by the divideals, stored in vouchers
 
       const calculatedFeeForAffiliate =
-        calculatedFee * affiliate.platformPercentage; // A percentage of amount that will go to affiliate from the the amount earned by the platform
+        calculatedFeeForVoucher * affiliate.platformPercentage; // A percentage of amount that will go to affiliate from the the amount earned by the platform
 
       subDeal.grossEarning += subDeal.dealPrice * buyNowDto.quantity;
-      subDeal.netEarning += netFee;
+      subDeal.netEarning += netFeeForSubDeal;
       if (subDeal.platformNetEarning) {
-        subDeal.platformNetEarning += calculatedFee;
+        subDeal.platformNetEarning += calculatedFeeForSubDeal;
       } else {
         subDeal.platformNetEarning = 0;
-        subDeal.platformNetEarning += calculatedFee;
+        subDeal.platformNetEarning += calculatedFeeForSubDeal;
       }
 
-      deal.netEarnings += netFee;
+      deal.netEarnings += netFeeForSubDeal;
 
       let voucherDto: any = {
         voucherHeader: subDeal.title,
@@ -5605,8 +5619,8 @@ export class DealService implements OnModuleInit {
         subDealID: subDeal.subDealID,
         subDealMongoID: subDeal._id,
         amount: subDeal.dealPrice,
-        net: netFee.toFixed(2),
-        fee: calculatedFee.toFixed(2),
+        net: netFeeForVoucher.toFixed(2),
+        fee: calculatedFeeForVoucher.toFixed(2),
         status: VOUCHERSTATUSENUM.purchased,
         merchantID: deal.merchantID,
         merchantMongoID: merchant.id,
@@ -5661,7 +5675,7 @@ export class DealService implements OnModuleInit {
         { userID: deal.merchantID },
         {
           purchasedVouchers: merchant.purchasedVouchers + buyNowDto.quantity,
-          totalEarnings: merchant.totalEarnings + netFee,
+          totalEarnings: merchant.totalEarnings + netFeeForSubDeal,
         },
       );
 
