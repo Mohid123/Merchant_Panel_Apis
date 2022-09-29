@@ -27,10 +27,10 @@ let UtilService = class UtilService {
     async validateVatNumber(vatNumber) {
         var _a, _b;
         try {
-            const res = await axios_1.default.get(`https://vatcheckapi.com/api/validate/${vatNumber}?apikey=${process.env.VATCHECKAPIKEY}`, {
+            const res = await axios_1.default.get(`https://api.vatcheckapi.com/v1/validate/${vatNumber}?apikey=${process.env.VATCHECKAPIKEY}&vat_id=32`, {
                 headers: {
-                    "apikey": process.env.VATCHECKAPIKEY
-                }
+                    apikey: process.env.VATCHECKAPIKEY,
+                },
             });
             console.log(res.data);
             if (((_a = res === null || res === void 0 ? void 0 : res.data) === null || _a === void 0 ? void 0 : _a.success) == 0) {

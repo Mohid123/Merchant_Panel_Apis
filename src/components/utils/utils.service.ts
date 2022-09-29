@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import axios from 'axios';
 import { categoriesDataSet } from './categories';
 const fs = require('fs');
-import {cityDataset} from './city';
+import { cityDataset } from './city';
 
 @Injectable()
 export class UtilService {
@@ -15,31 +15,34 @@ export class UtilService {
     return cityData;
   }
 
-  async getAllCategoriesAndSubCategories () {
+  async getAllCategoriesAndSubCategories() {
     const data = categoriesDataSet;
     return data;
   }
 
-  async validateVatNumber (vatNumber) {
-    try{
-      const res = await axios.get(`https://vatcheckapi.com/api/validate/${vatNumber}?apikey=${process.env.VATCHECKAPIKEY}`,{
-        headers:{
-          "apikey": process.env.VATCHECKAPIKEY
-        }
-      });
-  
+  async validateVatNumber(vatNumber) {
+    try {
+      const res = await axios.get(
+        `https://api.vatcheckapi.com/v1/validate/${vatNumber}?apikey=${process.env.VATCHECKAPIKEY}&vat_id=32`,
+        {
+          headers: {
+            apikey: process.env.VATCHECKAPIKEY,
+          },
+        },
+      );
+
       console.log(res.data);
-      if(res?.data?.success == 0) {
+      if (res?.data?.success == 0) {
         throw new BadRequestException(res?.data?.error);
       }
       return res.data;
-    }catch(err){
+    } catch (err) {
       console.log(err?.message);
       throw new BadRequestException(err?.message);
     }
   }
-  
-  async searchCategory (searchCategory) {
+
+  async searchCategory(searchCategory) {
     const data = categoriesDataSet;
 
     if (searchCategory) {
