@@ -233,10 +233,15 @@ export class DealService implements OnModuleInit {
               } else {
                 urlMedia = mediaObj.captureFileURL;
               }
-              mediaObj['blurHash'] = await encodeImageToBlurhash(urlMedia);
-              let data = (mediaObj['backgroundColorHex'] =
-                await getDominantColor(urlMedia));
-              mediaObj['backgroundColorHex'] = data.hexCode;
+              if (!mediaObj['blurHash']) {
+                mediaObj['blurHash'] = await encodeImageToBlurhash(urlMedia);
+              }
+
+              if (!mediaObj['backgroundColorHex']) {
+                let data = (mediaObj['backgroundColorHex'] =
+                  await getDominantColor(urlMedia));
+                mediaObj['backgroundColorHex'] = data.hexCode;
+              }
 
               resolve({});
             } catch (err) {
@@ -1342,7 +1347,7 @@ export class DealService implements OnModuleInit {
         deletedCheck: false,
         ...matchFilter,
         ...filters,
-      })
+      });
 
       const deals = await this.dealModel
         .aggregate([
@@ -3555,8 +3560,8 @@ export class DealService implements OnModuleInit {
           },
         },
         {
-          $count: 'filteredCount'
-        }
+          $count: 'filteredCount',
+        },
       ]);
 
       const deals = await this.dealModel
@@ -3749,7 +3754,8 @@ export class DealService implements OnModuleInit {
 
       return {
         ...totalCount[0],
-        filteredCount: filteredCount?.length > 0 ? filteredCount[0].filteredCount : 0,
+        filteredCount:
+          filteredCount?.length > 0 ? filteredCount[0].filteredCount : 0,
         data: deals,
       };
     } catch (err) {
@@ -5569,9 +5575,12 @@ export class DealService implements OnModuleInit {
       let merchantPercentage = merchant.platformPercentage / 100;
       affiliate.platformPercentage = merchant.platformPercentage / 100;
 
-      const calculatedFee = subDeal.dealPrice * buyNowDto.quantity * merchantPercentage; // A percentage of amount that will go to divideals from the entire amount
+      const calculatedFee =
+        subDeal.dealPrice * buyNowDto.quantity * merchantPercentage; // A percentage of amount that will go to divideals from the entire amount
 
-      const netFee = buyNowDto.quantity * subDeal.dealPrice - merchantPercentage * subDeal.dealPrice * buyNowDto.quantity; // Amount that will be paid to the merchant by the divideals
+      const netFee =
+        buyNowDto.quantity * subDeal.dealPrice -
+        merchantPercentage * subDeal.dealPrice * buyNowDto.quantity; // Amount that will be paid to the merchant by the divideals
 
       const calculatedFeeForAffiliate =
         calculatedFee * affiliate.platformPercentage; // A percentage of amount that will go to affiliate from the the amount earned by the platform
@@ -5694,7 +5703,7 @@ export class DealService implements OnModuleInit {
       let totalCount = await this.dealModel.countDocuments({
         merchantMongoID: req.user.id,
         dealStatus: DEALSTATUS.published,
-        deletedCheck: false
+        deletedCheck: false,
       });
 
       let deals = await this.dealModel
@@ -5703,7 +5712,7 @@ export class DealService implements OnModuleInit {
             $match: {
               merchantMongoID: req.user.id,
               dealStatus: DEALSTATUS.published,
-              deletedCheck: false
+              deletedCheck: false,
             },
           },
           {
@@ -5713,14 +5722,14 @@ export class DealService implements OnModuleInit {
           },
           {
             $addFields: {
-              id: '$_id'
-            }
+              id: '$_id',
+            },
           },
           {
             $project: {
-              _id: 0
-            }
-          }
+              _id: 0,
+            },
+          },
         ])
         .skip(parseInt(offset))
         .limit(parseInt(limit));
