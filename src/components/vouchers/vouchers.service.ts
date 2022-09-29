@@ -1138,7 +1138,7 @@ export class VouchersService {
 
   async getNetRevenue(req) {
     try {
-      const timeStamp = Date.now() - 365 * 24 * 60 * 60 * 1000;
+      const timeStamp = Date.now() - 182 * 24 * 60 * 60 * 1000;
 
       const totalDeals = await this.dealModel.countDocuments({
         merchantMongoID: req.user.id,
@@ -1183,8 +1183,7 @@ export class VouchersService {
       let year = new Date().getFullYear();
       let yearlyRevenue = 0;
 
-      for (let i = 0; i < 12; i++) {
-        console.log(month);
+      for (let i = 0; i < 6; i++) {
         month = month - 1;
         if (month == 0) {
           month = 12;
@@ -1205,9 +1204,9 @@ export class VouchersService {
         yearlyRevenue += vouchers[i].netRevenue;
       }
 
-      let from = `${new Date().getMonth() + 2 < 10 ? ' 0' : ''}${
-        new Date().getMonth() + 2
-      } ${new Date().getFullYear() - 1}`;
+      let from = `${new Date(timeStamp).getMonth() + 1 < 10 ? '0' : ''}${
+        new Date(timeStamp).getMonth() + 1
+      } ${new Date(timeStamp).getFullYear()}`;
 
       let to = `${new Date().getMonth() + 1 < 10 ? '0' : ''}${
         new Date().getMonth() + 1
