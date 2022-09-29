@@ -1205,16 +1205,21 @@ export class VouchersService {
         yearlyRevenue += vouchers[i].netRevenue;
       }
 
-      let fromToYear = `${new Date().getMonth() + 2} ${
-        new Date().getFullYear() - 1
-      } to ${new Date().getMonth() + 1} ${new Date().getFullYear()}`;
+      let from = `${new Date().getMonth() + 2 < 10 ? ' 0' : ''}${
+        new Date().getMonth() + 2
+      } ${new Date().getFullYear() - 1}`;
+
+      let to = `${new Date().getMonth() + 1 < 10 ? '0' : ''}${
+        new Date().getMonth() + 1
+      } ${new Date().getFullYear()}`;
 
       return {
         totalDeals,
         totalVouchersSold,
         overallRating,
         netRevenue,
-        fromToYear,
+        from,
+        to,
         yearlyRevenue,
         vouchers,
       };
