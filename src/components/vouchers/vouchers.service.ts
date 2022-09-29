@@ -928,35 +928,35 @@ export class VouchersService {
         {
           $project: {
             _id: 0,
-            __v: 0,
-            updatedAt: 0,
-            createdAt: 0,
-            imageURL: 0,
-            dealHeader: 0,
-            dealID: 0,
-            dealMongoID: 0,
-            subDealHeader: 0,
-            subDealID: 0,
-            subDealMongoID: 0,
-            merchantID: 0,
-            merchantMongoID: 0,
-            merchantPaymentStatus: 0,
-            customerID: 0,
-            customerMongoID: 0,
-            affiliateName: 0,
-            affiliateID: 0,
-            affiliateMongoID: 0,
-            affiliatePercentage: 0,
-            affiliateFee: 0,
-            affiliatePaymentStatus: 0,
-            amount: 0,
-            platformPercentage: 0,
-            fee: 0,
-            net: 0,
-            status: 0,
-            paymentStatus: 0,
-            boughtDate: 0,
-            deletedCheck: 0,
+            // __v: 0,
+            // updatedAt: 0,
+            // createdAt: 0,
+            // imageURL: 0,
+            // dealHeader: 0,
+            // dealID: 0,
+            // dealMongoID: 0,
+            // subDealHeader: 0,
+            // subDealID: 0,
+            // subDealMongoID: 0,
+            // merchantID: 0,
+            // merchantMongoID: 0,
+            // merchantPaymentStatus: 0,
+            // customerID: 0,
+            // customerMongoID: 0,
+            // affiliateName: 0,
+            // affiliateID: 0,
+            // affiliateMongoID: 0,
+            // affiliatePercentage: 0,
+            // affiliateFee: 0,
+            // affiliatePaymentStatus: 0,
+            // amount: 0,
+            // platformPercentage: 0,
+            // fee: 0,
+            // net: 0,
+            // status: 0,
+            // paymentStatus: 0,
+            // boughtDate: 0,
+            // deletedCheck: 0,
           },
         },
       ]);
@@ -1205,16 +1205,21 @@ export class VouchersService {
         yearlyRevenue += vouchers[i].netRevenue;
       }
 
-      let fromToYear = `${new Date().getMonth() + 2} ${
-        new Date().getFullYear() - 1
-      } to ${new Date().getMonth() + 1} ${new Date().getFullYear()}`;
+      let from = `${new Date().getMonth() + 2 < 10 ? ' 0' : ''}${
+        new Date().getMonth() + 2
+      } ${new Date().getFullYear() - 1}`;
+
+      let to = `${new Date().getMonth() + 1 < 10 ? '0' : ''}${
+        new Date().getMonth() + 1
+      } ${new Date().getFullYear()}`;
 
       return {
         totalDeals,
         totalVouchersSold,
         overallRating,
         netRevenue,
-        fromToYear,
+        from,
+        to,
         yearlyRevenue,
         vouchers,
       };
