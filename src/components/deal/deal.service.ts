@@ -627,8 +627,20 @@ export class DealService implements OnModuleInit {
                   },
                 },
                 {
+                  $lookup: {
+                    from: 'locations',
+                    as: 'locationData',
+                    localField: 'userID',
+                    foreignField: 'merchantID'
+                  }
+                },
+                {
+                  $unwind: '$locationData'
+                },
+                {
                   $addFields: {
                     id: '$_id',
+                    tradeName: '$locationData.tradeName'
                   },
                 },
                 {
@@ -637,7 +649,7 @@ export class DealService implements OnModuleInit {
                     id: 1,
                     totalReviews: 1,
                     ratingsAverage: 1,
-                    legalName: 1,
+                    tradeName: 1,
                     city: 1,
                   },
                 },
@@ -646,17 +658,6 @@ export class DealService implements OnModuleInit {
           },
           {
             $unwind: '$merchantDetails',
-          },
-          {
-            $lookup: {
-              from: 'locations',
-              as: 'locationData',
-              localField: 'merchantID',
-              foreignField: 'merchantID'
-            }
-          },
-          {
-            $unwind: '$locationData'
           },
           {
             $addFields: {
@@ -1477,8 +1478,20 @@ export class DealService implements OnModuleInit {
                   },
                 },
                 {
+                  $lookup: {
+                    from: 'locations',
+                    as: 'locationData',
+                    localField: 'userID',
+                    foreignField: 'merchantID'
+                  }
+                },
+                {
+                  $unwind: '$locationData'
+                },
+                {
                   $addFields: {
                     id: '$_id',
+                    tradeName: '$locationData.tradeName'
                   },
                 },
                 {
@@ -1487,7 +1500,7 @@ export class DealService implements OnModuleInit {
                     id: 1,
                     totalReviews: 1,
                     ratingsAverage: 1,
-                    legalName: 1,
+                    tradeName: 1,
                     city: 1,
                   },
                 },
@@ -1693,8 +1706,20 @@ export class DealService implements OnModuleInit {
                   },
                 },
                 {
+                  $lookup: {
+                    from: 'locations',
+                    as: 'locationData',
+                    localField: 'userID',
+                    foreignField: 'merchantID'
+                  }
+                },
+                {
+                  $unwind: '$locationData'
+                },
+                {
                   $addFields: {
                     id: '$_id',
+                    tradeName: '$locationData.tradeName'
                   },
                 },
                 {
@@ -1703,7 +1728,7 @@ export class DealService implements OnModuleInit {
                     id: 1,
                     totalReviews: 1,
                     ratingsAverage: 1,
-                    legalName: 1,
+                    tradeName: 1,
                     city: 1,
                   },
                 },
@@ -1880,8 +1905,20 @@ export class DealService implements OnModuleInit {
                     },
                   },
                   {
+                    $lookup: {
+                      from: 'locations',
+                      as: 'locationData',
+                      localField: 'userID',
+                      foreignField: 'merchantID'
+                    }
+                  },
+                  {
+                    $unwind: '$locationData'
+                  },
+                  {
                     $addFields: {
                       id: '$_id',
+                      tradeName: '$locationData.tradeName'
                     },
                   },
                   {
@@ -1890,7 +1927,7 @@ export class DealService implements OnModuleInit {
                       id: 1,
                       totalReviews: 1,
                       ratingsAverage: 1,
-                      legalName: 1,
+                      tradeName: 1,
                       city: 1,
                     },
                   },
@@ -2080,8 +2117,20 @@ export class DealService implements OnModuleInit {
                   },
                 },
                 {
+                  $lookup: {
+                    from: 'locations',
+                    as: 'locationData',
+                    localField: 'userID',
+                    foreignField: 'merchantID'
+                  }
+                },
+                {
+                  $unwind: '$locationData'
+                },
+                {
                   $addFields: {
                     id: '$_id',
+                    tradeName: '$locationData.tradeName'
                   },
                 },
                 {
@@ -2090,7 +2139,7 @@ export class DealService implements OnModuleInit {
                     id: 1,
                     totalReviews: 1,
                     ratingsAverage: 1,
-                    legalName: 1,
+                    tradeName: 1,
                     city: 1,
                   },
                 },
@@ -2288,8 +2337,20 @@ export class DealService implements OnModuleInit {
                     },
                   },
                   {
+                    $lookup: {
+                      from: 'locations',
+                      as: 'locationData',
+                      localField: 'userID',
+                      foreignField: 'merchantID'
+                    }
+                  },
+                  {
+                    $unwind: '$locationData'
+                  },
+                  {
                     $addFields: {
                       id: '$_id',
+                      tradeName: '$locationData.tradeName'
                     },
                   },
                   {
@@ -2298,7 +2359,7 @@ export class DealService implements OnModuleInit {
                       id: 1,
                       totalReviews: 1,
                       ratingsAverage: 1,
-                      legalName: 1,
+                      tradeName: 1,
                       city: 1,
                     },
                   },
@@ -2472,8 +2533,20 @@ export class DealService implements OnModuleInit {
                   },
                 },
                 {
+                  $lookup: {
+                    from: 'locations',
+                    as: 'locationData',
+                    localField: 'userID',
+                    foreignField: 'merchantID'
+                  }
+                },
+                {
+                  $unwind: '$locationData'
+                },
+                {
                   $addFields: {
                     id: '$_id',
+                    tradeName: '$locationData.tradeName'
                   },
                 },
                 {
@@ -2482,7 +2555,7 @@ export class DealService implements OnModuleInit {
                     id: 1,
                     totalReviews: 1,
                     ratingsAverage: 1,
-                    legalName: 1,
+                    tradeName: 1,
                     city: 1,
                   },
                 },
@@ -2651,8 +2724,20 @@ export class DealService implements OnModuleInit {
                   },
                 },
                 {
+                  $lookup: {
+                    from: 'locations',
+                    as: 'locationData',
+                    localField: 'userID',
+                    foreignField: 'merchantID'
+                  }
+                },
+                {
+                  $unwind: '$locationData'
+                },
+                {
                   $addFields: {
                     id: '$_id',
+                    tradeName: '$locationData.tradeName'
                   },
                 },
                 {
@@ -2661,7 +2746,7 @@ export class DealService implements OnModuleInit {
                     id: 1,
                     totalReviews: 1,
                     ratingsAverage: 1,
-                    legalName: 1,
+                    tradeName: 1,
                     city: 1,
                   },
                 },
@@ -2853,8 +2938,20 @@ export class DealService implements OnModuleInit {
                     },
                   },
                   {
+                    $lookup: {
+                      from: 'locations',
+                      as: 'locationData',
+                      localField: 'userID',
+                      foreignField: 'merchantID'
+                    }
+                  },
+                  {
+                    $unwind: '$locationData'
+                  },
+                  {
                     $addFields: {
                       id: '$_id',
+                      tradeName: '$locationData.tradeName'
                     },
                   },
                   {
@@ -2863,7 +2960,7 @@ export class DealService implements OnModuleInit {
                       id: 1,
                       totalReviews: 1,
                       ratingsAverage: 1,
-                      legalName: 1,
+                      tradeName: 1,
                       city: 1,
                     },
                   },
@@ -3150,8 +3247,20 @@ export class DealService implements OnModuleInit {
                 },
               },
               {
+                $lookup: {
+                  from: 'locations',
+                  as: 'locationData',
+                  localField: 'userID',
+                  foreignField: 'merchantID'
+                }
+              },
+              {
+                $unwind: '$locationData'
+              },
+              {
                 $addFields: {
                   id: '$_id',
+                  tradeName: '$locationData.tradeName'
                 },
               },
               {
@@ -3160,7 +3269,7 @@ export class DealService implements OnModuleInit {
                   id: 1,
                   totalReviews: 1,
                   ratingsAverage: 1,
-                  legalName: 1,
+                  tradeName: 1,
                   city: 1,
                   province: 1,
                 },
@@ -3510,8 +3619,20 @@ export class DealService implements OnModuleInit {
                 },
               },
               {
+                $lookup: {
+                  from: 'locations',
+                  as: 'locationData',
+                  localField: 'userID',
+                  foreignField: 'merchantID'
+                }
+              },
+              {
+                $unwind: '$locationData'
+              },
+              {
                 $addFields: {
                   id: '$_id',
+                  tradeName: '$locationData.tradeName'
                 },
               },
               {
@@ -3520,7 +3641,7 @@ export class DealService implements OnModuleInit {
                   id: 1,
                   totalReviews: 1,
                   ratingsAverage: 1,
-                  legalName: 1,
+                  tradeName: 1,
                   city: 1,
                   province: 1,
                 },
@@ -3670,8 +3791,20 @@ export class DealService implements OnModuleInit {
                   },
                 },
                 {
+                  $lookup: {
+                    from: 'locations',
+                    as: 'locationData',
+                    localField: 'userID',
+                    foreignField: 'merchantID'
+                  }
+                },
+                {
+                  $unwind: '$locationData'
+                },
+                {
                   $addFields: {
                     id: '$_id',
+                    tradeName: '$locationData.tradeName'
                   },
                 },
                 {
@@ -3680,7 +3813,7 @@ export class DealService implements OnModuleInit {
                     id: 1,
                     totalReviews: 1,
                     ratingsAverage: 1,
-                    legalName: 1,
+                    tradeName: 1,
                     city: 1,
                     province: 1,
                   },
@@ -3959,8 +4092,20 @@ export class DealService implements OnModuleInit {
                 },
               },
               {
+                $lookup: {
+                  from: 'locations',
+                  as: 'locationData',
+                  localField: 'userID',
+                  foreignField: 'merchantID'
+                }
+              },
+              {
+                $unwind: '$locationData'
+              },
+              {
                 $addFields: {
                   id: '$_id',
+                  tradeName: '$locationData.tradeName'
                 },
               },
               {
@@ -3969,7 +4114,7 @@ export class DealService implements OnModuleInit {
                   id: 1,
                   totalReviews: 1,
                   ratingsAverage: 1,
-                  legalName: 1,
+                  tradeName: 1,
                   city: 1,
                   province: 1,
                 },
@@ -4287,8 +4432,20 @@ export class DealService implements OnModuleInit {
                 },
               },
               {
+                $lookup: {
+                  from: 'locations',
+                  as: 'locationData',
+                  localField: 'userID',
+                  foreignField: 'merchantID'
+                }
+              },
+              {
+                $unwind: '$locationData'
+              },
+              {
                 $addFields: {
                   id: '$_id',
+                  tradeName: '$locationData.tradeName'
                 },
               },
               {
@@ -4297,7 +4454,7 @@ export class DealService implements OnModuleInit {
                   id: 1,
                   totalReviews: 1,
                   ratingsAverage: 1,
-                  legalName: 1,
+                  tradeName: 1,
                   city: 1,
                   province: 1,
                 },
@@ -4420,8 +4577,20 @@ export class DealService implements OnModuleInit {
                   },
                 },
                 {
+                  $lookup: {
+                    from: 'locations',
+                    as: 'locationData',
+                    localField: 'userID',
+                    foreignField: 'merchantID'
+                  }
+                },
+                {
+                  $unwind: '$locationData'
+                },
+                {
                   $addFields: {
                     id: '$_id',
+                    tradeName: '$locationData.tradeName'
                   },
                 },
                 {
@@ -4430,7 +4599,7 @@ export class DealService implements OnModuleInit {
                     id: 1,
                     totalReviews: 1,
                     ratingsAverage: 1,
-                    legalName: 1,
+                    tradeName: 1,
                     city: 1,
                     province: 1,
                   },
@@ -4600,8 +4769,20 @@ export class DealService implements OnModuleInit {
                   },
                 },
                 {
+                  $lookup: {
+                    from: 'locations',
+                    as: 'locationData',
+                    localField: 'userID',
+                    foreignField: 'merchantID'
+                  }
+                },
+                {
+                  $unwind: '$locationData'
+                },
+                {
                   $addFields: {
                     id: '$_id',
+                    tradeName: '$locationData.tradeName'
                   },
                 },
                 {
@@ -4610,7 +4791,7 @@ export class DealService implements OnModuleInit {
                     id: 1,
                     totalReviews: 1,
                     ratingsAverage: 1,
-                    legalName: 1,
+                    tradeName: 1,
                     city: 1,
                   },
                 },
@@ -4792,8 +4973,20 @@ export class DealService implements OnModuleInit {
                   },
                 },
                 {
+                  $lookup: {
+                    from: 'locations',
+                    as: 'locationData',
+                    localField: 'userID',
+                    foreignField: 'merchantID'
+                  }
+                },
+                {
+                  $unwind: '$locationData'
+                },
+                {
                   $addFields: {
                     id: '$_id',
+                    tradeName: '$locationData.tradeName'
                   },
                 },
                 {
@@ -4802,7 +4995,7 @@ export class DealService implements OnModuleInit {
                     id: 1,
                     totalReviews: 1,
                     ratingsAverage: 1,
-                    legalName: 1,
+                    tradeName: 1,
                     city: 1,
                   },
                 },
@@ -4975,8 +5168,20 @@ export class DealService implements OnModuleInit {
                   },
                 },
                 {
+                  $lookup: {
+                    from: 'locations',
+                    as: 'locationData',
+                    localField: 'userID',
+                    foreignField: 'merchantID'
+                  }
+                },
+                {
+                  $unwind: '$locationData'
+                },
+                {
                   $addFields: {
                     id: '$_id',
+                    tradeName: '$locationData.tradeName'
                   },
                 },
                 {
@@ -4985,7 +5190,7 @@ export class DealService implements OnModuleInit {
                     id: 1,
                     totalReviews: 1,
                     ratingsAverage: 1,
-                    legalName: 1,
+                    tradeName: 1,
                     city: 1,
                   },
                 },
@@ -5161,8 +5366,20 @@ export class DealService implements OnModuleInit {
                   },
                 },
                 {
+                  $lookup: {
+                    from: 'locations',
+                    as: 'locationData',
+                    localField: 'userID',
+                    foreignField: 'merchantID'
+                  }
+                },
+                {
+                  $unwind: '$locationData'
+                },
+                {
                   $addFields: {
                     id: '$_id',
+                    tradeName: '$locationData.tradeName'
                   },
                 },
                 {
@@ -5171,7 +5388,7 @@ export class DealService implements OnModuleInit {
                     id: 1,
                     totalReviews: 1,
                     ratingsAverage: 1,
-                    legalName: 1,
+                    tradeName: 1,
                     city: 1,
                   },
                 },
@@ -5512,7 +5729,7 @@ export class DealService implements OnModuleInit {
       if (!affiliate) {
         throw new Error('Affiliate doesnot exist!');
       }
-      debugger
+
       const subDeal = deal.subDeals.find(
         (el) => el.subDealID == buyNowDto.subDealID,
       );
