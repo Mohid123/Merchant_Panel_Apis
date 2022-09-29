@@ -5805,7 +5805,11 @@ export class DealService implements OnModuleInit {
       let expiryDate;
 
       if (subDeal.voucherStartDate > 0) {
-        expiryDate = subDeal.voucherEndDate;
+        if (subDeal.voucherEndDate < new Date().getTime()) {
+          throw new HttpException('Sub Deal has expired!', HttpStatus.BAD_REQUEST);
+        } else {
+          expiryDate = subDeal.voucherEndDate;
+        }
       } else {
         expiryDate =
           new Date().getTime() + subDeal?.voucherValidity * 24 * 60 * 60 * 1000;
