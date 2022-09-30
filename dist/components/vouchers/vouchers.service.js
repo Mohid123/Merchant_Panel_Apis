@@ -584,6 +584,7 @@ let VouchersService = class VouchersService {
                 message: activityMessage,
                 deletedCheck: false,
             });
+            const res = await axios_1.default.get(`https://www.zohoapis.eu/crm/v2/functions/createvoucher/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&voucherid=${voucher.voucherID}`);
             await this.userModel.updateOne({ userID: voucher.merchantID }, {
                 redeemedVouchers: merchant.redeemedVouchers + 1,
             });
@@ -721,6 +722,7 @@ let VouchersService = class VouchersService {
                 message: activityMessage,
                 deletedCheck: false,
             });
+            const res = await axios_1.default.get(`https://www.zohoapis.eu/crm/v2/functions/createvoucher/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&voucherid=${voucher.voucherID}`);
             await this.userModel.updateOne({ userID: voucher.merchantID }, {
                 redeemedVouchers: merchant.redeemedVouchers + 1,
             });
