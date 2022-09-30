@@ -250,9 +250,49 @@ export class UsersService {
 
   async updateCustomerProfile(customerID, usersDto) {
     try {
-      let user = await this._userModel.findOne({ _id: customerID });
+      let user = await this._userModel.findOne({ _id: customerID, deletedCheck: false });
       if (!user) {
         throw new HttpException('Customer not found', HttpStatus.NOT_FOUND);
+      }
+
+      debugger
+
+      if(usersDto.password){
+
+        const comaprePasswords = await bcrypt.compare(
+          usersDto.password,
+          user.password,
+        );
+    
+        if (!comaprePasswords) {
+          throw new UnauthorizedException('Incorrect password!');
+        }
+
+      }
+
+      if(usersDto.password && usersDto.newPassword) {
+        const comaprePasswords = await bcrypt.compare(
+          usersDto.password,
+          user.password,
+        );
+    
+        if (!comaprePasswords) {
+          throw new UnauthorizedException('Incorrect password!');
+        } else {
+          const salt = await bcrypt.genSalt();
+          const hashedPassword = await bcrypt.hash(
+            usersDto.newPassword,
+            salt,
+          );
+
+          usersDto.password = hashedPassword;
+        }
+
+      }
+
+      if(!(usersDto.password && usersDto.newPassword)){
+        delete usersDto.password;
+        delete usersDto.newPassword;
       }
 
       await this._userModel.updateOne({ _id: customerID }, usersDto);
