@@ -1179,6 +1179,8 @@ export class VouchersService {
         },
       ]);
 
+      let maxRevenueForMonth = 0;
+
       let month = new Date().getMonth() + 2;
       let year = new Date().getFullYear();
       let yearlyRevenue = 0;
@@ -1202,6 +1204,10 @@ export class VouchersService {
           });
         }
         yearlyRevenue += vouchers[i].netRevenue;
+        maxRevenueForMonth =
+          maxRevenueForMonth < vouchers[i]?.netRevenue
+            ? vouchers[i]?.netRevenue
+            : maxRevenueForMonth;
       }
 
       let from = `${new Date(timeStamp).getMonth() + 1 < 10 ? '0' : ''}${
@@ -1220,6 +1226,7 @@ export class VouchersService {
         from,
         to,
         yearlyRevenue,
+        maxRevenueForMonth,
         vouchers,
       };
     } catch (err) {
