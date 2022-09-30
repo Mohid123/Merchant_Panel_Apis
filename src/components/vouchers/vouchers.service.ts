@@ -95,7 +95,9 @@ export class VouchersService {
         deletedCheck: false,
       });
 
-      const res = await axios.get(`https://www.zohoapis.eu/crm/v2/functions/createvoucher/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&voucherid=${voucher.voucherID}`);
+      const res = await axios.get(
+        `https://www.zohoapis.eu/crm/v2/functions/createvoucher/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&voucherid=${voucher.voucherID}`,
+      );
 
       let url = `${process.env.merchantPanelURL}/redeemVoucher/${voucher.id}`;
 
@@ -837,7 +839,9 @@ export class VouchersService {
         deletedCheck: false,
       });
 
-      // const res = await axios.get(`https://www.zohoapis.eu/crm/v2/functions/createvoucher/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&voucherid=${voucher.voucherID}`);
+      const res = await axios.get(
+        `https://www.zohoapis.eu/crm/v2/functions/createvoucher/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&voucherid=${voucher.voucherID}`,
+      );
 
       // const deal = await this.dealModel.findOne({dealID: voucher.dealID});
 
@@ -1046,7 +1050,9 @@ export class VouchersService {
         deletedCheck: false,
       });
 
-      // const res = await axios.get(`https://www.zohoapis.eu/crm/v2/functions/createvoucher/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&voucherid=${voucher.voucherID}`);
+      const res = await axios.get(
+        `https://www.zohoapis.eu/crm/v2/functions/createvoucher/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&voucherid=${voucher.voucherID}`,
+      );
 
       // const deal = await this.dealModel.findOne({dealID: voucher.dealID});
 
