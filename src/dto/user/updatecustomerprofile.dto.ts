@@ -8,16 +8,16 @@ export class UpdateCustomerProfileDto {
     @ApiProperty()
     lastName: string;
 
-    @ApiProperty()
-    @IsEmail()
-    email: string;
+    // @ApiProperty()
+    // // @IsEmail()
+    // email: string;
 
     @ApiProperty()
     password: string;
 
     @ApiProperty()
-    @IsNotEmpty()
-    @IsString()
-    @MinLength(8)
+    // @IsNotEmpty()
+    // @IsString()
+    // @MinLength(8)
     newPassword: string;
 }

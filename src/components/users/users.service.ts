@@ -255,6 +255,21 @@ export class UsersService {
         throw new HttpException('Customer not found', HttpStatus.NOT_FOUND);
       }
 
+      debugger
+
+      if(usersDto.password){
+
+        const comaprePasswords = await bcrypt.compare(
+          usersDto.password,
+          user.password,
+        );
+    
+        if (!comaprePasswords) {
+          throw new UnauthorizedException('Incorrect password!');
+        }
+
+      }
+
       if(usersDto.password && usersDto.newPassword) {
         const comaprePasswords = await bcrypt.compare(
           usersDto.password,
@@ -273,6 +288,11 @@ export class UsersService {
           usersDto.password = hashedPassword;
         }
 
+      }
+
+      if(!(usersDto.password && usersDto.newPassword)){
+        delete usersDto.password;
+        delete usersDto.newPassword;
       }
 
       await this._userModel.updateOne({ _id: customerID }, usersDto);
