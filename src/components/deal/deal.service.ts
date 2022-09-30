@@ -1106,6 +1106,7 @@ export class DealService implements OnModuleInit {
       const totalCount = await this.dealModel.countDocuments({
         merchantMongoID: id,
         deletedCheck: false,
+        totalReviews: { $gt: 0 },
         // ...matchFilter,
         // ...filters,
       });
@@ -1113,6 +1114,7 @@ export class DealService implements OnModuleInit {
       const filteredDealCount = await this.dealModel.countDocuments({
         merchantMongoID: id,
         deletedCheck: false,
+        totalReviews: { $gt: 0 },
         ...matchFilter,
         ...filters,
       });
