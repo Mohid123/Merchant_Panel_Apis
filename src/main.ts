@@ -9,7 +9,7 @@ async function bootstrap() {
   // const app = await NestFactory.create(AppModule, {cors: true});
 
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
-  app.useGlobalPipes(new ValidationPipe());
+  // app.useGlobalPipes(new ValidationPipe());
 
   app.useGlobalInterceptors(new LoggingInterceptor());
   app.enableCors({
