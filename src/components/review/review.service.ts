@@ -432,6 +432,31 @@ export class ReviewService {
           },
           {
             $lookup: {
+              from: 'users',
+              let: {
+                userID: '$customerID',
+              },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $and: [
+                        {
+                          $eq: ['$userID', '$$userID'],
+                        },
+                      ],
+                    },
+                  },
+                },
+              ],
+              as: 'customerData',
+            },
+          },
+          {
+            $unwind: '$customerData',
+          },
+          {
+            $lookup: {
               from: 'reviewText',
               as: 'merchantReplyText',
               localField: '_id',
@@ -446,11 +471,19 @@ export class ReviewService {
           {
             $addFields: {
               id: '$_id',
+              customerName: {
+                $concat: [
+                  '$customerData.firstName',
+                  ' ',
+                  '$customerData.lastName',
+                ],
+              },
             },
           },
           {
             $project: {
               _id: 0,
+              customerData: 0
             },
           },
         ])

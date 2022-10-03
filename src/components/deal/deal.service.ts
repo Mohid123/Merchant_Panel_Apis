@@ -837,6 +837,11 @@ export class DealService implements OnModuleInit {
         };
       }
 
+      const totalReviewsCount = await this.reviewModel.countDocuments({
+        dealMongoID: id,
+        isViewed: true
+      });
+
       console.log(ratingFilter['eq']);
       const deal: any = await this.dealModel
         .aggregate([
@@ -1005,7 +1010,9 @@ export class DealService implements OnModuleInit {
         .then((items) => items[0]);
 
       deal['calculatedReviewCount'] = calculatedReviewCount;
-      return deal;
+      return {
+        totalReviewsCount, deal
+      };
     } catch (err) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
     }
