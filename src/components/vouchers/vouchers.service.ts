@@ -1129,7 +1129,8 @@ export class VouchersService {
         }
       }
 
-      return counts;
+      let maxCount = Math.max(...counts.map((el) => el.count));
+      return { maxCount, counts };
     } catch (err) {
       console.log(err);
       throw new BadRequestException(err);
