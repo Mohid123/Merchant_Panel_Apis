@@ -454,6 +454,121 @@ export class UsersService {
     return merchant;
   }
 
+  async getMerchantForCRM (merchantID) {
+    try {
+      let merchant: any = await this._userModel.findOne({
+        userID: merchantID,
+        deletedCheck: false,
+        role: USERROLE.merchant
+      });
+
+      if (!merchant) {
+        throw new HttpException('Merchant not found!', HttpStatus.BAD_REQUEST);
+      }
+
+      let locationMerchant = await this._locationModel.findOne({
+        merchantID: merchantID
+      });
+
+      if (!locationMerchant) {
+        throw new HttpException('Merchant location not found!', HttpStatus.BAD_REQUEST);
+      }
+
+      merchant = JSON.parse(JSON.stringify(merchant));
+      locationMerchant = JSON.parse(JSON.stringify(locationMerchant));
+
+      merchant.tradeName = locationMerchant?.tradeName;
+      merchant.ratingsAverage = merchant?.ratingsAverage;
+      merchant.profilePicURL = merchant?.profilePicURL;
+      merchant.platformPercentage = merchant?.platformPercentage;
+
+      delete merchant?.id; 
+      delete merchant?.userID;
+      delete merchant?.email;
+      delete merchant?.password;
+      delete merchant?.firstName;
+      delete merchant?.lastName;
+      delete merchant?.phoneNumber; 
+      delete merchant?.role;
+      delete merchant?.businessType; 
+      delete merchant?.legalName;
+      delete merchant?.streetAddress; 
+      delete merchant?.zipCode;
+      delete merchant?.city;
+      delete merchant?.vatNumber;
+      delete merchant?.iban;
+      delete merchant?.bic_swiftCode;
+      delete merchant?.accountHolder;
+      delete merchant?.bankName;
+      delete merchant?.kycStatus;
+      delete merchant?.province;
+      delete merchant?.website_socialAppLink;
+      delete merchant?.googleMapPin;
+      delete merchant?.businessHours;
+      delete merchant?.finePrint;
+      delete merchant?.aboutUs;
+      delete merchant?.profilePicBlurHash;
+      delete merchant?.gallery;
+      delete merchant?.voucherPinCode;
+      delete merchant?.deletedCheck;
+      delete merchant?.status;
+      delete merchant?.newUser;
+      delete merchant?.totalVoucherSales;
+      delete merchant?.redeemedVouchers;
+      delete merchant?.purchasedVouchers;
+      delete merchant?.expiredVouchers;
+      delete merchant?.totalEarnings;
+      delete merchant?.paidEarnings;
+      delete merchant?.pendingEarnings;
+      delete merchant?.totalDeals;
+      delete merchant?.scheduledDeals;
+      delete merchant?.pendingDeals;
+      delete merchant?.soldDeals;
+      delete merchant?.countryCode;
+      delete merchant?.leadSource;
+      delete merchant?.stripeCustomerID;
+      delete merchant?.totalReviews;
+      delete merchant?.maxRating;
+      delete merchant?.minRating;
+      delete merchant?.isSubscribed;
+      delete merchant?.popularCount;
+      delete merchant.createdAt;
+      delete merchant.updatedAt;
+
+      return merchant;
+
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async updateMerchantFromCRM (merchantID, updateMerchantFromCrmDto) {
+    try {
+      let merchant: any = await this._userModel.findOne({
+        userID: merchantID,
+        deletedCheck: false,
+        role: USERROLE.merchant
+      });
+
+      if (!merchant) {
+        throw new HttpException('Merchant not found!', HttpStatus.BAD_REQUEST);
+      }
+
+      await this._locationModel.updateOne({ merchantID: merchantID }, updateMerchantFromCrmDto);
+
+      delete updateMerchantFromCrmDto.tradeName;
+
+      await this._userModel.updateOne({ userID: merchantID }, updateMerchantFromCrmDto);
+
+      return {
+        message: 'Merchant has been updated successfully'
+      };
+
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
   async getMerchantStats(id) {
     return await this._userModel
       .aggregate([
