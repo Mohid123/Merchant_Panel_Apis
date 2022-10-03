@@ -14,6 +14,7 @@ import { ResetPasswordDto } from 'src/dto/resetPasswordDto/resetPassword.dto';
 import { ApproveMerchantDTO } from 'src/dto/user/approveMerchant.dto';
 import { IsPasswordExistsDto } from 'src/dto/user/is-password-exists.dto';
 import { UpdateCustomerProfileDto } from 'src/dto/user/updatecustomerprofile.dto';
+import { UpdateMerchantFromCrmDto } from 'src/dto/user/updatemerchantfromcrm.dto';
 import { UpdatePasswordDto } from 'src/dto/user/updatepassword.dto';
 import { VoucherPinCodeDto } from 'src/dto/user/voucherpincode.dto';
 import { SORT } from 'src/enum/sort/sort.enum';
@@ -129,6 +130,27 @@ export class UsersController {
   @Get('getMerchantByID/:merchantID')
   getMerchantByID(@Param('merchantID') merchantID: string) {
     return this._usersService.getMerchantByID(merchantID);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtManagerAuthGuard)
+  @UseGuards(JwtAuthGuard)
+  @Get('getMerchantForCRM/:merchantID')
+  getMerchantForCRM (
+    @Param('merchantID') merchantID: string
+  ) {
+    return this._usersService.getMerchantForCRM(merchantID)
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtManagerAuthGuard)
+  @UseGuards(JwtAuthGuard)
+  @Post('updateMerchantFromCRM/:merchantID')
+  updateMerchantFromCRM (
+    @Param('merchantID') merchantID: string,
+    @Body() updateMerchantFromCrmDto: UpdateMerchantFromCrmDto
+  ) {
+    return this._usersService.updateMerchantFromCRM(merchantID, updateMerchantFromCrmDto)
   }
 
   @UseGuards(JwtAuthGuard)
