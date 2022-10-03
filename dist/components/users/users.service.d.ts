@@ -37,6 +37,10 @@ export declare class UsersService {
     deleteUser(id: any): Promise<import("mongodb").UpdateResult>;
     getUserById(id: any): Promise<any>;
     getMerchantByID(merchantID: any): Promise<any>;
+    getMerchantForCRM(merchantID: any): Promise<any>;
+    updateMerchantFromCRM(merchantID: any, updateMerchantFromCrmDto: any): Promise<{
+        message: string;
+    }>;
     getMerchantStats(id: any): Promise<any>;
     getAllUsers(offset: any, limit: any): Promise<{
         totalCount: number;

@@ -185,9 +185,31 @@ let UsersService = class UsersService {
     }
     async updateCustomerProfile(customerID, usersDto) {
         try {
-            let user = await this._userModel.findOne({ _id: customerID });
+            let user = await this._userModel.findOne({ _id: customerID, deletedCheck: false });
             if (!user) {
                 throw new common_1.HttpException('Customer not found', common_1.HttpStatus.NOT_FOUND);
+            }
+            debugger;
+            if (usersDto.password) {
+                const comaprePasswords = await bcrypt.compare(usersDto.password, user.password);
+                if (!comaprePasswords) {
+                    throw new common_1.UnauthorizedException('Incorrect password!');
+                }
+            }
+            if (usersDto.password && usersDto.newPassword) {
+                const comaprePasswords = await bcrypt.compare(usersDto.password, user.password);
+                if (!comaprePasswords) {
+                    throw new common_1.UnauthorizedException('Incorrect password!');
+                }
+                else {
+                    const salt = await bcrypt.genSalt();
+                    const hashedPassword = await bcrypt.hash(usersDto.newPassword, salt);
+                    usersDto.password = hashedPassword;
+                }
+            }
+            if (!(usersDto.password && usersDto.newPassword)) {
+                delete usersDto.password;
+                delete usersDto.newPassword;
             }
             await this._userModel.updateOne({ _id: customerID }, usersDto);
             return {
@@ -326,6 +348,107 @@ let UsersService = class UsersService {
             merchant.businessHours = [];
         }
         return merchant;
+    }
+    async getMerchantForCRM(merchantID) {
+        try {
+            let merchant = await this._userModel.findOne({
+                userID: merchantID,
+                deletedCheck: false,
+                role: userrole_enum_1.USERROLE.merchant
+            });
+            if (!merchant) {
+                throw new common_1.HttpException('Merchant not found!', common_1.HttpStatus.BAD_REQUEST);
+            }
+            let locationMerchant = await this._locationModel.findOne({
+                merchantID: merchantID
+            });
+            if (!locationMerchant) {
+                throw new common_1.HttpException('Merchant location not found!', common_1.HttpStatus.BAD_REQUEST);
+            }
+            merchant = JSON.parse(JSON.stringify(merchant));
+            locationMerchant = JSON.parse(JSON.stringify(locationMerchant));
+            merchant.tradeName = locationMerchant === null || locationMerchant === void 0 ? void 0 : locationMerchant.tradeName;
+            merchant.ratingsAverage = merchant === null || merchant === void 0 ? void 0 : merchant.ratingsAverage;
+            merchant.profilePicURL = merchant === null || merchant === void 0 ? void 0 : merchant.profilePicURL;
+            merchant.platformPercentage = merchant === null || merchant === void 0 ? void 0 : merchant.platformPercentage;
+            merchant === null || merchant === void 0 ? true : delete merchant.id;
+            merchant === null || merchant === void 0 ? true : delete merchant.userID;
+            merchant === null || merchant === void 0 ? true : delete merchant.email;
+            merchant === null || merchant === void 0 ? true : delete merchant.password;
+            merchant === null || merchant === void 0 ? true : delete merchant.firstName;
+            merchant === null || merchant === void 0 ? true : delete merchant.lastName;
+            merchant === null || merchant === void 0 ? true : delete merchant.phoneNumber;
+            merchant === null || merchant === void 0 ? true : delete merchant.role;
+            merchant === null || merchant === void 0 ? true : delete merchant.businessType;
+            merchant === null || merchant === void 0 ? true : delete merchant.legalName;
+            merchant === null || merchant === void 0 ? true : delete merchant.streetAddress;
+            merchant === null || merchant === void 0 ? true : delete merchant.zipCode;
+            merchant === null || merchant === void 0 ? true : delete merchant.city;
+            merchant === null || merchant === void 0 ? true : delete merchant.vatNumber;
+            merchant === null || merchant === void 0 ? true : delete merchant.iban;
+            merchant === null || merchant === void 0 ? true : delete merchant.bic_swiftCode;
+            merchant === null || merchant === void 0 ? true : delete merchant.accountHolder;
+            merchant === null || merchant === void 0 ? true : delete merchant.bankName;
+            merchant === null || merchant === void 0 ? true : delete merchant.kycStatus;
+            merchant === null || merchant === void 0 ? true : delete merchant.province;
+            merchant === null || merchant === void 0 ? true : delete merchant.website_socialAppLink;
+            merchant === null || merchant === void 0 ? true : delete merchant.googleMapPin;
+            merchant === null || merchant === void 0 ? true : delete merchant.businessHours;
+            merchant === null || merchant === void 0 ? true : delete merchant.finePrint;
+            merchant === null || merchant === void 0 ? true : delete merchant.aboutUs;
+            merchant === null || merchant === void 0 ? true : delete merchant.profilePicBlurHash;
+            merchant === null || merchant === void 0 ? true : delete merchant.gallery;
+            merchant === null || merchant === void 0 ? true : delete merchant.voucherPinCode;
+            merchant === null || merchant === void 0 ? true : delete merchant.deletedCheck;
+            merchant === null || merchant === void 0 ? true : delete merchant.status;
+            merchant === null || merchant === void 0 ? true : delete merchant.newUser;
+            merchant === null || merchant === void 0 ? true : delete merchant.totalVoucherSales;
+            merchant === null || merchant === void 0 ? true : delete merchant.redeemedVouchers;
+            merchant === null || merchant === void 0 ? true : delete merchant.purchasedVouchers;
+            merchant === null || merchant === void 0 ? true : delete merchant.expiredVouchers;
+            merchant === null || merchant === void 0 ? true : delete merchant.totalEarnings;
+            merchant === null || merchant === void 0 ? true : delete merchant.paidEarnings;
+            merchant === null || merchant === void 0 ? true : delete merchant.pendingEarnings;
+            merchant === null || merchant === void 0 ? true : delete merchant.totalDeals;
+            merchant === null || merchant === void 0 ? true : delete merchant.scheduledDeals;
+            merchant === null || merchant === void 0 ? true : delete merchant.pendingDeals;
+            merchant === null || merchant === void 0 ? true : delete merchant.soldDeals;
+            merchant === null || merchant === void 0 ? true : delete merchant.countryCode;
+            merchant === null || merchant === void 0 ? true : delete merchant.leadSource;
+            merchant === null || merchant === void 0 ? true : delete merchant.stripeCustomerID;
+            merchant === null || merchant === void 0 ? true : delete merchant.totalReviews;
+            merchant === null || merchant === void 0 ? true : delete merchant.maxRating;
+            merchant === null || merchant === void 0 ? true : delete merchant.minRating;
+            merchant === null || merchant === void 0 ? true : delete merchant.isSubscribed;
+            merchant === null || merchant === void 0 ? true : delete merchant.popularCount;
+            delete merchant.createdAt;
+            delete merchant.updatedAt;
+            return merchant;
+        }
+        catch (err) {
+            throw new common_1.HttpException(err.message, common_1.HttpStatus.BAD_REQUEST);
+        }
+    }
+    async updateMerchantFromCRM(merchantID, updateMerchantFromCrmDto) {
+        try {
+            let merchant = await this._userModel.findOne({
+                userID: merchantID,
+                deletedCheck: false,
+                role: userrole_enum_1.USERROLE.merchant
+            });
+            if (!merchant) {
+                throw new common_1.HttpException('Merchant not found!', common_1.HttpStatus.BAD_REQUEST);
+            }
+            await this._locationModel.updateOne({ merchantID: merchantID }, updateMerchantFromCrmDto);
+            delete updateMerchantFromCrmDto.tradeName;
+            await this._userModel.updateOne({ userID: merchantID }, updateMerchantFromCrmDto);
+            return {
+                message: 'Merchant has been updated successfully'
+            };
+        }
+        catch (err) {
+            throw new common_1.HttpException(err.message, common_1.HttpStatus.BAD_REQUEST);
+        }
     }
     async getMerchantStats(id) {
         return await this._userModel

@@ -3,6 +3,7 @@ import { ResetPasswordDto } from 'src/dto/resetPasswordDto/resetPassword.dto';
 import { ApproveMerchantDTO } from 'src/dto/user/approveMerchant.dto';
 import { IsPasswordExistsDto } from 'src/dto/user/is-password-exists.dto';
 import { UpdateCustomerProfileDto } from 'src/dto/user/updatecustomerprofile.dto';
+import { UpdateMerchantFromCrmDto } from 'src/dto/user/updatemerchantfromcrm.dto';
 import { UpdatePasswordDto } from 'src/dto/user/updatepassword.dto';
 import { VoucherPinCodeDto } from 'src/dto/user/voucherpincode.dto';
 import { SORT } from 'src/enum/sort/sort.enum';
@@ -36,6 +37,10 @@ export declare class UsersController {
     updateBusinessHours(updateHoursDTO: UpdateHoursDto): Promise<import("mongodb").UpdateResult>;
     geUserById(id: string): Promise<any>;
     getMerchantByID(merchantID: string): Promise<any>;
+    getMerchantForCRM(merchantID: string): Promise<any>;
+    updateMerchantFromCRM(merchantID: string, updateMerchantFromCrmDto: UpdateMerchantFromCrmDto): Promise<{
+        message: string;
+    }>;
     getUserStats(id: string): Promise<any>;
     getAllUsers(offset?: number, limit?: number): Promise<{
         totalCount: number;

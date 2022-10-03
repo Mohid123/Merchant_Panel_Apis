@@ -60,6 +60,7 @@ export declare class VouchersService {
         from: string;
         to: string;
         yearlyRevenue: number;
+        maxRevenueForMonth: number;
         vouchers: any[];
     }>;
 }

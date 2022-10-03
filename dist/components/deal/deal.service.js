@@ -938,8 +938,9 @@ let DealService = class DealService {
             const totalCount = await this.dealModel.countDocuments({
                 merchantMongoID: id,
                 deletedCheck: false,
+                totalReviews: { $gt: 0 },
             });
-            const filteredDealCount = await this.dealModel.countDocuments(Object.assign(Object.assign({ merchantMongoID: id, deletedCheck: false }, matchFilter), filters));
+            const filteredDealCount = await this.dealModel.countDocuments(Object.assign(Object.assign({ merchantMongoID: id, deletedCheck: false, totalReviews: { $gt: 0 } }, matchFilter), filters));
             const deals = await this.dealModel
                 .aggregate([
                 {

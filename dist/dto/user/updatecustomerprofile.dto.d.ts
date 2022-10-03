@@ -1,5 +1,6 @@
 export declare class UpdateCustomerProfileDto {
     firstName: string;
     lastName: string;
-    email: string;
+    password: string;
+    newPassword: string;
 }

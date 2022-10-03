@@ -20,6 +20,7 @@ const resetPassword_dto_1 = require("../../dto/resetPasswordDto/resetPassword.dt
 const approveMerchant_dto_1 = require("../../dto/user/approveMerchant.dto");
 const is_password_exists_dto_1 = require("../../dto/user/is-password-exists.dto");
 const updatecustomerprofile_dto_1 = require("../../dto/user/updatecustomerprofile.dto");
+const updatemerchantfromcrm_dto_1 = require("../../dto/user/updatemerchantfromcrm.dto");
 const updatepassword_dto_1 = require("../../dto/user/updatepassword.dto");
 const voucherpincode_dto_1 = require("../../dto/user/voucherpincode.dto");
 const sort_enum_1 = require("../../enum/sort/sort.enum");
@@ -67,6 +68,12 @@ let UsersController = class UsersController {
     }
     getMerchantByID(merchantID) {
         return this._usersService.getMerchantByID(merchantID);
+    }
+    getMerchantForCRM(merchantID) {
+        return this._usersService.getMerchantForCRM(merchantID);
+    }
+    updateMerchantFromCRM(merchantID, updateMerchantFromCrmDto) {
+        return this._usersService.updateMerchantFromCRM(merchantID, updateMerchantFromCrmDto);
     }
     getUserStats(id) {
         return this._usersService.getMerchantStats(id);
@@ -207,6 +214,27 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "getMerchantByID", null);
+__decorate([
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)(jwt_manager_auth_guard_1.JwtManagerAuthGuard),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Get)('getMerchantForCRM/:merchantID'),
+    __param(0, (0, common_1.Param)('merchantID')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "getMerchantForCRM", null);
+__decorate([
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)(jwt_manager_auth_guard_1.JwtManagerAuthGuard),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Post)('updateMerchantFromCRM/:merchantID'),
+    __param(0, (0, common_1.Param)('merchantID')),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, updatemerchantfromcrm_dto_1.UpdateMerchantFromCrmDto]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "updateMerchantFromCRM", null);
 __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, swagger_1.ApiBearerAuth)(),

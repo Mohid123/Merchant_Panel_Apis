@@ -52,6 +52,7 @@ export declare class VouchersController {
         from: string;
         to: string;
         yearlyRevenue: number;
+        maxRevenueForMonth: number;
         vouchers: any[];
     }>;
 }
