@@ -1138,6 +1138,39 @@ export class DealService implements OnModuleInit {
             },
           },
           {
+            $lookup: {
+              from: 'reviews',
+              as: 'reviewData',
+              let: {
+                dealID: '$dealID',
+                isViewed: '$isViewed'
+              },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $and: [
+                        {
+                          $eq: ['$$dealID', '$dealID'],
+                        },
+                        {
+                          $eq: ['$isViewed', true],
+                        },
+                      ],
+                    },
+                  },
+                },
+              ],
+            },
+          },
+          {
+            $addFields: {
+              totalReviews: {
+                $size: '$reviewData'
+              }
+            }
+          },
+          {
             $project: {
               dealHeader: 1,
               dealID: 1,
