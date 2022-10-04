@@ -23,6 +23,7 @@ import { pipeline } from 'stream';
 import { DEALSTATUS } from 'src/enum/deal/dealstatus.enum';
 import { ActivityService } from '../activity/activity.service';
 import { ACTIVITYENUM } from 'src/enum/activity/activity.enum';
+import { USERROLE } from 'src/enum/user/userrole.enum';
 
 @Injectable()
 export class VouchersService {
@@ -1146,9 +1147,17 @@ export class VouchersService {
         dealStatus: DEALSTATUS.published,
       });
 
-      const totalVouchersSold = req.user.purchasedVouchers;
-      const overallRating = req.user.ratingsAverage;
-      const netRevenue = req.user.totalEarnings;
+      const merchant = await this.userModel.findOne({
+        _id: req.user.id,
+        userID: req.user.userID,
+        deletedCheck: false,
+        status: USERSTATUS.approved,
+        role: USERROLE.merchant
+      });
+
+      const totalVouchersSold = merchant.purchasedVouchers;
+      const overallRating = merchant.ratingsAverage;
+      const netRevenue = merchant.totalEarnings;
 
       let vouchers = await this.voucherModel.aggregate([
         {
@@ -1211,13 +1220,16 @@ export class VouchersService {
             : maxRevenueForMonth;
       }
 
-      let from = `${new Date(timeStamp).getMonth() + 1 < 10 ? '0' : ''}${
-        new Date(timeStamp).getMonth() + 1
-      } ${new Date(timeStamp).getFullYear()}`;
+      // let from = `${new Date(timeStamp).getMonth() + 1 < 10 ? '0' : ''}${
+      //   new Date(timeStamp).getMonth() + 1
+      // } ${new Date(timeStamp).getFullYear()}`;
 
-      let to = `${new Date().getMonth() + 1 < 10 ? '0' : ''}${
-        new Date().getMonth() + 1
-      } ${new Date().getFullYear()}`;
+      // let to = `${new Date().getMonth() + 1 < 10 ? '0' : ''}${
+      //   new Date().getMonth() + 1
+      // } ${new Date().getFullYear()}`;
+
+      let from = `${vouchers[vouchers.length-1].month.split('-')[1]} ${vouchers[vouchers.length-1].month.split('-')[0]}`;
+      let to = `${vouchers[0].month.split('-')[1]} ${vouchers[0].month.split('-')[0]}`;
 
       return {
         totalDeals,

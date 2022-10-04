@@ -64,6 +64,12 @@ export class ReviewService {
           return a + b?.ratingScore;
         }, 0) / reviewDto.multipleRating?.length;
 
+        reviewDto.multipleRating.map((el) => {
+          if (el.ratingScore <= 0) {
+            throw new HttpException('All rating parameters must be filled', HttpStatus.BAD_REQUEST);
+          }
+        });
+
         if (reviewDto.mediaUrl && reviewDto.mediaUrl.length) {
           reviewDto['type'] = reviewDto.mediaUrl[0].type;
           reviewDto['captureFileURL'] = reviewDto.mediaUrl[0].captureFileURL;
