@@ -149,7 +149,7 @@ export class UsersService {
     );
 
     if (!comaprePasswords) {
-      throw new UnauthorizedException('Incorrect password!');
+      throw new HttpException('Incorrect password!', HttpStatus.BAD_REQUEST);
     } else {
       const salt = await bcrypt.genSalt();
       const hashedPassword = await bcrypt.hash(
@@ -265,7 +265,7 @@ export class UsersService {
         );
     
         if (!comaprePasswords) {
-          throw new UnauthorizedException('Incorrect password!');
+          throw new HttpException('Incorrect password!', HttpStatus.BAD_REQUEST);
         }
 
       }
@@ -277,7 +277,7 @@ export class UsersService {
         );
     
         if (!comaprePasswords) {
-          throw new UnauthorizedException('Incorrect password!');
+          throw new HttpException('Incorrect password!', HttpStatus.BAD_REQUEST);
         } else {
           const salt = await bcrypt.genSalt();
           const hashedPassword = await bcrypt.hash(
