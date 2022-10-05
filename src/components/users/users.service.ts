@@ -64,19 +64,27 @@ export class UsersService {
       { new: true },
     );
 
-    // if (sequenceDocument.sequenceValue < 5902) {
-    //   await this.voucherCounterModel.findByIdAndUpdate(sequenceName, {
-    //     sequenceValue: 5903,
-    //   });
-
-    //   const year = new Date().getFullYear() % 2000;
-
-    //   return `MBE${year}005902`;
-    // }
-
     const year = new Date().getFullYear() % 2000;
 
     return `MBE${year}${sequenceDocument.sequenceValue < 100000 ? '0' : ''}${
+      sequenceDocument.sequenceValue < 10000 ? '0' : ''
+    }${sequenceDocument.sequenceValue}`;
+  }
+
+  async generateCustomerId(sequenceName) {
+    const sequenceDocument = await this.voucherCounterModel.findByIdAndUpdate(
+      sequenceName,
+      {
+        $inc: {
+          sequenceValue: 1,
+        },
+      },
+      { new: true },
+    );
+
+    const year = new Date().getFullYear() % 2000;
+
+    return `CBE${year}${sequenceDocument.sequenceValue < 100000 ? '0' : ''}${
       sequenceDocument.sequenceValue < 10000 ? '0' : ''
     }${sequenceDocument.sequenceValue}`;
   }
@@ -91,16 +99,6 @@ export class UsersService {
       },
       { new: true },
     );
-
-    // if (sequenceDocument.sequenceValue < 5902) {
-    //   await this.voucherCounterModel.findByIdAndUpdate(sequenceName, {
-    //     sequenceValue: 5903,
-    //   });
-
-    //   const year = new Date().getFullYear() % 2000;
-
-    //   return `MBE${year}005902`;
-    // }
 
     const year = new Date().getFullYear() % 2000;
 
@@ -119,23 +117,23 @@ export class UsersService {
     return user;
   }
 
-  async comparePassword(userID, isPasswordExistsDto) {
-    try {
-      let user = await this._userModel.findOne({ _id: userID });
-      if (!user) {
-        throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
-      }
+  // async comparePassword(userID, isPasswordExistsDto) {
+  //   try {
+  //     let user = await this._userModel.findOne({ _id: userID });
+  //     if (!user) {
+  //       throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
+  //     }
 
-      const comaprePasswords = await bcrypt.compare(
-        isPasswordExistsDto.password,
-        user.password,
-      );
+  //     const comaprePasswords = await bcrypt.compare(
+  //       isPasswordExistsDto.password,
+  //       user.password,
+  //     );
 
-      return comaprePasswords ? true : false;
-    } catch (err) {
-      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
-    }
-  }
+  //     return comaprePasswords ? true : false;
+  //   } catch (err) {
+  //     throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+  //   }
+  // }
 
   async changePassword(id, updatepasswordDto) {
     let user = await this._userModel.findOne({ _id: id, deletedCheck: false });
@@ -379,7 +377,7 @@ export class UsersService {
           $lookup: {
             from: 'locations',
             as: 'personalDetail',
-            localField: 'userID',
+            localField: 'merchantID',
             foreignField: 'merchantID',
           },
         },
@@ -415,7 +413,7 @@ export class UsersService {
           $lookup: {
             from: 'locations',
             as: 'personalDetail',
-            localField: 'userID',
+            localField: 'merchantID',
             foreignField: 'merchantID',
           },
         },
@@ -457,7 +455,7 @@ export class UsersService {
   async getMerchantForCRM (merchantID) {
     try {
       let merchant: any = await this._userModel.findOne({
-        userID: merchantID,
+        merchantID: merchantID,
         deletedCheck: false,
         role: USERROLE.merchant
       });
@@ -483,7 +481,8 @@ export class UsersService {
       merchant.platformPercentage = merchant?.platformPercentage;
 
       delete merchant?.id; 
-      delete merchant?.userID;
+      delete merchant?.merchantID;
+      delete merchant?.customerID;
       delete merchant?.email;
       delete merchant?.password;
       delete merchant?.firstName;
@@ -545,7 +544,7 @@ export class UsersService {
   async updateMerchantFromCRM (merchantID, updateMerchantFromCrmDto) {
     try {
       let merchant: any = await this._userModel.findOne({
-        userID: merchantID,
+        merchantID: merchantID,
         deletedCheck: false,
         role: USERROLE.merchant
       });
@@ -558,7 +557,7 @@ export class UsersService {
 
       delete updateMerchantFromCrmDto.tradeName;
 
-      await this._userModel.updateOne({ userID: merchantID }, updateMerchantFromCrmDto);
+      await this._userModel.updateOne({ merchantID: merchantID }, updateMerchantFromCrmDto);
 
       return {
         message: 'Merchant has been updated successfully'
@@ -741,7 +740,7 @@ export class UsersService {
               from: 'affiliateFvaourites',
               as: 'favouriteAffiliate',
               let: {
-                affiliateID: '$userID',
+                affiliateID: '$affiliateID',
                 customerMongoID: req?.user?.id,
                 deletedCheck: '$deletedCheck',
               },
@@ -878,7 +877,7 @@ export class UsersService {
               from: 'affiliateFvaourites',
               as: 'favouriteAffiliate',
               let: {
-                affiliateID: '$userID',
+                affiliateID: '$affiliateID',
                 customerMongoID: req?.user?.id,
                 deletedCheck: '$deletedCheck',
               },
@@ -1007,7 +1006,7 @@ export class UsersService {
             from: 'affiliateFvaourites',
             as: 'favouriteAffiliate',
             let: {
-              affiliateID: '$userID',
+              affiliateID: '$affiliateID',
               customerMongoID: req?.user?.id,
               deletedCheck: '$deletedCheck',
             },
@@ -1075,7 +1074,7 @@ export class UsersService {
               from: 'affiliateFvaourites',
               as: 'favouriteAffiliate',
               let: {
-                affiliateID: '$userID',
+                affiliateID: '$affiliateID',
                 customerMongoID: req?.user?.id,
                 deletedCheck: '$deletedCheck',
               },
@@ -1212,7 +1211,7 @@ export class UsersService {
 
       const users = await this._userModel
         .aggregate([
-          { $match: { status: 'Pending', role: 'Merchant' } },
+          { $match: { status: USERSTATUS.new, role: USERROLE.merchant } },
           {
             $sort: { createdAt: -1 },
           },
@@ -1270,7 +1269,8 @@ export class UsersService {
         throw new HttpException('User not found', HttpStatus.NOT_FOUND);
       }
 
-      let generatedUserID = await this.generateMerchantId('merchantID');
+      let generatedMerchantID = await this.generateMerchantId('merchantID');
+      let generatedCustomerID = await this.generateCustomerId('customerID');
 
       let generatedPassword = await this.generatePassword();
       const salt = await bcrypt.genSalt();
@@ -1298,7 +1298,7 @@ export class UsersService {
       };
 
       const locObj = {
-        merchantID: generatedUserID,
+        merchantID: generatedMerchantID,
         streetAddress: user.streetAddress,
         zipCode: user.zipCode,
         city: user.city,
@@ -1490,7 +1490,8 @@ export class UsersService {
           status: status,
           password: hashedPassword,
           voucherPinCode: pinCode,
-          userID: generatedUserID,
+          merchantID: generatedMerchantID,
+          customerID: generatedCustomerID,
           finePrint: `<p><strong>Purchase:</strong> let us know how many voucher one person can purchase<br><strong>Reservations:</strong> let us know how/where people can make a reservation<br><strong>Cancellation:</strong> let us know your cancellation policy<br><strong>More info:</strong> is there anything else important people should be aware of?</p>`
         },
       );
@@ -1521,7 +1522,8 @@ export class UsersService {
       approveMerchantDto.password = hashedPassword;
       approveMerchantDto.status = USERSTATUS.approved;
       approveMerchantDto.zipCode = approveMerchantDto.zipCode.toString();
-      approveMerchantDto.userID = await this.generateMerchantId('merchantID');
+      approveMerchantDto.merchantID = await this.generateMerchantId('merchantID');
+      approveMerchantDto.customerID = await this.generateCustomerId('customerID');
       approveMerchantDto.finePrint = `<p><strong>Purchase:</strong> let us know how many voucher one person can purchase<br><strong>Reservations:</strong> let us know how/where people can make a reservation<br><strong>Cancellation:</strong> let us know your cancellation policy<br><strong>More info:</strong> is there anything else important people should be aware of?</p>`
 
       const userObj = {
@@ -1540,7 +1542,7 @@ export class UsersService {
       };
 
       const locObj = {
-        merchantID: approveMerchantDto.userID,
+        merchantID: approveMerchantDto.merchantID,
         tradeName: approveMerchantDto.legalName,
         streetAddress: approveMerchantDto.streetAddress,
         zipCode: approveMerchantDto.zipCode,
@@ -1733,7 +1735,7 @@ export class UsersService {
 
       const merchant = await new this._userModel(approveMerchantDto).save();
 
-      return { enquiryID: userID, merchantID: merchant?.userID };
+      return { enquiryID: userID, merchantID: merchant?.merchantID };
     } catch (err) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
     }
@@ -1759,7 +1761,8 @@ export class UsersService {
       affliateID.password = hashedPassword;
       affliateID.status = USERSTATUS.approved;
       affliateID.zipCode = affliateID?.zipCode.toString();
-      affliateID.userID = await this.generateAffiliateId('affiliateID');
+      affliateID.affiliateID = await this.generateAffiliateId('affiliateID');
+      affliateID.customerID = await this.generateCustomerId('customerID');
 
       const userObj = {
         ID: new Types.ObjectId().toHexString(),
@@ -1777,7 +1780,7 @@ export class UsersService {
       };
 
       const locObj = {
-        merchantID: affliateID?.userID,
+        merchantID: affliateID?.affiliateID,
         tradeName: affliateID?.legalName,
         streetAddress: affliateID?.streetAddress,
         zipCode: affliateID?.zipCode,
@@ -1966,7 +1969,7 @@ export class UsersService {
 
       const affiliate = await new this._userModel(affliateID).save();
 
-      return { enquiryID: userID, affliateID: affiliate?.userID };
+      return { enquiryID: userID, affliateID: affiliate?.affiliateID };
     } catch (err) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
     }
@@ -1976,20 +1979,15 @@ export class UsersService {
     try {
       let customer = await this._userModel.aggregate([
         {
-          $match: { userID: customerID, role: 'Customer', deletedCheck: false },
+          $match: {
+            customerID: customerID, 
+            role: USERROLE.customer, 
+            deletedCheck: false
+          },
         },
         {
           $project: {
             _id: 0,
-          },
-        },
-        {
-          $addFields: {
-            customerID: '$userID',
-          },
-        },
-        {
-          $project: {
             firstName: 1,
             lastName: 1,
             email: 1,

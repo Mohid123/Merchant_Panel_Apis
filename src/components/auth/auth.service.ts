@@ -150,9 +150,9 @@ export class AuthService {
       throw new UnauthorizedException('Incorrect email!');
     }
 
-    if (!(user.role == 'Customer')) {
-      throw new NotFoundException('This user is not a customer!');
-    }
+    // if (!(user.role == 'Customer')) {
+    //   throw new NotFoundException('This user is not a customer!');
+    // }
 
     const isValidCredentials = await bcrypt.compare(
       loginDto.password,
@@ -263,7 +263,7 @@ export class AuthService {
 
     signupUserDto.status = USERSTATUS.approved;
     signupUserDto.role = USERROLE.customer;
-    signupUserDto.userID = await this.generateCustomerId('customerID');
+    signupUserDto.customerID = await this.generateCustomerId('customerID');
 
     const salt = await bcrypt.genSalt();
     let hashedPassword = await bcrypt.hash(signupUserDto.password, salt);
@@ -274,7 +274,7 @@ export class AuthService {
     newUser = JSON.parse(JSON.stringify(newUser));
 
     // const res = await axios.get(
-    //   `https://www.zohoapis.eu/crm/v2/functions/createcustomer/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&customerid=${newUser.userID}`,
+    //   `https://www.zohoapis.eu/crm/v2/functions/createcustomer/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&customerid=${newUser.customerID}`,
     // );
 
     const token = this.generateToken(newUser);

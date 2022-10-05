@@ -6231,7 +6231,7 @@ export class DealService implements OnModuleInit {
         affiliateFee: calculatedFeeForAffiliate.toFixed(2),
         affiliatePaymentStatus: AFFILIATEPAYMENTSTATUS.pending,
         platformPercentage: merchant.platformPercentage,
-        customerID: customer.userID,
+        customerID: customer.customerID,
         affiliateMongoID: affiliate.id,
         customerMongoID: customer.id,
         imageURL,
