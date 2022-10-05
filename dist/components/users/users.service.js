@@ -93,7 +93,7 @@ let UsersService = class UsersService {
         }
         const comaprePasswords = await bcrypt.compare(updatepasswordDto.password, user.password);
         if (!comaprePasswords) {
-            throw new common_1.UnauthorizedException('Incorrect password!');
+            throw new common_1.HttpException('Incorrect password!', common_1.HttpStatus.BAD_REQUEST);
         }
         else {
             const salt = await bcrypt.genSalt();
@@ -193,13 +193,13 @@ let UsersService = class UsersService {
             if (usersDto.password) {
                 const comaprePasswords = await bcrypt.compare(usersDto.password, user.password);
                 if (!comaprePasswords) {
-                    throw new common_1.UnauthorizedException('Incorrect password!');
+                    throw new common_1.HttpException('Incorrect password!', common_1.HttpStatus.BAD_REQUEST);
                 }
             }
             if (usersDto.password && usersDto.newPassword) {
                 const comaprePasswords = await bcrypt.compare(usersDto.password, user.password);
                 if (!comaprePasswords) {
-                    throw new common_1.UnauthorizedException('Incorrect password!');
+                    throw new common_1.HttpException('Incorrect password!', common_1.HttpStatus.BAD_REQUEST);
                 }
                 else {
                     const salt = await bcrypt.genSalt();

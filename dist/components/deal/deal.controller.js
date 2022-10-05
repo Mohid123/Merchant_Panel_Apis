@@ -99,6 +99,9 @@ let DealController = class DealController {
     getDealsByCategories(categoryName, subCategoryName, fromPrice, toPrice, reviewRating, sorting, offset = 0, limit = 10, filterCategoriesApiDto, req) {
         return this.dealService.getDealsByCategories(categoryName, subCategoryName, fromPrice, toPrice, reviewRating, sorting, offset, limit, filterCategoriesApiDto, req);
     }
+    getWishListDeals(offset = 0, limit = 10, req) {
+        return this.dealService.getWishListDeals(offset, limit, req);
+    }
     getTrendingDeals(offset = 0, limit = 10, req) {
         return this.dealService.getTrendingDeals(offset, limit, req);
     }
@@ -411,6 +414,17 @@ __decorate([
     __metadata("design:paramtypes", [String, String, Number, Number, Number, String, Number, Number, filtercategoriesapi_dto_1.FilterCategoriesApiDto, Object]),
     __metadata("design:returntype", void 0)
 ], DealController.prototype, "getDealsByCategories", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.Get)('getWishListDeals'),
+    __param(0, (0, common_1.Query)('offset')),
+    __param(1, (0, common_1.Query)('limit')),
+    __param(2, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, Number, Object]),
+    __metadata("design:returntype", void 0)
+], DealController.prototype, "getWishListDeals", null);
 __decorate([
     (0, common_1.UseGuards)(optional_auth_guard_1.OptionalJwtAuthGuard),
     (0, swagger_1.ApiBearerAuth)(),

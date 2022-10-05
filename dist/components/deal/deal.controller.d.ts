@@ -64,7 +64,10 @@ export declare class DealController {
             publishedDeals: number;
         };
     }>;
-    getDealReviews(dealID: string, createdAt: SORT, totalRating: SORT, rating: number, offset?: number, limit?: number): Promise<any>;
+    getDealReviews(dealID: string, createdAt: SORT, totalRating: SORT, rating: number, offset?: number, limit?: number): Promise<{
+        totalReviewsCount: number;
+        deal: any;
+    }>;
     getTopRatedDeals(merchantID: string): Promise<any[]>;
     getNewDeals(offset: number, limit: number, req: any): Promise<unknown>;
     getLowPriceDeals(price: number, offset: number, limit: number, req: any): Promise<{
@@ -89,6 +92,10 @@ export declare class DealController {
     getNearByDeals(lat: number, lng: number, distance: number, offset: number, limit: number, req: any): Promise<any>;
     searchDeals(searchBar: string, header: string, categoryName: string, subCategoryName: string, fromPrice: number, toPrice: number, reviewRating: number, offset: number, limit: number, filterCategoriesApiDto: FilterCategoriesApiDto, req: any): Promise<any>;
     getDealsByCategories(categoryName: string, subCategoryName: string, fromPrice: number, toPrice: number, reviewRating: number, sorting: SORT, offset: number, limit: number, filterCategoriesApiDto: FilterCategoriesApiDto, req: any): Promise<any>;
+    getWishListDeals(offset: number, limit: number, req: any): Promise<{
+        totalCount: any;
+        data: any[];
+    }>;
     getTrendingDeals(offset: number, limit: number, req: any): Promise<{
         totalDeals: number;
         data: any[];

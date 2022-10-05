@@ -67,6 +67,11 @@ let ReviewService = class ReviewService {
                 reviewDto.multipleRating.reduce((a, b) => {
                     return a + (b === null || b === void 0 ? void 0 : b.ratingScore);
                 }, 0) / ((_b = reviewDto.multipleRating) === null || _b === void 0 ? void 0 : _b.length);
+            reviewDto.multipleRating.map((el) => {
+                if (el.ratingScore <= 0) {
+                    throw new common_1.HttpException('All rating parameters must be filled', common_1.HttpStatus.BAD_REQUEST);
+                }
+            });
             if (reviewDto.mediaUrl && reviewDto.mediaUrl.length) {
                 reviewDto['type'] = reviewDto.mediaUrl[0].type;
                 reviewDto['captureFileURL'] = reviewDto.mediaUrl[0].captureFileURL;
@@ -421,6 +426,31 @@ let ReviewService = class ReviewService {
                 },
                 {
                     $lookup: {
+                        from: 'users',
+                        let: {
+                            userID: '$customerID',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$userID', '$$userID'],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                        ],
+                        as: 'customerData',
+                    },
+                },
+                {
+                    $unwind: '$customerData',
+                },
+                {
+                    $lookup: {
                         from: 'reviewText',
                         as: 'merchantReplyText',
                         localField: '_id',
@@ -435,11 +465,19 @@ let ReviewService = class ReviewService {
                 {
                     $addFields: {
                         id: '$_id',
+                        customerName: {
+                            $concat: [
+                                '$customerData.firstName',
+                                ' ',
+                                '$customerData.lastName',
+                            ],
+                        },
                     },
                 },
                 {
                     $project: {
                         _id: 0,
+                        customerData: 0
                     },
                 },
             ])

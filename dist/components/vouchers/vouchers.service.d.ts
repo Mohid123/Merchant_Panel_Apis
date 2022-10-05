@@ -51,12 +51,15 @@ export declare class VouchersService {
             _id: string;
         };
     }>;
-    getVoucherSoldPerDay(numberOfDays: any, req: any): Promise<any[]>;
+    getVoucherSoldPerDay(numberOfDays: any, req: any): Promise<{
+        maxCount: number;
+        counts: any[];
+    }>;
     getNetRevenue(req: any): Promise<{
         totalDeals: number;
-        totalVouchersSold: any;
-        overallRating: any;
-        netRevenue: any;
+        totalVouchersSold: number;
+        overallRating: number;
+        netRevenue: number;
         from: string;
         to: string;
         yearlyRevenue: number;

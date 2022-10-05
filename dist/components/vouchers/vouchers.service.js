@@ -21,10 +21,12 @@ const sort_enum_1 = require("../../enum/sort/sort.enum");
 const schedule_service_1 = require("../schedule/schedule.service");
 const qr = require('qrcode');
 const fs = require("fs");
+const userstatus_enum_1 = require("../../enum/user/userstatus.enum");
 const axios_1 = require("axios");
 const dealstatus_enum_1 = require("../../enum/deal/dealstatus.enum");
 const activity_service_1 = require("../activity/activity.service");
 const activity_enum_1 = require("../../enum/activity/activity.enum");
+const userrole_enum_1 = require("../../enum/user/userrole.enum");
 let VouchersService = class VouchersService {
     constructor(voucherModel, voucherCounterModel, userModel, _scheduleModel, _scheduleService, _activityService, dealModel) {
         this.voucherModel = voucherModel;
@@ -777,7 +779,8 @@ let VouchersService = class VouchersService {
                     counts.push({ createdAt: new Date(tempDate), count: 0 });
                 }
             }
-            return counts;
+            let maxCount = Math.max(...counts.map((el) => el.count));
+            return { maxCount, counts };
         }
         catch (err) {
             console.log(err);
@@ -792,9 +795,16 @@ let VouchersService = class VouchersService {
                 merchantMongoID: req.user.id,
                 dealStatus: dealstatus_enum_1.DEALSTATUS.published,
             });
-            const totalVouchersSold = req.user.purchasedVouchers;
-            const overallRating = req.user.ratingsAverage;
-            const netRevenue = req.user.totalEarnings;
+            const merchant = await this.userModel.findOne({
+                _id: req.user.id,
+                userID: req.user.userID,
+                deletedCheck: false,
+                status: userstatus_enum_1.USERSTATUS.approved,
+                role: userrole_enum_1.USERROLE.merchant
+            });
+            const totalVouchersSold = merchant.purchasedVouchers;
+            const overallRating = merchant.ratingsAverage;
+            const netRevenue = merchant.totalEarnings;
             let vouchers = await this.voucherModel.aggregate([
                 {
                     $match: {
@@ -849,8 +859,8 @@ let VouchersService = class VouchersService {
                         ? (_c = vouchers[i]) === null || _c === void 0 ? void 0 : _c.netRevenue
                         : maxRevenueForMonth;
             }
-            let from = `${new Date(timeStamp).getMonth() + 1 < 10 ? '0' : ''}${new Date(timeStamp).getMonth() + 1} ${new Date(timeStamp).getFullYear()}`;
-            let to = `${new Date().getMonth() + 1 < 10 ? '0' : ''}${new Date().getMonth() + 1} ${new Date().getFullYear()}`;
+            let from = `${vouchers[vouchers.length - 1].month.split('-')[1]} ${vouchers[vouchers.length - 1].month.split('-')[0]}`;
+            let to = `${vouchers[0].month.split('-')[1]} ${vouchers[0].month.split('-')[0]}`;
             return {
                 totalDeals,
                 totalVouchersSold,
