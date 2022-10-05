@@ -4757,6 +4757,140 @@ export class DealService implements OnModuleInit {
       offset = parseInt(offset) < 0 ? 0 : offset;
       limit = parseInt(limit) < 1 ? 10 : limit;
 
+      const totalCount = await this.dealModel.aggregate([
+        {
+          $match: {
+            deletedCheck: false,
+              dealStatus: DEALSTATUS.published,
+          }
+        },
+        {
+          $sort: {
+            createdAt: -1
+          }
+        },
+        {
+          $lookup: {
+            from: 'favourites',
+            as: 'favouriteDeal',
+            let: {
+              dealID: '$dealID',
+              customerMongoID: req?.user?.id,
+              deletedCheck: '$deletedCheck',
+            },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $and: [
+                      {
+                        $eq: ['$$dealID', '$dealID'],
+                      },
+                      {
+                        $eq: ['$$customerMongoID', '$customerMongoID'],
+                      },
+                      {
+                        $eq: ['$deletedCheck', false],
+                      },
+                    ],
+                  },
+                },
+              },
+            ],
+          },
+        },
+        {
+          $unwind: {
+            path: '$favouriteDeal',
+            // preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $lookup: {
+            from: 'users',
+            as: 'merchantDetails',
+            let: {
+              userID: '$merchantID',
+              deletedCheck: '$deletedCheck',
+            },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $and: [
+                      {
+                        $eq: ['$$userID', '$userID'],
+                      },
+                      {
+                        $eq: ['$deletedCheck', false],
+                      },
+                    ],
+                  },
+                },
+              },
+              {
+                $lookup: {
+                  from: 'locations',
+                  as: 'locationData',
+                  localField: 'userID',
+                  foreignField: 'merchantID'
+                }
+              },
+              {
+                $unwind: '$locationData'
+              },
+              {
+                $addFields: {
+                  id: '$_id',
+                  tradeName: '$locationData.tradeName'
+                },
+              },
+              {
+                $project: {
+                  _id: 0,
+                  id: 1,
+                  totalReviews: 1,
+                  ratingsAverage: 1,
+                  tradeName: 1,
+                  city: 1,
+                },
+              },
+            ],
+          },
+        },
+        {
+          $addFields: {
+            id: '$_id',
+            mediaUrl: {
+              $slice: [
+                {
+                  $filter: {
+                    input: '$mediaUrl',
+                    as: 'mediaUrl',
+                    cond: {
+                      $eq: ['$$mediaUrl.type', 'Image'],
+                    },
+                  },
+                },
+                1,
+              ],
+            },
+            isFavourite: {
+              $cond: [
+                {
+                  $ifNull: ['$favouriteDeal', false],
+                },
+                true,
+                false,
+              ],
+            },
+          },
+        },
+        {
+          $count: 'totalCount'
+        }
+      ]);
+
       const wishListDeals = await this.dealModel.aggregate([
         {
           $match: {
@@ -4803,6 +4937,59 @@ export class DealService implements OnModuleInit {
           $unwind: {
             path: '$favouriteDeal',
             // preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $lookup: {
+            from: 'users',
+            as: 'merchantDetails',
+            let: {
+              userID: '$merchantID',
+              deletedCheck: '$deletedCheck',
+            },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $and: [
+                      {
+                        $eq: ['$$userID', '$userID'],
+                      },
+                      {
+                        $eq: ['$deletedCheck', false],
+                      },
+                    ],
+                  },
+                },
+              },
+              {
+                $lookup: {
+                  from: 'locations',
+                  as: 'locationData',
+                  localField: 'userID',
+                  foreignField: 'merchantID'
+                }
+              },
+              {
+                $unwind: '$locationData'
+              },
+              {
+                $addFields: {
+                  id: '$_id',
+                  tradeName: '$locationData.tradeName'
+                },
+              },
+              {
+                $project: {
+                  _id: 0,
+                  id: 1,
+                  totalReviews: 1,
+                  ratingsAverage: 1,
+                  tradeName: 1,
+                  city: 1,
+                },
+              },
+            ],
           },
         },
         {
@@ -4866,7 +5053,10 @@ export class DealService implements OnModuleInit {
       .skip(parseInt(offset))
       .limit(parseInt(limit));
 
-      return wishListDeals;
+      return {
+        totalCount: totalCount?.length > 0 ? totalCount[0].totalCount : 0,
+        data: wishListDeals,
+      };
 
     } catch (err) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
