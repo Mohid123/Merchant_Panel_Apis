@@ -40,16 +40,16 @@ export class UsersController {
     return this._usersService.addUser(usersDto);
   }
 
-  @UseGuards(ThrottlerGuard)
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @Post('comparePassword/:userID')
-  comparePassword(
-    @Param('userID') userID: string,
-    @Body() isPasswordExistsDto: IsPasswordExistsDto,
-  ) {
-    return this._usersService.comparePassword(userID, isPasswordExistsDto);
-  }
+  // @UseGuards(ThrottlerGuard)
+  // @UseGuards(JwtAuthGuard)
+  // @ApiBearerAuth()
+  // @Post('comparePassword/:userID')
+  // comparePassword(
+  //   @Param('userID') userID: string,
+  //   @Body() isPasswordExistsDto: IsPasswordExistsDto,
+  // ) {
+  //   return this._usersService.comparePassword(userID, isPasswordExistsDto);
+  // }
 
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()

@@ -388,6 +388,17 @@ export class DealController {
     );
   }
 
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Get('getWishListDeals')
+  getWishListDeals (
+    @Query('offset') offset: number = 0,
+    @Query('limit') limit: number = 10,
+    @Req() req
+  ) {
+    return this.dealService.getWishListDeals(offset, limit, req)
+  }
+
   @UseGuards(OptionalJwtAuthGuard)
   @ApiBearerAuth()
   @Get('getTrendingDeals')
