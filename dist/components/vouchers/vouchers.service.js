@@ -466,9 +466,30 @@ let VouchersService = class VouchersService {
                     $unwind: '$dealData',
                 },
                 {
+                    $lookup: {
+                        from: 'users',
+                        as: 'customerData',
+                        localField: 'customerID',
+                        foreignField: 'userID'
+                    }
+                },
+                {
+                    $unwind: '$customerData'
+                },
+                {
                     $addFields: {
                         id: '$_id',
+                        customerName: {
+                            $concat: [
+                                '$customerData.firstName',
+                                ' ',
+                                '$customerData.lastName',
+                            ],
+                        },
                         tradeName: '$merchantData.tradeName',
+                        streetAddress: '$merchantData.streetAddress',
+                        googleMapPin: '$merchantData.googleMapPin',
+                        phoneNumber: '$merchantData.phoneNumber',
                         ratingParameters: '$dealData.categoryData.ratingParameters',
                         totalRating: '$reviewData.totalRating',
                         isReviewed: {
@@ -484,35 +505,12 @@ let VouchersService = class VouchersService {
                 },
                 {
                     $project: {
+                        customerData: 0,
                         dealData: 0,
                         merchantData: 0,
                         reviewData: 0,
                         _id: 0,
-                        dealHeader: 0,
-                        subDealHeader: 0,
-                        subDealID: 0,
-                        subDealMongoID: 0,
-                        merchantID: 0,
-                        merchantMongoID: 0,
-                        merchantPaymentStatus: 0,
-                        customerID: 0,
-                        customerMongoID: 0,
-                        affiliateName: 0,
-                        affiliateID: 0,
-                        affiliateMongoID: 0,
-                        affiliatePercentage: 0,
-                        affiliateFee: 0,
-                        affiliatePaymentStatus: 0,
-                        amount: 0,
-                        platformPercentage: 0,
-                        fee: 0,
-                        net: 0,
-                        paymentStatus: 0,
-                        boughtDate: 0,
-                        originalPrice: 0,
-                        discountedPercentage: 0,
                         deletedCheck: 0,
-                        redeemQR: 0,
                         createdAt: 0,
                         updatedAt: 0,
                         __v: 0,
