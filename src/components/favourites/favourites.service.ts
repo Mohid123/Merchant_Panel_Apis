@@ -27,7 +27,7 @@ export class FavouritesService {
             const alreadyFavourite = await this.favouriteModel.findOne({
                 dealID: favouritesDto.dealID,
                 customerMongoID: req.user.id,
-                deletedCheck:false,
+                deletedCheck: false,
             });
 
             if (alreadyFavourite) {
@@ -35,7 +35,7 @@ export class FavouritesService {
             } else {
 
                 favouritesDto.customerMongoID = req.user.id;
-                favouritesDto.customerID = req.user.userID;
+                favouritesDto.customerID = req.user.customerID;
 
                 await this.favouriteModel.updateOne(
                     { dealID: favouritesDto.dealID, customerMongoID: req.user.id},
@@ -70,7 +70,7 @@ export class FavouritesService {
             } else {
                 
                 affiliateFavouritesDto.customerMongoID = req.user.id;
-                affiliateFavouritesDto.customerID = req.user.userID;
+                affiliateFavouritesDto.customerID = req.user.customerID;
 
                 await this.affiliateFavouriteModel.updateOne(
                     {affiliateID: affiliateFavouritesDto.affiliateID, customerMongoID: req.user.id}, 
@@ -99,10 +99,15 @@ export class FavouritesService {
 
     async removeFromAffiliateFavourites (id, req) {
         try {
-            await this.affiliateFavouriteModel.updateOne({
-                affiliateMongoID: id,
-                customerMongoID: req.user.id,
-            }, { deletedCheck: true });
+            await this.affiliateFavouriteModel.updateOne(
+                {
+                    affiliateMongoID: id,
+                    customerMongoID: req.user.id,
+                }, 
+                { 
+                    deletedCheck: true
+                }
+                );
             return {
                 message: 'Removed from favourites'
             }

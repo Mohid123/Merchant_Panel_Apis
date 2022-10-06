@@ -282,6 +282,16 @@ export class AuthService {
     return { newUser, token: token.access_token };
   }
 
+  // async signupCustomerAsMerchant () {
+  //   try {
+  //     const user = await this._usersService.findOne({
+        
+  //     })
+  //   } catch (err) {
+  //     throw new HttpException(err, HttpStatus.BAD_REQUEST);
+  //   }
+  // }
+
   async sendMail(emailDto: EmailDTO) {
     // create reusable transporter object using the default SMTP transport
 

@@ -59,6 +59,11 @@ export class AuthController {
     return this._authService.signupCustomer(signupUserDto)
   }
 
+  // @Post('signupCustomerAsMerchant')
+  // signupCustomerAsMerchant () {
+  //   return this._authService.signupCustomerAsMerchant()
+  // }
+
   @Post('sendEmail')
   sendEmail(@Body() emailDto: EmailDTO) {
     return this._authService.sendMail(emailDto);

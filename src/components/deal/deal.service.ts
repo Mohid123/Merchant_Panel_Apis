@@ -140,7 +140,7 @@ export class DealService implements OnModuleInit {
       if (!savedDeal) {
         dealDto.dealHeader = dealDto?.dealHeader;
 
-        dealDto.merchantID = req.user.userID;
+        dealDto.merchantID = req.user.merchantID;
         dealDto.merchantMongoID = req.user.id;
 
         if (dealDto.dealStatus) {
@@ -613,7 +613,7 @@ export class DealService implements OnModuleInit {
               from: 'users',
               as: 'merchantDetails',
               let: {
-                userID: '$merchantID',
+                merchantID: '$merchantID',
                 deletedCheck: '$deletedCheck',
               },
               pipeline: [
@@ -622,7 +622,7 @@ export class DealService implements OnModuleInit {
                     $expr: {
                       $and: [
                         {
-                          $eq: ['$$userID', '$userID'],
+                          $eq: ['$$merchantID', '$merchantID'],
                         },
                         {
                           $eq: ['$deletedCheck', false],
@@ -635,7 +635,7 @@ export class DealService implements OnModuleInit {
                   $lookup: {
                     from: 'locations',
                     as: 'locationData',
-                    localField: 'userID',
+                    localField: 'merchantID',
                     foreignField: 'merchantID',
                   },
                 },
@@ -696,7 +696,7 @@ export class DealService implements OnModuleInit {
         dealMongoID: deal.id,
         dealID: deal.dealID,
         customerMongoID: req.user.id,
-        customerID: req.user.userID,
+        customerID: req.user.customerID,
         viewedTime: new Date().getTime(),
       };
 
@@ -890,7 +890,7 @@ export class DealService implements OnModuleInit {
                   $lookup: {
                     from: 'users',
                     let: {
-                      userID: '$customerID',
+                      customerID: '$customerID',
                     },
                     pipeline: [
                       {
@@ -898,7 +898,7 @@ export class DealService implements OnModuleInit {
                           $expr: {
                             $and: [
                               {
-                                $eq: ['$userID', '$$userID'],
+                                $eq: ['$customerID', '$$customerID'],
                               },
                             ],
                           },
@@ -953,7 +953,7 @@ export class DealService implements OnModuleInit {
                         $lookup: {
                           from: 'users',
                           let: {
-                            userID: '$merchantID',
+                            merchantID: '$merchantID',
                           },
                           pipeline: [
                             {
@@ -961,7 +961,7 @@ export class DealService implements OnModuleInit {
                                 $expr: {
                                   $and: [
                                     {
-                                      $eq: ['$userID', '$$userID'],
+                                      $eq: ['$merchantID', '$$merchantID'],
                                     },
                                   ],
                                 },
@@ -1523,7 +1523,7 @@ export class DealService implements OnModuleInit {
               from: 'users',
               as: 'merchantDetails',
               let: {
-                userID: '$merchantID',
+                merchantID: '$merchantID',
                 deletedCheck: '$deletedCheck',
               },
               pipeline: [
@@ -1532,7 +1532,7 @@ export class DealService implements OnModuleInit {
                     $expr: {
                       $and: [
                         {
-                          $eq: ['$$userID', '$userID'],
+                          $eq: ['$$merchantID', '$merchantID'],
                         },
                         {
                           $eq: ['$deletedCheck', false],
@@ -1545,7 +1545,7 @@ export class DealService implements OnModuleInit {
                   $lookup: {
                     from: 'locations',
                     as: 'locationData',
-                    localField: 'userID',
+                    localField: 'merchantID',
                     foreignField: 'merchantID',
                   },
                 },
@@ -1751,7 +1751,7 @@ export class DealService implements OnModuleInit {
               from: 'users',
               as: 'merchantDetails',
               let: {
-                userID: '$merchantID',
+                merchantID: '$merchantID',
                 deletedCheck: '$deletedCheck',
               },
               pipeline: [
@@ -1760,7 +1760,7 @@ export class DealService implements OnModuleInit {
                     $expr: {
                       $and: [
                         {
-                          $eq: ['$$userID', '$userID'],
+                          $eq: ['$$merchantID', '$merchantID'],
                         },
                         {
                           $eq: ['$deletedCheck', false],
@@ -1773,7 +1773,7 @@ export class DealService implements OnModuleInit {
                   $lookup: {
                     from: 'locations',
                     as: 'locationData',
-                    localField: 'userID',
+                    localField: 'merchantID',
                     foreignField: 'merchantID',
                   },
                 },
@@ -1950,7 +1950,7 @@ export class DealService implements OnModuleInit {
                 from: 'users',
                 as: 'merchantDetails',
                 let: {
-                  userID: '$merchantID',
+                  merchantID: '$merchantID',
                   deletedCheck: '$deletedCheck',
                 },
                 pipeline: [
@@ -1959,7 +1959,7 @@ export class DealService implements OnModuleInit {
                       $expr: {
                         $and: [
                           {
-                            $eq: ['$$userID', '$userID'],
+                            $eq: ['$$merchantID', '$merchantID'],
                           },
                           {
                             $eq: ['$deletedCheck', false],
@@ -1972,7 +1972,7 @@ export class DealService implements OnModuleInit {
                     $lookup: {
                       from: 'locations',
                       as: 'locationData',
-                      localField: 'userID',
+                      localField: 'merchantID',
                       foreignField: 'merchantID',
                     },
                   },
@@ -2162,7 +2162,7 @@ export class DealService implements OnModuleInit {
               from: 'users',
               as: 'merchantDetails',
               let: {
-                userID: '$merchantID',
+                merchantID: '$merchantID',
                 deletedCheck: '$deletedCheck',
               },
               pipeline: [
@@ -2171,7 +2171,7 @@ export class DealService implements OnModuleInit {
                     $expr: {
                       $and: [
                         {
-                          $eq: ['$$userID', '$userID'],
+                          $eq: ['$$merchantID', '$merchantID'],
                         },
                         {
                           $eq: ['$deletedCheck', false],
@@ -2184,7 +2184,7 @@ export class DealService implements OnModuleInit {
                   $lookup: {
                     from: 'locations',
                     as: 'locationData',
-                    localField: 'userID',
+                    localField: 'merchantID',
                     foreignField: 'merchantID',
                   },
                 },
@@ -2382,7 +2382,7 @@ export class DealService implements OnModuleInit {
                 from: 'users',
                 as: 'merchantDetails',
                 let: {
-                  userID: '$merchantID',
+                  merchantID: '$merchantID',
                   deletedCheck: '$deletedCheck',
                 },
                 pipeline: [
@@ -2391,7 +2391,7 @@ export class DealService implements OnModuleInit {
                       $expr: {
                         $and: [
                           {
-                            $eq: ['$$userID', '$userID'],
+                            $eq: ['$$merchantID', '$merchantID'],
                           },
                           {
                             $eq: ['$deletedCheck', false],
@@ -2404,7 +2404,7 @@ export class DealService implements OnModuleInit {
                     $lookup: {
                       from: 'locations',
                       as: 'locationData',
-                      localField: 'userID',
+                      localField: 'merchantID',
                       foreignField: 'merchantID',
                     },
                   },
@@ -2578,7 +2578,7 @@ export class DealService implements OnModuleInit {
               from: 'users',
               as: 'merchantDetails',
               let: {
-                userID: '$merchantID',
+                merchantID: '$merchantID',
                 deletedCheck: '$deletedCheck',
               },
               pipeline: [
@@ -2587,7 +2587,7 @@ export class DealService implements OnModuleInit {
                     $expr: {
                       $and: [
                         {
-                          $eq: ['$$userID', '$userID'],
+                          $eq: ['$$merchantID', '$merchantID'],
                         },
                         {
                           $eq: ['$deletedCheck', false],
@@ -2600,7 +2600,7 @@ export class DealService implements OnModuleInit {
                   $lookup: {
                     from: 'locations',
                     as: 'locationData',
-                    localField: 'userID',
+                    localField: 'merchantID',
                     foreignField: 'merchantID',
                   },
                 },
@@ -2769,7 +2769,7 @@ export class DealService implements OnModuleInit {
               from: 'users',
               as: 'merchantDetails',
               let: {
-                userID: '$merchantID',
+                merchantID: '$merchantID',
                 deletedCheck: '$deletedCheck',
               },
               pipeline: [
@@ -2778,7 +2778,7 @@ export class DealService implements OnModuleInit {
                     $expr: {
                       $and: [
                         {
-                          $eq: ['$$userID', '$userID'],
+                          $eq: ['$$merchantID', '$merchantID'],
                         },
                         {
                           $eq: ['$deletedCheck', false],
@@ -2791,7 +2791,7 @@ export class DealService implements OnModuleInit {
                   $lookup: {
                     from: 'locations',
                     as: 'locationData',
-                    localField: 'userID',
+                    localField: 'merchantID',
                     foreignField: 'merchantID',
                   },
                 },
@@ -2983,7 +2983,7 @@ export class DealService implements OnModuleInit {
                 from: 'users',
                 as: 'merchantDetails',
                 let: {
-                  userID: '$merchantID',
+                  merchantID: '$merchantID',
                   deletedCheck: '$deletedCheck',
                 },
                 pipeline: [
@@ -2992,7 +2992,7 @@ export class DealService implements OnModuleInit {
                       $expr: {
                         $and: [
                           {
-                            $eq: ['$$userID', '$userID'],
+                            $eq: ['$$merchantID', '$merchantID'],
                           },
                           {
                             $eq: ['$deletedCheck', false],
@@ -3005,7 +3005,7 @@ export class DealService implements OnModuleInit {
                     $lookup: {
                       from: 'locations',
                       as: 'locationData',
-                      localField: 'userID',
+                      localField: 'merchantID',
                       foreignField: 'merchantID',
                     },
                   },
@@ -3292,7 +3292,7 @@ export class DealService implements OnModuleInit {
             from: 'users',
             as: 'merchantDetails',
             let: {
-              userID: '$merchantID',
+              merchantID: '$merchantID',
               deletedCheck: '$deletedCheck',
             },
             pipeline: [
@@ -3301,7 +3301,7 @@ export class DealService implements OnModuleInit {
                   $expr: {
                     $and: [
                       {
-                        $eq: ['$$userID', '$userID'],
+                        $eq: ['$$merchantID', '$merchantID'],
                       },
                       {
                         $eq: ['$deletedCheck', false],
@@ -3314,7 +3314,7 @@ export class DealService implements OnModuleInit {
                 $lookup: {
                   from: 'locations',
                   as: 'locationData',
-                  localField: 'userID',
+                  localField: 'merchantID',
                   foreignField: 'merchantID',
                 },
               },
@@ -3664,7 +3664,7 @@ export class DealService implements OnModuleInit {
             from: 'users',
             as: 'merchantDetails',
             let: {
-              userID: '$merchantID',
+              merchantID: '$merchantID',
               deletedCheck: '$deletedCheck',
             },
             pipeline: [
@@ -3673,7 +3673,7 @@ export class DealService implements OnModuleInit {
                   $expr: {
                     $and: [
                       {
-                        $eq: ['$$userID', '$userID'],
+                        $eq: ['$$merchantID', '$merchantID'],
                       },
                       {
                         $eq: ['$deletedCheck', false],
@@ -3686,7 +3686,7 @@ export class DealService implements OnModuleInit {
                 $lookup: {
                   from: 'locations',
                   as: 'locationData',
-                  localField: 'userID',
+                  localField: 'merchantID',
                   foreignField: 'merchantID',
                 },
               },
@@ -3836,7 +3836,7 @@ export class DealService implements OnModuleInit {
               from: 'users',
               as: 'merchantDetails',
               let: {
-                userID: '$merchantID',
+                merchantID: '$merchantID',
                 deletedCheck: '$deletedCheck',
               },
               pipeline: [
@@ -3845,7 +3845,7 @@ export class DealService implements OnModuleInit {
                     $expr: {
                       $and: [
                         {
-                          $eq: ['$$userID', '$userID'],
+                          $eq: ['$$merchantID', '$merchantID'],
                         },
                         {
                           $eq: ['$deletedCheck', false],
@@ -3858,7 +3858,7 @@ export class DealService implements OnModuleInit {
                   $lookup: {
                     from: 'locations',
                     as: 'locationData',
-                    localField: 'userID',
+                    localField: 'merchantID',
                     foreignField: 'merchantID',
                   },
                 },
@@ -4138,7 +4138,7 @@ export class DealService implements OnModuleInit {
             from: 'users',
             as: 'merchantDetails',
             let: {
-              userID: '$merchantID',
+              merchantID: '$merchantID',
               deletedCheck: '$deletedCheck',
             },
             pipeline: [
@@ -4147,7 +4147,7 @@ export class DealService implements OnModuleInit {
                   $expr: {
                     $and: [
                       {
-                        $eq: ['$$userID', '$userID'],
+                        $eq: ['$$merchantID', '$merchantID'],
                       },
                       {
                         $eq: ['$deletedCheck', false],
@@ -4160,7 +4160,7 @@ export class DealService implements OnModuleInit {
                 $lookup: {
                   from: 'locations',
                   as: 'locationData',
-                  localField: 'userID',
+                  localField: 'merchantID',
                   foreignField: 'merchantID',
                 },
               },
@@ -4478,7 +4478,7 @@ export class DealService implements OnModuleInit {
             from: 'users',
             as: 'merchantDetails',
             let: {
-              userID: '$merchantID',
+              merchantID: '$merchantID',
               deletedCheck: '$deletedCheck',
             },
             pipeline: [
@@ -4487,7 +4487,7 @@ export class DealService implements OnModuleInit {
                   $expr: {
                     $and: [
                       {
-                        $eq: ['$$userID', '$userID'],
+                        $eq: ['$$merchantID', '$merchantID'],
                       },
                       {
                         $eq: ['$deletedCheck', false],
@@ -4500,7 +4500,7 @@ export class DealService implements OnModuleInit {
                 $lookup: {
                   from: 'locations',
                   as: 'locationData',
-                  localField: 'userID',
+                  localField: 'merchantID',
                   foreignField: 'merchantID',
                 },
               },
@@ -4623,7 +4623,7 @@ export class DealService implements OnModuleInit {
               from: 'users',
               as: 'merchantDetails',
               let: {
-                userID: '$merchantID',
+                merchantID: '$merchantID',
                 deletedCheck: '$deletedCheck',
               },
               pipeline: [
@@ -4632,7 +4632,7 @@ export class DealService implements OnModuleInit {
                     $expr: {
                       $and: [
                         {
-                          $eq: ['$$userID', '$userID'],
+                          $eq: ['$$merchantID', '$merchantID'],
                         },
                         {
                           $eq: ['$deletedCheck', false],
@@ -4645,7 +4645,7 @@ export class DealService implements OnModuleInit {
                   $lookup: {
                     from: 'locations',
                     as: 'locationData',
-                    localField: 'userID',
+                    localField: 'merchantID',
                     foreignField: 'merchantID',
                   },
                 },
@@ -4811,7 +4811,7 @@ export class DealService implements OnModuleInit {
             from: 'users',
             as: 'merchantDetails',
             let: {
-              userID: '$merchantID',
+              merchantID: '$merchantID',
               deletedCheck: '$deletedCheck',
             },
             pipeline: [
@@ -4820,7 +4820,7 @@ export class DealService implements OnModuleInit {
                   $expr: {
                     $and: [
                       {
-                        $eq: ['$$userID', '$userID'],
+                        $eq: ['$$merchantID', '$merchantID'],
                       },
                       {
                         $eq: ['$deletedCheck', false],
@@ -4833,7 +4833,7 @@ export class DealService implements OnModuleInit {
                 $lookup: {
                   from: 'locations',
                   as: 'locationData',
-                  localField: 'userID',
+                  localField: 'merchantID',
                   foreignField: 'merchantID',
                 },
               },
@@ -4949,7 +4949,7 @@ export class DealService implements OnModuleInit {
               from: 'users',
               as: 'merchantDetails',
               let: {
-                userID: '$merchantID',
+                merchantID: '$merchantID',
                 deletedCheck: '$deletedCheck',
               },
               pipeline: [
@@ -4958,7 +4958,7 @@ export class DealService implements OnModuleInit {
                     $expr: {
                       $and: [
                         {
-                          $eq: ['$$userID', '$userID'],
+                          $eq: ['$$merchantID', '$merchantID'],
                         },
                         {
                           $eq: ['$deletedCheck', false],
@@ -4971,7 +4971,7 @@ export class DealService implements OnModuleInit {
                   $lookup: {
                     from: 'locations',
                     as: 'locationData',
-                    localField: 'userID',
+                    localField: 'merchantID',
                     foreignField: 'merchantID',
                   },
                 },
@@ -5132,7 +5132,7 @@ export class DealService implements OnModuleInit {
               from: 'users',
               as: 'merchantDetails',
               let: {
-                userID: '$merchantID',
+                merchantID: '$merchantID',
                 deletedCheck: '$deletedCheck',
               },
               pipeline: [
@@ -5141,7 +5141,7 @@ export class DealService implements OnModuleInit {
                     $expr: {
                       $and: [
                         {
-                          $eq: ['$$userID', '$userID'],
+                          $eq: ['$$merchantID', '$merchantID'],
                         },
                         {
                           $eq: ['$deletedCheck', false],
@@ -5154,7 +5154,7 @@ export class DealService implements OnModuleInit {
                   $lookup: {
                     from: 'locations',
                     as: 'locationData',
-                    localField: 'userID',
+                    localField: 'merchantID',
                     foreignField: 'merchantID',
                   },
                 },
@@ -5336,7 +5336,7 @@ export class DealService implements OnModuleInit {
               from: 'users',
               as: 'merchantDetails',
               let: {
-                userID: '$merchantID',
+                merchantID: '$merchantID',
                 deletedCheck: '$deletedCheck',
               },
               pipeline: [
@@ -5345,7 +5345,7 @@ export class DealService implements OnModuleInit {
                     $expr: {
                       $and: [
                         {
-                          $eq: ['$$userID', '$userID'],
+                          $eq: ['$$merchantID', '$merchantID'],
                         },
                         {
                           $eq: ['$deletedCheck', false],
@@ -5358,7 +5358,7 @@ export class DealService implements OnModuleInit {
                   $lookup: {
                     from: 'locations',
                     as: 'locationData',
-                    localField: 'userID',
+                    localField: 'merchantID',
                     foreignField: 'merchantID',
                   },
                 },
@@ -5531,7 +5531,7 @@ export class DealService implements OnModuleInit {
               from: 'users',
               as: 'merchantDetails',
               let: {
-                userID: '$merchantID',
+                merchantID: '$merchantID',
                 deletedCheck: '$deletedCheck',
               },
               pipeline: [
@@ -5540,7 +5540,7 @@ export class DealService implements OnModuleInit {
                     $expr: {
                       $and: [
                         {
-                          $eq: ['$$userID', '$userID'],
+                          $eq: ['$$merchantID', '$merchantID'],
                         },
                         {
                           $eq: ['$deletedCheck', false],
@@ -5553,7 +5553,7 @@ export class DealService implements OnModuleInit {
                   $lookup: {
                     from: 'locations',
                     as: 'locationData',
-                    localField: 'userID',
+                    localField: 'merchantID',
                     foreignField: 'merchantID',
                   },
                 },
@@ -5729,7 +5729,7 @@ export class DealService implements OnModuleInit {
               from: 'users',
               as: 'merchantDetails',
               let: {
-                userID: '$recentlyViewed.merchantID',
+                merchantID: '$recentlyViewed.merchantID',
                 deletedCheck: '$deletedCheck',
               },
               pipeline: [
@@ -5738,7 +5738,7 @@ export class DealService implements OnModuleInit {
                     $expr: {
                       $and: [
                         {
-                          $eq: ['$$userID', '$userID'],
+                          $eq: ['$$merchantID', '$merchantID'],
                         },
                         {
                           $eq: ['$deletedCheck', false],
@@ -5751,7 +5751,7 @@ export class DealService implements OnModuleInit {
                   $lookup: {
                     from: 'locations',
                     as: 'locationData',
-                    localField: 'userID',
+                    localField: 'merchantID',
                     foreignField: 'merchantID',
                   },
                 },
@@ -6097,14 +6097,14 @@ export class DealService implements OnModuleInit {
       }
 
       const merchant = await this._userModel.findOne({
-        userID: deal.merchantID,
+        merchantID: deal.merchantID,
         deletedCheck: false,
       });
 
       const customer = await this._userModel.findById(req.user.id);
 
       const affiliate = await this._userModel.findOne({
-        userID: buyNowDto.affiliateID,
+        affiliateID: buyNowDto.affiliateID,
         deletedCheck: false,
       });
 
@@ -6243,12 +6243,12 @@ export class DealService implements OnModuleInit {
         paymentStatus: BILLINGSTATUS.paid,
       };
 
-      // const categoryAnalytics = await this.categoryAnalyticsModel.findOne({customerID: customer.userID, categoryName: deal.categoryName});
+      // const categoryAnalytics = await this.categoryAnalyticsModel.findOne({customerID: customer.customerID, categoryName: deal.categoryName});
       // if (categoryAnalytics) {
       //   await this.categorymodel.updateOne({_id: categoryAnalytics._id},{$inc:{count: 1}});
       // } else if (!categoryAnalytics) {
       //   let dealCategoryAnalyticsDto: any = {
-      //     customerID: customer.userID,
+      //     customerID: customer.customerID,
       //     categoryName: deal.categoryName,
       //     // subCategoryName: deal.subCategory,
       //     count: 1
@@ -6272,7 +6272,7 @@ export class DealService implements OnModuleInit {
       await this.dealModel.updateOne({ dealID: buyNowDto.dealID }, deal);
 
       await this._userModel.updateOne(
-        { userID: deal.merchantID },
+        { merchantID: deal.merchantID },
         {
           purchasedVouchers: merchant.purchasedVouchers + buyNowDto.quantity,
           totalEarnings: merchant.totalEarnings + netFeeForSubDeal,

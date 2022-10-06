@@ -807,7 +807,7 @@ export class VouchersService {
       }
 
       const merchant = await this.userModel.findOne({
-        userID: voucher.merchantID,
+        merchantID: voucher.merchantID,
       });
 
       let redeemDate = new Date().getTime();
@@ -852,7 +852,7 @@ export class VouchersService {
       // await this.dealModel.updateOne({ dealID: voucher.dealID }, deal);
 
       await this.userModel.updateOne(
-        { userID: voucher.merchantID },
+        { merchantID: voucher.merchantID },
         {
           redeemedVouchers: merchant.redeemedVouchers + 1,
           // totalEarnings: merchant.totalEarnings + net,
@@ -1014,7 +1014,7 @@ export class VouchersService {
       }
 
       const merchant = await this.userModel.findOne({
-        userID: voucher.merchantID,
+        merchantID: voucher.merchantID,
       });
 
       if (merchant.voucherPinCode != redeemVoucherDto.pin) {
@@ -1061,7 +1061,7 @@ export class VouchersService {
       // await this.dealModel.updateOne({ dealID: voucher.dealID }, deal);
 
       await this.userModel.updateOne(
-        { userID: voucher.merchantID },
+        { merchantID: voucher.merchantID },
         {
           redeemedVouchers: merchant.redeemedVouchers + 1,
           // totalEarnings: merchant.totalEarnings + net,
@@ -1149,7 +1149,7 @@ export class VouchersService {
 
       const merchant = await this.userModel.findOne({
         _id: req.user.id,
-        userID: req.user.userID,
+        merchantID: req.user.merchantID,
         deletedCheck: false,
         status: USERSTATUS.approved,
         role: USERROLE.merchant
