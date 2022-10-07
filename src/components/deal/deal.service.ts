@@ -904,6 +904,28 @@ export class DealService implements OnModuleInit {
                           },
                         },
                       },
+                      {
+                        $lookup: {
+                          from: 'reviews',
+                          let : {
+                            customerID: '$userID'
+                          },
+                          pipeline: [
+                            {
+                              $match: {
+                                $expr: {
+                                  $and: [
+                                    {
+                                      $eq: ['$customerID', '$$customerID'],
+                                    },
+                                  ],
+                                },
+                              },
+                            },
+                          ],
+                          as: 'customerReviews',
+                        }
+                      }
                     ],
                     as: 'customerData',
                   },
@@ -922,13 +944,19 @@ export class DealService implements OnModuleInit {
                       ],
                     },
                     customerImage: '$customerData.profilePicURL',
+                    customerReviewCount: {
+                      $size: '$customerData.customerReviews'
+                    },
+                    imagesCount: {
+                      $size: '$mediaUrl'
+                    }
                   },
                 },
                 {
                   $project: {
                     customerData: 0,
                     _id: 0,
-                    mediaUrl: 0,
+                    // mediaUrl: 0,
                   },
                 },
                 {
