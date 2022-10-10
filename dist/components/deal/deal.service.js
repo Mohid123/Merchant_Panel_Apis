@@ -766,6 +766,28 @@ let DealService = class DealService {
                                                 },
                                             },
                                         },
+                                        {
+                                            $lookup: {
+                                                from: 'reviews',
+                                                let: {
+                                                    customerID: '$userID'
+                                                },
+                                                pipeline: [
+                                                    {
+                                                        $match: {
+                                                            $expr: {
+                                                                $and: [
+                                                                    {
+                                                                        $eq: ['$customerID', '$$customerID'],
+                                                                    },
+                                                                ],
+                                                            },
+                                                        },
+                                                    },
+                                                ],
+                                                as: 'customerReviews',
+                                            }
+                                        }
                                     ],
                                     as: 'customerData',
                                 },
@@ -784,13 +806,18 @@ let DealService = class DealService {
                                         ],
                                     },
                                     customerImage: '$customerData.profilePicURL',
+                                    customerReviewCount: {
+                                        $size: '$customerData.customerReviews'
+                                    },
+                                    imagesCount: {
+                                        $size: '$mediaUrl'
+                                    }
                                 },
                             },
                             {
                                 $project: {
                                     customerData: 0,
                                     _id: 0,
-                                    mediaUrl: 0,
                                 },
                             },
                             {
