@@ -309,7 +309,7 @@ export class UsersService {
           $match: {
             _id: id,
             deletedCheck: false,
-            role: USERROLE.customer
+            // role: USERROLE.customer
           }
         },
         {
