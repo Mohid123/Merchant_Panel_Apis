@@ -908,7 +908,7 @@ export class DealService implements OnModuleInit {
                         $lookup: {
                           from: 'reviews',
                           let : {
-                            customerID: '$userID'
+                            customerID: '$customerID'
                           },
                           pipeline: [
                             {
@@ -956,7 +956,6 @@ export class DealService implements OnModuleInit {
                   $project: {
                     customerData: 0,
                     _id: 0,
-                    // mediaUrl: 0,
                   },
                 },
                 {
