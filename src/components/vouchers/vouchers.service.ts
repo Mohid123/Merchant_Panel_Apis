@@ -695,7 +695,7 @@ export class VouchersService {
               from: 'users',
               as: 'customerData',
               localField: 'customerID',
-              foreignField: 'userID'
+              foreignField: 'customerID'
             }
           },
           {

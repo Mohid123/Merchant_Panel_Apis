@@ -223,8 +223,6 @@ export class UsersController {
     return this._usersService.resetPassword(resetPasswordDto, req);
   }
 
-  // @UseGuards(JwtAdminAuthGuard)
-  // @ApiBearerAuth()
   @Get('getPendingUsers')
   getPendingUsers(
     @Query('offset') offset: number = 0,
@@ -233,22 +231,28 @@ export class UsersController {
     return this._usersService.getPendingUsers(offset, limit);
   }
 
-  // @UseGuards(JwtAdminAuthGuard)
-  // @ApiBearerAuth()
   @ApiQuery({ name: 'status', enum: USERSTATUS, required: false })
-  @Get('approvePendingUsers/:userID')
-  approvePendingUsers(
+  @Get('approvePendingMerchants/:userID')
+  approvePendingMerchants(
     @Query('status') status: USERSTATUS,
     @Param('userID') userID: string,
   ) {
-    return this._usersService.approvePendingUsers(status, userID);
+    return this._usersService.approvePendingMerchants(status, userID);
+  }
+
+  @ApiQuery({ name: 'status', enum: USERSTATUS, required: false })
+  @Get('approvePendingAffiliates/:userID')
+  approvePendingAffiliates(
+    @Query('status') status: USERSTATUS,
+    @Param('userID') userID: string,
+  ) {
+    return this._usersService.approvePendingAffiliates(status, userID);
   }
 
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @Post('validateVatNumber/:vatNumber')
   validateVatNumber(
-    // @Param('countryCode') countryCode: string,
     @Param('vatNumber') vatNumber: string,
   ) {
     return this._usersService.validateVatNumber(vatNumber);
@@ -285,4 +289,9 @@ export class UsersController {
   getCustomerByID(@Param('customerID') customerID: string) {
     return this._usersService.getCustomerByID(customerID);
   }
+
+  // @Get('addNewIDs')
+  // addNewIDs () {
+  //   return this._usersService.addNewIDs();
+  // }
 }
