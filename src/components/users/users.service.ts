@@ -2257,7 +2257,7 @@ export class UsersService {
 
   async addNewIDs () {
     try {
-      let docs = await this._userModel.find({});
+      let docs = await this._userModel.find({role: USERROLE.merchant});
 
       let num = 0;
 
@@ -2265,8 +2265,8 @@ export class UsersService {
         num++;
         console.log(`${num}`);
 
-        await this._userModel.updateOne({role: 'Merchant'},{$set:{affiliateID: ""}});
-        await this._userModel.updateOne({role: 'Merchant'},{$rename:{"userID": "merchantID"}});
+        await this._userModel.updateOne({_id: doc._id}, {$set:{affiliateID: ''}});
+        await this._userModel.updateOne({_id: doc._id}, {$rename:{'userID': 'merchantID'}});
        
         let genereatedCustomerID = await this.generateCustomerId('customerID');
 
