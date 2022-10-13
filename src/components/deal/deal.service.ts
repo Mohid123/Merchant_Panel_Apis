@@ -4109,9 +4109,37 @@ export class DealService implements OnModuleInit {
         };
       }
 
-      console.log(sort);
-      console.log(matchFilter);
-      console.log(locationFilter);
+      let fromPriceFilter = {};
+      let toPriceFilter = {};
+
+      if(fromPrice){
+        fromPriceFilter = {
+          $gte: ['$minDealPrice', minValue],
+          ...fromPriceFilter
+        }
+      }
+
+      if(toPrice){
+        toPriceFilter = {
+          $lte: ['$minDealPrice', maxValue]
+        }
+      }
+
+      let ratingFilter = {};
+
+      if (reviewRating) {
+        ratingFilter = {
+          $gte: ['$ratingsAverage', rating]
+        }
+      }
+
+      let provincesArray=[];
+
+      if (filterCategoriesApiDto.provincesArray.length == 0) {
+        provincesArray = ['West-Vlaanderen','Vlaams-Brabant','Limburg','Oost-Vlaanderen','Antwerpen'];
+      } else {
+        provincesArray = filterCategoriesApiDto.provincesArray
+      }
 
       const totalCount: any = await this.dealModel.aggregate([
         {
@@ -4261,6 +4289,10 @@ export class DealService implements OnModuleInit {
                       {
                         $lte: ['$minDealPrice', 50],
                       },
+                      {
+                        ...ratingFilter
+                      },
+                      { $in : ['$province', provincesArray]}
                     ],
                   },
                   1,
@@ -4279,6 +4311,10 @@ export class DealService implements OnModuleInit {
                       {
                         $lte: ['$minDealPrice', 150],
                       },
+                      {
+                        ...ratingFilter
+                      },
+                      { $in : ['$province', provincesArray]}
                     ],
                   },
                   1,
@@ -4297,6 +4333,10 @@ export class DealService implements OnModuleInit {
                       {
                         $lte: ['$minDealPrice', 300],
                       },
+                      {
+                        ...ratingFilter
+                      },
+                      { $in : ['$province', provincesArray]}
                     ],
                   },
                   1,
@@ -4315,6 +4355,10 @@ export class DealService implements OnModuleInit {
                       {
                         $lte: ['$minDealPrice', 450],
                       },
+                      {
+                        ...ratingFilter
+                      },
+                      { $in : ['$province', provincesArray]}
                     ],
                   },
                   1,
@@ -4326,7 +4370,15 @@ export class DealService implements OnModuleInit {
               $sum: {
                 $cond: [
                   {
-                    $gte: ['$minDealPrice', 450],
+                    $and: [
+                      {
+                        $gte: ['$minDealPrice', 450],
+                      },
+                      {
+                        ...ratingFilter
+                      },
+                      { $in : ['$province', provincesArray]}
+                    ],
                   },
                   1,
                   0,
@@ -4336,8 +4388,16 @@ export class DealService implements OnModuleInit {
             FourUp: {
               $sum: {
                 $cond: [
-                  {
-                    $gte: ['$ratingsAverage', 4],
+                  {$and: [
+                    {$gte: ['$ratingsAverage', 4]},
+                    {
+                      ...fromPriceFilter
+                    },
+                    {
+                      ...toPriceFilter
+                    },
+                    { $in : ['$province', provincesArray]}
+                  ],
                   },
                   1,
                   0,
@@ -4348,7 +4408,16 @@ export class DealService implements OnModuleInit {
               $sum: {
                 $cond: [
                   {
-                    $gte: ['$ratingsAverage', 3],
+                    $and: [
+                      {$gte: ['$ratingsAverage', 3]},
+                      {
+                        ...fromPriceFilter
+                      },
+                      {
+                        ...toPriceFilter
+                      },
+                      { $in : ['$province', provincesArray]}
+                    ],
                   },
                   1,
                   0,
@@ -4359,7 +4428,16 @@ export class DealService implements OnModuleInit {
               $sum: {
                 $cond: [
                   {
-                    $gte: ['$ratingsAverage', 2],
+                    $and: [
+                      {$gte: ['$ratingsAverage', 2]},
+                      {
+                        ...fromPriceFilter
+                      },
+                      {
+                        ...toPriceFilter
+                      },
+                      { $in : ['$province', provincesArray]}
+                    ],
                   },
                   1,
                   0,
@@ -4370,7 +4448,16 @@ export class DealService implements OnModuleInit {
               $sum: {
                 $cond: [
                   {
-                    $gte: ['$ratingsAverage', 1],
+                    $and: [
+                      {$gte: ['$ratingsAverage', 1]},
+                      {
+                        ...fromPriceFilter
+                      },
+                      {
+                        ...toPriceFilter
+                      },
+                      { $in : ['$province', provincesArray]}
+                    ],
                   },
                   1,
                   0,
@@ -4381,7 +4468,16 @@ export class DealService implements OnModuleInit {
               $sum: {
                 $cond: [
                   {
-                    $gte: ['$ratingsAverage', 0],
+                    $and: [
+                      {$gte: ['$ratingsAverage', 0]},
+                      {
+                        ...fromPriceFilter
+                      },
+                      {
+                        ...toPriceFilter
+                      },
+                      { $in : ['$province', provincesArray]}
+                    ],
                   },
                   1,
                   0,
@@ -4392,7 +4488,18 @@ export class DealService implements OnModuleInit {
               $sum: {
                 $cond: [
                   {
-                    $eq: ['$province', 'West-Vlaanderen'],
+                    $and:[
+                    {$eq: ['$province', 'West-Vlaanderen']},
+                    {
+                      ...fromPriceFilter
+                    },
+                    {
+                      ...toPriceFilter
+                    },
+                    {
+                      ...ratingFilter
+                    },
+                    ]
                   },
                   1,
                   0,
@@ -4403,7 +4510,18 @@ export class DealService implements OnModuleInit {
               $sum: {
                 $cond: [
                   {
-                    $eq: ['$province', 'Oost-Vlaanderen'],
+                    $and:[
+                    {$eq: ['$province', 'Oost-Vlaanderen']},
+                    {
+                      ...fromPriceFilter
+                    },
+                    {
+                      ...toPriceFilter
+                    },
+                    {
+                      ...ratingFilter
+                    },
+                    ]
                   },
                   1,
                   0,
@@ -4414,7 +4532,18 @@ export class DealService implements OnModuleInit {
               $sum: {
                 $cond: [
                   {
-                    $eq: ['$province', 'Antwerpen'],
+                    $and:[
+                    {$eq: ['$province', 'Antwerpen']},
+                    {
+                      ...fromPriceFilter
+                    },
+                    {
+                      ...toPriceFilter
+                    },
+                    {
+                      ...ratingFilter
+                    },
+                    ]
                   },
                   1,
                   0,
@@ -4425,7 +4554,18 @@ export class DealService implements OnModuleInit {
               $sum: {
                 $cond: [
                   {
-                    $eq: ['$province', 'Limburg'],
+                    $and:[
+                    {$eq: ['$province', 'Limburg']},
+                    {
+                      ...fromPriceFilter
+                    },
+                    {
+                      ...toPriceFilter
+                    },
+                    {
+                      ...ratingFilter
+                    },
+                    ]
                   },
                   1,
                   0,
@@ -4436,7 +4576,18 @@ export class DealService implements OnModuleInit {
               $sum: {
                 $cond: [
                   {
-                    $eq: ['$province', 'Vlaams-Brabant'],
+                    $and:[
+                    {$eq: ['$province', 'Vlaams-Brabant']},
+                    {
+                      ...fromPriceFilter
+                    },
+                    {
+                      ...toPriceFilter
+                    },
+                    {
+                      ...ratingFilter
+                    },
+                    ]
                   },
                   1,
                   0,
