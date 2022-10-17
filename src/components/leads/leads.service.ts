@@ -42,6 +42,8 @@ export class LeadsService {
       leadDto.tradeName = leadDto.companyName;
   
       leadDto.status = USERSTATUS.new;
+
+      leadDto.role = USERROLE.merchant;
   
       leadDto.countryCode = 'BE';
   
@@ -68,6 +70,8 @@ export class LeadsService {
       leadDto.tradeName = leadDto.companyName;
   
       leadDto.status = USERSTATUS.new;
+
+      leadDto.role = USERROLE.merchant;
   
       leadDto.countryCode = 'BE';
   
