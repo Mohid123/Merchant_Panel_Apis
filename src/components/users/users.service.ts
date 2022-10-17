@@ -254,8 +254,6 @@ export class UsersService {
         throw new HttpException('Customer not found', HttpStatus.NOT_FOUND);
       }
 
-      debugger
-
       if(usersDto.password){
 
         const comaprePasswords = await bcrypt.compare(
@@ -2312,7 +2310,6 @@ export class UsersService {
 
   async approveMerchant(userID, approveMerchantDto) {
     try {
-      debugger
       const user = await this._userModel.findOne({
         _id: userID,
         deletedCheck: false,

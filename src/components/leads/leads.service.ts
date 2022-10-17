@@ -21,7 +21,7 @@ export class LeadsService {
 
   async createLead(leadDto) {
     leadDto.email = leadDto?.email?.toLowerCase();
-    debugger
+
     const user = await this._userModel.findOne({
       email: leadDto.email,
       role: USERROLE.customer,
