@@ -335,7 +335,8 @@ export class AuthService {
       role: {
         $in: [
           USERROLE.merchant,
-          USERROLE.affiliate
+          USERROLE.affiliate,
+          USERROLE.admin
         ]
       }
     });
@@ -345,7 +346,8 @@ export class AuthService {
       role: {
         $in: [
           USERROLE.merchant,
-          USERROLE.affiliate
+          USERROLE.affiliate,
+          USERROLE.admin
         ]
       }
     });
