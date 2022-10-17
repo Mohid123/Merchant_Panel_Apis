@@ -7,10 +7,6 @@ export class SignUpDTO {
   @IsNotEmpty()
   email: string;
 
-  @ApiProperty()
-  @IsNotEmpty()
-  password: string;
-
   // Personal Details
 
   @ApiProperty()

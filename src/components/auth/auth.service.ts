@@ -20,6 +20,7 @@ import { VoucherCounterInterface } from 'src/interface/vouchers/vouchersCounter.
 import { LeadInterface } from 'src/interface/lead/lead.interface';
 import { USERROLE } from 'src/enum/user/userrole.enum';
 import axios from 'axios';
+import { businessHours } from '../utils/businesshours';
 
 var htmlencode = require('htmlencode');
 var generator = require('generate-password');
@@ -233,22 +234,45 @@ export class AuthService {
       email: loginDto.email,
       deletedCheck: false,
     });
-    if (user) {
-      throw new ForbiddenException('Email already exists');
-    }
-    loginDto._id = new Types.ObjectId().toString();
 
-    loginDto.status = USERSTATUS.new;
-    loginDto.role = USERROLE.merchant;
-    loginDto.tradeName = loginDto.companyName;
-    loginDto.countryCode = 'BE';
-    loginDto.leadSource = 'web';
-
-    if (loginDto.role == USERROLE.merchant) {
-      loginDto.platformPercentage = 25;
+    if (user && user.role == USERROLE.merchant) {
+      throw new ForbiddenException('This user is already a merchant');
     }
 
-    return await new this._usersService(loginDto).save();
+    if (user && user.role == USERROLE.affiliate) {
+      throw new ForbiddenException('This user is already an affiliate');
+    }
+
+    if (user && user.role == USERROLE.customer) {
+      loginDto.status = USERSTATUS.new;
+      // loginDto.role = USERROLE.merchant;
+      loginDto.tradeName = loginDto.companyName;
+      loginDto.countryCode = 'BE';
+      loginDto.leadSource = 'web';
+      loginDto.businessHours = businessHours;
+
+      if (loginDto.role == USERROLE.merchant) {
+        loginDto.platformPercentage = 25;
+      }
+
+      await this._usersService.updateOne({_id: user._id}, loginDto);
+      return user;
+    } else {
+      loginDto._id = new Types.ObjectId().toString();
+
+      loginDto.status = USERSTATUS.new;
+      loginDto.role = USERROLE.merchant;
+      loginDto.tradeName = loginDto.companyName;
+      loginDto.businessHours = businessHours;
+      loginDto.countryCode = 'BE';
+      loginDto.leadSource = 'web';
+
+      if (loginDto.role == USERROLE.merchant) {
+        loginDto.platformPercentage = 25;
+      }
+
+      return await new this._usersService(loginDto).save();
+    }
   }
 
   async signupCustomer(signupUserDto) {
@@ -264,6 +288,7 @@ export class AuthService {
 
     signupUserDto.status = USERSTATUS.approved;
     signupUserDto.role = USERROLE.customer;
+    signupUserDto.newUser = false;
     signupUserDto.customerID = await this.generateCustomerId('customerID');
 
     const salt = await bcrypt.genSalt();
@@ -282,16 +307,6 @@ export class AuthService {
 
     return { newUser, token: token.access_token };
   }
-
-  // async signupCustomerAsMerchant () {
-  //   try {
-  //     const user = await this._usersService.findOne({
-        
-  //     })
-  //   } catch (err) {
-  //     throw new HttpException(err, HttpStatus.BAD_REQUEST);
-  //   }
-  // }
 
   async sendMail(emailDto: EmailDTO) {
     // create reusable transporter object using the default SMTP transport
@@ -314,6 +329,31 @@ export class AuthService {
   }
 
   async isEmailExists(email) {
+    const user = await this._usersService.findOne({
+      email: email?.toLowerCase(),
+      deletedCheck: false,
+      role: {
+        $in: [
+          USERROLE.merchant,
+          USERROLE.affiliate
+        ]
+      }
+    });
+    const lead = await this._leadModel.findOne({
+      email: email?.toLowerCase(),
+      deletedCheck: false,
+      role: {
+        $in: [
+          USERROLE.merchant,
+          USERROLE.affiliate
+        ]
+      }
+    });
+
+    return user || lead ? true : false;
+  }
+
+  async isEmailExistsForCustomerPanel (email) {
     const user = await this._usersService.findOne({
       email: email?.toLowerCase(),
       deletedCheck: false,

@@ -23,6 +23,7 @@ import { Location } from 'src/interface/location/location.interface';
 import { LeadInterface } from 'src/interface/lead/lead.interface';
 import { USERROLE } from 'src/enum/user/userrole.enum';
 import { SORT } from 'src/enum/sort/sort.enum';
+import { businessHours } from '../utils/businesshours';
 
 var htmlencode = require('htmlencode');
 var generator = require('generate-password');
@@ -1273,58 +1274,290 @@ export class UsersService {
         throw new HttpException('User not found', HttpStatus.NOT_FOUND);
       }
 
-      let generatedMerchantID = await this.generateMerchantId('merchantID');
-      let generatedCustomerID = await this.generateCustomerId('customerID');
+      if (user && user.role == USERROLE.merchant) {
+        let generatedMerchantID = await this.generateMerchantId('merchantID');
+        let generatedCustomerID = await this.generateCustomerId('customerID');
 
-      let generatedPassword = await this.generatePassword();
-      const salt = await bcrypt.genSalt();
-      let hashedPassword = await bcrypt.hash(generatedPassword, salt);
+        let generatedPassword = await this.generatePassword();
+        const salt = await bcrypt.genSalt();
+        let hashedPassword = await bcrypt.hash(generatedPassword, salt);
 
-      const pinCode = otpGenerator.generate(4, {
-        upperCaseAlphabets: false,
-        lowerCaseAlphabets: false,
-        specialChars: false,
-      });
+        const pinCode = otpGenerator.generate(4, {
+          upperCaseAlphabets: false,
+          lowerCaseAlphabets: false,
+          specialChars: false,
+        });
 
-      const userObj = {
-        ID: new Types.ObjectId().toHexString(),
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email.toLowerCase(),
-        password: generatedPassword,
-        legalName: user.legalName,
-        vatNumber: user.vatNumber,
-        phoneNumber: user.phoneNumber,
-        city: user.city,
-        streetAddress: user.streetAddress,
-        province: user.province,
-        zipCode: user.zipCode,
-      };
+        const userObj = {
+          ID: new Types.ObjectId().toHexString(),
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email.toLowerCase(),
+          password: generatedPassword,
+          legalName: user.legalName,
+          vatNumber: user.vatNumber,
+          phoneNumber: user.phoneNumber,
+          city: user.city,
+          streetAddress: user.streetAddress,
+          province: user.province,
+          zipCode: user.zipCode,
+        };
 
-      const locObj = {
-        merchantID: generatedMerchantID,
-        streetAddress: user.streetAddress,
-        zipCode: user.zipCode,
-        city: user.city,
-        googleMapPin: user.googleMapPin,
-        province: user.province,
-        phoneNumber: user.phoneNumber,
-      };
-      if (userID) {
-        await this._leadModel.updateOne(
+        const locObj = {
+          merchantID: generatedMerchantID,
+          streetAddress: user.streetAddress,
+          zipCode: user.zipCode,
+          city: user.city,
+          googleMapPin: user.googleMapPin,
+          province: user.province,
+          phoneNumber: user.phoneNumber,
+        };
+        if (userID) {
+          await this._leadModel.updateOne(
+            { _id: userID },
+            { deletedCheck: true },
+          );
+        }
+        const location = await new this._locationModel(locObj).save();
+
+        const emailDto: EmailDTO = {
+          from: `"Divideals" <${process.env.EMAIL}>`,
+          to: userObj.email,
+          subject: 'Your password is generated',
+          text: '',
+          html: `
+              <html>
+                <head>
+                <title></title>
+                <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+                <meta name="viewport" content="width=device-width, initial-scale=1">
+                <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+                <style type="text/css">
+                  /* FONTS */
+                    @media screen {
+                    @font-face {
+                      font-family: 'Lato';
+                      font-style: normal;
+                      font-weight: 400;
+                      src: local('Lato Regular'), local('Lato-Regular'), url(https://fonts.gstatic.com/s/lato/v11/qIIYRU-oROkIk8vfvxw6QvesZW2xOQ-xsNqO47m55DA.woff) format('woff');
+                    }
+                    
+                    @font-face {
+                      font-family: 'Lato';
+                      font-style: normal;
+                      font-weight: 700;
+                      src: local('Lato Bold'), local('Lato-Bold'), url(https://fonts.gstatic.com/s/lato/v11/qdgUG4U09HnJwhYI-uK18wLUuEpTyoUstqEm5AMlJo4.woff) format('woff');
+                    }
+                    
+                    @font-face {
+                      font-family: 'Lato';
+                      font-style: italic;
+                      font-weight: 400;
+                      src: local('Lato Italic'), local('Lato-Italic'), url(https://fonts.gstatic.com/s/lato/v11/RYyZNoeFgb0l7W3Vu1aSWOvvDin1pK8aKteLpeZ5c0A.woff) format('woff');
+                    }
+                    
+                    @font-face {
+                      font-family: 'Lato';
+                      font-style: italic;
+                      font-weight: 700;
+                      src: local('Lato Bold Italic'), local('Lato-BoldItalic'), url(https://fonts.gstatic.com/s/lato/v11/HkF_qI1x_noxlxhrhMQYELO3LdcAZYWl9Si6vvxL-qU.woff) format('woff');
+                    }
+                    }
+                    /* CLIENT-SPECIFIC STYLES */
+                    body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+                    table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+                    img { -ms-interpolation-mode: bicubic; }
+                    /* RESET STYLES */
+                    img { border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; }
+                    table { border-collapse: collapse !important; }
+                    body { height: 100% !important; margin: 0 !important; padding: 0 !important; width: 100% !important; }
+                    /* iOS BLUE LINKS */
+                    a[x-apple-data-detectors] {
+                        color: inherit !important;
+                        text-decoration: none !important;
+                        font-size: inherit !important;
+                        font-family: inherit !important;
+                        font-weight: inherit !important;
+                        line-height: inherit !important;
+                    }
+                    /* ANDROID CENTER FIX */
+                    div[style*="margin: 16px 0;"] { margin: 0 !important; }
+                </style>
+                </head>
+                <body style="background-color: #0081E9; margin: 0 !important; padding: 0 !important;">
+                <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                    <!-- LOGO -->
+                    <tr>
+                        <td bgcolor="#0081E9" align="center">
+                            <table border="0" cellpadding="0" cellspacing="0" width="480" >
+                                <tr>
+                                    <td align="center" valign="top" style="padding: 40px 10px 40px 10px;">
+                                      <div style="padding: 40px 20px 20px 20px; border-radius: 4px 4px 0px 0px; color: #FFFFFF; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 48px; font-weight: 400; letter-spacing: 4px; line-height: 48px;">
+                                        <h6 style="margin:0px"> DIVIDEALS</h6>
+                                      </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <!-- HERO -->
+                    <tr>
+                        <td bgcolor="#0081E9" align="center" style="padding: 0px 10px 0px 10px;">
+                            <table border="0" cellpadding="0" cellspacing="0" width="480" >
+                                <tr>
+                                    <td bgcolor="#FFFFFF" align="center" valign="top" style="padding: 40px 20px 20px 20px; border-radius: 4px 4px 0px 0px; color: #111111; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 48px; font-weight: 400; letter-spacing: 4px; line-height: 48px;">
+                                      <h6 style="margin:0px"> Dear</h6>
+                                      <h1 style="font-size: 32px; font-weight: 400; margin: 0;">${
+                                        userObj.firstName
+                                      } ${userObj.lastName}</h1>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <!-- COPY BLOCK -->
+                    <tr>
+                        <td bgcolor="#F4F4F4" align="center" style="padding: 0px 10px 0px 10px;">
+                            <table border="0" cellpadding="0" cellspacing="0" width="480" >
+                              <!-- COPY -->
+                              <tr>
+                                <td bgcolor="#FFFFFF" align="left" style="padding: 20px 30px 40px 30px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 18px; font-weight: 400; line-height: 25px;" >
+                                  <p style="margin: 0;">Your temporary password on <b>Divideals Merchant Panel</b> is generated. Please use this password to login into your account. </p>
+                                </td>
+                              </tr>
+                              <!-- BULLETPROOF BUTTON -->
+                              <tr>
+                                <td bgcolor="#FFFFFF" align="left">
+                                  <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                    <tr>
+                                      <td bgcolor="#FFFFFF" align="center" style="padding: 20px 30px 60px 30px;">
+                                        <table border="0" cellspacing="0" cellpadding="0">
+                                          <tr>
+                                              <td align="center" style="border-radius: 3px;" ><a style="font-size: 20px; font-family: Helvetica, Arial, sans-serif; color: #FFFFFF; text-decoration: none; color: black; text-decoration: none; padding: 15px 25px; border-radius: 2px; border: 1px solid #0081E9; display: inline-block;"><b>${htmlencode.htmlEncode(
+                                                userObj.password,
+                                              )}</b></a></td>
+                                          </tr>
+                                        </table>
+                                      </td>
+                                    </tr>
+                                  </table>
+                                </td>
+                              </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <!-- COPY CALLOUT -->
+                    <tr>
+                        <td bgcolor="#F4F4F4" align="center" style="padding: 0px 10px 0px 10px;">
+                            <table border="0" cellpadding="0" cellspacing="0" width="480" >
+                            </table>
+                        </td>
+                    </tr>
+                    <!-- SUPPORT CALLOUT -->
+                    <tr>
+                        <td bgcolor="#F4F4F4" align="center" style="padding: 30px 10px 0px 10px;">
+                            <table border="0" cellpadding="0" cellspacing="0" width="480" >
+                                <!-- HEADLINE -->
+                                <tr>
+                                  <td bgcolor="#0081E9" align="center" style="padding: 30px 30px 30px 30px; border-radius: 4px 4px 4px 4px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 18px; font-weight: 400; line-height: 25px;" >
+                                    <h2 style="font-size: 20px; font-weight: 400; color: #FFFFFF; margin: 0;">Need more help?</h2>
+                                    <p style="margin: 0;"><a style="color: #FFFFFF;">We&rsquo;re here, ready to talk</a></p>
+                                  </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <!-- FOOTER -->
+                    <tr>
+                        <td bgcolor="#F4F4F4" align="center" style="padding: 0px 10px 0px 10px;">
+                            <table border="0" cellpadding="0" cellspacing="0" width="480" >
+                              <!-- PERMISSION REMINDER -->
+                              <tr>
+                                <td bgcolor="#F4F4F4" align="left" style="padding: 0px 30px 30px 30px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 14px; font-weight: 400; line-height: 18px;" >
+                                  <p style="margin: 0;">You received this email because you requested for a password. If you did not, <a  style="color: #111111; font-weight: 700;">please contact us.</a>.</p>
+                                </td>
+                              </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+                </body>
+                </html>
+              `,
+        };
+
+        this.sendMail(emailDto);
+
+        // user.password = generatedPassword;
+
+        const updatedUser = await this._userModel.updateOne(
           { _id: userID },
-          { deletedCheck: true },
+          {
+            status: status,
+            password: hashedPassword,
+            voucherPinCode: pinCode,
+            merchantID: generatedMerchantID,
+            customerID: generatedCustomerID,
+            finePrint: `<p><strong>Purchase:</strong> let us know how many voucher one person can purchase<br><strong>Reservations:</strong> let us know how/where people can make a reservation<br><strong>Cancellation:</strong> let us know your cancellation policy<br><strong>More info:</strong> is there anything else important people should be aware of?</p>`
+          },
         );
-      }
-      const location = await new this._locationModel(locObj).save();
 
-      const emailDto: EmailDTO = {
-        from: `"Divideals" <${process.env.EMAIL}>`,
-        to: userObj.email,
-        subject: 'Your password is generated',
-        text: '',
-        html: `
-            <html>
+        return { message: 'Merchant Approved Successfully!' };
+
+      } else if (user && user.role == USERROLE.customer) {
+
+        let generatedMerchantID = await this.generateMerchantId('merchantID');
+        // let generatedCustomerID = await this.generateCustomerId('customerID');
+
+        // let generatedPassword = await this.generatePassword();
+        // const salt = await bcrypt.genSalt();
+        // let hashedPassword = await bcrypt.hash(generatedPassword, salt);
+
+        const pinCode = otpGenerator.generate(4, {
+          upperCaseAlphabets: false,
+          lowerCaseAlphabets: false,
+          specialChars: false,
+        });
+
+        const userObj = {
+          ID: new Types.ObjectId().toHexString(),
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email.toLowerCase(),
+          // password: generatedPassword,
+          legalName: user.legalName,
+          vatNumber: user.vatNumber,
+          phoneNumber: user.phoneNumber,
+          city: user.city,
+          streetAddress: user.streetAddress,
+          province: user.province,
+          zipCode: user.zipCode,
+        };
+
+        const locObj = {
+          merchantID: generatedMerchantID,
+          streetAddress: user.streetAddress,
+          zipCode: user.zipCode,
+          city: user.city,
+          googleMapPin: user.googleMapPin,
+          province: user.province,
+          phoneNumber: user.phoneNumber,
+        };
+        if (userID) {
+          await this._leadModel.updateOne(
+            { _id: userID },
+            { deletedCheck: true },
+          );
+        }
+        const location = await new this._locationModel(locObj).save();
+
+        const emailDto: EmailDTO = {
+          from: `"Divideals" <${process.env.EMAIL}>`,
+          to: userObj.email,
+          subject: 'Your account has been approved',
+          text: '',
+          html: `
+              <html>
               <head>
               <title></title>
               <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -1401,7 +1634,7 @@ export class UsersService {
                   <!-- HERO -->
                   <tr>
                       <td bgcolor="#0081E9" align="center" style="padding: 0px 10px 0px 10px;">
-                          <table border="0" cellpadding="0" cellspacing="0" width="480" >
+                          <table border="0" cellpadding="0" cellspacing="0" width="450" >
                               <tr>
                                   <td bgcolor="#FFFFFF" align="center" valign="top" style="padding: 40px 20px 20px 20px; border-radius: 4px 4px 0px 0px; color: #111111; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 48px; font-weight: 400; letter-spacing: 4px; line-height: 48px;">
                                     <h6 style="margin:0px"> Dear</h6>
@@ -1416,45 +1649,28 @@ export class UsersService {
                   <!-- COPY BLOCK -->
                   <tr>
                       <td bgcolor="#F4F4F4" align="center" style="padding: 0px 10px 0px 10px;">
-                          <table border="0" cellpadding="0" cellspacing="0" width="480" >
+                          <table border="0" cellpadding="0" cellspacing="0" width="450" >
                             <!-- COPY -->
                             <tr>
-                              <td bgcolor="#FFFFFF" align="left" style="padding: 20px 30px 40px 30px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 18px; font-weight: 400; line-height: 25px;" >
-                                <p style="margin: 0;">Your temporary password on <b>Divideals Merchant Panel</b> is generated. Please use this password to login into your account. </p>
+                              <td bgcolor="#FFFFFF" align="left" style="padding: 20px 30px 40px 30px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 18px; font-weight: 400; line-height: 25px; text-align: center" >
+                                <p style="margin: 0;"<p>Your account on&nbsp;<b>Divideals Merchant Panel</b> has been approved. Please login to access your account.</p>
                               </td>
                             </tr>
                             <!-- BULLETPROOF BUTTON -->
-                            <tr>
-                              <td bgcolor="#FFFFFF" align="left">
-                                <table width="100%" border="0" cellspacing="0" cellpadding="0">
-                                  <tr>
-                                    <td bgcolor="#FFFFFF" align="center" style="padding: 20px 30px 60px 30px;">
-                                      <table border="0" cellspacing="0" cellpadding="0">
-                                        <tr>
-                                            <td align="center" style="border-radius: 3px;" ><a style="font-size: 20px; font-family: Helvetica, Arial, sans-serif; color: #FFFFFF; text-decoration: none; color: black; text-decoration: none; padding: 15px 25px; border-radius: 2px; border: 1px solid #0081E9; display: inline-block;"><b>${htmlencode.htmlEncode(
-                                              userObj.password,
-                                            )}</b></a></td>
-                                        </tr>
-                                      </table>
-                                    </td>
-                                  </tr>
-                                </table>
-                              </td>
-                            </tr>
                           </table>
                       </td>
                   </tr>
                   <!-- COPY CALLOUT -->
                   <tr>
                       <td bgcolor="#F4F4F4" align="center" style="padding: 0px 10px 0px 10px;">
-                          <table border="0" cellpadding="0" cellspacing="0" width="480" >
+                          <table border="0" cellpadding="0" cellspacing="0" width="450" >
                           </table>
                       </td>
                   </tr>
                   <!-- SUPPORT CALLOUT -->
                   <tr>
                       <td bgcolor="#F4F4F4" align="center" style="padding: 30px 10px 0px 10px;">
-                          <table border="0" cellpadding="0" cellspacing="0" width="480" >
+                          <table border="0" cellpadding="0" cellspacing="0" width="450" >
                               <!-- HEADLINE -->
                               <tr>
                                 <td bgcolor="#0081E9" align="center" style="padding: 30px 30px 30px 30px; border-radius: 4px 4px 4px 4px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 18px; font-weight: 400; line-height: 25px;" >
@@ -1468,7 +1684,7 @@ export class UsersService {
                   <!-- FOOTER -->
                   <tr>
                       <td bgcolor="#F4F4F4" align="center" style="padding: 0px 10px 0px 10px;">
-                          <table border="0" cellpadding="0" cellspacing="0" width="480" >
+                          <table border="0" cellpadding="0" cellspacing="0" width="450" >
                             <!-- PERMISSION REMINDER -->
                             <tr>
                               <td bgcolor="#F4F4F4" align="left" style="padding: 0px 30px 30px 30px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 14px; font-weight: 400; line-height: 18px;" >
@@ -1481,26 +1697,29 @@ export class UsersService {
               </table>
               </body>
               </html>
-            `,
-      };
+              `,
+        };
 
-      this.sendMail(emailDto);
+        this.sendMail(emailDto);
 
-      // user.password = generatedPassword;
+        // user.password = generatedPassword;
 
-      const updatedUser = await this._userModel.updateOne(
-        { _id: userID },
-        {
-          status: status,
-          password: hashedPassword,
-          voucherPinCode: pinCode,
-          merchantID: generatedMerchantID,
-          customerID: generatedCustomerID,
-          finePrint: `<p><strong>Purchase:</strong> let us know how many voucher one person can purchase<br><strong>Reservations:</strong> let us know how/where people can make a reservation<br><strong>Cancellation:</strong> let us know your cancellation policy<br><strong>More info:</strong> is there anything else important people should be aware of?</p>`
-        },
-      );
+        const updatedUser = await this._userModel.updateOne(
+          { _id: userID },
+          {
+            status: status,
+            role: USERROLE.merchant,
+            // password: hashedPassword,
+            voucherPinCode: pinCode,
+            merchantID: generatedMerchantID,
+            // customerID: generatedCustomerID,
+            finePrint: `<p><strong>Purchase:</strong> let us know how many voucher one person can purchase<br><strong>Reservations:</strong> let us know how/where people can make a reservation<br><strong>Cancellation:</strong> let us know your cancellation policy<br><strong>More info:</strong> is there anything else important people should be aware of?</p>`
+          },
+        );
 
-      return { message: 'Merchant Approved Successfully!' };
+        return { message: 'Merchant Approved Successfully!' };
+      }
+
     } catch (err) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
     }
@@ -1517,234 +1736,575 @@ export class UsersService {
         throw new HttpException('User not found', HttpStatus.NOT_FOUND);
       }
 
-      let generatedAffiliateID = await this.generateAffiliateId('affiliateID');
-      let generatedCustomerID = await this.generateCustomerId('customerID');
+      if (user && user.role == USERROLE.affiliate) {
+        let generatedAffiliateID = await this.generateAffiliateId('affiliateID');
+        let generatedCustomerID = await this.generateCustomerId('customerID');
 
-      let generatedPassword = await this.generatePassword();
-      const salt = await bcrypt.genSalt();
-      let hashedPassword = await bcrypt.hash(generatedPassword, salt);
+        let generatedPassword = await this.generatePassword();
+        const salt = await bcrypt.genSalt();
+        let hashedPassword = await bcrypt.hash(generatedPassword, salt);
 
-      const pinCode = otpGenerator.generate(4, {
-        upperCaseAlphabets: false,
-        lowerCaseAlphabets: false,
-        specialChars: false,
-      });
+        const pinCode = otpGenerator.generate(4, {
+          upperCaseAlphabets: false,
+          lowerCaseAlphabets: false,
+          specialChars: false,
+        });
 
-      const userObj = {
-        ID: new Types.ObjectId().toHexString(),
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email.toLowerCase(),
-        password: generatedPassword,
-        legalName: user.legalName,
-        vatNumber: user.vatNumber,
-        phoneNumber: user.phoneNumber,
-        city: user.city,
-        streetAddress: user.streetAddress,
-        province: user.province,
-        zipCode: user.zipCode,
-      };
+        const userObj = {
+          ID: new Types.ObjectId().toHexString(),
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email.toLowerCase(),
+          password: generatedPassword,
+          legalName: user.legalName,
+          vatNumber: user.vatNumber,
+          phoneNumber: user.phoneNumber,
+          city: user.city,
+          streetAddress: user.streetAddress,
+          province: user.province,
+          zipCode: user.zipCode,
+        };
 
-      const locObj = {
-        affiliateID: generatedAffiliateID,
-        streetAddress: user.streetAddress,
-        zipCode: user.zipCode,
-        city: user.city,
-        googleMapPin: user.googleMapPin,
-        province: user.province,
-        phoneNumber: user.phoneNumber,
-      };
-      if (userID) {
-        await this._leadModel.updateOne(
+        const locObj = {
+          affiliateID: generatedAffiliateID,
+          streetAddress: user.streetAddress,
+          zipCode: user.zipCode,
+          city: user.city,
+          googleMapPin: user.googleMapPin,
+          province: user.province,
+          phoneNumber: user.phoneNumber,
+        };
+        if (userID) {
+          await this._leadModel.updateOne(
+            { _id: userID },
+            { deletedCheck: true },
+          );
+        }
+        const location = await new this._locationModel(locObj).save();
+
+        const emailDto: EmailDTO = {
+          from: `"Divideals" <${process.env.EMAIL}>`,
+          to: userObj.email,
+          subject: 'Your password is generated',
+          text: '',
+          html: `
+              <html>
+                <head>
+                <title></title>
+                <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+                <meta name="viewport" content="width=device-width, initial-scale=1">
+                <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+                <style type="text/css">
+                  /* FONTS */
+                    @media screen {
+                    @font-face {
+                      font-family: 'Lato';
+                      font-style: normal;
+                      font-weight: 400;
+                      src: local('Lato Regular'), local('Lato-Regular'), url(https://fonts.gstatic.com/s/lato/v11/qIIYRU-oROkIk8vfvxw6QvesZW2xOQ-xsNqO47m55DA.woff) format('woff');
+                    }
+                    
+                    @font-face {
+                      font-family: 'Lato';
+                      font-style: normal;
+                      font-weight: 700;
+                      src: local('Lato Bold'), local('Lato-Bold'), url(https://fonts.gstatic.com/s/lato/v11/qdgUG4U09HnJwhYI-uK18wLUuEpTyoUstqEm5AMlJo4.woff) format('woff');
+                    }
+                    
+                    @font-face {
+                      font-family: 'Lato';
+                      font-style: italic;
+                      font-weight: 400;
+                      src: local('Lato Italic'), local('Lato-Italic'), url(https://fonts.gstatic.com/s/lato/v11/RYyZNoeFgb0l7W3Vu1aSWOvvDin1pK8aKteLpeZ5c0A.woff) format('woff');
+                    }
+                    
+                    @font-face {
+                      font-family: 'Lato';
+                      font-style: italic;
+                      font-weight: 700;
+                      src: local('Lato Bold Italic'), local('Lato-BoldItalic'), url(https://fonts.gstatic.com/s/lato/v11/HkF_qI1x_noxlxhrhMQYELO3LdcAZYWl9Si6vvxL-qU.woff) format('woff');
+                    }
+                    }
+                    /* CLIENT-SPECIFIC STYLES */
+                    body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+                    table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+                    img { -ms-interpolation-mode: bicubic; }
+                    /* RESET STYLES */
+                    img { border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; }
+                    table { border-collapse: collapse !important; }
+                    body { height: 100% !important; margin: 0 !important; padding: 0 !important; width: 100% !important; }
+                    /* iOS BLUE LINKS */
+                    a[x-apple-data-detectors] {
+                        color: inherit !important;
+                        text-decoration: none !important;
+                        font-size: inherit !important;
+                        font-family: inherit !important;
+                        font-weight: inherit !important;
+                        line-height: inherit !important;
+                    }
+                    /* ANDROID CENTER FIX */
+                    div[style*="margin: 16px 0;"] { margin: 0 !important; }
+                </style>
+                </head>
+                <body style="background-color: #0081E9; margin: 0 !important; padding: 0 !important;">
+                <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                    <!-- LOGO -->
+                    <tr>
+                        <td bgcolor="#0081E9" align="center">
+                            <table border="0" cellpadding="0" cellspacing="0" width="480" >
+                                <tr>
+                                    <td align="center" valign="top" style="padding: 40px 10px 40px 10px;">
+                                      <div style="padding: 40px 20px 20px 20px; border-radius: 4px 4px 0px 0px; color: #FFFFFF; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 48px; font-weight: 400; letter-spacing: 4px; line-height: 48px;">
+                                        <h6 style="margin:0px"> DIVIDEALS</h6>
+                                      </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <!-- HERO -->
+                    <tr>
+                        <td bgcolor="#0081E9" align="center" style="padding: 0px 10px 0px 10px;">
+                            <table border="0" cellpadding="0" cellspacing="0" width="480" >
+                                <tr>
+                                    <td bgcolor="#FFFFFF" align="center" valign="top" style="padding: 40px 20px 20px 20px; border-radius: 4px 4px 0px 0px; color: #111111; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 48px; font-weight: 400; letter-spacing: 4px; line-height: 48px;">
+                                      <h6 style="margin:0px"> Dear</h6>
+                                      <h1 style="font-size: 32px; font-weight: 400; margin: 0;">${
+                                        userObj.firstName
+                                      } ${userObj.lastName}</h1>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <!-- COPY BLOCK -->
+                    <tr>
+                        <td bgcolor="#F4F4F4" align="center" style="padding: 0px 10px 0px 10px;">
+                            <table border="0" cellpadding="0" cellspacing="0" width="480" >
+                              <!-- COPY -->
+                              <tr>
+                                <td bgcolor="#FFFFFF" align="left" style="padding: 20px 30px 40px 30px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 18px; font-weight: 400; line-height: 25px;" >
+                                  <p style="margin: 0;">Your temporary password on <b>Divideals Affiliate Panel</b> is generated. Please use this password to login into your account. </p>
+                                </td>
+                              </tr>
+                              <!-- BULLETPROOF BUTTON -->
+                              <tr>
+                                <td bgcolor="#FFFFFF" align="left">
+                                  <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                    <tr>
+                                      <td bgcolor="#FFFFFF" align="center" style="padding: 20px 30px 60px 30px;">
+                                        <table border="0" cellspacing="0" cellpadding="0">
+                                          <tr>
+                                              <td align="center" style="border-radius: 3px;" ><a style="font-size: 20px; font-family: Helvetica, Arial, sans-serif; color: #FFFFFF; text-decoration: none; color: black; text-decoration: none; padding: 15px 25px; border-radius: 2px; border: 1px solid #0081E9; display: inline-block;"><b>${htmlencode.htmlEncode(
+                                                userObj.password,
+                                              )}</b></a></td>
+                                          </tr>
+                                        </table>
+                                      </td>
+                                    </tr>
+                                  </table>
+                                </td>
+                              </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <!-- COPY CALLOUT -->
+                    <tr>
+                        <td bgcolor="#F4F4F4" align="center" style="padding: 0px 10px 0px 10px;">
+                            <table border="0" cellpadding="0" cellspacing="0" width="480" >
+                            </table>
+                        </td>
+                    </tr>
+                    <!-- SUPPORT CALLOUT -->
+                    <tr>
+                        <td bgcolor="#F4F4F4" align="center" style="padding: 30px 10px 0px 10px;">
+                            <table border="0" cellpadding="0" cellspacing="0" width="480" >
+                                <!-- HEADLINE -->
+                                <tr>
+                                  <td bgcolor="#0081E9" align="center" style="padding: 30px 30px 30px 30px; border-radius: 4px 4px 4px 4px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 18px; font-weight: 400; line-height: 25px;" >
+                                    <h2 style="font-size: 20px; font-weight: 400; color: #FFFFFF; margin: 0;">Need more help?</h2>
+                                    <p style="margin: 0;"><a style="color: #FFFFFF;">We&rsquo;re here, ready to talk</a></p>
+                                  </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <!-- FOOTER -->
+                    <tr>
+                        <td bgcolor="#F4F4F4" align="center" style="padding: 0px 10px 0px 10px;">
+                            <table border="0" cellpadding="0" cellspacing="0" width="480" >
+                              <!-- PERMISSION REMINDER -->
+                              <tr>
+                                <td bgcolor="#F4F4F4" align="left" style="padding: 0px 30px 30px 30px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 14px; font-weight: 400; line-height: 18px;" >
+                                  <p style="margin: 0;">You received this email because you requested for a password. If you did not, <a  style="color: #111111; font-weight: 700;">please contact us.</a>.</p>
+                                </td>
+                              </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+                </body>
+                </html>
+              `,
+        };
+
+        this.sendMail(emailDto);
+
+        // user.password = generatedPassword;
+
+        const updatedUser = await this._userModel.updateOne(
           { _id: userID },
-          { deletedCheck: true },
+          {
+            status: status,
+            password: hashedPassword,
+            voucherPinCode: pinCode,
+            affiliateID: generatedAffiliateID,
+            customerID: generatedCustomerID,
+            // finePrint: `<p><strong>Purchase:</strong> let us know how many voucher one person can purchase<br><strong>Reservations:</strong> let us know how/where people can make a reservation<br><strong>Cancellation:</strong> let us know your cancellation policy<br><strong>More info:</strong> is there anything else important people should be aware of?</p>`
+          },
         );
-      }
-      const location = await new this._locationModel(locObj).save();
 
-      const emailDto: EmailDTO = {
-        from: `"Divideals" <${process.env.EMAIL}>`,
-        to: userObj.email,
-        subject: 'Your password is generated',
-        text: '',
-        html: `
-            <html>
-              <head>
-              <title></title>
-              <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-              <meta name="viewport" content="width=device-width, initial-scale=1">
-              <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-              <style type="text/css">
-                /* FONTS */
-                  @media screen {
-                  @font-face {
-                    font-family: 'Lato';
-                    font-style: normal;
-                    font-weight: 400;
-                    src: local('Lato Regular'), local('Lato-Regular'), url(https://fonts.gstatic.com/s/lato/v11/qIIYRU-oROkIk8vfvxw6QvesZW2xOQ-xsNqO47m55DA.woff) format('woff');
-                  }
-                  
-                  @font-face {
-                    font-family: 'Lato';
-                    font-style: normal;
-                    font-weight: 700;
-                    src: local('Lato Bold'), local('Lato-Bold'), url(https://fonts.gstatic.com/s/lato/v11/qdgUG4U09HnJwhYI-uK18wLUuEpTyoUstqEm5AMlJo4.woff) format('woff');
-                  }
-                  
-                  @font-face {
-                    font-family: 'Lato';
-                    font-style: italic;
-                    font-weight: 400;
-                    src: local('Lato Italic'), local('Lato-Italic'), url(https://fonts.gstatic.com/s/lato/v11/RYyZNoeFgb0l7W3Vu1aSWOvvDin1pK8aKteLpeZ5c0A.woff) format('woff');
-                  }
-                  
-                  @font-face {
-                    font-family: 'Lato';
-                    font-style: italic;
-                    font-weight: 700;
-                    src: local('Lato Bold Italic'), local('Lato-BoldItalic'), url(https://fonts.gstatic.com/s/lato/v11/HkF_qI1x_noxlxhrhMQYELO3LdcAZYWl9Si6vvxL-qU.woff) format('woff');
-                  }
-                  }
-                  /* CLIENT-SPECIFIC STYLES */
-                  body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
-                  table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
-                  img { -ms-interpolation-mode: bicubic; }
-                  /* RESET STYLES */
-                  img { border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; }
-                  table { border-collapse: collapse !important; }
-                  body { height: 100% !important; margin: 0 !important; padding: 0 !important; width: 100% !important; }
-                  /* iOS BLUE LINKS */
-                  a[x-apple-data-detectors] {
-                      color: inherit !important;
-                      text-decoration: none !important;
-                      font-size: inherit !important;
-                      font-family: inherit !important;
-                      font-weight: inherit !important;
-                      line-height: inherit !important;
-                  }
-                  /* ANDROID CENTER FIX */
-                  div[style*="margin: 16px 0;"] { margin: 0 !important; }
-              </style>
-              </head>
-              <body style="background-color: #0081E9; margin: 0 !important; padding: 0 !important;">
-              <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                  <!-- LOGO -->
-                  <tr>
-                      <td bgcolor="#0081E9" align="center">
-                          <table border="0" cellpadding="0" cellspacing="0" width="480" >
-                              <tr>
-                                  <td align="center" valign="top" style="padding: 40px 10px 40px 10px;">
-                                    <div style="padding: 40px 20px 20px 20px; border-radius: 4px 4px 0px 0px; color: #FFFFFF; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 48px; font-weight: 400; letter-spacing: 4px; line-height: 48px;">
-                                      <h6 style="margin:0px"> DIVIDEALS</h6>
-                                    </div>
-                                  </td>
-                              </tr>
+        return { message: 'Affiliate Approved Successfully!' };
+
+      } else if (user && user.role == USERROLE.customer) {
+
+        let generatedAffiliateID = await this.generateAffiliateId('affiliateID');
+        // let generatedCustomerID = await this.generateCustomerId('customerID');
+
+        // let generatedPassword = await this.generatePassword();
+        // const salt = await bcrypt.genSalt();
+        // let hashedPassword = await bcrypt.hash(generatedPassword, salt);
+
+        const pinCode = otpGenerator.generate(4, {
+          upperCaseAlphabets: false,
+          lowerCaseAlphabets: false,
+          specialChars: false,
+        });
+
+        const userObj = {
+          ID: new Types.ObjectId().toHexString(),
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email.toLowerCase(),
+          // password: generatedPassword,
+          legalName: user.legalName,
+          vatNumber: user.vatNumber,
+          phoneNumber: user.phoneNumber,
+          city: user.city,
+          streetAddress: user.streetAddress,
+          province: user.province,
+          zipCode: user.zipCode,
+        };
+
+        const locObj = {
+          affiliateID: generatedAffiliateID,
+          streetAddress: user.streetAddress,
+          zipCode: user.zipCode,
+          city: user.city,
+          googleMapPin: user.googleMapPin,
+          province: user.province,
+          phoneNumber: user.phoneNumber,
+        };
+        if (userID) {
+          await this._leadModel.updateOne(
+            { _id: userID },
+            { deletedCheck: true },
+          );
+        }
+        const location = await new this._locationModel(locObj).save();
+
+        const emailDto: EmailDTO = {
+          from: `"Divideals" <${process.env.EMAIL}>`,
+          to: userObj.email,
+          subject: 'Your password is generated',
+          text: '',
+          html: `
+                  <html>
+                  <head>
+                    <title></title>
+                    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+                    <meta name="viewport" content="width=device-width, initial-scale=1" />
+                    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+                    <style type="text/css">
+                      /* FONTS */
+                      @media screen {
+                        @font-face {
+                          font-family: 'Lato';
+                          font-style: normal;
+                          font-weight: 400;
+                          src: local('Lato Regular'), local('Lato-Regular'),
+                            url(https://fonts.gstatic.com/s/lato/v11/qIIYRU-oROkIk8vfvxw6QvesZW2xOQ-xsNqO47m55DA.woff)
+                              format('woff');
+                        }
+                        @font-face {
+                          font-family: 'Lato';
+                          font-style: normal;
+                          font-weight: 700;
+                          src: local('Lato Bold'), local('Lato-Bold'),
+                            url(https://fonts.gstatic.com/s/lato/v11/qdgUG4U09HnJwhYI-uK18wLUuEpTyoUstqEm5AMlJo4.woff)
+                              format('woff');
+                        }
+                        @font-face {
+                          font-family: 'Lato';
+                          font-style: italic;
+                          font-weight: 400;
+                          src: local('Lato Italic'), local('Lato-Italic'),
+                            url(https://fonts.gstatic.com/s/lato/v11/RYyZNoeFgb0l7W3Vu1aSWOvvDin1pK8aKteLpeZ5c0A.woff)
+                              format('woff');
+                        }
+                        @font-face {
+                          font-family: 'Lato';
+                          font-style: italic;
+                          font-weight: 700;
+                          src: local('Lato Bold Italic'), local('Lato-BoldItalic'),
+                            url(https://fonts.gstatic.com/s/lato/v11/HkF_qI1x_noxlxhrhMQYELO3LdcAZYWl9Si6vvxL-qU.woff)
+                              format('woff');
+                        }
+                      }
+                      /* CLIENT-SPECIFIC STYLES */
+                      body,
+                      table,
+                      td,
+                      a {
+                        -webkit-text-size-adjust: 100%;
+                        -ms-text-size-adjust: 100%;
+                      }
+                      table,
+                      td {
+                        mso-table-lspace: 0pt;
+                        mso-table-rspace: 0pt;
+                      }
+                      img {
+                        -ms-interpolation-mode: bicubic;
+                      }
+                      /* RESET STYLES */
+                      img {
+                        border: 0;
+                        height: auto;
+                        line-height: 100%;
+                        outline: none;
+                        text-decoration: none;
+                      }
+                      table {
+                        border-collapse: collapse !important;
+                      }
+                      body {
+                        height: 100% !important;
+                        margin: 0 !important;
+                        padding: 0 !important;
+                        width: 100% !important;
+                      }
+                      /* iOS BLUE LINKS */
+                      a[x-apple-data-detectors] {
+                        color: inherit !important;
+                        text-decoration: none !important;
+                        font-size: inherit !important;
+                        font-family: inherit !important;
+                        font-weight: inherit !important;
+                        line-height: inherit !important;
+                      }
+                      /* ANDROID CENTER FIX */
+                      div[style*='margin: 16px 0;'] {
+                        margin: 0 !important;
+                      }
+                    </style>
+                  </head>
+                  <body
+                    style="
+                      background-color: #0081e9;
+                      margin: 0 !important;
+                      padding: 0 !important;
+                    "
+                  >
+                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                      <!-- LOGO -->
+                      <tr>
+                        <td bgcolor="#0081E9" align="center">
+                          <table border="0" cellpadding="0" cellspacing="0" width="450">
+                            <tr>
+                              <td
+                                align="center"
+                                valign="top"
+                                style="padding: 40px 10px 40px 10px"
+                              >
+                                <div
+                                  style="
+                                    padding: 40px 20px 20px 20px;
+                                    border-radius: 4px 4px 0px 0px;
+                                    color: #ffffff;
+                                    font-family: 'Lato', Helvetica, Arial, sans-serif;
+                                    font-size: 48px;
+                                    font-weight: 400;
+                                    letter-spacing: 4px;
+                                    line-height: 48px;
+                                  "
+                                >
+                                  <h6 style="margin: 0px">DIVIDEALS</h6>
+                                </div>
+                              </td>
+                            </tr>
                           </table>
-                      </td>
-                  </tr>
-                  <!-- HERO -->
-                  <tr>
-                      <td bgcolor="#0081E9" align="center" style="padding: 0px 10px 0px 10px;">
-                          <table border="0" cellpadding="0" cellspacing="0" width="480" >
-                              <tr>
-                                  <td bgcolor="#FFFFFF" align="center" valign="top" style="padding: 40px 20px 20px 20px; border-radius: 4px 4px 0px 0px; color: #111111; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 48px; font-weight: 400; letter-spacing: 4px; line-height: 48px;">
-                                    <h6 style="margin:0px"> Dear</h6>
-                                    <h1 style="font-size: 32px; font-weight: 400; margin: 0;">${
-                                      userObj.firstName
-                                    } ${userObj.lastName}</h1>
-                                  </td>
-                              </tr>
+                        </td>
+                      </tr>
+                      <!-- HERO -->
+                      <tr>
+                        <td bgcolor="#0081E9" align="center" style="padding: 0px 10px 0px 10px">
+                          <table border="0" cellpadding="0" cellspacing="0" width="450">
+                            <tr>
+                              <td
+                                bgcolor="#FFFFFF"
+                                align="center"
+                                valign="top"
+                                style="
+                                  padding: 40px 20px 20px 20px;
+                                  border-radius: 4px 4px 0px 0px;
+                                  color: #111111;
+                                  font-family: 'Lato', Helvetica, Arial, sans-serif;
+                                  font-size: 48px;
+                                  font-weight: 400;
+                                  letter-spacing: 4px;
+                                  line-height: 48px;
+                                "
+                              >
+                                <h6 style="margin: 0px">Dear</h6>
+                                <h1 style="font-size: 32px; font-weight: 400; margin: 0">
+                                  ${ userObj.firstName } ${userObj.lastName}
+                                </h1>
+                              </td>
+                            </tr>
                           </table>
-                      </td>
-                  </tr>
-                  <!-- COPY BLOCK -->
-                  <tr>
-                      <td bgcolor="#F4F4F4" align="center" style="padding: 0px 10px 0px 10px;">
-                          <table border="0" cellpadding="0" cellspacing="0" width="480" >
+                        </td>
+                      </tr>
+                      <!-- COPY BLOCK -->
+                      <tr>
+                        <td bgcolor="#F4F4F4" align="center" style="padding: 0px 10px 0px 10px">
+                          <table border="0" cellpadding="0" cellspacing="0" width="450">
                             <!-- COPY -->
                             <tr>
-                              <td bgcolor="#FFFFFF" align="left" style="padding: 20px 30px 40px 30px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 18px; font-weight: 400; line-height: 25px;" >
-                                <p style="margin: 0;">Your temporary password on <b>Divideals Affiliate Panel</b> is generated. Please use this password to login into your account. </p>
+                              <td
+                                bgcolor="#FFFFFF"
+                                align="left"
+                                style="
+                                  padding: 20px 30px 40px 30px;
+                                  color: #666666;
+                                  font-family: 'Lato', Helvetica, Arial, sans-serif;
+                                  font-size: 18px;
+                                  font-weight: 400;
+                                  line-height: 25px;
+                                  text-align: center;
+                                "
+                              >
+                                <p style="margin: 0">
+                                  Your account on&nbsp;<b>Divideals Affiliate Panel</b> has been
+                                  approved. Please login to access your account.
+                                </p>
                               </td>
                             </tr>
                             <!-- BULLETPROOF BUTTON -->
+                          </table>
+                        </td>
+                      </tr>
+                      <!-- COPY CALLOUT -->
+                      <tr>
+                        <td bgcolor="#F4F4F4" align="center" style="padding: 0px 10px 0px 10px">
+                          <table border="0" cellpadding="0" cellspacing="0" width="450"></table>
+                        </td>
+                      </tr>
+                      <!-- SUPPORT CALLOUT -->
+                      <tr>
+                        <td
+                          bgcolor="#F4F4F4"
+                          align="center"
+                          style="padding: 30px 10px 0px 10px"
+                        >
+                          <table border="0" cellpadding="0" cellspacing="0" width="450">
+                            <!-- HEADLINE -->
                             <tr>
-                              <td bgcolor="#FFFFFF" align="left">
-                                <table width="100%" border="0" cellspacing="0" cellpadding="0">
-                                  <tr>
-                                    <td bgcolor="#FFFFFF" align="center" style="padding: 20px 30px 60px 30px;">
-                                      <table border="0" cellspacing="0" cellpadding="0">
-                                        <tr>
-                                            <td align="center" style="border-radius: 3px;" ><a style="font-size: 20px; font-family: Helvetica, Arial, sans-serif; color: #FFFFFF; text-decoration: none; color: black; text-decoration: none; padding: 15px 25px; border-radius: 2px; border: 1px solid #0081E9; display: inline-block;"><b>${htmlencode.htmlEncode(
-                                              userObj.password,
-                                            )}</b></a></td>
-                                        </tr>
-                                      </table>
-                                    </td>
-                                  </tr>
-                                </table>
+                              <td
+                                bgcolor="#0081E9"
+                                align="center"
+                                style="
+                                  padding: 30px 30px 30px 30px;
+                                  border-radius: 4px 4px 4px 4px;
+                                  color: #666666;
+                                  font-family: 'Lato', Helvetica, Arial, sans-serif;
+                                  font-size: 18px;
+                                  font-weight: 400;
+                                  line-height: 25px;
+                                "
+                              >
+                                <h2
+                                  style="
+                                    font-size: 20px;
+                                    font-weight: 400;
+                                    color: #ffffff;
+                                    margin: 0;
+                                  "
+                                >
+                                  Need more help?
+                                </h2>
+                                <p style="margin: 0">
+                                  <a style="color: #ffffff">We&rsquo;re here, ready to talk</a>
+                                </p>
                               </td>
                             </tr>
                           </table>
-                      </td>
-                  </tr>
-                  <!-- COPY CALLOUT -->
-                  <tr>
-                      <td bgcolor="#F4F4F4" align="center" style="padding: 0px 10px 0px 10px;">
-                          <table border="0" cellpadding="0" cellspacing="0" width="480" >
-                          </table>
-                      </td>
-                  </tr>
-                  <!-- SUPPORT CALLOUT -->
-                  <tr>
-                      <td bgcolor="#F4F4F4" align="center" style="padding: 30px 10px 0px 10px;">
-                          <table border="0" cellpadding="0" cellspacing="0" width="480" >
-                              <!-- HEADLINE -->
-                              <tr>
-                                <td bgcolor="#0081E9" align="center" style="padding: 30px 30px 30px 30px; border-radius: 4px 4px 4px 4px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 18px; font-weight: 400; line-height: 25px;" >
-                                  <h2 style="font-size: 20px; font-weight: 400; color: #FFFFFF; margin: 0;">Need more help?</h2>
-                                  <p style="margin: 0;"><a style="color: #FFFFFF;">We&rsquo;re here, ready to talk</a></p>
-                                </td>
-                              </tr>
-                          </table>
-                      </td>
-                  </tr>
-                  <!-- FOOTER -->
-                  <tr>
-                      <td bgcolor="#F4F4F4" align="center" style="padding: 0px 10px 0px 10px;">
-                          <table border="0" cellpadding="0" cellspacing="0" width="480" >
+                        </td>
+                      </tr>
+                      <!-- FOOTER -->
+                      <tr>
+                        <td bgcolor="#F4F4F4" align="center" style="padding: 0px 10px 0px 10px">
+                          <table border="0" cellpadding="0" cellspacing="0" width="450">
                             <!-- PERMISSION REMINDER -->
                             <tr>
-                              <td bgcolor="#F4F4F4" align="left" style="padding: 0px 30px 30px 30px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 14px; font-weight: 400; line-height: 18px;" >
-                                <p style="margin: 0;">You received this email because you requested for a password. If you did not, <a  style="color: #111111; font-weight: 700;">please contact us.</a>.</p>
+                              <td
+                                bgcolor="#F4F4F4"
+                                align="left"
+                                style="
+                                  padding: 0px 30px 30px 30px;
+                                  color: #666666;
+                                  font-family: 'Lato', Helvetica, Arial, sans-serif;
+                                  font-size: 14px;
+                                  font-weight: 400;
+                                  line-height: 18px;
+                                "
+                              >
+                                <p style="margin: 0">
+                                  You received this email because you requested for a password.
+                                  If you did not,
+                                  <a style="color: #111111; font-weight: 700"
+                                    >please contact us.</a
+                                  >.
+                                </p>
                               </td>
                             </tr>
                           </table>
-                      </td>
-                  </tr>
-              </table>
-              </body>
-              </html>
-            `,
-      };
+                        </td>
+                      </tr>
+                    </table>
+                  </body>
+                </html>
+              `,
+        };
 
-      this.sendMail(emailDto);
+        this.sendMail(emailDto);
 
-      // user.password = generatedPassword;
+        // user.password = generatedPassword;
 
-      const updatedUser = await this._userModel.updateOne(
-        { _id: userID },
-        {
-          status: status,
-          password: hashedPassword,
-          voucherPinCode: pinCode,
-          affiliateID: generatedAffiliateID,
-          customerID: generatedCustomerID,
-          // finePrint: `<p><strong>Purchase:</strong> let us know how many voucher one person can purchase<br><strong>Reservations:</strong> let us know how/where people can make a reservation<br><strong>Cancellation:</strong> let us know your cancellation policy<br><strong>More info:</strong> is there anything else important people should be aware of?</p>`
-        },
-      );
+        const updatedUser = await this._userModel.updateOne(
+          { _id: userID },
+          {
+            status: status,
+            // password: hashedPassword,
+            voucherPinCode: pinCode,
+            affiliateID: generatedAffiliateID,
+            // customerID: generatedCustomerID,
+            // finePrint: `<p><strong>Purchase:</strong> let us know how many voucher one person can purchase<br><strong>Reservations:</strong> let us know how/where people can make a reservation<br><strong>Cancellation:</strong> let us know your cancellation policy<br><strong>More info:</strong> is there anything else important people should be aware of?</p>`
+          },
+        );
+      }
 
-      return { message: 'Affiliate Approved Successfully!' };
+      
     } catch (err) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
     }
@@ -1752,238 +2312,468 @@ export class UsersService {
 
   async approveMerchant(userID, approveMerchantDto) {
     try {
-      let generatedPassword = await this.generatePassword();
-      const salt = await bcrypt.genSalt();
-      let hashedPassword = await bcrypt.hash(generatedPassword, salt);
-
-      const pinCode = otpGenerator.generate(4, {
-        upperCaseAlphabets: false,
-        lowerCaseAlphabets: false,
-        specialChars: false,
+      debugger
+      const user = await this._userModel.findOne({
+        _id: userID,
+        deletedCheck: false,
+        role: USERROLE.customer,
+        newUser: false,
+        status: USERSTATUS.approved
       });
 
-      delete approveMerchantDto.leadSource;
+      if (user) {
+        // let generatedPassword = await this.generatePassword();
+        // const salt = await bcrypt.genSalt();
+        // let hashedPassword = await bcrypt.hash(generatedPassword, salt);
 
-      approveMerchantDto.legalName = approveMerchantDto.companyName;
-      approveMerchantDto.businessType = approveMerchantDto.categoryType;
-      approveMerchantDto.voucherPinCode = pinCode;
-      approveMerchantDto.password = hashedPassword;
-      approveMerchantDto.status = USERSTATUS.approved;
-      approveMerchantDto.zipCode = approveMerchantDto.zipCode.toString();
-      approveMerchantDto.merchantID = await this.generateMerchantId('merchantID');
-      approveMerchantDto.customerID = await this.generateCustomerId('customerID');
-      approveMerchantDto.finePrint = `<p><strong>Purchase:</strong> let us know how many voucher one person can purchase<br><strong>Reservations:</strong> let us know how/where people can make a reservation<br><strong>Cancellation:</strong> let us know your cancellation policy<br><strong>More info:</strong> is there anything else important people should be aware of?</p>`
+        const pinCode = otpGenerator.generate(4, {
+          upperCaseAlphabets: false,
+          lowerCaseAlphabets: false,
+          specialChars: false,
+        });
 
-      const userObj = {
-        ID: new Types.ObjectId().toHexString(),
-        firstName: approveMerchantDto.firstName,
-        lastName: approveMerchantDto.lastName,
-        email: approveMerchantDto.email.toLowerCase(),
-        password: hashedPassword,
-        legalName: approveMerchantDto.legalName,
-        vatNumber: approveMerchantDto.vatNumber,
-        phoneNumber: approveMerchantDto.phoneNumber,
-        city: approveMerchantDto.city,
-        streetAddress: approveMerchantDto.streetAddress,
-        province: approveMerchantDto.province,
-        zipCode: approveMerchantDto.zipCode,
-      };
+        delete approveMerchantDto.leadSource;
 
-      const locObj = {
-        merchantID: approveMerchantDto.merchantID,
-        tradeName: approveMerchantDto.legalName,
-        streetAddress: approveMerchantDto.streetAddress,
-        zipCode: approveMerchantDto.zipCode,
-        city: approveMerchantDto.city,
-        googleMapPin: approveMerchantDto.googleMapPin,
-        province: approveMerchantDto.province,
-        phoneNumber: approveMerchantDto.phoneNumber,
-      };
-      if (userID) {
-        await this._leadModel.updateOne(
-          { _id: userID },
-          { deletedCheck: true },
-        );
-      }
-      const location = await new this._locationModel(locObj).save();
+        approveMerchantDto.legalName = approveMerchantDto.companyName;
+        approveMerchantDto.businessType = approveMerchantDto.categoryType;
+        approveMerchantDto.voucherPinCode = pinCode;
+        // approveMerchantDto.password = hashedPassword;
+        // approveMerchantDto.status = USERSTATUS.approved;
+        approveMerchantDto.zipCode = approveMerchantDto.zipCode.toString();
+        approveMerchantDto.merchantID = await this.generateMerchantId('merchantID');
+        // approveMerchantDto.customerID = await this.generateCustomerId('customerID');
+        approveMerchantDto.finePrint = `<p><strong>Purchase:</strong> let us know how many voucher one person can purchase<br><strong>Reservations:</strong> let us know how/where people can make a reservation<br><strong>Cancellation:</strong> let us know your cancellation policy<br><strong>More info:</strong> is there anything else important people should be aware of?</p>`
 
-      const emailDto: EmailDTO = {
-        from: `"Divideals" <${process.env.EMAIL}>`,
-        to: userObj.email,
-        subject: 'Your password is generated',
-        text: '',
-        html: `
-            <html>
-              <head>
-              <title></title>
-              <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-              <meta name="viewport" content="width=device-width, initial-scale=1">
-              <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-              <style type="text/css">
-                /* FONTS */
-                  @media screen {
-                  @font-face {
-                    font-family: 'Lato';
-                    font-style: normal;
-                    font-weight: 400;
-                    src: local('Lato Regular'), local('Lato-Regular'), url(https://fonts.gstatic.com/s/lato/v11/qIIYRU-oROkIk8vfvxw6QvesZW2xOQ-xsNqO47m55DA.woff) format('woff');
-                  }
-                  
-                  @font-face {
-                    font-family: 'Lato';
-                    font-style: normal;
-                    font-weight: 700;
-                    src: local('Lato Bold'), local('Lato-Bold'), url(https://fonts.gstatic.com/s/lato/v11/qdgUG4U09HnJwhYI-uK18wLUuEpTyoUstqEm5AMlJo4.woff) format('woff');
-                  }
-                  
-                  @font-face {
-                    font-family: 'Lato';
-                    font-style: italic;
-                    font-weight: 400;
-                    src: local('Lato Italic'), local('Lato-Italic'), url(https://fonts.gstatic.com/s/lato/v11/RYyZNoeFgb0l7W3Vu1aSWOvvDin1pK8aKteLpeZ5c0A.woff) format('woff');
-                  }
-                  
-                  @font-face {
-                    font-family: 'Lato';
-                    font-style: italic;
-                    font-weight: 700;
-                    src: local('Lato Bold Italic'), local('Lato-BoldItalic'), url(https://fonts.gstatic.com/s/lato/v11/HkF_qI1x_noxlxhrhMQYELO3LdcAZYWl9Si6vvxL-qU.woff) format('woff');
-                  }
-                  }
-                  /* CLIENT-SPECIFIC STYLES */
-                  body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
-                  table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
-                  img { -ms-interpolation-mode: bicubic; }
-                  /* RESET STYLES */
-                  img { border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; }
-                  table { border-collapse: collapse !important; }
-                  body { height: 100% !important; margin: 0 !important; padding: 0 !important; width: 100% !important; }
-                  /* iOS BLUE LINKS */
-                  a[x-apple-data-detectors] {
-                      color: inherit !important;
-                      text-decoration: none !important;
-                      font-size: inherit !important;
-                      font-family: inherit !important;
-                      font-weight: inherit !important;
-                      line-height: inherit !important;
-                  }
-                  /* ANDROID CENTER FIX */
-                  div[style*="margin: 16px 0;"] { margin: 0 !important; }
-              </style>
-              </head>
-              <body style="background-color: #0081E9; margin: 0 !important; padding: 0 !important;">
-              <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                  <!-- LOGO -->
-                  <tr>
-                      <td bgcolor="#0081E9" align="center">
-                          <table border="0" cellpadding="0" cellspacing="0" width="480" >
-                              <tr>
-                                  <td align="center" valign="top" style="padding: 40px 10px 40px 10px;">
-                                    <div style="padding: 40px 20px 20px 20px; border-radius: 4px 4px 0px 0px; color: #FFFFFF; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 48px; font-weight: 400; letter-spacing: 4px; line-height: 48px;">
-                                      <h6 style="margin:0px"> DIVIDEALS</h6>
-                                    </div>
-                                  </td>
-                              </tr>
-                          </table>
-                      </td>
-                  </tr>
-                  <!-- HERO -->
-                  <tr>
-                      <td bgcolor="#0081E9" align="center" style="padding: 0px 10px 0px 10px;">
-                          <table border="0" cellpadding="0" cellspacing="0" width="480" >
-                              <tr>
-                                  <td bgcolor="#FFFFFF" align="center" valign="top" style="padding: 40px 20px 20px 20px; border-radius: 4px 4px 0px 0px; color: #111111; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 48px; font-weight: 400; letter-spacing: 4px; line-height: 48px;">
-                                    <h6 style="margin:0px"> Dear</h6>
-                                    <h1 style="font-size: 32px; font-weight: 400; margin: 0;">${
-                                      userObj.firstName
-                                    } ${userObj.lastName}</h1>
-                                  </td>
-                              </tr>
-                          </table>
-                      </td>
-                  </tr>
-                  <!-- COPY BLOCK -->
-                  <tr>
-                      <td bgcolor="#F4F4F4" align="center" style="padding: 0px 10px 0px 10px;">
-                          <table border="0" cellpadding="0" cellspacing="0" width="480" >
-                            <!-- COPY -->
-                            <tr>
-                              <td bgcolor="#FFFFFF" align="left" style="padding: 20px 30px 40px 30px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 18px; font-weight: 400; line-height: 25px;" >
-                                <p style="margin: 0;">Your temporary password on <b>Divideals Merchant Panel</b> is generated. Please use this password to login into your account. </p>
-                              </td>
-                            </tr>
-                            <!-- BULLETPROOF BUTTON -->
-                            <tr>
-                              <td bgcolor="#FFFFFF" align="left">
-                                <table width="100%" border="0" cellspacing="0" cellpadding="0">
+        const userObj = {
+          ID: new Types.ObjectId().toHexString(),
+          firstName: approveMerchantDto.firstName,
+          lastName: approveMerchantDto.lastName,
+          email: approveMerchantDto.email.toLowerCase(),
+          // password: hashedPassword,
+          legalName: approveMerchantDto.legalName,
+          vatNumber: approveMerchantDto.vatNumber,
+          phoneNumber: approveMerchantDto.phoneNumber,
+          city: approveMerchantDto.city,
+          streetAddress: approveMerchantDto.streetAddress,
+          province: approveMerchantDto.province,
+          zipCode: approveMerchantDto.zipCode,
+        };
+
+        const locObj = {
+          merchantID: approveMerchantDto.merchantID,
+          tradeName: approveMerchantDto.legalName,
+          streetAddress: approveMerchantDto.streetAddress,
+          zipCode: approveMerchantDto.zipCode,
+          city: approveMerchantDto.city,
+          googleMapPin: approveMerchantDto.googleMapPin,
+          province: approveMerchantDto.province,
+          phoneNumber: approveMerchantDto.phoneNumber,
+        };
+        if (userID) {
+          await this._leadModel.updateOne(
+            { _id: userID },
+            { deletedCheck: true },
+          );
+        }
+        const location = await new this._locationModel(locObj).save();
+
+        const emailDto: EmailDTO = {
+          from: `"Divideals" <${process.env.EMAIL}>`,
+          to: userObj.email,
+          subject: 'Your merchant account has been approved',
+          text: '',
+          html: `
+                  <html>
+                  <head>
+                  <title></title>
+                  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+                  <meta name="viewport" content="width=device-width, initial-scale=1">
+                  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+                  <style type="text/css">
+                    /* FONTS */
+                      @media screen {
+                      @font-face {
+                        font-family: 'Lato';
+                        font-style: normal;
+                        font-weight: 400;
+                        src: local('Lato Regular'), local('Lato-Regular'), url(https://fonts.gstatic.com/s/lato/v11/qIIYRU-oROkIk8vfvxw6QvesZW2xOQ-xsNqO47m55DA.woff) format('woff');
+                      }
+                      
+                      @font-face {
+                        font-family: 'Lato';
+                        font-style: normal;
+                        font-weight: 700;
+                        src: local('Lato Bold'), local('Lato-Bold'), url(https://fonts.gstatic.com/s/lato/v11/qdgUG4U09HnJwhYI-uK18wLUuEpTyoUstqEm5AMlJo4.woff) format('woff');
+                      }
+                      
+                      @font-face {
+                        font-family: 'Lato';
+                        font-style: italic;
+                        font-weight: 400;
+                        src: local('Lato Italic'), local('Lato-Italic'), url(https://fonts.gstatic.com/s/lato/v11/RYyZNoeFgb0l7W3Vu1aSWOvvDin1pK8aKteLpeZ5c0A.woff) format('woff');
+                      }
+                      
+                      @font-face {
+                        font-family: 'Lato';
+                        font-style: italic;
+                        font-weight: 700;
+                        src: local('Lato Bold Italic'), local('Lato-BoldItalic'), url(https://fonts.gstatic.com/s/lato/v11/HkF_qI1x_noxlxhrhMQYELO3LdcAZYWl9Si6vvxL-qU.woff) format('woff');
+                      }
+                      }
+                      /* CLIENT-SPECIFIC STYLES */
+                      body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+                      table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+                      img { -ms-interpolation-mode: bicubic; }
+                      /* RESET STYLES */
+                      img { border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; }
+                      table { border-collapse: collapse !important; }
+                      body { height: 100% !important; margin: 0 !important; padding: 0 !important; width: 100% !important; }
+                      /* iOS BLUE LINKS */
+                      a[x-apple-data-detectors] {
+                          color: inherit !important;
+                          text-decoration: none !important;
+                          font-size: inherit !important;
+                          font-family: inherit !important;
+                          font-weight: inherit !important;
+                          line-height: inherit !important;
+                      }
+                      /* ANDROID CENTER FIX */
+                      div[style*="margin: 16px 0;"] { margin: 0 !important; }
+                  </style>
+                  </head>
+                  <body style="background-color: #0081E9; margin: 0 !important; padding: 0 !important;">
+                  <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                      <!-- LOGO -->
+                      <tr>
+                          <td bgcolor="#0081E9" align="center">
+                              <table border="0" cellpadding="0" cellspacing="0" width="480" >
                                   <tr>
-                                    <td bgcolor="#FFFFFF" align="center" style="padding: 20px 30px 60px 30px;">
-                                      <table border="0" cellspacing="0" cellpadding="0">
-                                        <tr>
-                                            <td align="center" style="border-radius: 3px;" ><a style="font-size: 20px; font-family: Helvetica, Arial, sans-serif; color: #FFFFFF; text-decoration: none; color: black; text-decoration: none; padding: 15px 25px; border-radius: 2px; border: 1px solid #0081E9; display: inline-block;"><b>${htmlencode.htmlEncode(
-                                              generatedPassword,
-                                            )}</b></a></td>
-                                        </tr>
-                                      </table>
+                                      <td align="center" valign="top" style="padding: 40px 10px 40px 10px;">
+                                        <div style="padding: 40px 20px 20px 20px; border-radius: 4px 4px 0px 0px; color: #FFFFFF; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 48px; font-weight: 400; letter-spacing: 4px; line-height: 48px;">
+                                          <h6 style="margin:0px"> DIVIDEALS</h6>
+                                        </div>
+                                      </td>
+                                  </tr>
+                              </table>
+                          </td>
+                      </tr>
+                      <!-- HERO -->
+                      <tr>
+                          <td bgcolor="#0081E9" align="center" style="padding: 0px 10px 0px 10px;">
+                              <table border="0" cellpadding="0" cellspacing="0" width="450" >
+                                  <tr>
+                                      <td bgcolor="#FFFFFF" align="center" valign="top" style="padding: 40px 20px 20px 20px; border-radius: 4px 4px 0px 0px; color: #111111; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 48px; font-weight: 400; letter-spacing: 4px; line-height: 48px;">
+                                        <h6 style="margin:0px"> Dear</h6>
+                                        <h1 style="font-size: 32px; font-weight: 400; margin: 0;">${
+                                          userObj.firstName
+                                        } ${userObj.lastName}</h1>
+                                      </td>
+                                  </tr>
+                              </table>
+                          </td>
+                      </tr>
+                      <!-- COPY BLOCK -->
+                      <tr>
+                          <td bgcolor="#F4F4F4" align="center" style="padding: 0px 10px 0px 10px;">
+                              <table border="0" cellpadding="0" cellspacing="0" width="450" >
+                                <!-- COPY -->
+                                <tr>
+                                  <td bgcolor="#FFFFFF" align="left" style="padding: 20px 30px 40px 30px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 18px; font-weight: 400; line-height: 25px; text-align: center" >
+                                    <p style="margin: 0;"<p>Your account on&nbsp;<b>Divideals Merchant Panel</b> has been approved. Please login to access your account.</p>
+                                  </td>
+                                </tr>
+                                <!-- BULLETPROOF BUTTON -->
+                              </table>
+                          </td>
+                      </tr>
+                      <!-- COPY CALLOUT -->
+                      <tr>
+                          <td bgcolor="#F4F4F4" align="center" style="padding: 0px 10px 0px 10px;">
+                              <table border="0" cellpadding="0" cellspacing="0" width="450" >
+                              </table>
+                          </td>
+                      </tr>
+                      <!-- SUPPORT CALLOUT -->
+                      <tr>
+                          <td bgcolor="#F4F4F4" align="center" style="padding: 30px 10px 0px 10px;">
+                              <table border="0" cellpadding="0" cellspacing="0" width="450" >
+                                  <!-- HEADLINE -->
+                                  <tr>
+                                    <td bgcolor="#0081E9" align="center" style="padding: 30px 30px 30px 30px; border-radius: 4px 4px 4px 4px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 18px; font-weight: 400; line-height: 25px;" >
+                                      <h2 style="font-size: 20px; font-weight: 400; color: #FFFFFF; margin: 0;">Need more help?</h2>
+                                      <p style="margin: 0;"><a style="color: #FFFFFF;">We&rsquo;re here, ready to talk</a></p>
                                     </td>
                                   </tr>
-                                </table>
-                              </td>
-                            </tr>
-                          </table>
-                      </td>
-                  </tr>
-                  <!-- COPY CALLOUT -->
-                  <tr>
-                      <td bgcolor="#F4F4F4" align="center" style="padding: 0px 10px 0px 10px;">
-                          <table border="0" cellpadding="0" cellspacing="0" width="480" >
-                          </table>
-                      </td>
-                  </tr>
-                  <!-- SUPPORT CALLOUT -->
-                  <tr>
-                      <td bgcolor="#F4F4F4" align="center" style="padding: 30px 10px 0px 10px;">
-                          <table border="0" cellpadding="0" cellspacing="0" width="480" >
-                              <!-- HEADLINE -->
+                              </table>
+                          </td>
+                      </tr>
+                      <!-- FOOTER -->
+                      <tr>
+                          <td bgcolor="#F4F4F4" align="center" style="padding: 0px 10px 0px 10px;">
+                              <table border="0" cellpadding="0" cellspacing="0" width="450" >
+                                <!-- PERMISSION REMINDER -->
+                                <tr>
+                                  <td bgcolor="#F4F4F4" align="left" style="padding: 0px 30px 30px 30px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 14px; font-weight: 400; line-height: 18px;" >
+                                    <p style="margin: 0;">You received this email because you requested for a password. If you did not, <a  style="color: #111111; font-weight: 700;">please contact us.</a>.</p>
+                                  </td>
+                                </tr>
+                              </table>
+                          </td>
+                      </tr>
+                  </table>
+                  </body>
+                  </html>
+              `,
+        };
+
+        this.sendMail(emailDto);
+
+        // user.password = generatedPassword;
+
+        // const lead = await this._leadModel.findOne({_id: userID});
+
+        approveMerchantDto.businessHours = businessHours;
+
+        await this._userModel.updateOne({_id: userID}, approveMerchantDto);
+
+        const merchant = await this._userModel.findOne({_id: userID});
+
+        return { enquiryID: userID, merchantID: merchant?.merchantID };
+      } else {
+        let generatedPassword = await this.generatePassword();
+        const salt = await bcrypt.genSalt();
+        let hashedPassword = await bcrypt.hash(generatedPassword, salt);
+
+        const pinCode = otpGenerator.generate(4, {
+          upperCaseAlphabets: false,
+          lowerCaseAlphabets: false,
+          specialChars: false,
+        });
+
+        delete approveMerchantDto.leadSource;
+
+        approveMerchantDto.legalName = approveMerchantDto.companyName;
+        approveMerchantDto.businessType = approveMerchantDto.categoryType;
+        approveMerchantDto.voucherPinCode = pinCode;
+        approveMerchantDto.password = hashedPassword;
+        approveMerchantDto.status = USERSTATUS.approved;
+        approveMerchantDto.zipCode = approveMerchantDto.zipCode.toString();
+        approveMerchantDto.merchantID = await this.generateMerchantId('merchantID');
+        approveMerchantDto.customerID = await this.generateCustomerId('customerID');
+        approveMerchantDto.finePrint = `<p><strong>Purchase:</strong> let us know how many voucher one person can purchase<br><strong>Reservations:</strong> let us know how/where people can make a reservation<br><strong>Cancellation:</strong> let us know your cancellation policy<br><strong>More info:</strong> is there anything else important people should be aware of?</p>`
+
+        const userObj = {
+          ID: new Types.ObjectId().toHexString(),
+          firstName: approveMerchantDto.firstName,
+          lastName: approveMerchantDto.lastName,
+          email: approveMerchantDto.email.toLowerCase(),
+          password: hashedPassword,
+          legalName: approveMerchantDto.legalName,
+          vatNumber: approveMerchantDto.vatNumber,
+          phoneNumber: approveMerchantDto.phoneNumber,
+          city: approveMerchantDto.city,
+          streetAddress: approveMerchantDto.streetAddress,
+          province: approveMerchantDto.province,
+          zipCode: approveMerchantDto.zipCode,
+        };
+
+        const locObj = {
+          merchantID: approveMerchantDto.merchantID,
+          tradeName: approveMerchantDto.legalName,
+          streetAddress: approveMerchantDto.streetAddress,
+          zipCode: approveMerchantDto.zipCode,
+          city: approveMerchantDto.city,
+          googleMapPin: approveMerchantDto.googleMapPin,
+          province: approveMerchantDto.province,
+          phoneNumber: approveMerchantDto.phoneNumber,
+        };
+        if (userID) {
+          await this._leadModel.updateOne(
+            { _id: userID },
+            { deletedCheck: true },
+          );
+        }
+        const location = await new this._locationModel(locObj).save();
+
+        const emailDto: EmailDTO = {
+          from: `"Divideals" <${process.env.EMAIL}>`,
+          to: userObj.email,
+          subject: 'Your password is generated',
+          text: '',
+          html: `
+              <html>
+                <head>
+                <title></title>
+                <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+                <meta name="viewport" content="width=device-width, initial-scale=1">
+                <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+                <style type="text/css">
+                  /* FONTS */
+                    @media screen {
+                    @font-face {
+                      font-family: 'Lato';
+                      font-style: normal;
+                      font-weight: 400;
+                      src: local('Lato Regular'), local('Lato-Regular'), url(https://fonts.gstatic.com/s/lato/v11/qIIYRU-oROkIk8vfvxw6QvesZW2xOQ-xsNqO47m55DA.woff) format('woff');
+                    }
+                    
+                    @font-face {
+                      font-family: 'Lato';
+                      font-style: normal;
+                      font-weight: 700;
+                      src: local('Lato Bold'), local('Lato-Bold'), url(https://fonts.gstatic.com/s/lato/v11/qdgUG4U09HnJwhYI-uK18wLUuEpTyoUstqEm5AMlJo4.woff) format('woff');
+                    }
+                    
+                    @font-face {
+                      font-family: 'Lato';
+                      font-style: italic;
+                      font-weight: 400;
+                      src: local('Lato Italic'), local('Lato-Italic'), url(https://fonts.gstatic.com/s/lato/v11/RYyZNoeFgb0l7W3Vu1aSWOvvDin1pK8aKteLpeZ5c0A.woff) format('woff');
+                    }
+                    
+                    @font-face {
+                      font-family: 'Lato';
+                      font-style: italic;
+                      font-weight: 700;
+                      src: local('Lato Bold Italic'), local('Lato-BoldItalic'), url(https://fonts.gstatic.com/s/lato/v11/HkF_qI1x_noxlxhrhMQYELO3LdcAZYWl9Si6vvxL-qU.woff) format('woff');
+                    }
+                    }
+                    /* CLIENT-SPECIFIC STYLES */
+                    body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+                    table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+                    img { -ms-interpolation-mode: bicubic; }
+                    /* RESET STYLES */
+                    img { border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; }
+                    table { border-collapse: collapse !important; }
+                    body { height: 100% !important; margin: 0 !important; padding: 0 !important; width: 100% !important; }
+                    /* iOS BLUE LINKS */
+                    a[x-apple-data-detectors] {
+                        color: inherit !important;
+                        text-decoration: none !important;
+                        font-size: inherit !important;
+                        font-family: inherit !important;
+                        font-weight: inherit !important;
+                        line-height: inherit !important;
+                    }
+                    /* ANDROID CENTER FIX */
+                    div[style*="margin: 16px 0;"] { margin: 0 !important; }
+                </style>
+                </head>
+                <body style="background-color: #0081E9; margin: 0 !important; padding: 0 !important;">
+                <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                    <!-- LOGO -->
+                    <tr>
+                        <td bgcolor="#0081E9" align="center">
+                            <table border="0" cellpadding="0" cellspacing="0" width="480" >
+                                <tr>
+                                    <td align="center" valign="top" style="padding: 40px 10px 40px 10px;">
+                                      <div style="padding: 40px 20px 20px 20px; border-radius: 4px 4px 0px 0px; color: #FFFFFF; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 48px; font-weight: 400; letter-spacing: 4px; line-height: 48px;">
+                                        <h6 style="margin:0px"> DIVIDEALS</h6>
+                                      </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <!-- HERO -->
+                    <tr>
+                        <td bgcolor="#0081E9" align="center" style="padding: 0px 10px 0px 10px;">
+                            <table border="0" cellpadding="0" cellspacing="0" width="480" >
+                                <tr>
+                                    <td bgcolor="#FFFFFF" align="center" valign="top" style="padding: 40px 20px 20px 20px; border-radius: 4px 4px 0px 0px; color: #111111; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 48px; font-weight: 400; letter-spacing: 4px; line-height: 48px;">
+                                      <h6 style="margin:0px"> Dear</h6>
+                                      <h1 style="font-size: 32px; font-weight: 400; margin: 0;">${
+                                        userObj.firstName
+                                      } ${userObj.lastName}</h1>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <!-- COPY BLOCK -->
+                    <tr>
+                        <td bgcolor="#F4F4F4" align="center" style="padding: 0px 10px 0px 10px;">
+                            <table border="0" cellpadding="0" cellspacing="0" width="480" >
+                              <!-- COPY -->
                               <tr>
-                                <td bgcolor="#0081E9" align="center" style="padding: 30px 30px 30px 30px; border-radius: 4px 4px 4px 4px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 18px; font-weight: 400; line-height: 25px;" >
-                                  <h2 style="font-size: 20px; font-weight: 400; color: #FFFFFF; margin: 0;">Need more help?</h2>
-                                  <p style="margin: 0;"><a style="color: #FFFFFF;">We&rsquo;re here, ready to talk</a></p>
+                                <td bgcolor="#FFFFFF" align="left" style="padding: 20px 30px 40px 30px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 18px; font-weight: 400; line-height: 25px;" >
+                                  <p style="margin: 0;">Your temporary password on <b>Divideals Merchant Panel</b> is generated. Please use this password to login into your account. </p>
                                 </td>
                               </tr>
-                          </table>
-                      </td>
-                  </tr>
-                  <!-- FOOTER -->
-                  <tr>
-                      <td bgcolor="#F4F4F4" align="center" style="padding: 0px 10px 0px 10px;">
-                          <table border="0" cellpadding="0" cellspacing="0" width="480" >
-                            <!-- PERMISSION REMINDER -->
-                            <tr>
-                              <td bgcolor="#F4F4F4" align="left" style="padding: 0px 30px 30px 30px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 14px; font-weight: 400; line-height: 18px;" >
-                                <p style="margin: 0;">You received this email because you requested for a password. If you did not, <a  style="color: #111111; font-weight: 700;">please contact us.</a>.</p>
-                              </td>
-                            </tr>
-                          </table>
-                      </td>
-                  </tr>
-              </table>
-              </body>
-              </html>
-            `,
-      };
+                              <!-- BULLETPROOF BUTTON -->
+                              <tr>
+                                <td bgcolor="#FFFFFF" align="left">
+                                  <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                    <tr>
+                                      <td bgcolor="#FFFFFF" align="center" style="padding: 20px 30px 60px 30px;">
+                                        <table border="0" cellspacing="0" cellpadding="0">
+                                          <tr>
+                                              <td align="center" style="border-radius: 3px;" ><a style="font-size: 20px; font-family: Helvetica, Arial, sans-serif; color: #FFFFFF; text-decoration: none; color: black; text-decoration: none; padding: 15px 25px; border-radius: 2px; border: 1px solid #0081E9; display: inline-block;"><b>${htmlencode.htmlEncode(
+                                                generatedPassword,
+                                              )}</b></a></td>
+                                          </tr>
+                                        </table>
+                                      </td>
+                                    </tr>
+                                  </table>
+                                </td>
+                              </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <!-- COPY CALLOUT -->
+                    <tr>
+                        <td bgcolor="#F4F4F4" align="center" style="padding: 0px 10px 0px 10px;">
+                            <table border="0" cellpadding="0" cellspacing="0" width="480" >
+                            </table>
+                        </td>
+                    </tr>
+                    <!-- SUPPORT CALLOUT -->
+                    <tr>
+                        <td bgcolor="#F4F4F4" align="center" style="padding: 30px 10px 0px 10px;">
+                            <table border="0" cellpadding="0" cellspacing="0" width="480" >
+                                <!-- HEADLINE -->
+                                <tr>
+                                  <td bgcolor="#0081E9" align="center" style="padding: 30px 30px 30px 30px; border-radius: 4px 4px 4px 4px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 18px; font-weight: 400; line-height: 25px;" >
+                                    <h2 style="font-size: 20px; font-weight: 400; color: #FFFFFF; margin: 0;">Need more help?</h2>
+                                    <p style="margin: 0;"><a style="color: #FFFFFF;">We&rsquo;re here, ready to talk</a></p>
+                                  </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <!-- FOOTER -->
+                    <tr>
+                        <td bgcolor="#F4F4F4" align="center" style="padding: 0px 10px 0px 10px;">
+                            <table border="0" cellpadding="0" cellspacing="0" width="480" >
+                              <!-- PERMISSION REMINDER -->
+                              <tr>
+                                <td bgcolor="#F4F4F4" align="left" style="padding: 0px 30px 30px 30px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 14px; font-weight: 400; line-height: 18px;" >
+                                  <p style="margin: 0;">You received this email because you requested for a password. If you did not, <a  style="color: #111111; font-weight: 700;">please contact us.</a>.</p>
+                                </td>
+                              </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+                </body>
+                </html>
+              `,
+        };
 
-      this.sendMail(emailDto);
+        this.sendMail(emailDto);
 
-      // user.password = generatedPassword;
+        // user.password = generatedPassword;
 
-      const lead = await this._leadModel.findOne({_id: userID});
+        const lead = await this._leadModel.findOne({_id: userID});
 
-      approveMerchantDto.businessHours = lead.businessHours;
+        approveMerchantDto.businessHours = lead.businessHours;
 
-      const merchant = await new this._userModel(approveMerchantDto).save();
+        const merchant = await new this._userModel(approveMerchantDto).save();
 
-      return { enquiryID: userID, merchantID: merchant?.merchantID };
+        return { enquiryID: userID, merchantID: merchant?.merchantID };
+      }
+      
     } catch (err) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
     }
@@ -1991,233 +2781,583 @@ export class UsersService {
 
   async approveAffiliate(userID, affliateID) {
     try {
-      let generatedPassword = await this.generatePassword();
-      const salt = await bcrypt.genSalt();
-      let hashedPassword = await bcrypt.hash(generatedPassword, salt);
-
-      const pinCode = otpGenerator.generate(4, {
-        upperCaseAlphabets: false,
-        lowerCaseAlphabets: false,
-        specialChars: false,
+      const user = await this._userModel.findOne({
+        _id: userID,
+        deletedCheck: false,
+        role: USERROLE.customer,
+        newUser: false,
+        status: USERSTATUS.approved
       });
 
-      delete affliateID.leadSource;
+      if (user) {
+        // let generatedPassword = await this.generatePassword();
+        // const salt = await bcrypt.genSalt();
+        // let hashedPassword = await bcrypt.hash(generatedPassword, salt);
 
-      affliateID.legalName = affliateID?.companyName;
-      affliateID.businessType = affliateID?.categoryType;
-      affliateID.voucherPinCode = pinCode;
-      affliateID.password = hashedPassword;
-      affliateID.status = USERSTATUS.approved;
-      affliateID.zipCode = affliateID?.zipCode.toString();
-      affliateID.affiliateID = await this.generateAffiliateId('affiliateID');
-      affliateID.customerID = await this.generateCustomerId('customerID');
+        const pinCode = otpGenerator.generate(4, {
+          upperCaseAlphabets: false,
+          lowerCaseAlphabets: false,
+          specialChars: false,
+        });
 
-      const userObj = {
-        ID: new Types.ObjectId().toHexString(),
-        firstName: affliateID?.firstName,
-        lastName: affliateID?.lastName,
-        email: affliateID?.email.toLowerCase(),
-        password: hashedPassword,
-        legalName: affliateID?.legalName,
-        vatNumber: affliateID?.vatNumber,
-        phoneNumber: affliateID?.phoneNumber,
-        city: affliateID?.city,
-        streetAddress: affliateID?.streetAddress,
-        province: affliateID?.province,
-        zipCode: affliateID?.zipCode,
-      };
+        delete affliateID.leadSource;
 
-      const locObj = {
-        merchantID: affliateID?.affiliateID,
-        tradeName: affliateID?.legalName,
-        streetAddress: affliateID?.streetAddress,
-        zipCode: affliateID?.zipCode,
-        city: affliateID?.city,
-        googleMapPin: affliateID?.googleMapPin,
-        province: affliateID?.province,
-        phoneNumber: affliateID?.phoneNumber,
-      };
-      if (userID) {
-        await this._leadModel.updateOne(
-          { _id: userID },
-          { deletedCheck: true },
-        );
-      }
-      const location = await new this._locationModel(locObj).save();
+        affliateID.legalName = affliateID?.companyName;
+        affliateID.businessType = affliateID?.categoryType;
+        affliateID.voucherPinCode = pinCode;
+        // affliateID.password = hashedPassword;
+        affliateID.status = USERSTATUS.approved;
+        affliateID.zipCode = affliateID?.zipCode.toString();
+        affliateID.affiliateID = await this.generateAffiliateId('affiliateID');
+        affliateID.customerID = await this.generateCustomerId('customerID');
 
-      const emailDto: EmailDTO = {
-        from: `"Divideals" <${process.env.EMAIL}>`,
-        to: userObj.email,
-        subject: 'Your password is generated',
-        text: '',
-        html: `
-            <html>
-              <head>
-              <title></title>
-              <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-              <meta name="viewport" content="width=device-width, initial-scale=1">
-              <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-              <style type="text/css">
-                /* FONTS */
-                  @media screen {
-                  @font-face {
-                    font-family: 'Lato';
-                    font-style: normal;
-                    font-weight: 400;
-                    src: local('Lato Regular'), local('Lato-Regular'), url(https://fonts.gstatic.com/s/lato/v11/qIIYRU-oROkIk8vfvxw6QvesZW2xOQ-xsNqO47m55DA.woff) format('woff');
-                  }
-                  
-                  @font-face {
-                    font-family: 'Lato';
-                    font-style: normal;
-                    font-weight: 700;
-                    src: local('Lato Bold'), local('Lato-Bold'), url(https://fonts.gstatic.com/s/lato/v11/qdgUG4U09HnJwhYI-uK18wLUuEpTyoUstqEm5AMlJo4.woff) format('woff');
-                  }
-                  
-                  @font-face {
-                    font-family: 'Lato';
-                    font-style: italic;
-                    font-weight: 400;
-                    src: local('Lato Italic'), local('Lato-Italic'), url(https://fonts.gstatic.com/s/lato/v11/RYyZNoeFgb0l7W3Vu1aSWOvvDin1pK8aKteLpeZ5c0A.woff) format('woff');
-                  }
-                  
-                  @font-face {
-                    font-family: 'Lato';
-                    font-style: italic;
-                    font-weight: 700;
-                    src: local('Lato Bold Italic'), local('Lato-BoldItalic'), url(https://fonts.gstatic.com/s/lato/v11/HkF_qI1x_noxlxhrhMQYELO3LdcAZYWl9Si6vvxL-qU.woff) format('woff');
-                  }
-                  }
-                  /* CLIENT-SPECIFIC STYLES */
-                  body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
-                  table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
-                  img { -ms-interpolation-mode: bicubic; }
-                  /* RESET STYLES */
-                  img { border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; }
-                  table { border-collapse: collapse !important; }
-                  body { height: 100% !important; margin: 0 !important; padding: 0 !important; width: 100% !important; }
-                  /* iOS BLUE LINKS */
-                  a[x-apple-data-detectors] {
-                      color: inherit !important;
-                      text-decoration: none !important;
-                      font-size: inherit !important;
-                      font-family: inherit !important;
-                      font-weight: inherit !important;
-                      line-height: inherit !important;
-                  }
-                  /* ANDROID CENTER FIX */
-                  div[style*="margin: 16px 0;"] { margin: 0 !important; }
-              </style>
-              </head>
-              <body style="background-color: #0081E9; margin: 0 !important; padding: 0 !important;">
-              <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                  <!-- LOGO -->
-                  <tr>
-                      <td bgcolor="#0081E9" align="center">
-                          <table border="0" cellpadding="0" cellspacing="0" width="480" >
-                              <tr>
-                                  <td align="center" valign="top" style="padding: 40px 10px 40px 10px;">
-                                    <div style="padding: 40px 20px 20px 20px; border-radius: 4px 4px 0px 0px; color: #FFFFFF; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 48px; font-weight: 400; letter-spacing: 4px; line-height: 48px;">
-                                      <h6 style="margin:0px"> DIVIDEALS</h6>
-                                    </div>
-                                  </td>
-                              </tr>
+        const userObj = {
+          ID: new Types.ObjectId().toHexString(),
+          firstName: affliateID?.firstName,
+          lastName: affliateID?.lastName,
+          email: affliateID?.email.toLowerCase(),
+          // password: hashedPassword,
+          legalName: affliateID?.legalName,
+          vatNumber: affliateID?.vatNumber,
+          phoneNumber: affliateID?.phoneNumber,
+          city: affliateID?.city,
+          streetAddress: affliateID?.streetAddress,
+          province: affliateID?.province,
+          zipCode: affliateID?.zipCode,
+        };
+
+        const locObj = {
+          merchantID: affliateID?.affiliateID,
+          tradeName: affliateID?.legalName,
+          streetAddress: affliateID?.streetAddress,
+          zipCode: affliateID?.zipCode,
+          city: affliateID?.city,
+          googleMapPin: affliateID?.googleMapPin,
+          province: affliateID?.province,
+          phoneNumber: affliateID?.phoneNumber,
+        };
+        if (userID) {
+          await this._leadModel.updateOne(
+            { _id: userID },
+            { deletedCheck: true },
+          );
+        }
+        const location = await new this._locationModel(locObj).save();
+
+        const emailDto: EmailDTO = {
+          from: `"Divideals" <${process.env.EMAIL}>`,
+          to: userObj.email,
+          subject: 'Your password is generated',
+          text: '',
+          html: `
+                  <html>
+                  <head>
+                    <title></title>
+                    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+                    <meta name="viewport" content="width=device-width, initial-scale=1" />
+                    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+                    <style type="text/css">
+                      /* FONTS */
+                      @media screen {
+                        @font-face {
+                          font-family: 'Lato';
+                          font-style: normal;
+                          font-weight: 400;
+                          src: local('Lato Regular'), local('Lato-Regular'),
+                            url(https://fonts.gstatic.com/s/lato/v11/qIIYRU-oROkIk8vfvxw6QvesZW2xOQ-xsNqO47m55DA.woff)
+                              format('woff');
+                        }
+                        @font-face {
+                          font-family: 'Lato';
+                          font-style: normal;
+                          font-weight: 700;
+                          src: local('Lato Bold'), local('Lato-Bold'),
+                            url(https://fonts.gstatic.com/s/lato/v11/qdgUG4U09HnJwhYI-uK18wLUuEpTyoUstqEm5AMlJo4.woff)
+                              format('woff');
+                        }
+                        @font-face {
+                          font-family: 'Lato';
+                          font-style: italic;
+                          font-weight: 400;
+                          src: local('Lato Italic'), local('Lato-Italic'),
+                            url(https://fonts.gstatic.com/s/lato/v11/RYyZNoeFgb0l7W3Vu1aSWOvvDin1pK8aKteLpeZ5c0A.woff)
+                              format('woff');
+                        }
+                        @font-face {
+                          font-family: 'Lato';
+                          font-style: italic;
+                          font-weight: 700;
+                          src: local('Lato Bold Italic'), local('Lato-BoldItalic'),
+                            url(https://fonts.gstatic.com/s/lato/v11/HkF_qI1x_noxlxhrhMQYELO3LdcAZYWl9Si6vvxL-qU.woff)
+                              format('woff');
+                        }
+                      }
+                      /* CLIENT-SPECIFIC STYLES */
+                      body,
+                      table,
+                      td,
+                      a {
+                        -webkit-text-size-adjust: 100%;
+                        -ms-text-size-adjust: 100%;
+                      }
+                      table,
+                      td {
+                        mso-table-lspace: 0pt;
+                        mso-table-rspace: 0pt;
+                      }
+                      img {
+                        -ms-interpolation-mode: bicubic;
+                      }
+                      /* RESET STYLES */
+                      img {
+                        border: 0;
+                        height: auto;
+                        line-height: 100%;
+                        outline: none;
+                        text-decoration: none;
+                      }
+                      table {
+                        border-collapse: collapse !important;
+                      }
+                      body {
+                        height: 100% !important;
+                        margin: 0 !important;
+                        padding: 0 !important;
+                        width: 100% !important;
+                      }
+                      /* iOS BLUE LINKS */
+                      a[x-apple-data-detectors] {
+                        color: inherit !important;
+                        text-decoration: none !important;
+                        font-size: inherit !important;
+                        font-family: inherit !important;
+                        font-weight: inherit !important;
+                        line-height: inherit !important;
+                      }
+                      /* ANDROID CENTER FIX */
+                      div[style*='margin: 16px 0;'] {
+                        margin: 0 !important;
+                      }
+                    </style>
+                  </head>
+                  <body
+                    style="
+                      background-color: #0081e9;
+                      margin: 0 !important;
+                      padding: 0 !important;
+                    "
+                  >
+                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                      <!-- LOGO -->
+                      <tr>
+                        <td bgcolor="#0081E9" align="center">
+                          <table border="0" cellpadding="0" cellspacing="0" width="450">
+                            <tr>
+                              <td
+                                align="center"
+                                valign="top"
+                                style="padding: 40px 10px 40px 10px"
+                              >
+                                <div
+                                  style="
+                                    padding: 40px 20px 20px 20px;
+                                    border-radius: 4px 4px 0px 0px;
+                                    color: #ffffff;
+                                    font-family: 'Lato', Helvetica, Arial, sans-serif;
+                                    font-size: 48px;
+                                    font-weight: 400;
+                                    letter-spacing: 4px;
+                                    line-height: 48px;
+                                  "
+                                >
+                                  <h6 style="margin: 0px">DIVIDEALS</h6>
+                                </div>
+                              </td>
+                            </tr>
                           </table>
-                      </td>
-                  </tr>
-                  <!-- HERO -->
-                  <tr>
-                      <td bgcolor="#0081E9" align="center" style="padding: 0px 10px 0px 10px;">
-                          <table border="0" cellpadding="0" cellspacing="0" width="480" >
-                              <tr>
-                                  <td bgcolor="#FFFFFF" align="center" valign="top" style="padding: 40px 20px 20px 20px; border-radius: 4px 4px 0px 0px; color: #111111; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 48px; font-weight: 400; letter-spacing: 4px; line-height: 48px;">
-                                    <h6 style="margin:0px"> Dear</h6>
-                                    <h1 style="font-size: 32px; font-weight: 400; margin: 0;">${
-                                      userObj.firstName
-                                    } ${userObj.lastName}</h1>
-                                  </td>
-                              </tr>
+                        </td>
+                      </tr>
+                      <!-- HERO -->
+                      <tr>
+                        <td bgcolor="#0081E9" align="center" style="padding: 0px 10px 0px 10px">
+                          <table border="0" cellpadding="0" cellspacing="0" width="450">
+                            <tr>
+                              <td
+                                bgcolor="#FFFFFF"
+                                align="center"
+                                valign="top"
+                                style="
+                                  padding: 40px 20px 20px 20px;
+                                  border-radius: 4px 4px 0px 0px;
+                                  color: #111111;
+                                  font-family: 'Lato', Helvetica, Arial, sans-serif;
+                                  font-size: 48px;
+                                  font-weight: 400;
+                                  letter-spacing: 4px;
+                                  line-height: 48px;
+                                "
+                              >
+                                <h6 style="margin: 0px">Dear</h6>
+                                <h1 style="font-size: 32px; font-weight: 400; margin: 0">
+                                  ${ userObj.firstName } ${userObj.lastName}
+                                </h1>
+                              </td>
+                            </tr>
                           </table>
-                      </td>
-                  </tr>
-                  <!-- COPY BLOCK -->
-                  <tr>
-                      <td bgcolor="#F4F4F4" align="center" style="padding: 0px 10px 0px 10px;">
-                          <table border="0" cellpadding="0" cellspacing="0" width="480" >
+                        </td>
+                      </tr>
+                      <!-- COPY BLOCK -->
+                      <tr>
+                        <td bgcolor="#F4F4F4" align="center" style="padding: 0px 10px 0px 10px">
+                          <table border="0" cellpadding="0" cellspacing="0" width="450">
                             <!-- COPY -->
                             <tr>
-                              <td bgcolor="#FFFFFF" align="left" style="padding: 20px 30px 40px 30px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 18px; font-weight: 400; line-height: 25px;" >
-                                <p style="margin: 0;">Your temporary password on <b>Divideals Merchant Panel</b> is generated. Please use this password to login into your account. </p>
+                              <td
+                                bgcolor="#FFFFFF"
+                                align="left"
+                                style="
+                                  padding: 20px 30px 40px 30px;
+                                  color: #666666;
+                                  font-family: 'Lato', Helvetica, Arial, sans-serif;
+                                  font-size: 18px;
+                                  font-weight: 400;
+                                  line-height: 25px;
+                                  text-align: center;
+                                "
+                              >
+                                <p style="margin: 0">
+                                  Your account on&nbsp;<b>Divideals Affiliate Panel</b> has been
+                                  approved. Please login to access your account.
+                                </p>
                               </td>
                             </tr>
                             <!-- BULLETPROOF BUTTON -->
+                          </table>
+                        </td>
+                      </tr>
+                      <!-- COPY CALLOUT -->
+                      <tr>
+                        <td bgcolor="#F4F4F4" align="center" style="padding: 0px 10px 0px 10px">
+                          <table border="0" cellpadding="0" cellspacing="0" width="450"></table>
+                        </td>
+                      </tr>
+                      <!-- SUPPORT CALLOUT -->
+                      <tr>
+                        <td
+                          bgcolor="#F4F4F4"
+                          align="center"
+                          style="padding: 30px 10px 0px 10px"
+                        >
+                          <table border="0" cellpadding="0" cellspacing="0" width="450">
+                            <!-- HEADLINE -->
                             <tr>
-                              <td bgcolor="#FFFFFF" align="left">
-                                <table width="100%" border="0" cellspacing="0" cellpadding="0">
-                                  <tr>
-                                    <td bgcolor="#FFFFFF" align="center" style="padding: 20px 30px 60px 30px;">
-                                      <table border="0" cellspacing="0" cellpadding="0">
-                                        <tr>
-                                            <td align="center" style="border-radius: 3px;" ><a style="font-size: 20px; font-family: Helvetica, Arial, sans-serif; color: #FFFFFF; text-decoration: none; color: black; text-decoration: none; padding: 15px 25px; border-radius: 2px; border: 1px solid #0081E9; display: inline-block;"><b>${htmlencode.htmlEncode(
-                                              generatedPassword,
-                                            )}</b></a></td>
-                                        </tr>
-                                      </table>
-                                    </td>
-                                  </tr>
-                                </table>
+                              <td
+                                bgcolor="#0081E9"
+                                align="center"
+                                style="
+                                  padding: 30px 30px 30px 30px;
+                                  border-radius: 4px 4px 4px 4px;
+                                  color: #666666;
+                                  font-family: 'Lato', Helvetica, Arial, sans-serif;
+                                  font-size: 18px;
+                                  font-weight: 400;
+                                  line-height: 25px;
+                                "
+                              >
+                                <h2
+                                  style="
+                                    font-size: 20px;
+                                    font-weight: 400;
+                                    color: #ffffff;
+                                    margin: 0;
+                                  "
+                                >
+                                  Need more help?
+                                </h2>
+                                <p style="margin: 0">
+                                  <a style="color: #ffffff">We&rsquo;re here, ready to talk</a>
+                                </p>
                               </td>
                             </tr>
                           </table>
-                      </td>
-                  </tr>
-                  <!-- COPY CALLOUT -->
-                  <tr>
-                      <td bgcolor="#F4F4F4" align="center" style="padding: 0px 10px 0px 10px;">
-                          <table border="0" cellpadding="0" cellspacing="0" width="480" >
-                          </table>
-                      </td>
-                  </tr>
-                  <!-- SUPPORT CALLOUT -->
-                  <tr>
-                      <td bgcolor="#F4F4F4" align="center" style="padding: 30px 10px 0px 10px;">
-                          <table border="0" cellpadding="0" cellspacing="0" width="480" >
-                              <!-- HEADLINE -->
-                              <tr>
-                                <td bgcolor="#0081E9" align="center" style="padding: 30px 30px 30px 30px; border-radius: 4px 4px 4px 4px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 18px; font-weight: 400; line-height: 25px;" >
-                                  <h2 style="font-size: 20px; font-weight: 400; color: #FFFFFF; margin: 0;">Need more help?</h2>
-                                  <p style="margin: 0;"><a style="color: #FFFFFF;">We&rsquo;re here, ready to talk</a></p>
-                                </td>
-                              </tr>
-                          </table>
-                      </td>
-                  </tr>
-                  <!-- FOOTER -->
-                  <tr>
-                      <td bgcolor="#F4F4F4" align="center" style="padding: 0px 10px 0px 10px;">
-                          <table border="0" cellpadding="0" cellspacing="0" width="480" >
+                        </td>
+                      </tr>
+                      <!-- FOOTER -->
+                      <tr>
+                        <td bgcolor="#F4F4F4" align="center" style="padding: 0px 10px 0px 10px">
+                          <table border="0" cellpadding="0" cellspacing="0" width="450">
                             <!-- PERMISSION REMINDER -->
                             <tr>
-                              <td bgcolor="#F4F4F4" align="left" style="padding: 0px 30px 30px 30px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 14px; font-weight: 400; line-height: 18px;" >
-                                <p style="margin: 0;">You received this email because you requested for a password. If you did not, <a  style="color: #111111; font-weight: 700;">please contact us.</a>.</p>
+                              <td
+                                bgcolor="#F4F4F4"
+                                align="left"
+                                style="
+                                  padding: 0px 30px 30px 30px;
+                                  color: #666666;
+                                  font-family: 'Lato', Helvetica, Arial, sans-serif;
+                                  font-size: 14px;
+                                  font-weight: 400;
+                                  line-height: 18px;
+                                "
+                              >
+                                <p style="margin: 0">
+                                  You received this email because you requested for a password.
+                                  If you did not,
+                                  <a style="color: #111111; font-weight: 700"
+                                    >please contact us.</a
+                                  >.
+                                </p>
                               </td>
                             </tr>
                           </table>
-                      </td>
-                  </tr>
-              </table>
-              </body>
-              </html>
-            `,
-      };
+                        </td>
+                      </tr>
+                    </table>
+                  </body>
+                </html>
+              `,
+        };
 
-      this.sendMail(emailDto);
+        this.sendMail(emailDto);
 
-      // user.password = generatedPassword;
+        // user.password = generatedPassword;
 
-      const affiliate = await new this._userModel(affliateID).save();
+        const affiliate = await this._userModel.findOne({_id: userID});
 
-      return { enquiryID: userID, affliateID: affiliate?.affiliateID };
+        await this._userModel.updateOne({_id: userID}, affliateID);
+        
+
+        return { enquiryID: userID, affliateID: affiliate?.affiliateID };
+      } else {
+        let generatedPassword = await this.generatePassword();
+        const salt = await bcrypt.genSalt();
+        let hashedPassword = await bcrypt.hash(generatedPassword, salt);
+
+        const pinCode = otpGenerator.generate(4, {
+          upperCaseAlphabets: false,
+          lowerCaseAlphabets: false,
+          specialChars: false,
+        });
+
+        delete affliateID.leadSource;
+
+        affliateID.legalName = affliateID?.companyName;
+        affliateID.businessType = affliateID?.categoryType;
+        affliateID.voucherPinCode = pinCode;
+        affliateID.password = hashedPassword;
+        affliateID.status = USERSTATUS.approved;
+        affliateID.zipCode = affliateID?.zipCode.toString();
+        affliateID.affiliateID = await this.generateAffiliateId('affiliateID');
+        affliateID.customerID = await this.generateCustomerId('customerID');
+
+        const userObj = {
+          ID: new Types.ObjectId().toHexString(),
+          firstName: affliateID?.firstName,
+          lastName: affliateID?.lastName,
+          email: affliateID?.email.toLowerCase(),
+          password: hashedPassword,
+          legalName: affliateID?.legalName,
+          vatNumber: affliateID?.vatNumber,
+          phoneNumber: affliateID?.phoneNumber,
+          city: affliateID?.city,
+          streetAddress: affliateID?.streetAddress,
+          province: affliateID?.province,
+          zipCode: affliateID?.zipCode,
+        };
+
+        const locObj = {
+          merchantID: affliateID?.affiliateID,
+          tradeName: affliateID?.legalName,
+          streetAddress: affliateID?.streetAddress,
+          zipCode: affliateID?.zipCode,
+          city: affliateID?.city,
+          googleMapPin: affliateID?.googleMapPin,
+          province: affliateID?.province,
+          phoneNumber: affliateID?.phoneNumber,
+        };
+        if (userID) {
+          await this._leadModel.updateOne(
+            { _id: userID },
+            { deletedCheck: true },
+          );
+        }
+        const location = await new this._locationModel(locObj).save();
+
+        const emailDto: EmailDTO = {
+          from: `"Divideals" <${process.env.EMAIL}>`,
+          to: userObj.email,
+          subject: 'Your password is generated',
+          text: '',
+          html: `
+              <html>
+                <head>
+                <title></title>
+                <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+                <meta name="viewport" content="width=device-width, initial-scale=1">
+                <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+                <style type="text/css">
+                  /* FONTS */
+                    @media screen {
+                    @font-face {
+                      font-family: 'Lato';
+                      font-style: normal;
+                      font-weight: 400;
+                      src: local('Lato Regular'), local('Lato-Regular'), url(https://fonts.gstatic.com/s/lato/v11/qIIYRU-oROkIk8vfvxw6QvesZW2xOQ-xsNqO47m55DA.woff) format('woff');
+                    }
+                    
+                    @font-face {
+                      font-family: 'Lato';
+                      font-style: normal;
+                      font-weight: 700;
+                      src: local('Lato Bold'), local('Lato-Bold'), url(https://fonts.gstatic.com/s/lato/v11/qdgUG4U09HnJwhYI-uK18wLUuEpTyoUstqEm5AMlJo4.woff) format('woff');
+                    }
+                    
+                    @font-face {
+                      font-family: 'Lato';
+                      font-style: italic;
+                      font-weight: 400;
+                      src: local('Lato Italic'), local('Lato-Italic'), url(https://fonts.gstatic.com/s/lato/v11/RYyZNoeFgb0l7W3Vu1aSWOvvDin1pK8aKteLpeZ5c0A.woff) format('woff');
+                    }
+                    
+                    @font-face {
+                      font-family: 'Lato';
+                      font-style: italic;
+                      font-weight: 700;
+                      src: local('Lato Bold Italic'), local('Lato-BoldItalic'), url(https://fonts.gstatic.com/s/lato/v11/HkF_qI1x_noxlxhrhMQYELO3LdcAZYWl9Si6vvxL-qU.woff) format('woff');
+                    }
+                    }
+                    /* CLIENT-SPECIFIC STYLES */
+                    body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+                    table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+                    img { -ms-interpolation-mode: bicubic; }
+                    /* RESET STYLES */
+                    img { border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; }
+                    table { border-collapse: collapse !important; }
+                    body { height: 100% !important; margin: 0 !important; padding: 0 !important; width: 100% !important; }
+                    /* iOS BLUE LINKS */
+                    a[x-apple-data-detectors] {
+                        color: inherit !important;
+                        text-decoration: none !important;
+                        font-size: inherit !important;
+                        font-family: inherit !important;
+                        font-weight: inherit !important;
+                        line-height: inherit !important;
+                    }
+                    /* ANDROID CENTER FIX */
+                    div[style*="margin: 16px 0;"] { margin: 0 !important; }
+                </style>
+                </head>
+                <body style="background-color: #0081E9; margin: 0 !important; padding: 0 !important;">
+                <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                    <!-- LOGO -->
+                    <tr>
+                        <td bgcolor="#0081E9" align="center">
+                            <table border="0" cellpadding="0" cellspacing="0" width="480" >
+                                <tr>
+                                    <td align="center" valign="top" style="padding: 40px 10px 40px 10px;">
+                                      <div style="padding: 40px 20px 20px 20px; border-radius: 4px 4px 0px 0px; color: #FFFFFF; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 48px; font-weight: 400; letter-spacing: 4px; line-height: 48px;">
+                                        <h6 style="margin:0px"> DIVIDEALS</h6>
+                                      </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <!-- HERO -->
+                    <tr>
+                        <td bgcolor="#0081E9" align="center" style="padding: 0px 10px 0px 10px;">
+                            <table border="0" cellpadding="0" cellspacing="0" width="480" >
+                                <tr>
+                                    <td bgcolor="#FFFFFF" align="center" valign="top" style="padding: 40px 20px 20px 20px; border-radius: 4px 4px 0px 0px; color: #111111; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 48px; font-weight: 400; letter-spacing: 4px; line-height: 48px;">
+                                      <h6 style="margin:0px"> Dear</h6>
+                                      <h1 style="font-size: 32px; font-weight: 400; margin: 0;">${
+                                        userObj.firstName
+                                      } ${userObj.lastName}</h1>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <!-- COPY BLOCK -->
+                    <tr>
+                        <td bgcolor="#F4F4F4" align="center" style="padding: 0px 10px 0px 10px;">
+                            <table border="0" cellpadding="0" cellspacing="0" width="480" >
+                              <!-- COPY -->
+                              <tr>
+                                <td bgcolor="#FFFFFF" align="left" style="padding: 20px 30px 40px 30px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 18px; font-weight: 400; line-height: 25px;" >
+                                  <p style="margin: 0;">Your temporary password on <b>Divideals Merchant Panel</b> is generated. Please use this password to login into your account. </p>
+                                </td>
+                              </tr>
+                              <!-- BULLETPROOF BUTTON -->
+                              <tr>
+                                <td bgcolor="#FFFFFF" align="left">
+                                  <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                    <tr>
+                                      <td bgcolor="#FFFFFF" align="center" style="padding: 20px 30px 60px 30px;">
+                                        <table border="0" cellspacing="0" cellpadding="0">
+                                          <tr>
+                                              <td align="center" style="border-radius: 3px;" ><a style="font-size: 20px; font-family: Helvetica, Arial, sans-serif; color: #FFFFFF; text-decoration: none; color: black; text-decoration: none; padding: 15px 25px; border-radius: 2px; border: 1px solid #0081E9; display: inline-block;"><b>${htmlencode.htmlEncode(
+                                                generatedPassword,
+                                              )}</b></a></td>
+                                          </tr>
+                                        </table>
+                                      </td>
+                                    </tr>
+                                  </table>
+                                </td>
+                              </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <!-- COPY CALLOUT -->
+                    <tr>
+                        <td bgcolor="#F4F4F4" align="center" style="padding: 0px 10px 0px 10px;">
+                            <table border="0" cellpadding="0" cellspacing="0" width="480" >
+                            </table>
+                        </td>
+                    </tr>
+                    <!-- SUPPORT CALLOUT -->
+                    <tr>
+                        <td bgcolor="#F4F4F4" align="center" style="padding: 30px 10px 0px 10px;">
+                            <table border="0" cellpadding="0" cellspacing="0" width="480" >
+                                <!-- HEADLINE -->
+                                <tr>
+                                  <td bgcolor="#0081E9" align="center" style="padding: 30px 30px 30px 30px; border-radius: 4px 4px 4px 4px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 18px; font-weight: 400; line-height: 25px;" >
+                                    <h2 style="font-size: 20px; font-weight: 400; color: #FFFFFF; margin: 0;">Need more help?</h2>
+                                    <p style="margin: 0;"><a style="color: #FFFFFF;">We&rsquo;re here, ready to talk</a></p>
+                                  </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <!-- FOOTER -->
+                    <tr>
+                        <td bgcolor="#F4F4F4" align="center" style="padding: 0px 10px 0px 10px;">
+                            <table border="0" cellpadding="0" cellspacing="0" width="480" >
+                              <!-- PERMISSION REMINDER -->
+                              <tr>
+                                <td bgcolor="#F4F4F4" align="left" style="padding: 0px 30px 30px 30px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 14px; font-weight: 400; line-height: 18px;" >
+                                  <p style="margin: 0;">You received this email because you requested for a password. If you did not, <a  style="color: #111111; font-weight: 700;">please contact us.</a>.</p>
+                                </td>
+                              </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+                </body>
+                </html>
+              `,
+        };
+
+        this.sendMail(emailDto);
+
+        // user.password = generatedPassword;
+
+        const affiliate = await new this._userModel(affliateID).save();
+
+        return { enquiryID: userID, affliateID: affiliate?.affiliateID };
+      }
+
     } catch (err) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
     }
