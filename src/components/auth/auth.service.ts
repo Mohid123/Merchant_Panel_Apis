@@ -250,10 +250,7 @@ export class AuthService {
       loginDto.countryCode = 'BE';
       loginDto.leadSource = 'web';
       loginDto.businessHours = businessHours;
-
-      if (loginDto.role == USERROLE.merchant) {
-        loginDto.platformPercentage = 25;
-      }
+      loginDto.platformPercentage = 25;
 
       await this._usersService.updateOne({_id: user._id}, loginDto);
       return user;
