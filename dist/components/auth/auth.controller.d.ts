@@ -42,6 +42,7 @@ export declare class AuthController {
     }>;
     sendEmail(emailDto: EmailDTO): Promise<void>;
     isEmailExists(isEmailExistsDto: IsEmailExistsDTO): Promise<boolean>;
+    isEmailExistsForCustomerPanel(isEmailExistsDto: IsEmailExistsDTO): Promise<boolean>;
     sendOtp(emailDto: OtpEmailDto): Promise<{
         message: string;
     }>;

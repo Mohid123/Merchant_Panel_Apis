@@ -54,11 +54,11 @@ let ReviewService = class ReviewService {
             reviewDto.merchantID = voucher.merchantID;
             reviewDto.voucherRedeemedDate = voucher.redeemDate;
             reviewDto.customerMongoID = req.user.id;
-            reviewDto.customerID = req.user.userID;
+            reviewDto.customerID = req.user.customerID;
             const reviewAlreadyGiven = await this.reviewModel.findOne().and([
                 { voucherMongoID: reviewDto.voucherMongoID },
                 { voucherID: reviewDto.voucherID },
-                { customerID: req.user.userID },
+                { customerID: req.user.customerID },
             ]);
             if (reviewAlreadyGiven) {
                 throw new common_1.HttpException('Customer has already reviewed this voucher', common_1.HttpStatus.CONFLICT);
@@ -194,7 +194,7 @@ let ReviewService = class ReviewService {
                         from: 'users',
                         as: 'customerData',
                         localField: 'customerID',
-                        foreignField: 'userID',
+                        foreignField: 'customerID',
                     },
                 },
                 {
@@ -254,7 +254,7 @@ let ReviewService = class ReviewService {
                         from: 'users',
                         as: 'merchantData',
                         localField: 'merchantID',
-                        foreignField: 'userID'
+                        foreignField: 'merchantID'
                     }
                 },
                 {
@@ -428,7 +428,7 @@ let ReviewService = class ReviewService {
                     $lookup: {
                         from: 'users',
                         let: {
-                            userID: '$customerID',
+                            customerID: '$customerID',
                         },
                         pipeline: [
                             {
@@ -436,7 +436,7 @@ let ReviewService = class ReviewService {
                                     $expr: {
                                         $and: [
                                             {
-                                                $eq: ['$userID', '$$userID'],
+                                                $eq: ['$customerID', '$$customerID'],
                                             },
                                         ],
                                     },

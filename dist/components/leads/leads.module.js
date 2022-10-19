@@ -10,13 +10,19 @@ exports.LeadsModule = void 0;
 const common_1 = require("@nestjs/common");
 const mongoose_1 = require("@nestjs/mongoose");
 const lead_schema_1 = require("../../schema/lead/lead.schema");
+const users_schema_1 = require("../../schema/user/users.schema");
 const leads_controller_1 = require("./leads.controller");
 const leads_service_1 = require("./leads.service");
 let LeadsModule = class LeadsModule {
 };
 LeadsModule = __decorate([
     (0, common_1.Module)({
-        imports: [mongoose_1.MongooseModule.forFeature([{ name: 'Lead', schema: lead_schema_1.LeadSchema }])],
+        imports: [
+            mongoose_1.MongooseModule.forFeature([
+                { name: 'Lead', schema: lead_schema_1.LeadSchema },
+                { name: 'User', schema: users_schema_1.UsersSchema },
+            ])
+        ],
         controllers: [leads_controller_1.LeadsController],
         providers: [leads_service_1.LeadsService],
     })

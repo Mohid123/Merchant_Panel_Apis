@@ -64,7 +64,10 @@ export declare class UsersController {
         totalPendingUsers: number;
         pendingUsers: any[];
     }>;
-    approvePendingUsers(status: USERSTATUS, userID: string): Promise<{
+    approvePendingMerchants(status: USERSTATUS, userID: string): Promise<{
+        message: string;
+    }>;
+    approvePendingAffiliates(status: USERSTATUS, userID: string): Promise<{
         message: string;
     }>;
     validateVatNumber(vatNumber: string): Promise<any>;

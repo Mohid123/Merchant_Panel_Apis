@@ -41,7 +41,7 @@ let FavouritesService = class FavouritesService {
             }
             else {
                 favouritesDto.customerMongoID = req.user.id;
-                favouritesDto.customerID = req.user.userID;
+                favouritesDto.customerID = req.user.customerID;
                 await this.favouriteModel.updateOne({ dealID: favouritesDto.dealID, customerMongoID: req.user.id }, Object.assign(Object.assign({}, favouritesDto), { deletedCheck: false }), { upsert: true });
                 return {
                     message: 'Added to favourites'
@@ -68,7 +68,7 @@ let FavouritesService = class FavouritesService {
             }
             else {
                 affiliateFavouritesDto.customerMongoID = req.user.id;
-                affiliateFavouritesDto.customerID = req.user.userID;
+                affiliateFavouritesDto.customerID = req.user.customerID;
                 await this.affiliateFavouriteModel.updateOne({ affiliateID: affiliateFavouritesDto.affiliateID, customerMongoID: req.user.id }, Object.assign(Object.assign({}, affiliateFavouritesDto), { deletedCheck: false }), { upsert: true });
                 return {
                     message: 'Added to favourites'
@@ -93,7 +93,9 @@ let FavouritesService = class FavouritesService {
             await this.affiliateFavouriteModel.updateOne({
                 affiliateMongoID: id,
                 customerMongoID: req.user.id,
-            }, { deletedCheck: true });
+            }, {
+                deletedCheck: true
+            });
             return {
                 message: 'Removed from favourites'
             };

@@ -470,7 +470,7 @@ let VouchersService = class VouchersService {
                         from: 'users',
                         as: 'customerData',
                         localField: 'customerID',
-                        foreignField: 'userID'
+                        foreignField: 'customerID'
                     }
                 },
                 {
@@ -566,7 +566,7 @@ let VouchersService = class VouchersService {
             if (scheduledVoucher) {
             }
             const merchant = await this.userModel.findOne({
-                userID: voucher.merchantID,
+                merchantID: voucher.merchantID,
             });
             let redeemDate = new Date().getTime();
             await this.voucherModel.updateOne({ voucherID: voucherId }, {
@@ -583,7 +583,7 @@ let VouchersService = class VouchersService {
                 deletedCheck: false,
             });
             const res = await axios_1.default.get(`https://www.zohoapis.eu/crm/v2/functions/createvoucher/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&voucherid=${voucher.voucherID}`);
-            await this.userModel.updateOne({ userID: voucher.merchantID }, {
+            await this.userModel.updateOne({ merchantID: voucher.merchantID }, {
                 redeemedVouchers: merchant.redeemedVouchers + 1,
             });
             const updtaedVoucher = await this.voucherModel.findOne({
@@ -701,7 +701,7 @@ let VouchersService = class VouchersService {
             if (scheduledVoucher) {
             }
             const merchant = await this.userModel.findOne({
-                userID: voucher.merchantID,
+                merchantID: voucher.merchantID,
             });
             if (merchant.voucherPinCode != redeemVoucherDto.pin) {
                 throw new Error('Inavlid Pin Code!');
@@ -721,7 +721,7 @@ let VouchersService = class VouchersService {
                 deletedCheck: false,
             });
             const res = await axios_1.default.get(`https://www.zohoapis.eu/crm/v2/functions/createvoucher/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&voucherid=${voucher.voucherID}`);
-            await this.userModel.updateOne({ userID: voucher.merchantID }, {
+            await this.userModel.updateOne({ merchantID: voucher.merchantID }, {
                 redeemedVouchers: merchant.redeemedVouchers + 1,
             });
             const updtaedVoucher = await this.voucherModel.findOne({
@@ -795,7 +795,7 @@ let VouchersService = class VouchersService {
             });
             const merchant = await this.userModel.findOne({
                 _id: req.user.id,
-                userID: req.user.userID,
+                merchantID: req.user.merchantID,
                 deletedCheck: false,
                 status: userstatus_enum_1.USERSTATUS.approved,
                 role: userrole_enum_1.USERROLE.merchant

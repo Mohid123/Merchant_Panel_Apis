@@ -22,6 +22,7 @@ const nodemailer = require("nodemailer");
 const userstatus_enum_1 = require("../../enum/user/userstatus.enum");
 const userrole_enum_1 = require("../../enum/user/userrole.enum");
 const axios_1 = require("axios");
+const businesshours_1 = require("../utils/businesshours");
 var htmlencode = require('htmlencode');
 var generator = require('generate-password');
 var otpGenerator = require('otp-generator');
@@ -91,7 +92,7 @@ let AuthService = class AuthService {
         if (!user) {
             throw new common_1.UnauthorizedException('Incorrect email!');
         }
-        if (!(user.status == userstatus_enum_1.USERSTATUS.approved && (user.role == userrole_enum_1.USERROLE.merchant))) {
+        if (!(user.status == userstatus_enum_1.USERSTATUS.approved && user.role == userrole_enum_1.USERROLE.merchant)) {
             throw new common_1.NotFoundException('This user is not a merchant!');
         }
         const isValidCredentials = await bcrypt.compare(loginDto.password, user.password);
@@ -115,9 +116,6 @@ let AuthService = class AuthService {
         if (!user) {
             throw new common_1.UnauthorizedException('Incorrect email!');
         }
-        if (!(user.role == 'Customer')) {
-            throw new common_1.NotFoundException('This user is not a customer!');
-        }
         const isValidCredentials = await bcrypt.compare(loginDto.password, user.password);
         if (!isValidCredentials) {
             throw new common_1.UnauthorizedException('Incorrect password!');
@@ -127,6 +125,7 @@ let AuthService = class AuthService {
         delete user.aboutUs;
         delete user.finePrint;
         delete user.businessHours;
+        delete user.gallery;
         const token = this.generateToken(user);
         return { user, token: token.access_token };
     }
@@ -176,19 +175,35 @@ let AuthService = class AuthService {
             email: loginDto.email,
             deletedCheck: false,
         });
-        if (user) {
-            throw new common_1.ForbiddenException('Email already exists');
+        if (user && user.role == userrole_enum_1.USERROLE.merchant) {
+            throw new common_1.ForbiddenException('This user is already a merchant');
         }
-        loginDto._id = new mongoose_2.Types.ObjectId().toString();
-        loginDto.status = userstatus_enum_1.USERSTATUS.new;
-        loginDto.role = userrole_enum_1.USERROLE.merchant;
-        loginDto.tradeName = loginDto.companyName;
-        loginDto.countryCode = 'BE';
-        loginDto.leadSource = 'web';
-        if (loginDto.role == userrole_enum_1.USERROLE.merchant) {
+        if (user && user.role == userrole_enum_1.USERROLE.affiliate) {
+            throw new common_1.ForbiddenException('This user is already an affiliate');
+        }
+        if (user && user.role == userrole_enum_1.USERROLE.customer) {
+            loginDto.status = userstatus_enum_1.USERSTATUS.new;
+            loginDto.tradeName = loginDto.companyName;
+            loginDto.countryCode = 'BE';
+            loginDto.leadSource = 'web';
+            loginDto.businessHours = businesshours_1.businessHours;
             loginDto.platformPercentage = 25;
+            await this._usersService.updateOne({ _id: user._id }, loginDto);
+            return user;
         }
-        return await new this._usersService(loginDto).save();
+        else {
+            loginDto._id = new mongoose_2.Types.ObjectId().toString();
+            loginDto.status = userstatus_enum_1.USERSTATUS.new;
+            loginDto.role = userrole_enum_1.USERROLE.merchant;
+            loginDto.tradeName = loginDto.companyName;
+            loginDto.businessHours = businesshours_1.businessHours;
+            loginDto.countryCode = 'BE';
+            loginDto.leadSource = 'web';
+            if (loginDto.role == userrole_enum_1.USERROLE.merchant) {
+                loginDto.platformPercentage = 25;
+            }
+            return await new this._usersService(loginDto).save();
+        }
     }
     async signupCustomer(signupUserDto) {
         var _a;
@@ -203,13 +218,14 @@ let AuthService = class AuthService {
         signupUserDto._id = new mongoose_2.Types.ObjectId().toString();
         signupUserDto.status = userstatus_enum_1.USERSTATUS.approved;
         signupUserDto.role = userrole_enum_1.USERROLE.customer;
-        signupUserDto.userID = await this.generateCustomerId('customerID');
+        signupUserDto.newUser = false;
+        signupUserDto.customerID = await this.generateCustomerId('customerID');
         const salt = await bcrypt.genSalt();
         let hashedPassword = await bcrypt.hash(signupUserDto.password, salt);
         signupUserDto.password = hashedPassword;
         let newUser = await new this._usersService(signupUserDto).save();
         newUser = JSON.parse(JSON.stringify(newUser));
-        const res = await axios_1.default.get(`https://www.zohoapis.eu/crm/v2/functions/createcustomer/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&customerid=${newUser.userID}`);
+        const res = await axios_1.default.get(`https://www.zohoapis.eu/crm/v2/functions/createcustomer/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&customerid=${newUser.customerID}`);
         const token = this.generateToken(newUser);
         return { newUser, token: token.access_token };
     }
@@ -230,6 +246,23 @@ let AuthService = class AuthService {
         });
     }
     async isEmailExists(email) {
+        const user = await this._usersService.findOne({
+            email: email === null || email === void 0 ? void 0 : email.toLowerCase(),
+            deletedCheck: false,
+            role: {
+                $in: [userrole_enum_1.USERROLE.merchant, userrole_enum_1.USERROLE.affiliate, userrole_enum_1.USERROLE.admin],
+            },
+        });
+        const lead = await this._leadModel.findOne({
+            email: email === null || email === void 0 ? void 0 : email.toLowerCase(),
+            deletedCheck: false,
+            role: {
+                $in: [userrole_enum_1.USERROLE.merchant, userrole_enum_1.USERROLE.affiliate, userrole_enum_1.USERROLE.admin],
+            },
+        });
+        return user || lead ? true : false;
+    }
+    async isEmailExistsForCustomerPanel(email) {
         const user = await this._usersService.findOne({
             email: email === null || email === void 0 ? void 0 : email.toLowerCase(),
             deletedCheck: false,

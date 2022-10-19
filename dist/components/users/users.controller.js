@@ -91,8 +91,11 @@ let UsersController = class UsersController {
     getPendingUsers(offset = 0, limit = 10) {
         return this._usersService.getPendingUsers(offset, limit);
     }
-    approvePendingUsers(status, userID) {
-        return this._usersService.approvePendingUsers(status, userID);
+    approvePendingMerchants(status, userID) {
+        return this._usersService.approvePendingMerchants(status, userID);
+    }
+    approvePendingAffiliates(status, userID) {
+        return this._usersService.approvePendingAffiliates(status, userID);
     }
     validateVatNumber(vatNumber) {
         return this._usersService.validateVatNumber(vatNumber);
@@ -297,13 +300,22 @@ __decorate([
 ], UsersController.prototype, "getPendingUsers", null);
 __decorate([
     (0, swagger_1.ApiQuery)({ name: 'status', enum: userstatus_enum_1.USERSTATUS, required: false }),
-    (0, common_1.Get)('approvePendingUsers/:userID'),
+    (0, common_1.Get)('approvePendingMerchants/:userID'),
     __param(0, (0, common_1.Query)('status')),
     __param(1, (0, common_1.Param)('userID')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", void 0)
-], UsersController.prototype, "approvePendingUsers", null);
+], UsersController.prototype, "approvePendingMerchants", null);
+__decorate([
+    (0, swagger_1.ApiQuery)({ name: 'status', enum: userstatus_enum_1.USERSTATUS, required: false }),
+    (0, common_1.Get)('approvePendingAffiliates/:userID'),
+    __param(0, (0, common_1.Query)('status')),
+    __param(1, (0, common_1.Param)('userID')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "approvePendingAffiliates", null);
 __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, swagger_1.ApiBearerAuth)(),

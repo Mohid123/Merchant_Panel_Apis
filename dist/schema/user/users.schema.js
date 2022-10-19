@@ -5,7 +5,9 @@ const mongoose = require("mongoose");
 const utils_1 = require("../../components/file-management/utils/utils");
 exports.UsersSchema = new mongoose.Schema({
     _id: { type: String, default: utils_1.generateStringId },
-    userID: { type: String, default: '' },
+    merchantID: { type: String, default: '' },
+    customerID: { type: String, default: '' },
+    affiliateID: { type: String, default: '' },
     email: { type: String, default: '' },
     password: { type: String, default: '' },
     firstName: { type: String, default: '' },

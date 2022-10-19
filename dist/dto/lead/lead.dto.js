@@ -16,10 +16,6 @@ class LeadDto {
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
-], LeadDto.prototype, "id", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)(),
-    __metadata("design:type", String)
 ], LeadDto.prototype, "email", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),

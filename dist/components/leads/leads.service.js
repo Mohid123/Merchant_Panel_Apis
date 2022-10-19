@@ -17,28 +17,57 @@ const common_1 = require("@nestjs/common");
 const mongoose_1 = require("@nestjs/mongoose");
 const axios_1 = require("axios");
 const mongoose_2 = require("mongoose");
+const userrole_enum_1 = require("../../enum/user/userrole.enum");
 const userstatus_enum_1 = require("../../enum/user/userstatus.enum");
 let LeadsService = class LeadsService {
-    constructor(_leadModel) {
+    constructor(_leadModel, _userModel) {
         this._leadModel = _leadModel;
+        this._userModel = _userModel;
     }
     async createLead(leadDto) {
         var _a;
         leadDto.email = (_a = leadDto === null || leadDto === void 0 ? void 0 : leadDto.email) === null || _a === void 0 ? void 0 : _a.toLowerCase();
-        let user = await this._leadModel.findOne({
+        const user = await this._userModel.findOne({
             email: leadDto.email,
-            deletedCheck: false
+            role: userrole_enum_1.USERROLE.customer,
+            status: userstatus_enum_1.USERSTATUS.approved,
         });
         if (user) {
-            throw new common_1.ForbiddenException('Email already exists');
+            let leadData = await this._leadModel.findOne({
+                email: leadDto.email,
+                deletedCheck: false,
+            });
+            if (leadData) {
+                throw new common_1.ForbiddenException('Email already exists');
+            }
+            leadDto._id = user._id;
+            leadDto.tradeName = leadDto.companyName;
+            leadDto.status = userstatus_enum_1.USERSTATUS.new;
+            leadDto.role = userrole_enum_1.USERROLE.merchant;
+            leadDto.countryCode = 'BE';
+            leadDto.leadSource = 'web';
+            const lead = await new this._leadModel(leadDto).save();
+            const res = await axios_1.default.get(`https://www.zohoapis.eu/crm/v2/functions/createleadinzoho/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&enquiryid=${lead.id}`);
+            return lead;
         }
-        leadDto.tradeName = leadDto.companyName;
-        leadDto.status = userstatus_enum_1.USERSTATUS.new;
-        leadDto.countryCode = 'BE';
-        leadDto.leadSource = 'web';
-        const lead = await new this._leadModel(leadDto).save();
-        const res = await axios_1.default.get(`https://www.zohoapis.eu/crm/v2/functions/createleadinzoho/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&enquiryid=${lead.id}`);
-        return lead;
+        else {
+            let leadData = await this._leadModel.findOne({
+                email: leadDto.email,
+                deletedCheck: false,
+            });
+            if (leadData) {
+                throw new common_1.ForbiddenException('Email already exists');
+            }
+            leadDto.id = new mongoose_2.Types.ObjectId().toHexString();
+            leadDto.tradeName = leadDto.companyName;
+            leadDto.status = userstatus_enum_1.USERSTATUS.new;
+            leadDto.role = userrole_enum_1.USERROLE.merchant;
+            leadDto.countryCode = 'BE';
+            leadDto.leadSource = 'web';
+            const lead = await new this._leadModel(leadDto).save();
+            const res = await axios_1.default.get(`https://www.zohoapis.eu/crm/v2/functions/createleadinzoho/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&enquiryid=${lead.id}`);
+            return lead;
+        }
     }
     async getLead(id) {
         const lead = await this._leadModel.aggregate([
@@ -73,7 +102,7 @@ let LeadsService = class LeadsService {
                     website_socialAppLink: 1,
                     countryCode: 1,
                     leadSource: 1,
-                    platformPercentage: 1
+                    platformPercentage: 1,
                 },
             },
         ]);
@@ -86,7 +115,9 @@ let LeadsService = class LeadsService {
 LeadsService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, mongoose_1.InjectModel)('Lead')),
-    __metadata("design:paramtypes", [mongoose_2.Model])
+    __param(1, (0, mongoose_1.InjectModel)('User')),
+    __metadata("design:paramtypes", [mongoose_2.Model,
+        mongoose_2.Model])
 ], LeadsService);
 exports.LeadsService = LeadsService;
 //# sourceMappingURL=leads.service.js.map

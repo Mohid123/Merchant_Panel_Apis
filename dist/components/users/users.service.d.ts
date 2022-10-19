@@ -13,11 +13,11 @@ export declare class UsersService {
     constructor(_userModel: Model<UsersInterface>, _locationModel: Model<Location>, voucherCounterModel: Model<VoucherCounterInterface>, _leadModel: Model<LeadInterface>);
     onModuleInit(): void;
     generateMerchantId(sequenceName: any): Promise<string>;
+    generateCustomerId(sequenceName: any): Promise<string>;
     generateAffiliateId(sequenceName: any): Promise<string>;
     addUser(usersDto: any): Promise<import("mongoose").Document<unknown, any, UsersInterface> & UsersInterface & {
         _id: string;
     }>;
-    comparePassword(userID: any, isPasswordExistsDto: any): Promise<boolean>;
     changePassword(id: any, updatepasswordDto: any): Promise<import("mongodb").UpdateResult>;
     validateVatNumber(vatNumber: any): Promise<any>;
     completeKYC(merchantID: any, kycDto: any): Promise<{
@@ -68,7 +68,10 @@ export declare class UsersService {
     }>;
     private generatePassword;
     sendMail(emailDto: EmailDTO): Promise<void>;
-    approvePendingUsers(status: any, userID: any): Promise<{
+    approvePendingMerchants(status: any, userID: any): Promise<{
+        message: string;
+    }>;
+    approvePendingAffiliates(status: any, userID: any): Promise<{
         message: string;
     }>;
     approveMerchant(userID: any, approveMerchantDto: any): Promise<{
@@ -80,5 +83,6 @@ export declare class UsersService {
         affliateID: string;
     }>;
     getCustomerByID(customerID: any): Promise<any>;
+    addNewIDs(): Promise<void>;
     updatePasswordForAllMerchant(): Promise<void>;
 }

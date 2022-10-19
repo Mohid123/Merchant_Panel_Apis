@@ -105,7 +105,7 @@ let DealService = class DealService {
             }
             if (!savedDeal) {
                 dealDto.dealHeader = dealDto === null || dealDto === void 0 ? void 0 : dealDto.dealHeader;
-                dealDto.merchantID = req.user.userID;
+                dealDto.merchantID = req.user.merchantID;
                 dealDto.merchantMongoID = req.user.id;
                 if (dealDto.dealStatus) {
                     dealDto.dealStatus = dealstatus_enum_1.DEALSTATUS.inReview;
@@ -501,7 +501,7 @@ let DealService = class DealService {
                         from: 'users',
                         as: 'merchantDetails',
                         let: {
-                            userID: '$merchantID',
+                            merchantID: '$merchantID',
                             deletedCheck: '$deletedCheck',
                         },
                         pipeline: [
@@ -510,7 +510,7 @@ let DealService = class DealService {
                                     $expr: {
                                         $and: [
                                             {
-                                                $eq: ['$$userID', '$userID'],
+                                                $eq: ['$$merchantID', '$merchantID'],
                                             },
                                             {
                                                 $eq: ['$deletedCheck', false],
@@ -523,7 +523,7 @@ let DealService = class DealService {
                                 $lookup: {
                                     from: 'locations',
                                     as: 'locationData',
-                                    localField: 'userID',
+                                    localField: 'merchantID',
                                     foreignField: 'merchantID',
                                 },
                             },
@@ -582,7 +582,7 @@ let DealService = class DealService {
                 dealMongoID: deal.id,
                 dealID: deal.dealID,
                 customerMongoID: req.user.id,
-                customerID: req.user.userID,
+                customerID: req.user.customerID,
                 viewedTime: new Date().getTime(),
             };
             await this.viewsService.createDealView(viewsDto, '');
@@ -752,7 +752,7 @@ let DealService = class DealService {
                                 $lookup: {
                                     from: 'users',
                                     let: {
-                                        userID: '$customerID',
+                                        customerID: '$customerID',
                                     },
                                     pipeline: [
                                         {
@@ -760,7 +760,7 @@ let DealService = class DealService {
                                                 $expr: {
                                                     $and: [
                                                         {
-                                                            $eq: ['$userID', '$$userID'],
+                                                            $eq: ['$customerID', '$$customerID'],
                                                         },
                                                     ],
                                                 },
@@ -770,7 +770,7 @@ let DealService = class DealService {
                                             $lookup: {
                                                 from: 'reviews',
                                                 let: {
-                                                    customerID: '$userID'
+                                                    customerID: '$customerID'
                                                 },
                                                 pipeline: [
                                                     {
@@ -842,7 +842,7 @@ let DealService = class DealService {
                                             $lookup: {
                                                 from: 'users',
                                                 let: {
-                                                    userID: '$merchantID',
+                                                    merchantID: '$merchantID',
                                                 },
                                                 pipeline: [
                                                     {
@@ -850,7 +850,7 @@ let DealService = class DealService {
                                                             $expr: {
                                                                 $and: [
                                                                     {
-                                                                        $eq: ['$userID', '$$userID'],
+                                                                        $eq: ['$merchantID', '$$merchantID'],
                                                                     },
                                                                 ],
                                                             },
@@ -1245,7 +1245,7 @@ let DealService = class DealService {
                         from: 'users',
                         as: 'merchantDetails',
                         let: {
-                            userID: '$merchantID',
+                            merchantID: '$merchantID',
                             deletedCheck: '$deletedCheck',
                         },
                         pipeline: [
@@ -1254,7 +1254,7 @@ let DealService = class DealService {
                                     $expr: {
                                         $and: [
                                             {
-                                                $eq: ['$$userID', '$userID'],
+                                                $eq: ['$$merchantID', '$merchantID'],
                                             },
                                             {
                                                 $eq: ['$deletedCheck', false],
@@ -1267,7 +1267,7 @@ let DealService = class DealService {
                                 $lookup: {
                                     from: 'locations',
                                     as: 'locationData',
-                                    localField: 'userID',
+                                    localField: 'merchantID',
                                     foreignField: 'merchantID',
                                 },
                             },
@@ -1466,7 +1466,7 @@ let DealService = class DealService {
                         from: 'users',
                         as: 'merchantDetails',
                         let: {
-                            userID: '$merchantID',
+                            merchantID: '$merchantID',
                             deletedCheck: '$deletedCheck',
                         },
                         pipeline: [
@@ -1475,7 +1475,7 @@ let DealService = class DealService {
                                     $expr: {
                                         $and: [
                                             {
-                                                $eq: ['$$userID', '$userID'],
+                                                $eq: ['$$merchantID', '$merchantID'],
                                             },
                                             {
                                                 $eq: ['$deletedCheck', false],
@@ -1488,7 +1488,7 @@ let DealService = class DealService {
                                 $lookup: {
                                     from: 'locations',
                                     as: 'locationData',
-                                    localField: 'userID',
+                                    localField: 'merchantID',
                                     foreignField: 'merchantID',
                                 },
                             },
@@ -1658,7 +1658,7 @@ let DealService = class DealService {
                             from: 'users',
                             as: 'merchantDetails',
                             let: {
-                                userID: '$merchantID',
+                                merchantID: '$merchantID',
                                 deletedCheck: '$deletedCheck',
                             },
                             pipeline: [
@@ -1667,7 +1667,7 @@ let DealService = class DealService {
                                         $expr: {
                                             $and: [
                                                 {
-                                                    $eq: ['$$userID', '$userID'],
+                                                    $eq: ['$$merchantID', '$merchantID'],
                                                 },
                                                 {
                                                     $eq: ['$deletedCheck', false],
@@ -1680,7 +1680,7 @@ let DealService = class DealService {
                                     $lookup: {
                                         from: 'locations',
                                         as: 'locationData',
-                                        localField: 'userID',
+                                        localField: 'merchantID',
                                         foreignField: 'merchantID',
                                     },
                                 },
@@ -1862,7 +1862,7 @@ let DealService = class DealService {
                         from: 'users',
                         as: 'merchantDetails',
                         let: {
-                            userID: '$merchantID',
+                            merchantID: '$merchantID',
                             deletedCheck: '$deletedCheck',
                         },
                         pipeline: [
@@ -1871,7 +1871,7 @@ let DealService = class DealService {
                                     $expr: {
                                         $and: [
                                             {
-                                                $eq: ['$$userID', '$userID'],
+                                                $eq: ['$$merchantID', '$merchantID'],
                                             },
                                             {
                                                 $eq: ['$deletedCheck', false],
@@ -1884,7 +1884,7 @@ let DealService = class DealService {
                                 $lookup: {
                                     from: 'locations',
                                     as: 'locationData',
-                                    localField: 'userID',
+                                    localField: 'merchantID',
                                     foreignField: 'merchantID',
                                 },
                             },
@@ -2074,7 +2074,7 @@ let DealService = class DealService {
                             from: 'users',
                             as: 'merchantDetails',
                             let: {
-                                userID: '$merchantID',
+                                merchantID: '$merchantID',
                                 deletedCheck: '$deletedCheck',
                             },
                             pipeline: [
@@ -2083,7 +2083,7 @@ let DealService = class DealService {
                                         $expr: {
                                             $and: [
                                                 {
-                                                    $eq: ['$$userID', '$userID'],
+                                                    $eq: ['$$merchantID', '$merchantID'],
                                                 },
                                                 {
                                                     $eq: ['$deletedCheck', false],
@@ -2096,7 +2096,7 @@ let DealService = class DealService {
                                     $lookup: {
                                         from: 'locations',
                                         as: 'locationData',
-                                        localField: 'userID',
+                                        localField: 'merchantID',
                                         foreignField: 'merchantID',
                                     },
                                 },
@@ -2266,7 +2266,7 @@ let DealService = class DealService {
                         from: 'users',
                         as: 'merchantDetails',
                         let: {
-                            userID: '$merchantID',
+                            merchantID: '$merchantID',
                             deletedCheck: '$deletedCheck',
                         },
                         pipeline: [
@@ -2275,7 +2275,7 @@ let DealService = class DealService {
                                     $expr: {
                                         $and: [
                                             {
-                                                $eq: ['$$userID', '$userID'],
+                                                $eq: ['$$merchantID', '$merchantID'],
                                             },
                                             {
                                                 $eq: ['$deletedCheck', false],
@@ -2288,7 +2288,7 @@ let DealService = class DealService {
                                 $lookup: {
                                     from: 'locations',
                                     as: 'locationData',
-                                    localField: 'userID',
+                                    localField: 'merchantID',
                                     foreignField: 'merchantID',
                                 },
                             },
@@ -2457,7 +2457,7 @@ let DealService = class DealService {
                         from: 'users',
                         as: 'merchantDetails',
                         let: {
-                            userID: '$merchantID',
+                            merchantID: '$merchantID',
                             deletedCheck: '$deletedCheck',
                         },
                         pipeline: [
@@ -2466,7 +2466,7 @@ let DealService = class DealService {
                                     $expr: {
                                         $and: [
                                             {
-                                                $eq: ['$$userID', '$userID'],
+                                                $eq: ['$$merchantID', '$merchantID'],
                                             },
                                             {
                                                 $eq: ['$deletedCheck', false],
@@ -2479,7 +2479,7 @@ let DealService = class DealService {
                                 $lookup: {
                                     from: 'locations',
                                     as: 'locationData',
-                                    localField: 'userID',
+                                    localField: 'merchantID',
                                     foreignField: 'merchantID',
                                 },
                             },
@@ -2668,7 +2668,7 @@ let DealService = class DealService {
                             from: 'users',
                             as: 'merchantDetails',
                             let: {
-                                userID: '$merchantID',
+                                merchantID: '$merchantID',
                                 deletedCheck: '$deletedCheck',
                             },
                             pipeline: [
@@ -2677,7 +2677,7 @@ let DealService = class DealService {
                                         $expr: {
                                             $and: [
                                                 {
-                                                    $eq: ['$$userID', '$userID'],
+                                                    $eq: ['$$merchantID', '$merchantID'],
                                                 },
                                                 {
                                                     $eq: ['$deletedCheck', false],
@@ -2690,7 +2690,7 @@ let DealService = class DealService {
                                     $lookup: {
                                         from: 'locations',
                                         as: 'locationData',
-                                        localField: 'userID',
+                                        localField: 'merchantID',
                                         foreignField: 'merchantID',
                                     },
                                 },
@@ -2923,7 +2923,7 @@ let DealService = class DealService {
                         from: 'users',
                         as: 'merchantDetails',
                         let: {
-                            userID: '$merchantID',
+                            merchantID: '$merchantID',
                             deletedCheck: '$deletedCheck',
                         },
                         pipeline: [
@@ -2932,7 +2932,7 @@ let DealService = class DealService {
                                     $expr: {
                                         $and: [
                                             {
-                                                $eq: ['$$userID', '$userID'],
+                                                $eq: ['$$merchantID', '$merchantID'],
                                             },
                                             {
                                                 $eq: ['$deletedCheck', false],
@@ -2945,7 +2945,7 @@ let DealService = class DealService {
                                 $lookup: {
                                     from: 'locations',
                                     as: 'locationData',
-                                    localField: 'userID',
+                                    localField: 'merchantID',
                                     foreignField: 'merchantID',
                                 },
                             },
@@ -3284,7 +3284,7 @@ let DealService = class DealService {
                         from: 'users',
                         as: 'merchantDetails',
                         let: {
-                            userID: '$merchantID',
+                            merchantID: '$merchantID',
                             deletedCheck: '$deletedCheck',
                         },
                         pipeline: [
@@ -3293,7 +3293,7 @@ let DealService = class DealService {
                                     $expr: {
                                         $and: [
                                             {
-                                                $eq: ['$$userID', '$userID'],
+                                                $eq: ['$$merchantID', '$merchantID'],
                                             },
                                             {
                                                 $eq: ['$deletedCheck', false],
@@ -3306,7 +3306,7 @@ let DealService = class DealService {
                                 $lookup: {
                                     from: 'locations',
                                     as: 'locationData',
-                                    localField: 'userID',
+                                    localField: 'merchantID',
                                     foreignField: 'merchantID',
                                 },
                             },
@@ -3448,7 +3448,7 @@ let DealService = class DealService {
                         from: 'users',
                         as: 'merchantDetails',
                         let: {
-                            userID: '$merchantID',
+                            merchantID: '$merchantID',
                             deletedCheck: '$deletedCheck',
                         },
                         pipeline: [
@@ -3457,7 +3457,7 @@ let DealService = class DealService {
                                     $expr: {
                                         $and: [
                                             {
-                                                $eq: ['$$userID', '$userID'],
+                                                $eq: ['$$merchantID', '$merchantID'],
                                             },
                                             {
                                                 $eq: ['$deletedCheck', false],
@@ -3470,7 +3470,7 @@ let DealService = class DealService {
                                 $lookup: {
                                     from: 'locations',
                                     as: 'locationData',
-                                    localField: 'userID',
+                                    localField: 'merchantID',
                                     foreignField: 'merchantID',
                                 },
                             },
@@ -3639,9 +3639,29 @@ let DealService = class DealService {
                     createdAt: -1,
                 };
             }
-            console.log(sort);
-            console.log(matchFilter);
-            console.log(locationFilter);
+            let fromPriceFilter = {};
+            let toPriceFilter = {};
+            if (fromPrice) {
+                fromPriceFilter = Object.assign({ $gte: ['$minDealPrice', minValue] }, fromPriceFilter);
+            }
+            if (toPrice) {
+                toPriceFilter = {
+                    $lte: ['$minDealPrice', maxValue]
+                };
+            }
+            let ratingFilter = {};
+            if (reviewRating) {
+                ratingFilter = {
+                    $gte: ['$ratingsAverage', rating]
+                };
+            }
+            let provincesArray = [];
+            if (filterCategoriesApiDto.provincesArray.length == 0) {
+                provincesArray = ['West-Vlaanderen', 'Vlaams-Brabant', 'Limburg', 'Oost-Vlaanderen', 'Antwerpen'];
+            }
+            else {
+                provincesArray = filterCategoriesApiDto.provincesArray;
+            }
             const totalCount = await this.dealModel.aggregate([
                 {
                     $match: Object.assign({ deletedCheck: false, dealStatus: dealstatus_enum_1.DEALSTATUS.published }, categoryFilters),
@@ -3690,7 +3710,7 @@ let DealService = class DealService {
                         from: 'users',
                         as: 'merchantDetails',
                         let: {
-                            userID: '$merchantID',
+                            merchantID: '$merchantID',
                             deletedCheck: '$deletedCheck',
                         },
                         pipeline: [
@@ -3699,7 +3719,7 @@ let DealService = class DealService {
                                     $expr: {
                                         $and: [
                                             {
-                                                $eq: ['$$userID', '$userID'],
+                                                $eq: ['$$merchantID', '$merchantID'],
                                             },
                                             {
                                                 $eq: ['$deletedCheck', false],
@@ -3712,7 +3732,7 @@ let DealService = class DealService {
                                 $lookup: {
                                     from: 'locations',
                                     as: 'locationData',
-                                    localField: 'userID',
+                                    localField: 'merchantID',
                                     foreignField: 'merchantID',
                                 },
                             },
@@ -3786,6 +3806,8 @@ let DealService = class DealService {
                                             {
                                                 $lte: ['$minDealPrice', 50],
                                             },
+                                            Object.assign({}, ratingFilter),
+                                            { $in: ['$province', provincesArray] }
                                         ],
                                     },
                                     1,
@@ -3804,6 +3826,8 @@ let DealService = class DealService {
                                             {
                                                 $lte: ['$minDealPrice', 150],
                                             },
+                                            Object.assign({}, ratingFilter),
+                                            { $in: ['$province', provincesArray] }
                                         ],
                                     },
                                     1,
@@ -3822,6 +3846,8 @@ let DealService = class DealService {
                                             {
                                                 $lte: ['$minDealPrice', 300],
                                             },
+                                            Object.assign({}, ratingFilter),
+                                            { $in: ['$province', provincesArray] }
                                         ],
                                     },
                                     1,
@@ -3840,6 +3866,8 @@ let DealService = class DealService {
                                             {
                                                 $lte: ['$minDealPrice', 450],
                                             },
+                                            Object.assign({}, ratingFilter),
+                                            { $in: ['$province', provincesArray] }
                                         ],
                                     },
                                     1,
@@ -3851,7 +3879,13 @@ let DealService = class DealService {
                             $sum: {
                                 $cond: [
                                     {
-                                        $gte: ['$minDealPrice', 450],
+                                        $and: [
+                                            {
+                                                $gte: ['$minDealPrice', 450],
+                                            },
+                                            Object.assign({}, ratingFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
                                     },
                                     1,
                                     0,
@@ -3861,8 +3895,12 @@ let DealService = class DealService {
                         FourUp: {
                             $sum: {
                                 $cond: [
-                                    {
-                                        $gte: ['$ratingsAverage', 4],
+                                    { $and: [
+                                            { $gte: ['$ratingsAverage', 4] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
                                     },
                                     1,
                                     0,
@@ -3873,7 +3911,12 @@ let DealService = class DealService {
                             $sum: {
                                 $cond: [
                                     {
-                                        $gte: ['$ratingsAverage', 3],
+                                        $and: [
+                                            { $gte: ['$ratingsAverage', 3] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
                                     },
                                     1,
                                     0,
@@ -3884,7 +3927,12 @@ let DealService = class DealService {
                             $sum: {
                                 $cond: [
                                     {
-                                        $gte: ['$ratingsAverage', 2],
+                                        $and: [
+                                            { $gte: ['$ratingsAverage', 2] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
                                     },
                                     1,
                                     0,
@@ -3895,7 +3943,12 @@ let DealService = class DealService {
                             $sum: {
                                 $cond: [
                                     {
-                                        $gte: ['$ratingsAverage', 1],
+                                        $and: [
+                                            { $gte: ['$ratingsAverage', 1] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
                                     },
                                     1,
                                     0,
@@ -3906,7 +3959,12 @@ let DealService = class DealService {
                             $sum: {
                                 $cond: [
                                     {
-                                        $gte: ['$ratingsAverage', 0],
+                                        $and: [
+                                            { $gte: ['$ratingsAverage', 0] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
                                     },
                                     1,
                                     0,
@@ -3917,7 +3975,12 @@ let DealService = class DealService {
                             $sum: {
                                 $cond: [
                                     {
-                                        $eq: ['$province', 'West-Vlaanderen'],
+                                        $and: [
+                                            { $eq: ['$province', 'West-Vlaanderen'] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            Object.assign({}, ratingFilter),
+                                        ]
                                     },
                                     1,
                                     0,
@@ -3928,7 +3991,12 @@ let DealService = class DealService {
                             $sum: {
                                 $cond: [
                                     {
-                                        $eq: ['$province', 'Oost-Vlaanderen'],
+                                        $and: [
+                                            { $eq: ['$province', 'Oost-Vlaanderen'] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            Object.assign({}, ratingFilter),
+                                        ]
                                     },
                                     1,
                                     0,
@@ -3939,7 +4007,12 @@ let DealService = class DealService {
                             $sum: {
                                 $cond: [
                                     {
-                                        $eq: ['$province', 'Antwerpen'],
+                                        $and: [
+                                            { $eq: ['$province', 'Antwerpen'] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            Object.assign({}, ratingFilter),
+                                        ]
                                     },
                                     1,
                                     0,
@@ -3950,7 +4023,12 @@ let DealService = class DealService {
                             $sum: {
                                 $cond: [
                                     {
-                                        $eq: ['$province', 'Limburg'],
+                                        $and: [
+                                            { $eq: ['$province', 'Limburg'] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            Object.assign({}, ratingFilter),
+                                        ]
                                     },
                                     1,
                                     0,
@@ -3961,7 +4039,12 @@ let DealService = class DealService {
                             $sum: {
                                 $cond: [
                                     {
-                                        $eq: ['$province', 'Vlaams-Brabant'],
+                                        $and: [
+                                            { $eq: ['$province', 'Vlaams-Brabant'] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            Object.assign({}, ratingFilter),
+                                        ]
                                     },
                                     1,
                                     0,
@@ -4024,7 +4107,7 @@ let DealService = class DealService {
                         from: 'users',
                         as: 'merchantDetails',
                         let: {
-                            userID: '$merchantID',
+                            merchantID: '$merchantID',
                             deletedCheck: '$deletedCheck',
                         },
                         pipeline: [
@@ -4033,7 +4116,7 @@ let DealService = class DealService {
                                     $expr: {
                                         $and: [
                                             {
-                                                $eq: ['$$userID', '$userID'],
+                                                $eq: ['$$merchantID', '$merchantID'],
                                             },
                                             {
                                                 $eq: ['$deletedCheck', false],
@@ -4046,7 +4129,7 @@ let DealService = class DealService {
                                 $lookup: {
                                     from: 'locations',
                                     as: 'locationData',
-                                    localField: 'userID',
+                                    localField: 'merchantID',
                                     foreignField: 'merchantID',
                                 },
                             },
@@ -4161,7 +4244,7 @@ let DealService = class DealService {
                         from: 'users',
                         as: 'merchantDetails',
                         let: {
-                            userID: '$merchantID',
+                            merchantID: '$merchantID',
                             deletedCheck: '$deletedCheck',
                         },
                         pipeline: [
@@ -4170,7 +4253,7 @@ let DealService = class DealService {
                                     $expr: {
                                         $and: [
                                             {
-                                                $eq: ['$$userID', '$userID'],
+                                                $eq: ['$$merchantID', '$merchantID'],
                                             },
                                             {
                                                 $eq: ['$deletedCheck', false],
@@ -4183,7 +4266,7 @@ let DealService = class DealService {
                                 $lookup: {
                                     from: 'locations',
                                     as: 'locationData',
-                                    localField: 'userID',
+                                    localField: 'merchantID',
                                     foreignField: 'merchantID',
                                 },
                             },
@@ -4340,7 +4423,7 @@ let DealService = class DealService {
                         from: 'users',
                         as: 'merchantDetails',
                         let: {
-                            userID: '$merchantID',
+                            merchantID: '$merchantID',
                             deletedCheck: '$deletedCheck',
                         },
                         pipeline: [
@@ -4349,7 +4432,7 @@ let DealService = class DealService {
                                     $expr: {
                                         $and: [
                                             {
-                                                $eq: ['$$userID', '$userID'],
+                                                $eq: ['$$merchantID', '$merchantID'],
                                             },
                                             {
                                                 $eq: ['$deletedCheck', false],
@@ -4362,7 +4445,7 @@ let DealService = class DealService {
                                 $lookup: {
                                     from: 'locations',
                                     as: 'locationData',
-                                    localField: 'userID',
+                                    localField: 'merchantID',
                                     foreignField: 'merchantID',
                                 },
                             },
@@ -4476,7 +4559,7 @@ let DealService = class DealService {
                         from: 'users',
                         as: 'merchantDetails',
                         let: {
-                            userID: '$merchantID',
+                            merchantID: '$merchantID',
                             deletedCheck: '$deletedCheck',
                         },
                         pipeline: [
@@ -4485,7 +4568,7 @@ let DealService = class DealService {
                                     $expr: {
                                         $and: [
                                             {
-                                                $eq: ['$$userID', '$userID'],
+                                                $eq: ['$$merchantID', '$merchantID'],
                                             },
                                             {
                                                 $eq: ['$deletedCheck', false],
@@ -4498,7 +4581,7 @@ let DealService = class DealService {
                                 $lookup: {
                                     from: 'locations',
                                     as: 'locationData',
-                                    localField: 'userID',
+                                    localField: 'merchantID',
                                     foreignField: 'merchantID',
                                 },
                             },
@@ -4657,7 +4740,7 @@ let DealService = class DealService {
                         from: 'users',
                         as: 'merchantDetails',
                         let: {
-                            userID: '$merchantID',
+                            merchantID: '$merchantID',
                             deletedCheck: '$deletedCheck',
                         },
                         pipeline: [
@@ -4666,7 +4749,7 @@ let DealService = class DealService {
                                     $expr: {
                                         $and: [
                                             {
-                                                $eq: ['$$userID', '$userID'],
+                                                $eq: ['$$merchantID', '$merchantID'],
                                             },
                                             {
                                                 $eq: ['$deletedCheck', false],
@@ -4679,7 +4762,7 @@ let DealService = class DealService {
                                 $lookup: {
                                     from: 'locations',
                                     as: 'locationData',
-                                    localField: 'userID',
+                                    localField: 'merchantID',
                                     foreignField: 'merchantID',
                                 },
                             },
@@ -4860,7 +4943,7 @@ let DealService = class DealService {
                         from: 'users',
                         as: 'merchantDetails',
                         let: {
-                            userID: '$merchantID',
+                            merchantID: '$merchantID',
                             deletedCheck: '$deletedCheck',
                         },
                         pipeline: [
@@ -4869,7 +4952,7 @@ let DealService = class DealService {
                                     $expr: {
                                         $and: [
                                             {
-                                                $eq: ['$$userID', '$userID'],
+                                                $eq: ['$$merchantID', '$merchantID'],
                                             },
                                             {
                                                 $eq: ['$deletedCheck', false],
@@ -4882,7 +4965,7 @@ let DealService = class DealService {
                                 $lookup: {
                                     from: 'locations',
                                     as: 'locationData',
-                                    localField: 'userID',
+                                    localField: 'merchantID',
                                     foreignField: 'merchantID',
                                 },
                             },
@@ -5053,7 +5136,7 @@ let DealService = class DealService {
                         from: 'users',
                         as: 'merchantDetails',
                         let: {
-                            userID: '$merchantID',
+                            merchantID: '$merchantID',
                             deletedCheck: '$deletedCheck',
                         },
                         pipeline: [
@@ -5062,7 +5145,7 @@ let DealService = class DealService {
                                     $expr: {
                                         $and: [
                                             {
-                                                $eq: ['$$userID', '$userID'],
+                                                $eq: ['$$merchantID', '$merchantID'],
                                             },
                                             {
                                                 $eq: ['$deletedCheck', false],
@@ -5075,7 +5158,7 @@ let DealService = class DealService {
                                 $lookup: {
                                     from: 'locations',
                                     as: 'locationData',
-                                    localField: 'userID',
+                                    localField: 'merchantID',
                                     foreignField: 'merchantID',
                                 },
                             },
@@ -5248,7 +5331,7 @@ let DealService = class DealService {
                         from: 'users',
                         as: 'merchantDetails',
                         let: {
-                            userID: '$recentlyViewed.merchantID',
+                            merchantID: '$recentlyViewed.merchantID',
                             deletedCheck: '$deletedCheck',
                         },
                         pipeline: [
@@ -5257,7 +5340,7 @@ let DealService = class DealService {
                                     $expr: {
                                         $and: [
                                             {
-                                                $eq: ['$$userID', '$userID'],
+                                                $eq: ['$$merchantID', '$merchantID'],
                                             },
                                             {
                                                 $eq: ['$deletedCheck', false],
@@ -5270,7 +5353,7 @@ let DealService = class DealService {
                                 $lookup: {
                                     from: 'locations',
                                     as: 'locationData',
-                                    localField: 'userID',
+                                    localField: 'merchantID',
                                     foreignField: 'merchantID',
                                 },
                             },
@@ -5589,12 +5672,12 @@ let DealService = class DealService {
                 throw new Error('Deal ID not found!');
             }
             const merchant = await this._userModel.findOne({
-                userID: deal.merchantID,
+                merchantID: deal.merchantID,
                 deletedCheck: false,
             });
             const customer = await this._userModel.findById(req.user.id);
             const affiliate = await this._userModel.findOne({
-                userID: buyNowDto.affiliateID,
+                affiliateID: buyNowDto.affiliateID,
                 deletedCheck: false,
             });
             if (!affiliate) {
@@ -5685,7 +5768,7 @@ let DealService = class DealService {
                 affiliateFee: calculatedFeeForAffiliate.toFixed(2),
                 affiliatePaymentStatus: affiliate_enum_1.AFFILIATEPAYMENTSTATUS.pending,
                 platformPercentage: merchant.platformPercentage,
-                customerID: customer.userID,
+                customerID: customer.customerID,
                 affiliateMongoID: affiliate.id,
                 customerMongoID: customer.id,
                 imageURL,
@@ -5703,7 +5786,7 @@ let DealService = class DealService {
             await Promise.all(vouchers);
             const emailDto = (0, emailHtml_1.getEmailHTML)(customer.email, customer.firstName, customer.lastName);
             await this.dealModel.updateOne({ dealID: buyNowDto.dealID }, deal);
-            await this._userModel.updateOne({ userID: deal.merchantID }, {
+            await this._userModel.updateOne({ merchantID: deal.merchantID }, {
                 purchasedVouchers: merchant.purchasedVouchers + buyNowDto.quantity,
                 totalEarnings: merchant.totalEarnings + netFeeForSubDeal,
             });

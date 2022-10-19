@@ -1,6 +1,5 @@
 import { businessHour } from 'src/interface/lead/lead.interface';
 export declare class LeadDto {
-    id: string;
     email: string;
     firstName: string;
     lastName: string;
