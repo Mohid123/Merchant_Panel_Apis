@@ -6,41 +6,85 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import axios from 'axios';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
+import { USERROLE } from 'src/enum/user/userrole.enum';
 import { USERSTATUS } from 'src/enum/user/userstatus.enum';
 import { LeadInterface } from 'src/interface/lead/lead.interface';
+import { UsersInterface } from 'src/interface/user/users.interface';
 
 @Injectable()
 export class LeadsService {
   constructor(
     @InjectModel('Lead') private readonly _leadModel: Model<LeadInterface>,
+    @InjectModel('User') private readonly _userModel: Model<UsersInterface>,
   ) {}
 
   async createLead(leadDto) {
     leadDto.email = leadDto?.email?.toLowerCase();
-    let user = await this._leadModel.findOne({
+
+    const user = await this._userModel.findOne({
       email: leadDto.email,
-      deletedCheck: false
+      role: USERROLE.customer,
+      status: USERSTATUS.approved,
     });
+
     if (user) {
-      throw new ForbiddenException('Email already exists');
+      let leadData = await this._leadModel.findOne({
+        email: leadDto.email,
+        deletedCheck: false,
+      });
+      if (leadData) {
+        throw new ForbiddenException('Email already exists');
+      }
+
+      leadDto._id = user._id;
+
+      leadDto.tradeName = leadDto.companyName;
+
+      leadDto.status = USERSTATUS.new;
+
+      leadDto.role = USERROLE.merchant;
+
+      leadDto.countryCode = 'BE';
+
+      leadDto.leadSource = 'web';
+
+      const lead = await new this._leadModel(leadDto).save();
+
+      const res = await axios.get(
+        `https://www.zohoapis.eu/crm/v2/functions/createleadinzoho/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&enquiryid=${lead.id}`,
+      );
+
+      return lead;
+    } else {
+      let leadData = await this._leadModel.findOne({
+        email: leadDto.email,
+        deletedCheck: false,
+      });
+      if (leadData) {
+        throw new ForbiddenException('Email already exists');
+      }
+
+      leadDto.id = new Types.ObjectId().toHexString();
+
+      leadDto.tradeName = leadDto.companyName;
+
+      leadDto.status = USERSTATUS.new;
+
+      leadDto.role = USERROLE.merchant;
+
+      leadDto.countryCode = 'BE';
+
+      leadDto.leadSource = 'web';
+
+      const lead = await new this._leadModel(leadDto).save();
+
+      const res = await axios.get(
+        `https://www.zohoapis.eu/crm/v2/functions/createleadinzoho/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&enquiryid=${lead.id}`,
+      );
+
+      return lead;
     }
-
-    leadDto.tradeName = leadDto.companyName;
-
-    leadDto.status = USERSTATUS.new;
-
-    leadDto.countryCode = 'BE';
-
-    leadDto.leadSource = 'web';
-
-    const lead = await new this._leadModel(leadDto).save();
-
-    const res = await axios.get(
-      `https://www.zohoapis.eu/crm/v2/functions/createleadinzoho/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&enquiryid=${lead.id}`,
-    );
-
-    return lead;
   }
 
   async getLead(id) {
@@ -76,7 +120,7 @@ export class LeadsService {
           website_socialAppLink: 1,
           countryCode: 1,
           leadSource: 1,
-          platformPercentage: 1
+          platformPercentage: 1,
         },
       },
     ]);

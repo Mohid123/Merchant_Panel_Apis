@@ -102,10 +102,8 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @Get('getCustomer/:id')
-  getCustomer (
-    @Param('id') id:string
-  ) {
-    return this._usersService.getCustomer(id)
+  getCustomer(@Param('id') id: string) {
+    return this._usersService.getCustomer(id);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -136,21 +134,22 @@ export class UsersController {
   @UseGuards(JwtManagerAuthGuard)
   @UseGuards(JwtAuthGuard)
   @Get('getMerchantForCRM/:merchantID')
-  getMerchantForCRM (
-    @Param('merchantID') merchantID: string
-  ) {
-    return this._usersService.getMerchantForCRM(merchantID)
+  getMerchantForCRM(@Param('merchantID') merchantID: string) {
+    return this._usersService.getMerchantForCRM(merchantID);
   }
 
   @ApiBearerAuth()
   @UseGuards(JwtManagerAuthGuard)
   @UseGuards(JwtAuthGuard)
   @Post('updateMerchantFromCRM/:merchantID')
-  updateMerchantFromCRM (
+  updateMerchantFromCRM(
     @Param('merchantID') merchantID: string,
-    @Body() updateMerchantFromCrmDto: UpdateMerchantFromCrmDto
+    @Body() updateMerchantFromCrmDto: UpdateMerchantFromCrmDto,
   ) {
-    return this._usersService.updateMerchantFromCRM(merchantID, updateMerchantFromCrmDto)
+    return this._usersService.updateMerchantFromCRM(
+      merchantID,
+      updateMerchantFromCrmDto,
+    );
   }
 
   @UseGuards(JwtAuthGuard)
@@ -223,8 +222,6 @@ export class UsersController {
     return this._usersService.resetPassword(resetPasswordDto, req);
   }
 
-  // @UseGuards(JwtAdminAuthGuard)
-  // @ApiBearerAuth()
   @Get('getPendingUsers')
   getPendingUsers(
     @Query('offset') offset: number = 0,
@@ -233,24 +230,28 @@ export class UsersController {
     return this._usersService.getPendingUsers(offset, limit);
   }
 
-  // @UseGuards(JwtAdminAuthGuard)
-  // @ApiBearerAuth()
   @ApiQuery({ name: 'status', enum: USERSTATUS, required: false })
-  @Get('approvePendingUsers/:userID')
-  approvePendingUsers(
+  @Get('approvePendingMerchants/:userID')
+  approvePendingMerchants(
     @Query('status') status: USERSTATUS,
     @Param('userID') userID: string,
   ) {
-    return this._usersService.approvePendingUsers(status, userID);
+    return this._usersService.approvePendingMerchants(status, userID);
+  }
+
+  @ApiQuery({ name: 'status', enum: USERSTATUS, required: false })
+  @Get('approvePendingAffiliates/:userID')
+  approvePendingAffiliates(
+    @Query('status') status: USERSTATUS,
+    @Param('userID') userID: string,
+  ) {
+    return this._usersService.approvePendingAffiliates(status, userID);
   }
 
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @Post('validateVatNumber/:vatNumber')
-  validateVatNumber(
-    // @Param('countryCode') countryCode: string,
-    @Param('vatNumber') vatNumber: string,
-  ) {
+  validateVatNumber(@Param('vatNumber') vatNumber: string) {
     return this._usersService.validateVatNumber(vatNumber);
   }
 
@@ -289,5 +290,10 @@ export class UsersController {
   // @Get('updatePasswordForAllMerchant')
   // updatePasswordForAllMerchant(){
   //   return this._usersService.updatePasswordForAllMerchant();
+  // }
+
+  // @Get('addNewIDs')
+  // addNewIDs () {
+  //   return this._usersService.addNewIDs();
   // }
 }

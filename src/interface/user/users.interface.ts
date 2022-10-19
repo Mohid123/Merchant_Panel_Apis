@@ -19,7 +19,10 @@ export interface Gallery {
 
 export interface UsersInterface {
   _id: string;
-  userID: string;
+  // userID: string;
+  merchantID: string;
+  customerID: string;
+  affiliateID: string;
   email: string;
   password: string;
   firstName: string;
