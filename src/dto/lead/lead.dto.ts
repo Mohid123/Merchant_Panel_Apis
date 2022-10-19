@@ -3,8 +3,6 @@ import { ApiProperty } from '@nestjs/swagger';
 import { businessHour } from 'src/interface/lead/lead.interface';
 
 export class LeadDto {
-  @ApiProperty()
-  id: string;
 
   @ApiProperty()
   email: string;
