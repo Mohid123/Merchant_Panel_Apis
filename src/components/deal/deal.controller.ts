@@ -239,6 +239,41 @@ export class DealController {
 
   @UseGuards(OptionalJwtAuthGuard)
   @ApiBearerAuth()
+  @ApiQuery({ name: 'categoryName', required: false })
+  @ApiQuery({ name: 'subCategoryName', required: false })
+  @ApiQuery({ name: 'fromPrice', required: false })
+  @ApiQuery({ name: 'toPrice', required: false })
+  @ApiQuery({ name: 'reviewRating', required: false })
+  @ApiQuery({ name: 'sorting', enum: SORTINGENUM, required: false })
+  @Post('getNewDealsDynamically')
+  getNewDealsDynamically(
+    @Query('categoryName') categoryName: string,
+    @Query('subCategoryName') subCategoryName: string,
+    @Query('fromPrice') fromPrice: number,
+    @Query('toPrice') toPrice: number,
+    @Query('reviewRating') reviewRating: number,
+    @Query('sorting') sorting: SORT,
+    @Query('offset') offset: number = 0,
+    @Query('limit') limit: number = 10,
+    @Body() filterCategoriesApiDto: FilterCategoriesApiDto,
+    @Req() req,
+  ) {
+    return this.dealService.getNewDealsDynamically(
+      categoryName,
+      subCategoryName,
+      fromPrice,
+      toPrice,
+      reviewRating,
+      sorting,
+      offset,
+      limit,
+      filterCategoriesApiDto,
+      req
+    );
+  }
+
+  @UseGuards(OptionalJwtAuthGuard)
+  @ApiBearerAuth()
   @Get('getLowPriceDeals/:price')
   getLowPriceDeals(
     @Param('price') price: number,
@@ -247,6 +282,43 @@ export class DealController {
     @Req() req,
   ) {
     return this.dealService.getLowPriceDeals(price, offset, limit, req);
+  }
+
+  @UseGuards(OptionalJwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiQuery({ name: 'categoryName', required: false })
+  @ApiQuery({ name: 'subCategoryName', required: false })
+  @ApiQuery({ name: 'fromPrice', required: false })
+  @ApiQuery({ name: 'toPrice', required: false })
+  @ApiQuery({ name: 'reviewRating', required: false })
+  @ApiQuery({ name: 'sorting', enum: SORTINGENUM, required: false })
+  @Post('getLowPriceDealsDynamically/:price')
+  getLowPriceDealsDynamically(
+    @Param('price') price: number,
+    @Query('categoryName') categoryName: string,
+    @Query('subCategoryName') subCategoryName: string,
+    @Query('fromPrice') fromPrice: number,
+    @Query('toPrice') toPrice: number,
+    @Query('reviewRating') reviewRating: number,
+    @Query('sorting') sorting: SORT,
+    @Query('offset') offset: number = 0,
+    @Query('limit') limit: number = 10,
+    @Body() filterCategoriesApiDto: FilterCategoriesApiDto,
+    @Req() req,
+  ) {
+    return this.dealService.getLowPriceDealsDynamically(
+      price,
+      categoryName,
+      subCategoryName,
+      fromPrice,
+      toPrice,
+      reviewRating,
+      sorting,
+      offset,
+      limit,
+      filterCategoriesApiDto,
+      req
+    );
   }
 
   @UseGuards(OptionalJwtAuthGuard)
@@ -263,6 +335,43 @@ export class DealController {
 
   @UseGuards(OptionalJwtAuthGuard)
   @ApiBearerAuth()
+  @ApiQuery({ name: 'categoryName', required: false })
+  @ApiQuery({ name: 'subCategoryName', required: false })
+  @ApiQuery({ name: 'fromPrice', required: false })
+  @ApiQuery({ name: 'toPrice', required: false })
+  @ApiQuery({ name: 'reviewRating', required: false })
+  @ApiQuery({ name: 'sorting', enum: SORTINGENUM, required: false })
+  @Post('getDiscountedDealsDynamically/:percentage')
+  getDiscountedDealsDynamically(
+    @Param('percentage') percentage: number,
+    @Query('categoryName') categoryName: string,
+    @Query('subCategoryName') subCategoryName: string,
+    @Query('fromPrice') fromPrice: number,
+    @Query('toPrice') toPrice: number,
+    @Query('reviewRating') reviewRating: number,
+    @Query('sorting') sorting: SORT,
+    @Query('offset') offset: number = 0,
+    @Query('limit') limit: number = 10,
+    @Body() filterCategoriesApiDto: FilterCategoriesApiDto,
+    @Req() req,
+  ) {
+    return this.dealService.getDiscountedDealsDynamically(
+      percentage,
+      categoryName,
+      subCategoryName,
+      fromPrice,
+      toPrice,
+      reviewRating,
+      sorting,
+      offset,
+      limit,
+      filterCategoriesApiDto,
+      req
+    );
+  }
+
+  @UseGuards(OptionalJwtAuthGuard)
+  @ApiBearerAuth()
   @Get('getSpecialOfferDeals')
   getSpecialOfferDeals(
     @Query('offset') offset: number = 0,
@@ -270,6 +379,41 @@ export class DealController {
     @Req() req,
   ) {
     return this.dealService.getSpecialOfferDeals(offset, limit, req);
+  }
+
+  @UseGuards(OptionalJwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiQuery({ name: 'categoryName', required: false })
+  @ApiQuery({ name: 'subCategoryName', required: false })
+  @ApiQuery({ name: 'fromPrice', required: false })
+  @ApiQuery({ name: 'toPrice', required: false })
+  @ApiQuery({ name: 'reviewRating', required: false })
+  @ApiQuery({ name: 'sorting', enum: SORTINGENUM, required: false })
+  @Post('getSpecialOfferDealsDynamically')
+  getSpecialOfferDealsDynamically(
+    @Query('categoryName') categoryName: string,
+    @Query('subCategoryName') subCategoryName: string,
+    @Query('fromPrice') fromPrice: number,
+    @Query('toPrice') toPrice: number,
+    @Query('reviewRating') reviewRating: number,
+    @Query('sorting') sorting: SORT,
+    @Query('offset') offset: number = 0,
+    @Query('limit') limit: number = 10,
+    @Body() filterCategoriesApiDto: FilterCategoriesApiDto,
+    @Req() req,
+  ) {
+    return this.dealService.getSpecialOfferDealsDynamically(
+      categoryName,
+      subCategoryName,
+      fromPrice,
+      toPrice,
+      reviewRating,
+      sorting,
+      offset,
+      limit,
+      filterCategoriesApiDto,
+      req
+    );
   }
 
   @UseGuards(OptionalJwtAuthGuard)
@@ -285,6 +429,41 @@ export class DealController {
 
   @UseGuards(OptionalJwtAuthGuard)
   @ApiBearerAuth()
+  @ApiQuery({ name: 'categoryName', required: false })
+  @ApiQuery({ name: 'subCategoryName', required: false })
+  @ApiQuery({ name: 'fromPrice', required: false })
+  @ApiQuery({ name: 'toPrice', required: false })
+  @ApiQuery({ name: 'reviewRating', required: false })
+  @ApiQuery({ name: 'sorting', enum: SORTINGENUM, required: false })
+  @Post('getHotDealsDynamically')
+  getHotDealsDynamically(
+    @Query('categoryName') categoryName: string,
+    @Query('subCategoryName') subCategoryName: string,
+    @Query('fromPrice') fromPrice: number,
+    @Query('toPrice') toPrice: number,
+    @Query('reviewRating') reviewRating: number,
+    @Query('sorting') sorting: SORT,
+    @Query('offset') offset: number = 0,
+    @Query('limit') limit: number = 10,
+    @Body() filterCategoriesApiDto: FilterCategoriesApiDto,
+    @Req() req,
+  ) {
+    return this.dealService.getHotDealsDynamically(
+      categoryName,
+      subCategoryName,
+      fromPrice,
+      toPrice,
+      reviewRating,
+      sorting,
+      offset,
+      limit,
+      filterCategoriesApiDto,
+      req
+    );
+  }
+
+  @UseGuards(OptionalJwtAuthGuard)
+  @ApiBearerAuth()
   @Get('getNewFavouriteDeal')
   getNewFavouriteDeal(
     @Query('offset') offset: number = 0,
@@ -296,6 +475,44 @@ export class DealController {
 
   @UseGuards(OptionalJwtAuthGuard)
   @ApiBearerAuth()
+  @ApiQuery({ name: 'categoryName', required: false })
+  @ApiQuery({ name: 'subCategoryName', required: false })
+  @ApiQuery({ name: 'fromPrice', required: false })
+  @ApiQuery({ name: 'toPrice', required: false })
+  @ApiQuery({ name: 'reviewRating', required: false })
+  @ApiQuery({ name: 'sorting', enum: SORTINGENUM, required: false })
+  @Post('getNewFavouriteDealDynamically')
+  getNewFavouriteDealDynamically(
+    @Query('categoryName') categoryName: string,
+    @Query('subCategoryName') subCategoryName: string,
+    @Query('fromPrice') fromPrice: number,
+    @Query('toPrice') toPrice: number,
+    @Query('reviewRating') reviewRating: number,
+    @Query('sorting') sorting: SORT,
+    @Query('offset') offset: number = 0,
+    @Query('limit') limit: number = 10,
+    @Body() filterCategoriesApiDto: FilterCategoriesApiDto,
+    @Req() req,
+  ) {
+    return this.dealService.getNewFavouriteDealDynamically(
+      categoryName,
+      subCategoryName,
+      fromPrice,
+      toPrice,
+      reviewRating,
+      sorting,
+      offset,
+      limit,
+      filterCategoriesApiDto,
+      req
+    );
+  }
+
+  @UseGuards(OptionalJwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiQuery({ name: 'lat', required: false })
+  @ApiQuery({ name: 'lng', required: false })
+  @ApiQuery({ name: 'distance', required: false })
   @Get('getNearByDeals')
   getNearByDeals(
     @Query('lat') lat: number,
@@ -311,6 +528,50 @@ export class DealController {
       distance,
       offset,
       limit,
+      req,
+    );
+  }
+
+  @UseGuards(OptionalJwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiQuery({ name: 'lat', required: false })
+  @ApiQuery({ name: 'lng', required: false })
+  @ApiQuery({ name: 'distance', required: false })
+  @ApiQuery({ name: 'categoryName', required: false })
+  @ApiQuery({ name: 'subCategoryName', required: false })
+  @ApiQuery({ name: 'fromPrice', required: false })
+  @ApiQuery({ name: 'toPrice', required: false })
+  @ApiQuery({ name: 'reviewRating', required: false })
+  @ApiQuery({ name: 'sorting', enum: SORTINGENUM, required: false })
+  @Post('getNearByDealsDynamically')
+  getNearByDealsDynamically(
+    @Query('lat') lat: number,
+    @Query('lng') lng: number,
+    @Query('distance') distance: number,
+    @Query('categoryName') categoryName: string,
+    @Query('subCategoryName') subCategoryName: string,
+    @Query('fromPrice') fromPrice: number,
+    @Query('toPrice') toPrice: number,
+    @Query('reviewRating') reviewRating: number,
+    @Query('sorting') sorting: SORT,
+    @Query('offset') offset: number = 0,
+    @Query('limit') limit: number = 10,
+    @Body() filterCategoriesApiDto: FilterCategoriesApiDto,
+    @Req() req,
+  ) {
+    return this.dealService.getNearByDealsDynamically(
+      lat,
+      lng,
+      distance,
+      categoryName,
+      subCategoryName,
+      fromPrice,
+      toPrice,
+      reviewRating,
+      sorting,
+      offset,
+      limit,
+      filterCategoriesApiDto,
       req,
     );
   }
