@@ -1484,10 +1484,26 @@ export class DealService implements OnModuleInit {
     }
   }
 
-  async getDealsByMerchantIDForCustomerPanel(merchantID, offset, limit, req) {
+  async getDealsByMerchantIDForCustomerPanel(merchantID, lat, lng, distance, offset, limit, req) {
     try {
       offset = parseInt(offset) < 0 ? 0 : offset;
       limit = parseInt(limit) < 1 ? 10 : limit;
+
+      lat = parseFloat(lat);
+      lng = parseFloat(lng);
+      distance = parseFloat(distance);
+
+      if (!distance) {
+        distance = 10;
+      }
+
+      let radius = parseFloat(distance) / 6378.1;
+
+      if (!lat && !lng) {
+        lat = 50.8476;
+        lng = 4.3572;
+        radius = 20 / 6378.1;
+      }
 
       const totalCount = await this.dealModel.countDocuments({
         merchantMongoID: merchantID,
@@ -1502,6 +1518,31 @@ export class DealService implements OnModuleInit {
               merchantMongoID: merchantID,
               deletedCheck: false,
               dealStatus: DEALSTATUS.published,
+            },
+          },
+          {
+            $lookup: {
+              from: 'locations',
+              as: 'location',
+              localField: 'merchantID',
+              foreignField: 'merchantID',
+            },
+          },
+          {
+            $unwind: '$location',
+          },
+          {
+            $addFields: {
+              locationCoordinates: '$location.location',
+            },
+          },
+          {
+            $match: {
+              locationCoordinates: {
+                $geoWithin: {
+                  $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+                },
+              },
             },
           },
           {
@@ -1656,6 +1697,7 @@ export class DealService implements OnModuleInit {
               startDate: 0,
               reviewMediaUrl: 0,
               favouriteDeal: 0,
+              location: 0,
             },
           },
         ])
@@ -1694,11 +1736,27 @@ export class DealService implements OnModuleInit {
     }
   }
 
-  async getLowPriceDeals(price, offset, limit, req) {
+  async getLowPriceDeals(price, lat, lng, distance, offset, limit, req) {
     try {
       price = parseFloat(price);
       offset = parseInt(offset) < 0 ? 0 : offset;
       limit = parseInt(limit) < 1 ? 10 : limit;
+
+      lat = parseFloat(lat);
+      lng = parseFloat(lng);
+      distance = parseFloat(distance);
+
+      if (!distance) {
+        distance = 10;
+      }
+
+      let radius = parseFloat(distance) / 6378.1;
+
+      if (!lat && !lng) {
+        lat = 50.8476;
+        lng = 4.3572;
+        radius = 20 / 6378.1;
+      }
 
       let totalCount;
       let priceIncrease = 10;
@@ -1729,6 +1787,31 @@ export class DealService implements OnModuleInit {
               dealStatus: DEALSTATUS.published,
               subDeals: {
                 $elemMatch: { dealPrice: { $lt: price } },
+              },
+            },
+          },
+          {
+            $lookup: {
+              from: 'locations',
+              as: 'location',
+              localField: 'merchantID',
+              foreignField: 'merchantID',
+            },
+          },
+          {
+            $unwind: '$location',
+          },
+          {
+            $addFields: {
+              locationCoordinates: '$location.location',
+            },
+          },
+          {
+            $match: {
+              locationCoordinates: {
+                $geoWithin: {
+                  $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+                },
               },
             },
           },
@@ -1884,6 +1967,7 @@ export class DealService implements OnModuleInit {
               startDate: 0,
               reviewMediaUrl: 0,
               favouriteDeal: 0,
+              location: 0
             },
           },
         ])
@@ -1909,11 +1993,27 @@ export class DealService implements OnModuleInit {
     }
   }
 
-  async getLowPriceDealsDynamically (price, categoryName, subCategoryName, fromPrice, toPrice, reviewRating, sorting, offset, limit, filterCategoriesApiDto, req) {
+  async getLowPriceDealsDynamically (lat, lng, distance, price, categoryName, subCategoryName, fromPrice, toPrice, reviewRating, sorting, offset, limit, filterCategoriesApiDto, req) {
     try {
       price = parseFloat(price);
       offset = parseInt(offset) < 0 ? 0 : offset;
       limit = parseInt(limit) < 1 ? 10 : limit;
+
+      lat = parseFloat(lat);
+      lng = parseFloat(lng);
+      distance = parseFloat(distance);
+
+      if (!distance) {
+        distance = 10;
+      }
+
+      let radius = parseFloat(distance) / 6378.1;
+
+      if (!lat && !lng) {
+        lat = 50.8476;
+        lng = 4.3572;
+        radius = 20 / 6378.1;
+      }
 
       let count;
       let priceIncrease = 10;
@@ -2085,6 +2185,31 @@ export class DealService implements OnModuleInit {
           },
         },
         {
+          $lookup: {
+            from: 'locations',
+            as: 'location',
+            localField: 'merchantID',
+            foreignField: 'merchantID',
+          },
+        },
+        {
+          $unwind: '$location',
+        },
+        {
+          $addFields: {
+            locationCoordinates: '$location.location',
+          },
+        },
+        {
+          $match: {
+            locationCoordinates: {
+              $geoWithin: {
+                $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+              },
+            },
+          },
+        },
+        {
           $sort: sort,
         },
         {
@@ -2551,6 +2676,31 @@ export class DealService implements OnModuleInit {
           },
         },
         {
+          $lookup: {
+            from: 'locations',
+            as: 'location',
+            localField: 'merchantID',
+            foreignField: 'merchantID',
+          },
+        },
+        {
+          $unwind: '$location',
+        },
+        {
+          $addFields: {
+            locationCoordinates: '$location.location',
+          },
+        },
+        {
+          $match: {
+            locationCoordinates: {
+              $geoWithin: {
+                $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+              },
+            },
+          },
+        },
+        {
           $sort: sort,
         },
         {
@@ -2696,6 +2846,31 @@ export class DealService implements OnModuleInit {
               },
               ...categoryFilters,
               ...matchFilter,
+            },
+          },
+          {
+            $lookup: {
+              from: 'locations',
+              as: 'location',
+              localField: 'merchantID',
+              foreignField: 'merchantID',
+            },
+          },
+          {
+            $unwind: '$location',
+          },
+          {
+            $addFields: {
+              locationCoordinates: '$location.location',
+            },
+          },
+          {
+            $match: {
+              locationCoordinates: {
+                $geoWithin: {
+                  $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+                },
+              },
             },
           },
           {
@@ -2848,6 +3023,7 @@ export class DealService implements OnModuleInit {
               startDate: 0,
               reviewMediaUrl: 0,
               favouriteDeal: 0,
+              location: 0
             },
           },
         ])
@@ -2875,26 +3051,67 @@ export class DealService implements OnModuleInit {
     }
   }
 
-  async getNewDeals(offset, limit, req) {
+  async getNewDeals(lat, lng, distance, offset, limit, req) {
     try {
       offset = parseInt(offset) < 0 ? 0 : offset;
       limit = parseInt(limit) < 1 ? 10 : limit;
 
-      const value = await this.cacheManager.get(`getNewDeals${offset}${limit}`);
-      let totalCount;
-      let deals;
-      if (!value) {
-        totalCount = await this.dealModel.countDocuments({
+      lat = parseFloat(lat);
+      lng = parseFloat(lng);
+      distance = parseFloat(distance);
+
+      if (!distance) {
+        distance = 10;
+      }
+
+      let radius = parseFloat(distance) / 6378.1;
+
+      if (!lat && !lng) {
+        lat = 50.8476;
+        lng = 4.3572;
+        radius = 20 / 6378.1;
+      }
+
+      // const value = await this.cacheManager.get(`getNewDeals${offset}${limit}`);
+      // let totalCount;
+      // let deals;
+      // if (!value) {
+        let totalCount = await this.dealModel.countDocuments({
           deletedCheck: false,
           dealStatus: DEALSTATUS.published,
         });
 
-        deals = await this.dealModel
+        let deals = await this.dealModel
           .aggregate([
             {
               $match: {
                 deletedCheck: false,
                 dealStatus: DEALSTATUS.published,
+              },
+            },
+            {
+              $lookup: {
+                from: 'locations',
+                as: 'location',
+                localField: 'merchantID',
+                foreignField: 'merchantID',
+              },
+            },
+            {
+              $unwind: '$location',
+            },
+            {
+              $addFields: {
+                locationCoordinates: '$location.location',
+              },
+            },
+            {
+              $match: {
+                locationCoordinates: {
+                  $geoWithin: {
+                    $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+                  },
+                },
               },
             },
             {
@@ -3049,35 +3266,52 @@ export class DealService implements OnModuleInit {
                 startDate: 0,
                 reviewMediaUrl: 0,
                 // favouriteDeal: 0
+                location: 0
               },
             },
           ])
           .skip(parseInt(offset))
           .limit(parseInt(limit));
 
-        await this.cacheManager.set(
-          `getNewDeals${offset}${limit}`,
-          {
-            totalCount: totalCount,
-            data: deals,
-          },
-          { ttl: 1000 },
-        );
+        // await this.cacheManager.set(
+        //   `getNewDeals${offset}${limit}`,
+        //   {
+        //     totalCount: totalCount,
+        //     data: deals,
+        //   },
+        //   { ttl: 1000 },
+        // );
         return {
           totalCount: totalCount,
           data: deals,
         };
-      }
-      return value;
+      
+      // return value;
     } catch (err) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
     }
   }
 
-  async getNewDealsDynamically (categoryName, subCategoryName, fromPrice, toPrice, reviewRating, sorting, offset, limit, filterCategoriesApiDto, req) {
+  async getNewDealsDynamically (lat, lng, distance, categoryName, subCategoryName, fromPrice, toPrice, reviewRating, sorting, offset, limit, filterCategoriesApiDto, req) {
     try {
       offset = parseInt(offset) < 0 ? 0 : offset;
       limit = parseInt(limit) < 1 ? 10 : limit;
+
+      lat = parseFloat(lat);
+      lng = parseFloat(lng);
+      distance = parseFloat(distance);
+
+      if (!distance) {
+        distance = 10;
+      }
+
+      let radius = parseFloat(distance) / 6378.1;
+
+      if (!lat && !lng) {
+        lat = 50.8476;
+        lng = 4.3572;
+        radius = 20 / 6378.1;
+      }
 
       let categoryFilters = {};
 
@@ -3222,6 +3456,31 @@ export class DealService implements OnModuleInit {
           $match: {
             deletedCheck: false,
             dealStatus: DEALSTATUS.published,
+          },
+        },
+        {
+          $lookup: {
+            from: 'locations',
+            as: 'location',
+            localField: 'merchantID',
+            foreignField: 'merchantID',
+          },
+        },
+        {
+          $unwind: '$location',
+        },
+        {
+          $addFields: {
+            locationCoordinates: '$location.location',
+          },
+        },
+        {
+          $match: {
+            locationCoordinates: {
+              $geoWithin: {
+                $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+              },
+            },
           },
         },
         {
@@ -3688,6 +3947,31 @@ export class DealService implements OnModuleInit {
           },
         },
         {
+          $lookup: {
+            from: 'locations',
+            as: 'location',
+            localField: 'merchantID',
+            foreignField: 'merchantID',
+          },
+        },
+        {
+          $unwind: '$location',
+        },
+        {
+          $addFields: {
+            locationCoordinates: '$location.location',
+          },
+        },
+        {
+          $match: {
+            locationCoordinates: {
+              $geoWithin: {
+                $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+              },
+            },
+          },
+        },
+        {
           $sort: sort,
         },
         {
@@ -3830,6 +4114,31 @@ export class DealService implements OnModuleInit {
               dealStatus: DEALSTATUS.published,
               ...categoryFilters,
               ...matchFilter,
+            },
+          },
+          {
+            $lookup: {
+              from: 'locations',
+              as: 'location',
+              localField: 'merchantID',
+              foreignField: 'merchantID',
+            },
+          },
+          {
+            $unwind: '$location',
+          },
+          {
+            $addFields: {
+              locationCoordinates: '$location.location',
+            },
+          },
+          {
+            $match: {
+              locationCoordinates: {
+                $geoWithin: {
+                  $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+                },
+              },
             },
           },
           {
@@ -3989,6 +4298,7 @@ export class DealService implements OnModuleInit {
               startDate: 0,
               reviewMediaUrl: 0,
               favouriteDeal: 0,
+              location: 0
             },
           },
         ])
@@ -4007,12 +4317,28 @@ export class DealService implements OnModuleInit {
     }
   }
 
-  async getDiscountedDeals(percentage, offset, limit, req) {
+  async getDiscountedDeals(percentage, lat, lng, distance, offset, limit, req) {
     try {
       percentage = parseFloat(percentage);
 
       offset = parseInt(offset) < 0 ? 0 : offset;
       limit = parseInt(limit) < 1 ? 10 : limit;
+
+      lat = parseFloat(lat);
+      lng = parseFloat(lng);
+      distance = parseFloat(distance);
+
+      if (!distance) {
+        distance = 10;
+      }
+
+      let radius = parseFloat(distance) / 6378.1;
+
+      if (!lat && !lng) {
+        lat = 50.8476;
+        lng = 4.3572;
+        radius = 20 / 6378.1;
+      }
 
       let totalCount;
 
@@ -4039,6 +4365,31 @@ export class DealService implements OnModuleInit {
               dealStatus: DEALSTATUS.published,
               subDeals: {
                 $elemMatch: { discountPercentage: { $lte: percentage } },
+              },
+            },
+          },
+          {
+            $lookup: {
+              from: 'locations',
+              as: 'location',
+              localField: 'merchantID',
+              foreignField: 'merchantID',
+            },
+          },
+          {
+            $unwind: '$location',
+          },
+          {
+            $addFields: {
+              locationCoordinates: '$location.location',
+            },
+          },
+          {
+            $match: {
+              locationCoordinates: {
+                $geoWithin: {
+                  $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+                },
               },
             },
           },
@@ -4194,6 +4545,7 @@ export class DealService implements OnModuleInit {
               startDate: 0,
               reviewMediaUrl: 0,
               favouriteDeal: 0,
+              location: 0
             },
           },
         ])
@@ -4220,12 +4572,28 @@ export class DealService implements OnModuleInit {
     }
   }
 
-  async getDiscountedDealsDynamically(percentage, categoryName, subCategoryName, fromPrice, toPrice, reviewRating, sorting, offset, limit, filterCategoriesApiDto, req) {
+  async getDiscountedDealsDynamically(lat, lng, distance, percentage, categoryName, subCategoryName, fromPrice, toPrice, reviewRating, sorting, offset, limit, filterCategoriesApiDto, req) {
     try {
       percentage = parseFloat(percentage);
 
       offset = parseInt(offset) < 0 ? 0 : offset;
       limit = parseInt(limit) < 1 ? 10 : limit;
+
+      lat = parseFloat(lat);
+      lng = parseFloat(lng);
+      distance = parseFloat(distance);
+
+      if (!distance) {
+        distance = 10;
+      }
+
+      let radius = parseFloat(distance) / 6378.1;
+
+      if (!lat && !lng) {
+        lat = 50.8476;
+        lng = 4.3572;
+        radius = 20 / 6378.1;
+      }
 
       let count;
 
@@ -4394,6 +4762,31 @@ export class DealService implements OnModuleInit {
           },
         },
         {
+          $lookup: {
+            from: 'locations',
+            as: 'location',
+            localField: 'merchantID',
+            foreignField: 'merchantID',
+          },
+        },
+        {
+          $unwind: '$location',
+        },
+        {
+          $addFields: {
+            locationCoordinates: '$location.location',
+          },
+        },
+        {
+          $match: {
+            locationCoordinates: {
+              $geoWithin: {
+                $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+              },
+            },
+          },
+        },
+        {
           $sort: sort,
         },
         {
@@ -4860,6 +5253,31 @@ export class DealService implements OnModuleInit {
           },
         },
         {
+          $lookup: {
+            from: 'locations',
+            as: 'location',
+            localField: 'merchantID',
+            foreignField: 'merchantID',
+          },
+        },
+        {
+          $unwind: '$location',
+        },
+        {
+          $addFields: {
+            locationCoordinates: '$location.location',
+          },
+        },
+        {
+          $match: {
+            locationCoordinates: {
+              $geoWithin: {
+                $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+              },
+            },
+          },
+        },
+        {
           $sort: sort,
         },
         {
@@ -5005,6 +5423,31 @@ export class DealService implements OnModuleInit {
               },
               ...categoryFilters,
               ...matchFilter
+            },
+          },
+          {
+            $lookup: {
+              from: 'locations',
+              as: 'location',
+              localField: 'merchantID',
+              foreignField: 'merchantID',
+            },
+          },
+          {
+            $unwind: '$location',
+          },
+          {
+            $addFields: {
+              locationCoordinates: '$location.location',
+            },
+          },
+          {
+            $match: {
+              locationCoordinates: {
+                $geoWithin: {
+                  $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+                },
+              },
             },
           },
           {
@@ -5157,6 +5600,7 @@ export class DealService implements OnModuleInit {
               startDate: 0,
               reviewMediaUrl: 0,
               favouriteDeal: 0,
+              location: 0
             },
           },
         ])
@@ -5185,23 +5629,39 @@ export class DealService implements OnModuleInit {
     }
   }
 
-  async getHotDeals(offset, limit, req) {
+  async getHotDeals(lat, lng, distance, offset, limit, req) {
     try {
       offset = parseInt(offset) < 0 ? 0 : offset;
       limit = parseInt(limit) < 1 ? 10 : limit;
 
-      const value = await this.cacheManager.get(`getHotDeals${offset}${limit}`);
-      let totalCount;
-      let deals;
-      if (!value) {
-        totalCount = await this.dealModel.countDocuments({
+      lat = parseFloat(lat);
+      lng = parseFloat(lng);
+      distance = parseFloat(distance);
+
+      if (!distance) {
+        distance = 10;
+      }
+
+      let radius = parseFloat(distance) / 6378.1;
+
+      if (!lat && !lng) {
+        lat = 50.8476;
+        lng = 4.3572;
+        radius = 20 / 6378.1;
+      }
+
+      // const value = await this.cacheManager.get(`getHotDeals${offset}${limit}`);
+      // let totalCount;
+      // let deals;
+      // if (!value) {
+        let totalCount = await this.dealModel.countDocuments({
           deletedCheck: false,
           dealStatus: DEALSTATUS.published,
           availableVouchers: { $gt: 0 },
           soldVouchers: { $gt: 0 },
         });
 
-        deals = await this.dealModel
+        let deals = await this.dealModel
           .aggregate([
             {
               $match: {
@@ -5229,6 +5689,31 @@ export class DealService implements OnModuleInit {
               $addFields: {
                 percent: {
                   $multiply: ['$divided', 100],
+                },
+              },
+            },
+            {
+              $lookup: {
+                from: 'locations',
+                as: 'location',
+                localField: 'merchantID',
+                foreignField: 'merchantID',
+              },
+            },
+            {
+              $unwind: '$location',
+            },
+            {
+              $addFields: {
+                locationCoordinates: '$location.location',
+              },
+            },
+            {
+              $match: {
+                locationCoordinates: {
+                  $geoWithin: {
+                    $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+                  },
                 },
               },
             },
@@ -5380,6 +5865,7 @@ export class DealService implements OnModuleInit {
                 startDate: 0,
                 reviewMediaUrl: 0,
                 favouriteDeal: 0,
+                location: 0
               },
             },
             {
@@ -5391,29 +5877,45 @@ export class DealService implements OnModuleInit {
           .skip(parseInt(offset))
           .limit(parseInt(limit));
 
-        await this.cacheManager.set(
-          `getHotDeals${offset}${limit}`,
-          {
-            totalCount: totalCount,
-            data: deals,
-          },
-          { ttl: 1000 },
-        );
+        // await this.cacheManager.set(
+        //   `getHotDeals${offset}${limit}`,
+        //   {
+        //     totalCount: totalCount,
+        //     data: deals,
+        //   },
+        //   { ttl: 1000 },
+        // );
         return {
           totalCount: totalCount,
           data: deals,
         };
-      }
-      return value;
+      // }
+      // return value;
     } catch (err) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
     }
   }
 
-  async getHotDealsDynamically(categoryName, subCategoryName, fromPrice, toPrice, reviewRating, sorting, offset, limit, filterCategoriesApiDto, req) {
+  async getHotDealsDynamically(lat, lng, distance, categoryName, subCategoryName, fromPrice, toPrice, reviewRating, sorting, offset, limit, filterCategoriesApiDto, req) {
     try {
       offset = parseInt(offset) < 0 ? 0 : offset;
       limit = parseInt(limit) < 1 ? 10 : limit;
+
+      lat = parseFloat(lat);
+      lng = parseFloat(lng);
+      distance = parseFloat(distance);
+
+      if (!distance) {
+        distance = 10;
+      }
+
+      let radius = parseFloat(distance) / 6378.1;
+
+      if (!lat && !lng) {
+        lat = 50.8476;
+        lng = 4.3572;
+        radius = 20 / 6378.1;
+      }
 
       let categoryFilters = {};
 
@@ -5580,6 +6082,31 @@ export class DealService implements OnModuleInit {
           $addFields: {
             percent: {
               $multiply: ['$divided', 100],
+            },
+          },
+        },
+        {
+          $lookup: {
+            from: 'locations',
+            as: 'location',
+            localField: 'merchantID',
+            foreignField: 'merchantID',
+          },
+        },
+        {
+          $unwind: '$location',
+        },
+        {
+          $addFields: {
+            locationCoordinates: '$location.location',
+          },
+        },
+        {
+          $match: {
+            locationCoordinates: {
+              $geoWithin: {
+                $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+              },
             },
           },
         },
@@ -6066,6 +6593,31 @@ export class DealService implements OnModuleInit {
           $addFields: {
             percent: {
               $multiply: ['$divided', 100],
+            },
+          },
+        },
+        {
+          $lookup: {
+            from: 'locations',
+            as: 'location',
+            localField: 'merchantID',
+            foreignField: 'merchantID',
+          },
+        },
+        {
+          $unwind: '$location',
+        },
+        {
+          $addFields: {
+            locationCoordinates: '$location.location',
+          },
+        },
+        {
+          $match: {
+            locationCoordinates: {
+              $geoWithin: {
+                $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+              },
             },
           },
         },
@@ -6235,6 +6787,31 @@ export class DealService implements OnModuleInit {
           },
         },
         {
+          $lookup: {
+            from: 'locations',
+            as: 'location',
+            localField: 'merchantID',
+            foreignField: 'merchantID',
+          },
+        },
+        {
+          $unwind: '$location',
+        },
+        {
+          $addFields: {
+            locationCoordinates: '$location.location',
+          },
+        },
+        {
+          $match: {
+            locationCoordinates: {
+              $geoWithin: {
+                $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+              },
+            },
+          },
+        },
+        {
           $sort: sort,
         },
         {
@@ -6385,6 +6962,7 @@ export class DealService implements OnModuleInit {
             startDate: 0,
             reviewMediaUrl: 0,
             favouriteDeal: 0,
+            location: 0
           },
         },
         {
@@ -6408,15 +6986,33 @@ export class DealService implements OnModuleInit {
     }
   }
 
-  async getSpecialOfferDeals(offset, limit, req) {
+  async getSpecialOfferDeals(lat, lng, distance, offset, limit, req) {
     try {
       offset = parseInt(offset) < 0 ? 0 : offset;
       limit = parseInt(limit) < 1 ? 10 : limit;
+
+      lat = parseFloat(lat);
+      lng = parseFloat(lng);
+      distance = parseFloat(distance);
+
+      if (!distance) {
+        distance = 10;
+      }
+
+      let radius = parseFloat(distance) / 6378.1;
+
+      if (!lat && !lng) {
+        lat = 50.8476;
+        lng = 4.3572;
+        radius = 20 / 6378.1;
+      }
+
       const totalCount = await this.dealModel.countDocuments({
         deletedCheck: false,
         dealStatus: DEALSTATUS.published,
         isSpecialOffer: true,
       });
+
       let deals = await this.dealModel
         .aggregate([
           {
@@ -6424,6 +7020,36 @@ export class DealService implements OnModuleInit {
               deletedCheck: false,
               dealStatus: DEALSTATUS.published,
               isSpecialOffer: true,
+            },
+          },
+          {
+            $lookup: {
+              from: 'locations',
+              as: 'location',
+              localField: 'merchantID',
+              foreignField: 'merchantID',
+            },
+          },
+          {
+            $unwind: '$location',
+          },
+          {
+            $addFields: {
+              locationCoordinates: '$location.location',
+            },
+          },
+          {
+            $match: {
+              locationCoordinates: {
+                $geoWithin: {
+                  $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+                },
+              },
+            },
+          },
+          {
+            $sort: {
+              createdAt: -1,
             },
           },
           {
@@ -6573,13 +7199,9 @@ export class DealService implements OnModuleInit {
               startDate: 0,
               reviewMediaUrl: 0,
               favouriteDeal: 0,
+              location: 0
             },
-          },
-          {
-            $sort: {
-              createdAt: -1,
-            },
-          },
+          }
         ])
         .skip(parseInt(offset))
         .limit(parseInt(limit));
@@ -6592,10 +7214,26 @@ export class DealService implements OnModuleInit {
     }
   }
 
-  async getSpecialOfferDealsDynamically (categoryName, subCategoryName, fromPrice, toPrice, reviewRating, sorting, offset, limit, filterCategoriesApiDto, req) {
+  async getSpecialOfferDealsDynamically (lat, lng, distance, categoryName, subCategoryName, fromPrice, toPrice, reviewRating, sorting, offset, limit, filterCategoriesApiDto, req) {
     try {
       offset = parseInt(offset) < 0 ? 0 : offset;
       limit = parseInt(limit) < 1 ? 10 : limit;
+
+      lat = parseFloat(lat);
+      lng = parseFloat(lng);
+      distance = parseFloat(distance);
+
+      if (!distance) {
+        distance = 10;
+      }
+
+      let radius = parseFloat(distance) / 6378.1;
+
+      if (!lat && !lng) {
+        lat = 50.8476;
+        lng = 4.3572;
+        radius = 20 / 6378.1;
+      }
 
       let categoryFilters = {};
 
@@ -6741,6 +7379,31 @@ export class DealService implements OnModuleInit {
             deletedCheck: false,
             dealStatus: DEALSTATUS.published,
             isSpecialOffer: true,
+          },
+        },
+        {
+          $lookup: {
+            from: 'locations',
+            as: 'location',
+            localField: 'merchantID',
+            foreignField: 'merchantID',
+          },
+        },
+        {
+          $unwind: '$location',
+        },
+        {
+          $addFields: {
+            locationCoordinates: '$location.location',
+          },
+        },
+        {
+          $match: {
+            locationCoordinates: {
+              $geoWithin: {
+                $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+              },
+            },
           },
         },
         {
@@ -7208,6 +7871,31 @@ export class DealService implements OnModuleInit {
           },
         },
         {
+          $lookup: {
+            from: 'locations',
+            as: 'location',
+            localField: 'merchantID',
+            foreignField: 'merchantID',
+          },
+        },
+        {
+          $unwind: '$location',
+        },
+        {
+          $addFields: {
+            locationCoordinates: '$location.location',
+          },
+        },
+        {
+          $match: {
+            locationCoordinates: {
+              $geoWithin: {
+                $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+              },
+            },
+          },
+        },
+        {
           $sort: sort,
         },
         {
@@ -7351,6 +8039,31 @@ export class DealService implements OnModuleInit {
               isSpecialOffer: true,
               ...categoryFilters,
               ...matchFilter,
+            },
+          },
+          {
+            $lookup: {
+              from: 'locations',
+              as: 'location',
+              localField: 'merchantID',
+              foreignField: 'merchantID',
+            },
+          },
+          {
+            $unwind: '$location',
+          },
+          {
+            $addFields: {
+              locationCoordinates: '$location.location',
+            },
+          },
+          {
+            $match: {
+              locationCoordinates: {
+                $geoWithin: {
+                  $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+                },
+              },
             },
           },
           {
@@ -7503,13 +8216,9 @@ export class DealService implements OnModuleInit {
               startDate: 0,
               reviewMediaUrl: 0,
               favouriteDeal: 0,
+              location: 0
             },
-          },
-          {
-            $sort: {
-              createdAt: -1,
-            },
-          },
+          }
         ])
         .skip(parseInt(offset))
         .limit(parseInt(limit));
@@ -7526,15 +8235,32 @@ export class DealService implements OnModuleInit {
     }
   }
 
-  async getNewFavouriteDeal(offset, limit, req) {
+  async getNewFavouriteDeal(lat, lng, distance, offset, limit, req) {
     try {
       offset = parseInt(offset) < 0 ? 0 : offset;
       limit = parseInt(limit) < 1 ? 10 : limit;
+
+      lat = parseFloat(lat);
+      lng = parseFloat(lng);
+      distance = parseFloat(distance);
+
+      if (!distance) {
+        distance = 10;
+      }
+
+      let radius = parseFloat(distance) / 6378.1;
+
+      if (!lat && !lng) {
+        lat = 50.8476;
+        lng = 4.3572;
+        radius = 20 / 6378.1;
+      }
 
       const totalCount = await this.dealModel.countDocuments({
         deletedCheck: false,
         dealStatus: DEALSTATUS.published,
       });
+
       const deals = await this.dealModel
         .aggregate([
           {
@@ -7545,6 +8271,31 @@ export class DealService implements OnModuleInit {
           },
           {
             $sample: { size: totalCount },
+          },
+          {
+            $lookup: {
+              from: 'locations',
+              as: 'location',
+              localField: 'merchantID',
+              foreignField: 'merchantID',
+            },
+          },
+          {
+            $unwind: '$location',
+          },
+          {
+            $addFields: {
+              locationCoordinates: '$location.location',
+            },
+          },
+          {
+            $match: {
+              locationCoordinates: {
+                $geoWithin: {
+                  $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+                },
+              },
+            },
           },
           {
             $sort: {
@@ -7698,6 +8449,7 @@ export class DealService implements OnModuleInit {
               startDate: 0,
               reviewMediaUrl: 0,
               favouriteDeal: 0,
+              location: 0
             },
           },
         ])
@@ -7712,10 +8464,26 @@ export class DealService implements OnModuleInit {
     }
   }
 
-  async getNewFavouriteDealDynamically (categoryName, subCategoryName, fromPrice, toPrice, reviewRating, sorting, offset, limit, filterCategoriesApiDto, req) {
+  async getNewFavouriteDealDynamically (lat, lng, distance, categoryName, subCategoryName, fromPrice, toPrice, reviewRating, sorting, offset, limit, filterCategoriesApiDto, req) {
     try {
       offset = parseInt(offset) < 0 ? 0 : offset;
       limit = parseInt(limit) < 1 ? 10 : limit;
+
+      lat = parseFloat(lat);
+      lng = parseFloat(lng);
+      distance = parseFloat(distance);
+
+      if (!distance) {
+        distance = 10;
+      }
+
+      let radius = parseFloat(distance) / 6378.1;
+
+      if (!lat && !lng) {
+        lat = 50.8476;
+        lng = 4.3572;
+        radius = 20 / 6378.1;
+      }
 
       let categoryFilters = {};
 
@@ -7871,6 +8639,31 @@ export class DealService implements OnModuleInit {
           $sample: { size: sampleCount },
         },
         {
+          $lookup: {
+            from: 'locations',
+            as: 'location',
+            localField: 'merchantID',
+            foreignField: 'merchantID',
+          },
+        },
+        {
+          $unwind: '$location',
+        },
+        {
+          $addFields: {
+            locationCoordinates: '$location.location',
+          },
+        },
+        {
+          $match: {
+            locationCoordinates: {
+              $geoWithin: {
+                $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+              },
+            },
+          },
+        },
+        {
           $sort: sort,
         },
         {
@@ -8337,6 +9130,31 @@ export class DealService implements OnModuleInit {
           $sample: { size: sampleCount },
         },
         {
+          $lookup: {
+            from: 'locations',
+            as: 'location',
+            localField: 'merchantID',
+            foreignField: 'merchantID',
+          },
+        },
+        {
+          $unwind: '$location',
+        },
+        {
+          $addFields: {
+            locationCoordinates: '$location.location',
+          },
+        },
+        {
+          $match: {
+            locationCoordinates: {
+              $geoWithin: {
+                $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+              },
+            },
+          },
+        },
+        {
           $sort: sort,
         },
         {
@@ -8483,6 +9301,31 @@ export class DealService implements OnModuleInit {
           },
           {
             $sample: { size: sampleCount },
+          },
+          {
+            $lookup: {
+              from: 'locations',
+              as: 'location',
+              localField: 'merchantID',
+              foreignField: 'merchantID',
+            },
+          },
+          {
+            $unwind: '$location',
+          },
+          {
+            $addFields: {
+              locationCoordinates: '$location.location',
+            },
+          },
+          {
+            $match: {
+              locationCoordinates: {
+                $geoWithin: {
+                  $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+                },
+              },
+            },
           },
           {
             $sort: sort
@@ -8634,6 +9477,7 @@ export class DealService implements OnModuleInit {
               startDate: 0,
               reviewMediaUrl: 0,
               favouriteDeal: 0,
+              location: 0
             },
           },
         ])
@@ -9882,6 +10726,9 @@ export class DealService implements OnModuleInit {
   }
 
   async searchDeals(
+    lat,
+    lng,
+    distance, 
     searchBar,
     header,
     categoryName,
@@ -9897,6 +10744,22 @@ export class DealService implements OnModuleInit {
     try {
       offset = parseInt(offset) < 0 ? 0 : offset;
       limit = parseInt(limit) < 1 ? 10 : limit;
+
+      lat = parseFloat(lat);
+      lng = parseFloat(lng);
+      distance = parseFloat(distance);
+
+      if (!distance) {
+        distance = 10;
+      }
+
+      let radius = parseFloat(distance) / 6378.1;
+
+      if (!lat && !lng) {
+        lat = 50.8476;
+        lng = 4.3572;
+        radius = 20 / 6378.1;
+      }
 
       let filters = {};
 
@@ -9985,8 +10848,31 @@ export class DealService implements OnModuleInit {
           $match: {
             deletedCheck: false,
             dealStatus: DEALSTATUS.published,
-            // ...filters,
-            // ...matchFilter,
+          },
+        },
+        {
+          $lookup: {
+            from: 'locations',
+            as: 'location',
+            localField: 'merchantID',
+            foreignField: 'merchantID',
+          },
+        },
+        {
+          $unwind: '$location',
+        },
+        {
+          $addFields: {
+            locationCoordinates: '$location.location',
+          },
+        },
+        {
+          $match: {
+            locationCoordinates: {
+              $geoWithin: {
+                $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+              },
+            },
           },
         },
         {
@@ -10362,6 +11248,31 @@ export class DealService implements OnModuleInit {
           },
         },
         {
+          $lookup: {
+            from: 'locations',
+            as: 'location',
+            localField: 'merchantID',
+            foreignField: 'merchantID',
+          },
+        },
+        {
+          $unwind: '$location',
+        },
+        {
+          $addFields: {
+            locationCoordinates: '$location.location',
+          },
+        },
+        {
+          $match: {
+            locationCoordinates: {
+              $geoWithin: {
+                $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+              },
+            },
+          },
+        },
+        {
           $addFields: {
             isHeader: {
               $regexMatch: { input: '$dealHeader', regex: headerQuery },
@@ -10531,6 +11442,31 @@ export class DealService implements OnModuleInit {
               dealStatus: DEALSTATUS.published,
               ...filters,
               ...matchFilter,
+            },
+          },
+          {
+            $lookup: {
+              from: 'locations',
+              as: 'location',
+              localField: 'merchantID',
+              foreignField: 'merchantID',
+            },
+          },
+          {
+            $unwind: '$location',
+          },
+          {
+            $addFields: {
+              locationCoordinates: '$location.location',
+            },
+          },
+          {
+            $match: {
+              locationCoordinates: {
+                $geoWithin: {
+                  $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+                },
+              },
             },
           },
           {
@@ -10717,6 +11653,7 @@ export class DealService implements OnModuleInit {
               startDate: 0,
               reviewMediaUrl: 0,
               favouriteDeal: 0,
+              location: 0
             },
           },
         ])
@@ -10735,6 +11672,9 @@ export class DealService implements OnModuleInit {
   }
 
   async getDealsByCategories(
+    lat,
+    lng,
+    distance, 
     categoryName,
     subCategoryName,
     fromPrice,
@@ -10749,6 +11689,22 @@ export class DealService implements OnModuleInit {
     try {
       offset = parseInt(offset) < 0 ? 0 : offset;
       limit = parseInt(limit) < 1 ? 10 : limit;
+
+      lat = parseFloat(lat);
+      lng = parseFloat(lng);
+      distance = parseFloat(distance);
+
+      if (!distance) {
+        distance = 10;
+      }
+
+      let radius = parseFloat(distance) / 6378.1;
+
+      if (!lat && !lng) {
+        lat = 50.8476;
+        lng = 4.3572;
+        radius = 20 / 6378.1;
+      }
 
       let categoryFilters = {};
 
@@ -10888,6 +11844,31 @@ export class DealService implements OnModuleInit {
             deletedCheck: false,
             dealStatus: DEALSTATUS.published,
             ...categoryFilters,
+          },
+        },
+        {
+          $lookup: {
+            from: 'locations',
+            as: 'location',
+            localField: 'merchantID',
+            foreignField: 'merchantID',
+          },
+        },
+        {
+          $unwind: '$location',
+        },
+        {
+          $addFields: {
+            locationCoordinates: '$location.location',
+          },
+        },
+        {
+          $match: {
+            locationCoordinates: {
+              $geoWithin: {
+                $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+              },
+            },
           },
         },
         {
@@ -11354,6 +12335,31 @@ export class DealService implements OnModuleInit {
           },
         },
         {
+          $lookup: {
+            from: 'locations',
+            as: 'location',
+            localField: 'merchantID',
+            foreignField: 'merchantID',
+          },
+        },
+        {
+          $unwind: '$location',
+        },
+        {
+          $addFields: {
+            locationCoordinates: '$location.location',
+          },
+        },
+        {
+          $match: {
+            locationCoordinates: {
+              $geoWithin: {
+                $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+              },
+            },
+          },
+        },
+        {
           $sort: sort,
         },
         {
@@ -11496,6 +12502,31 @@ export class DealService implements OnModuleInit {
               dealStatus: DEALSTATUS.published,
               ...categoryFilters,
               ...matchFilter,
+            },
+          },
+          {
+            $lookup: {
+              from: 'locations',
+              as: 'location',
+              localField: 'merchantID',
+              foreignField: 'merchantID',
+            },
+          },
+          {
+            $unwind: '$location',
+          },
+          {
+            $addFields: {
+              locationCoordinates: '$location.location',
+            },
+          },
+          {
+            $match: {
+              locationCoordinates: {
+                $geoWithin: {
+                  $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+                },
+              },
             },
           },
           {
@@ -11655,6 +12686,7 @@ export class DealService implements OnModuleInit {
               startDate: 0,
               reviewMediaUrl: 0,
               favouriteDeal: 0,
+              location: 0
             },
           },
         ])
@@ -11989,10 +13021,26 @@ export class DealService implements OnModuleInit {
     }
   }
 
-  async getRecommendedForYouDeals(offset, limit, req) {
+  async getRecommendedForYouDeals(lat, lng, distance, offset, limit, req) {
     try {
       offset = parseInt(offset) < 0 ? 0 : offset;
       limit = parseInt(limit) < 1 ? 10 : limit;
+
+      lat = parseFloat(lat);
+      lng = parseFloat(lng);
+      distance = parseFloat(distance);
+
+      if (!distance) {
+        distance = 10;
+      }
+
+      let radius = parseFloat(distance) / 6378.1;
+
+      if (!lat && !lng) {
+        lat = 50.8476;
+        lng = 4.3572;
+        radius = 20 / 6378.1;
+      }
 
       const totalCount = await this.dealModel.countDocuments({
         deletedCheck: false,
@@ -12009,6 +13057,31 @@ export class DealService implements OnModuleInit {
           },
           {
             $sample: { size: totalCount },
+          },
+          {
+            $lookup: {
+              from: 'locations',
+              as: 'location',
+              localField: 'merchantID',
+              foreignField: 'merchantID',
+            },
+          },
+          {
+            $unwind: '$location',
+          },
+          {
+            $addFields: {
+              locationCoordinates: '$location.location',
+            },
+          },
+          {
+            $match: {
+              locationCoordinates: {
+                $geoWithin: {
+                  $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+                },
+              },
+            },
           },
           {
             $lookup: {
@@ -12157,6 +13230,7 @@ export class DealService implements OnModuleInit {
               startDate: 0,
               reviewMediaUrl: 0,
               favouriteDeal: 0,
+              location: 0
             },
           },
         ])
@@ -12171,10 +13245,26 @@ export class DealService implements OnModuleInit {
     }
   }
 
-  async getTrendingDeals(offset, limit, req) {
+  async getTrendingDeals(lat, lng, distance, offset, limit, req) {
     try {
       offset = parseInt(offset) < 0 ? 0 : offset;
       limit = parseInt(limit) < 1 ? 10 : limit;
+
+      lat = parseFloat(lat);
+      lng = parseFloat(lng);
+      distance = parseFloat(distance);
+
+      if (!distance) {
+        distance = 10;
+      }
+
+      let radius = parseFloat(distance) / 6378.1;
+
+      if (!lat && !lng) {
+        lat = 50.8476;
+        lng = 4.3572;
+        radius = 20 / 6378.1;
+      }
 
       const totalCount = await this.dealModel.countDocuments({
         deletedCheck: false,
@@ -12211,6 +13301,31 @@ export class DealService implements OnModuleInit {
             $addFields: {
               percent: {
                 $multiply: ['$divided', 100],
+              },
+            },
+          },
+          {
+            $lookup: {
+              from: 'locations',
+              as: 'location',
+              localField: 'merchantID',
+              foreignField: 'merchantID',
+            },
+          },
+          {
+            $unwind: '$location',
+          },
+          {
+            $addFields: {
+              locationCoordinates: '$location.location',
+            },
+          },
+          {
+            $match: {
+              locationCoordinates: {
+                $geoWithin: {
+                  $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+                },
               },
             },
           },
@@ -12362,6 +13477,7 @@ export class DealService implements OnModuleInit {
               startDate: 0,
               reviewMediaUrl: 0,
               favouriteDeal: 0,
+              location: 0
             },
           },
           {
@@ -12382,10 +13498,26 @@ export class DealService implements OnModuleInit {
     }
   }
 
-  async getSimilarDeals(categoryName, subCategoryName, offset, limit, req) {
+  async getSimilarDeals(categoryName, subCategoryName, lat, lng, distance, offset, limit, req) {
     try {
       offset = parseInt(offset) < 0 ? 0 : offset;
       limit = parseInt(limit) < 1 ? 10 : limit;
+
+      lat = parseFloat(lat);
+      lng = parseFloat(lng);
+      distance = parseFloat(distance);
+
+      if (!distance) {
+        distance = 10;
+      }
+
+      let radius = parseFloat(distance) / 6378.1;
+
+      if (!lat && !lng) {
+        lat = 50.8476;
+        lng = 4.3572;
+        radius = 20 / 6378.1;
+      }
 
       const totalCount = await this.dealModel.countDocuments({
         deletedCheck: false,
@@ -12402,6 +13534,31 @@ export class DealService implements OnModuleInit {
               dealStatus: DEALSTATUS.published,
               categoryName: categoryName,
               subCategory: subCategoryName,
+            },
+          },
+          {
+            $lookup: {
+              from: 'locations',
+              as: 'location',
+              localField: 'merchantID',
+              foreignField: 'merchantID',
+            },
+          },
+          {
+            $unwind: '$location',
+          },
+          {
+            $addFields: {
+              locationCoordinates: '$location.location',
+            },
+          },
+          {
+            $match: {
+              locationCoordinates: {
+                $geoWithin: {
+                  $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+                },
+              },
             },
           },
           {
@@ -12556,6 +13713,7 @@ export class DealService implements OnModuleInit {
               startDate: 0,
               reviewMediaUrl: 0,
               favouriteDeal: 0,
+              location: 0
             },
           },
         ])
