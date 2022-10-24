@@ -6763,6 +6763,8 @@ export class DealService implements OnModuleInit {
             dealStatus: DEALSTATUS.published,
             availableVouchers: { $gt: 0 },
             soldVouchers: { $gt: 0 },
+            ...categoryFilters,
+            ...matchFilter,
           },
         },
         {
