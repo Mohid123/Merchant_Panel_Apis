@@ -44,6 +44,11 @@ export class AuthController {
     return this._authService.loginCustomer(loginDto);
   }
 
+  @Post('loginAffiliate')
+  loginAffiliate(@Body() loginDto: LoginDto) {
+    return this._authService.loginAffiliate(loginDto);
+  }
+
   @Post('loginAdmin')
   loginAdmin(@Body() loginDto: LoginDto) {
     return this._authService.loginAdmin(loginDto);
@@ -57,6 +62,11 @@ export class AuthController {
   @Post('signupCustomer')
   signupUser (@Body() signupUserDto:SignUpCustomerDTO ) {
     return this._authService.signupCustomer(signupUserDto)
+  }
+
+  @Post('signupAffiliate')
+  signupAffiliate (@Body() signupAffiliateDto:SignUpDTO ) {
+    return this._authService.signupAffiliate(signupAffiliateDto)
   }
 
   @Post('sendEmail')

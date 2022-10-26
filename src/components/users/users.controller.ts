@@ -63,9 +63,9 @@ export class UsersController {
 
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @Post('completeKYC/:merchantID')
-  completeKYC(@Param('merchantID') merchantID: string, @Body() kycDto: KycDto) {
-    return this._usersService.completeKYC(merchantID, kycDto);
+  @Post('completeKYC/:id')
+  completeKYC(@Param('id') id: string, @Body() kycDto: KycDto) {
+    return this._usersService.completeKYC(id, kycDto);
   }
 
   @Post('updateVoucherPinCode/:merchantID')
@@ -91,6 +91,16 @@ export class UsersController {
 
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
+  @Post('updateAffiliateProfile/:affiliateID')
+  updateAffiliateProfile(
+    @Param('affiliateID') affiliateID: string,
+    @Body() usersDto: UpdateMerchantProfileDto,
+  ) {
+    return this._usersService.updateAffiliateProfile(affiliateID, usersDto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @Post('updateCustomerProfile/:customerID')
   updateCustomerProfile(
     @Param('customerID') customerID: string,
@@ -106,6 +116,15 @@ export class UsersController {
     @Param('id') id:string
   ) {
     return this._usersService.getCustomer(id)
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Get('getAffiliate/:id')
+  getAffiliate (
+    @Param('id') id:string
+  ) {
+    return this._usersService.getAffiliate(id)
   }
 
   @UseGuards(JwtAuthGuard)

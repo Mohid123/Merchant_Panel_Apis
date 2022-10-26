@@ -28,6 +28,13 @@ export class CategoryController {
 
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
+  @Post('createAffiliateCategory')
+  createAffiliateCategory(@Body() categoryDto: CategoryDto) {
+    return this.categoryService.createAffiliateCategory(categoryDto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @Post('createSubCategory')
   createSubCategory(@Body() subCategoryDto: SubCategoryDTO) {
     return this.categoryService.createSubCategory(subCategoryDto);
@@ -39,6 +46,14 @@ export class CategoryController {
     @Query('limit') limit: number = 10,
   ) {
     return this.categoryService.getAllCategories(offset, limit);
+  }
+
+  @Get('getAllAffiliateCategories')
+  getAllAffiliateCategories (
+    @Query('offset') offset: number = 0,
+    @Query('limit') limit: number = 10,
+  ) {
+    return this.categoryService.getAllAffiliateCategories(offset, limit);
   }
 
   @Get('getAllSubCategoriesByCategories')

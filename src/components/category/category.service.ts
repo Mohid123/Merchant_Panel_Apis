@@ -5,6 +5,7 @@ import { SubCategoryInterface } from '../../interface/category/subcategory.inter
 import { CategoryInterface } from '../../interface/category/category.interface';
 import { UsersInterface } from 'src/interface/user/users.interface';
 import { pipeline } from 'stream';
+import { affiliateCategoryInterface } from 'src/interface/category/affiliatecategory.interface';
 
 @Injectable()
 export class CategoryService {
@@ -13,12 +14,23 @@ export class CategoryService {
     private readonly categoryModel: Model<CategoryInterface>,
     @InjectModel('SubCategory')
     private readonly subCategoryModel: Model<SubCategoryInterface>,
+    @InjectModel('affiliateCategories')
+    private readonly affiliateCategoryModel: Model<affiliateCategoryInterface>,
   ) {}
 
   async createCategory(categoryDto) {
     try {
       let category = await this.categoryModel.create(categoryDto);
       return category;
+    } catch (err) {
+      throw new HttpException(err, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async createAffiliateCategory (categoryDto) {
+    try {
+      let affiliateCategory = await new this.affiliateCategoryModel(categoryDto).save();
+      return affiliateCategory;
     } catch (err) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
     }
@@ -64,6 +76,38 @@ export class CategoryService {
       return {
         totalCount: totalCount,
         data: categories,
+      };
+    } catch (err) {
+      throw new HttpException(err, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async getAllAffiliateCategories (offset, limit) {
+    try {
+      offset = parseInt(offset) < 0 ? 0 : offset;
+      limit = parseInt(limit) < 1 ? 10 : limit;
+
+      const totalCount = await this.affiliateCategoryModel.countDocuments();
+
+      let affiliateCategories = await this.affiliateCategoryModel
+        .aggregate([
+          {
+            $addFields: {
+              id: '$_id',
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+            },
+          },
+        ])
+        .skip(parseInt(offset))
+        .limit(parseInt(limit));
+
+      return {
+        totalCount: totalCount,
+        data: affiliateCategories,
       };
     } catch (err) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);

@@ -40,9 +40,11 @@ export interface UsersInterface {
   bic_swiftCode: string;
   accountHolder: string;
   bankName: string;
+  bankStatement: string;
   kycStatus: boolean;
   province: string;
   website_socialAppLink: string;
+  karibuURL: string;
   googleMapPin: string;
   businessHours: businessHour[];
   finePrint: string;
