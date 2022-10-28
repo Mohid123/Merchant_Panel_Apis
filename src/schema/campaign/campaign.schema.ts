@@ -2,7 +2,7 @@ import * as mongoose from 'mongoose';
 import { generateStringId } from 'src/components/file-management/utils/utils';
 import { CampaignInterface } from 'src/interface/campaign/campaign.interfce';
 
-export const CamapginSchema = new mongoose.Schema(
+export const CampaignSchema = new mongoose.Schema(
     {
         _id: { type: String, default: generateStringId },
         affiliateMongoID: { type: String, default: '' },
@@ -20,8 +20,8 @@ export const CamapginSchema = new mongoose.Schema(
     }
 );
 
-CamapginSchema.set('timestamps', true);
-CamapginSchema.set('toJSON', {
+CampaignSchema.set('timestamps', true);
+CampaignSchema.set('toJSON', {
   virtuals: true,
   versionKey: false,
   transform: function (doc, ret) {
@@ -29,8 +29,8 @@ CamapginSchema.set('toJSON', {
   },
 });
 
-mongoose.model('Campaign', CamapginSchema);
+mongoose.model('Campaign', CampaignSchema);
 
-CamapginSchema.pre<CampaignInterface>('save', async function (next) {
+CampaignSchema.pre<CampaignInterface>('save', async function (next) {
   next();
 });

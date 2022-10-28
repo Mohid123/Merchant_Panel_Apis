@@ -12,20 +12,33 @@ export class CampaignController {
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
     @Post('createCampaign')
-    createCampaign(@Body() campaignDto: CamapaignDto) {
-        return this.camapaignService.createCampaign(campaignDto);
+    createCampaign (
+        @Body() campaignDto: CamapaignDto,
+        @Req() req
+    ) {
+        return this.camapaignService.createCampaign(campaignDto, req);
     }
 
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
-    @Post('deleteCampaign')
+    @Post('editCampaign/:id')
+    editCampaign (
+        @Param('id') id: string,
+        @Body() campaignDto: CamapaignDto,
+    ) {
+        return this.camapaignService.editCampaign(id, campaignDto);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    @Post('deleteCampaign/:id')
     deleteCampaign (@Param('id') id: string) {
         return this.camapaignService.deleteCampaign(id);
     }
 
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
-    @Get('getCampaign')
+    @Get('getCampaign/:id')
     getCampaign (
         @Param('id') id: string,
         @Req() req

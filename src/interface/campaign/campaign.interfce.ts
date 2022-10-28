@@ -8,5 +8,5 @@ export interface CampaignInterface {
     details: string;
     startDate: number;
     endDate: number;
-    deletedCheck: false;
+    deletedCheck: boolean;
 }

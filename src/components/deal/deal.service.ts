@@ -4,6 +4,7 @@ import {
   HttpStatus,
   Inject,
   Injectable,
+  NotFoundException,
   OnModuleInit,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
@@ -43,6 +44,7 @@ import { AFFILIATEPAYMENTSTATUS } from 'src/enum/affiliate/affiliate.enum';
 import { MERCHANTPAYMENTSTATUS } from 'src/enum/merchant/merchant.enum';
 import { SORTINGENUM } from 'src/enum/sort/categoryapisorting.enum';
 import { DealCategoryAnalyticsInterface } from 'src/interface/deal/dealcategoryanalytics.interface';
+import { CampaignInterface } from 'src/interface/campaign/campaign.interfce';
 let transporter;
 
 @Injectable()
@@ -65,6 +67,8 @@ export class DealService implements OnModuleInit {
     @InjectModel('Review') private readonly reviewModel: Model<ReviewInterface>,
     @InjectModel('categories-Analytics')
     private readonly categoryAnalyticsModel: Model<DealCategoryAnalyticsInterface>,
+    @InjectModel('Campaign')
+    private readonly campaignModel: Model<CampaignInterface>,
     private _scheduleService: ScheduleService,
     private _stripeService: StripeService,
     private _voucherService: VouchersService,
@@ -14187,8 +14191,18 @@ export class DealService implements OnModuleInit {
         deletedCheck: false,
       });
 
+      const campaign = await this.campaignModel.findOne({
+        affiliateID: affiliate.affiliateID,
+        affiliateMongoID: affiliate._id,
+        deletedCheck: false
+      });
+
+      if (!campaign) {
+        throw new NotFoundException('Campaign not found!')
+      }
+
       if (!affiliate) {
-        throw new Error('Affiliate doesnot exist!');
+        throw new NotFoundException('Affiliate doesnot exist!');
       }
 
       const subDeal = deal.subDeals.find(
@@ -14309,6 +14323,8 @@ export class DealService implements OnModuleInit {
         affiliatePercentage: merchant.platformPercentage,
         affiliateFee: calculatedFeeForAffiliate.toFixed(2),
         affiliatePaymentStatus: AFFILIATEPAYMENTSTATUS.pending,
+        affiliateCampaignID: campaign._id,
+        affiliateCampaignName: campaign.title,
         platformPercentage: merchant.platformPercentage,
         customerID: customer.customerID,
         affiliateMongoID: affiliate.id,

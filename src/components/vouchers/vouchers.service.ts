@@ -24,6 +24,7 @@ import { DEALSTATUS } from 'src/enum/deal/dealstatus.enum';
 import { ActivityService } from '../activity/activity.service';
 import { ACTIVITYENUM } from 'src/enum/activity/activity.enum';
 import { USERROLE } from 'src/enum/user/userrole.enum';
+import { AFFILIATEPAYMENTSTATUS } from 'src/enum/affiliate/affiliate.enum';
 
 @Injectable()
 export class VouchersService {
@@ -530,6 +531,122 @@ export class VouchersService {
       };
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async getVouchersByAffiliateID (affiliateMongoID, multipleVouchersAffiliateDto, offset, limit) {
+    try {
+      offset = parseInt(offset) < 0 ? 0 : offset;
+      limit = parseInt(limit) < 1 ? 10 : limit;
+
+      let filters = {};
+
+      if (multipleVouchersAffiliateDto?.voucherIDsArray?.length) {
+        filters = {
+          ...filters,
+          voucherID: { $in: multipleVouchersAffiliateDto.voucherIDsArray },
+        };
+      }
+
+      let totalCount = await this.voucherModel.countDocuments({
+        affiliateMongoID: affiliateMongoID,
+        status: VOUCHERSTATUSENUM.redeeemed,
+        affiliatePaymentStatus: AFFILIATEPAYMENTSTATUS.paid
+      });
+
+      let filteredCount = await this.voucherModel.countDocuments({
+        affiliateMongoID: affiliateMongoID,
+        status: VOUCHERSTATUSENUM.redeeemed,
+        affiliatePaymentStatus: AFFILIATEPAYMENTSTATUS.paid,
+        ...filters
+      });
+
+      let affiliateVouchers = await this.voucherModel.aggregate([
+        {
+          $match: {
+            affiliateMongoID: affiliateMongoID,
+            status: VOUCHERSTATUSENUM.redeeemed,
+            affiliatePaymentStatus: AFFILIATEPAYMENTSTATUS.paid,
+            ...filters
+          }
+        },
+        {
+          $sort: {
+            createdAt: -1
+          }
+        },
+        {
+          $lookup: {
+            from: 'users',
+            as: 'customerData',
+            localField: 'customerID',
+            foreignField: 'customerID'
+          }
+        },
+        {
+          $unwind: '$customerData'
+        },
+        {
+          $addFields: {
+            id: '$_id',
+            customerName: {
+              $concat: [
+                '$customerData.firstName',
+                ' ',
+                '$customerData.lastName'
+              ]
+            }
+          }
+        },
+        {
+          $project: {
+            _id: 0,
+            voucherHeader: 0,
+            dealHeader: 0,
+            dealID: 0,
+            dealMongoID: 0,
+            subDealHeader: 0,
+            subDealID: 0,
+            subDealMongoID: 0,
+            merchantID: 0,
+            merchantMongoID: 0,
+            merchantPaymentStatus: 0,
+            customerID: 0,
+            customerMongoID: 0,
+            affiliateName: 0,
+            affiliateID: 0,
+            affiliateMongoID: 0,
+            affiliatePercentage: 0,
+            platformPercentage: 0,
+            fee: 0,
+            net: 0,
+            status: 0,
+            paymentStatus: 0,
+            expiryDate: 0,
+            imageURL: 0,
+            dealPrice: 0,
+            originalPrice: 0,
+            discountedPercentage: 0,
+            deletedCheck: 0,
+            redeemQR: 0,
+            createdAt: 0,
+            updatedAt: 0,
+            __v: 0,
+            redeemDate: 0,
+            customerData: 0
+          }
+        }
+      ])
+      .skip(parseInt(offset))
+      .limit(parseInt(limit))
+
+      return {
+        totalCount: totalCount,
+        filteredCount: filteredCount,
+        data: affiliateVouchers
+      }
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -1264,6 +1381,436 @@ export class VouchersService {
         maxRevenueForMonth,
         vouchers,
       };
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async getCustomerRanking (affiliateMongoID, byMonthYearQuarter, dateFrom, dateTo, totalVouchers, totalEarnings, offset, limit) {
+    try {
+      offset = parseInt(offset) < 0 ? 0 : offset;
+      limit = parseInt(limit) < 1 ? 10 : limit;
+
+      dateFrom = parseInt(dateFrom)
+      dateTo = parseInt(dateTo)
+
+      let matchFilter: {}
+      let dateFromFilters = {};
+      let dateToFilters = {};
+
+      let dateFilter = {};
+
+      if (byMonthYearQuarter == 'Month') {
+        let d = new Date();
+        let m = d.getMonth();
+        let datefrom = d.setMonth(d.getMonth() - 1);
+        console.log('datefrom', datefrom)
+
+        let dateto = new Date().getTime();
+        console.log('dateto', dateto)
+
+        if(datefrom) {
+          dateFromFilters = {
+              ...dateFromFilters,
+              '$gte': datefrom
+          }
+        }
+  
+        if(dateto){
+            dateToFilters = {
+                ...dateToFilters,
+                "$lte": dateto
+            }
+        }
+  
+        if (datefrom || dateto) {
+          dateFilter = {
+            ...dateFilter,
+            boughtDate: {
+              ...dateFromFilters,
+              ...dateToFilters
+            },
+          }
+        }
+
+      } else if (byMonthYearQuarter == 'Year') {
+        let d = new Date();
+        let m = d.getFullYear();
+        let datefrom = d.setFullYear(d.getFullYear() - 1);
+        console.log('datefrom', datefrom)
+
+        let dateto = new Date().getTime();
+        console.log('dateto', dateto)
+
+        if(datefrom) {
+          dateFromFilters = {
+              ...dateFromFilters,
+              '$gte': datefrom
+          }
+        }
+  
+        if(dateto){
+            dateToFilters = {
+                ...dateToFilters,
+                "$lte": dateto
+            }
+        }
+  
+        if (datefrom || dateto) {
+          dateFilter = {
+            ...dateFilter,
+            boughtDate: {
+              ...dateFromFilters,
+              ...dateToFilters
+            },
+          }
+        }
+      } else if (byMonthYearQuarter == 'Quarter') {
+        let month = new Date().getMonth();
+        
+        if (month >=0 && month <=2) {
+          var dfrom = new Date();
+          dfrom.setUTCMonth(0);
+          dfrom.setUTCDate(1);
+          dfrom.setUTCHours(0);
+          dfrom.setUTCMinutes(0);
+          dfrom.setUTCSeconds(0);
+          dfrom.setUTCMilliseconds(0);
+          let datefrom = new Date(dfrom).getTime();
+
+          var dto = new Date();
+          dto.setUTCMonth(2);
+          dto.setUTCDate(31);
+          dto.setUTCHours(23);
+          dto.setUTCMinutes(59);
+          dto.setUTCSeconds(59);
+          dto.setUTCMilliseconds(59);
+          let dateto = new Date(dto).getTime();
+
+          if(datefrom) {
+            dateFromFilters = {
+                ...dateFromFilters,
+                '$gte': datefrom
+            }
+          }
+    
+          if(dateto){
+              dateToFilters = {
+                  ...dateToFilters,
+                  "$lte": dateto
+              }
+          }
+    
+          if (datefrom || dateto) {
+            dateFilter = {
+              ...dateFilter,
+              boughtDate: {
+                ...dateFromFilters,
+                ...dateToFilters
+              },
+            }
+          }
+          
+        } else if (month >=3 && month <=5) {
+          var dfrom = new Date();
+          dfrom.setUTCMonth(3);
+          dfrom.setUTCDate(1);
+          dfrom.setUTCHours(0);
+          dfrom.setUTCMinutes(0);
+          dfrom.setUTCSeconds(0);
+          dfrom.setUTCMilliseconds(0);
+          let datefrom = new Date(dfrom).getTime();
+
+          var dto = new Date();
+          dto.setUTCMonth(5);
+          dto.setUTCDate(30);
+          dto.setUTCHours(23);
+          dto.setUTCMinutes(59);
+          dto.setUTCSeconds(59);
+          dto.setUTCMilliseconds(59);
+          let dateto = new Date(dto).getTime();
+
+          if(datefrom) {
+            dateFromFilters = {
+                ...dateFromFilters,
+                '$gte': datefrom
+            }
+          }
+    
+          if(dateto){
+              dateToFilters = {
+                  ...dateToFilters,
+                  "$lte": dateto
+              }
+          }
+    
+          if (datefrom || dateto) {
+            dateFilter = {
+              ...dateFilter,
+              boughtDate: {
+                ...dateFromFilters,
+                ...dateToFilters
+              },
+            }
+          }
+
+        } else if (month >=6 && month <=8) {
+          var dfrom = new Date();
+          dfrom.setUTCMonth(6);
+          dfrom.setUTCDate(1);
+          dfrom.setUTCHours(0);
+          dfrom.setUTCMinutes(0);
+          dfrom.setUTCSeconds(0);
+          dfrom.setUTCMilliseconds(0);
+          let datefrom = new Date(dfrom).getTime();
+
+          var dto = new Date();
+          dto.setUTCMonth(8);
+          dto.setUTCDate(30);
+          dto.setUTCHours(23);
+          dto.setUTCMinutes(59);
+          dto.setUTCSeconds(59);
+          dto.setUTCMilliseconds(59);
+          let dateto = new Date(dto).getTime();
+
+          if(datefrom) {
+            dateFromFilters = {
+                ...dateFromFilters,
+                '$gte': datefrom
+            }
+          }
+    
+          if(dateto){
+              dateToFilters = {
+                  ...dateToFilters,
+                  "$lte": dateto
+              }
+          }
+    
+          if (datefrom || dateto) {
+            dateFilter = {
+              ...dateFilter,
+              boughtDate: {
+                ...dateFromFilters,
+                ...dateToFilters
+              },
+            }
+          }
+
+        } else if (month >=9 && month <=11) {
+          var dfrom = new Date();
+          dfrom.setUTCMonth(9);
+          dfrom.setUTCDate(1);
+          dfrom.setUTCHours(0);
+          dfrom.setUTCMinutes(0);
+          dfrom.setUTCSeconds(0);
+          dfrom.setUTCMilliseconds(0);
+          let datefrom = new Date(dfrom).getTime();
+
+          var dto = new Date();
+          dto.setUTCMonth(11);
+          dto.setUTCDate(31);
+          dto.setUTCHours(23);
+          dto.setUTCMinutes(59);
+          dto.setUTCSeconds(59);
+          dto.setUTCMilliseconds(59);
+          let dateto = new Date(dto).getTime();
+
+          if(datefrom) {
+            dateFromFilters = {
+                ...dateFromFilters,
+                '$gte': datefrom
+            }
+          }
+    
+          if(dateto){
+              dateToFilters = {
+                  ...dateToFilters,
+                  "$lte": dateto
+              }
+          }
+    
+          if (datefrom || dateto) {
+            dateFilter = {
+              ...dateFilter,
+              boughtDate: {
+                ...dateFromFilters,
+                ...dateToFilters
+              },
+            }
+          }
+        }
+      }
+
+      if(dateFrom) {
+        dateFromFilters = {
+            ...dateFromFilters,
+            '$gte': dateFrom
+        }
+      }
+
+      if(dateTo){
+          dateToFilters = {
+              ...dateToFilters,
+              "$lte": dateTo
+          }
+      }
+
+      if (dateFrom || dateTo) {
+        matchFilter = {
+          ...matchFilter,
+          boughtDate: {
+            ...dateFromFilters,
+            ...dateToFilters
+          },
+        }
+      }
+
+      let sort = {};
+
+      if (totalVouchers) {
+        let sortVouchers = totalVouchers == SORT.ASC ? 1 : -1;
+        sort = {
+          ...sort,
+          totalVouchers: sortVouchers,
+        };
+      }
+
+      if (totalEarnings) {
+        let sortEarnings = totalEarnings == SORT.ASC ? 1 : -1;
+        sort = {
+          ...sort,
+          totalEarnings: sortEarnings,
+        };
+      }
+
+      if (Object.keys(sort).length === 0 && sort.constructor === Object) {
+        sort = {
+          createdAt: -1,
+        };
+      }
+
+      let totalCount = await this.voucherModel.aggregate([
+        {
+          $match: {
+            affiliateMongoID: affiliateMongoID,
+            status: VOUCHERSTATUSENUM.redeeemed,
+            affiliatePaymentStatus: AFFILIATEPAYMENTSTATUS.paid,
+            ...dateFilter,
+            ...matchFilter
+          }
+        },
+        {
+          $group: {
+            _id: '$customerID',
+            totalVouchers: {
+              $sum: 1
+            },
+            totalEarnings: {
+              $sum: '$affiliateFee'
+            },
+          }
+        },
+        {
+          $lookup: {
+            from: 'users',
+            as: 'customerData',
+            localField: '_id',
+            foreignField: 'customerID'
+          }
+        },
+        {
+          $unwind: '$customerData'
+        },
+        {
+          $addFields: {
+            id: '$_id',
+            customerName: {
+              $concat: [
+                '$customerData.firstName',
+                ' ',
+                '$customerData.lastName',
+              ],
+            },
+          }
+        },
+        {
+          $project: {
+            customerData: 0,
+            _id: 0
+          }
+        },
+        {
+          $count: 'totalCount'
+        }
+      ]);
+
+      let data = await this.voucherModel.aggregate([
+        {
+          $match: {
+            affiliateMongoID: affiliateMongoID,
+            status: VOUCHERSTATUSENUM.redeeemed,
+            affiliatePaymentStatus: AFFILIATEPAYMENTSTATUS.paid,
+            ...dateFilter,
+            ...matchFilter
+          }
+        },
+        {
+          $sort: {
+            createdAt: -1
+          }
+        },
+        {
+          $group: {
+            _id: '$customerID',
+            totalVouchers: {
+              $sum: 1
+            },
+            totalEarnings: {
+              $sum: '$affiliateFee'
+            },
+          }
+        },
+        {
+          $lookup: {
+            from: 'users',
+            as: 'customerData',
+            localField: '_id',
+            foreignField: 'customerID'
+          }
+        },
+        {
+          $unwind: '$customerData'
+        },
+        {
+          $addFields: {
+            id: '$_id',
+            customerName: {
+              $concat: [
+                '$customerData.firstName',
+                ' ',
+                '$customerData.lastName',
+              ],
+            },
+          }
+        },
+        {
+          $project: {
+            customerData: 0,
+            _id: 0
+          }
+        },
+        {
+          $sort: sort
+        }
+      ])
+      .skip(parseInt(offset))
+      .limit(parseInt(limit))
+
+      return {
+        totalCount: totalCount?.length > 0 ? totalCount[0].totalCount : 0,
+        data: data
+      }
     } catch (err) {
       throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }

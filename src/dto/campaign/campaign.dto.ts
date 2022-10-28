@@ -26,5 +26,5 @@ export class CamapaignDto {
     endDate: number;
 
     @ApiProperty()
-    deletedCheck: false;
+    deletedCheck: boolean;
 }
