@@ -429,7 +429,6 @@ export class UsersService {
             finePrint: 0,
             deletedCheck: 0,
             status: 0,
-            newUser: 0,
             bankStatement: 0,
             totalVoucherSales: 0,
             redeemedVouchers: 0,
