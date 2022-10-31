@@ -534,12 +534,20 @@ export class VouchersService {
     }
   }
 
-  async getVouchersByAffiliateID (affiliateMongoID, multipleVouchersAffiliateDto, offset, limit) {
+  async getVouchersByAffiliateID (affiliateMongoID, voucherID, multipleVouchersAffiliateDto, offset, limit) {
     try {
       offset = parseInt(offset) < 0 ? 0 : offset;
       limit = parseInt(limit) < 1 ? 10 : limit;
 
       let filters = {};
+
+      if (voucherID.trim().length) {
+        var query = new RegExp(`${voucherID}`, 'i');
+        filters = {
+          ...filters,
+          voucherID: query,
+        };
+      }
 
       if (multipleVouchersAffiliateDto?.voucherIDsArray?.length) {
         filters = {

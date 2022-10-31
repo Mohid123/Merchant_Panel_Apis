@@ -111,14 +111,18 @@ export class VouchersController {
     );
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiQuery({ name: 'voucherID', type: String, required: false })
   @Post('getVouchersByAffiliateID/:affiliateMongoID')
   getVouchersByAffiliateID (
     @Param('affiliateMongoID') affiliateMongoID: string,
+    @Query('voucherID') voucherID: string = '',
     @Query('offset') offset: number = 0,
-    @Body() multipleVouchersAffiliateDto: MultipleVouchersAffiliateDto,
     @Query('limit') limit: number = 10,
+    @Body() multipleVouchersAffiliateDto: MultipleVouchersAffiliateDto,
   ) {
-    return this.voucherService.getVouchersByAffiliateID(affiliateMongoID, multipleVouchersAffiliateDto, offset, limit)
+    return this.voucherService.getVouchersByAffiliateID(affiliateMongoID, voucherID, multipleVouchersAffiliateDto, offset, limit)
   }
 
   @ApiBearerAuth()
