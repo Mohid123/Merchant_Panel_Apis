@@ -456,7 +456,7 @@ export class UsersService {
             merchantID: 0
           }
         }
-      ]);
+      ]).then(items=>items[0])
 
       if(!affiliate) {
         throw new HttpException('Affiliate not found!', HttpStatus.BAD_REQUEST)
