@@ -48,6 +48,15 @@ export class CampaignController {
 
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
+    @Get('getActiveCampaignByAffiliate')
+    getActiveCampaignByAffiliate (
+        @Req() req
+    ) {
+        return this.camapaignService.getActiveCampaignByAffiliate(req)
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
     @Get('getAllCampaignsByAffiliate')
     getAllCampaignsByAffiliate (
         @Query('offset') offset: number = 0,

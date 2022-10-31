@@ -1,4 +1,5 @@
 import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
+import { REQUEST } from '@nestjs/core';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CampaignInterface } from 'src/interface/campaign/campaign.interfce';
@@ -107,6 +108,39 @@ export class CampaignService {
             }
 
             return campaign;
+        } catch (err) {
+            throw new HttpException(err, HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    async getActiveCampaignByAffiliate (req) {
+        try {
+            let activeCampaign = await this.campaignModel.aggregate([
+                {
+                    $match: {
+                      affiliateMongoID: req.user.id,
+                      affiliateID: req.user.affiliateID,
+                      deletedCheck: false  
+                    }
+                },
+                {
+                    $addFields: {
+                        id: '$_id'
+                    }
+                },
+                {
+                    $project: {
+                        _id: 0
+                    }
+                }
+            ])
+            .then(items=>items[0]);
+
+            if (!activeCampaign) {
+                throw new NotFoundException('No active campaign against this affiliate!')
+            }
+
+            return activeCampaign;
         } catch (err) {
             throw new HttpException(err, HttpStatus.BAD_REQUEST);
         }
