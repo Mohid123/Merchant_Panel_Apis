@@ -14363,7 +14363,7 @@ export class DealService implements OnModuleInit {
         customer.firstName,
         customer.lastName,
       );
-
+      debugger
       await this.dealModel.updateOne({ dealID: buyNowDto.dealID }, deal);
 
       await this._userModel.updateOne(
@@ -14373,6 +14373,11 @@ export class DealService implements OnModuleInit {
           totalEarnings: merchant.totalEarnings + netFeeForSubDeal,
         },
       );
+
+      await this.campaignModel.updateOne(
+        { _id: campaign._id },
+        { collectedAmount: campaign.collectedAmount + calculatedFeeForAffiliate * buyNowDto.quantity }
+      )
 
       // const res = await axios.get(`https://www.zohoapis.eu/crm/v2/functions/updatesubdealquantity/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&subdealid=${subDeal.subDealID}&qtavailable=${subDeal.numberOfVouchers}&qtsold=${subDeal.soldVouchers}&merchantER=${subDeal.netEarning}&platformER=${subDeal.platformNetEarning}`);
 
