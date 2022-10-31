@@ -13,6 +13,8 @@ import { CategoryService } from './category.service';
 import { CategoryDto } from '../../dto/category/category.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { SubCategoryDTO } from '../../dto/category/subcategory.dto';
+import { AffiliateCategoryDto } from 'src/dto/category/affiliatecategory.dto';
+import { AffiliateSubCategoryDTO } from 'src/dto/category/affiliatesubcategory.dto';
 
 @ApiTags('Category')
 @Controller('category')
@@ -29,7 +31,7 @@ export class CategoryController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @Post('createAffiliateCategory')
-  createAffiliateCategory(@Body() categoryDto: CategoryDto) {
+  createAffiliateCategory(@Body() categoryDto: AffiliateCategoryDto) {
     return this.categoryService.createAffiliateCategory(categoryDto);
   }
 
@@ -40,6 +42,13 @@ export class CategoryController {
     return this.categoryService.createSubCategory(subCategoryDto);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Post('createAffiliateSubCategory')
+  createAffiliateSubCategory(@Body() subCategoryDto: AffiliateSubCategoryDTO) {
+    return this.categoryService.createAffiliateSubCategory(subCategoryDto);
+  }
+
   @Get('getAllCategories')
   getAllCategories(
     @Query('offset') offset: number = 0,
@@ -48,6 +57,8 @@ export class CategoryController {
     return this.categoryService.getAllCategories(offset, limit);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @Get('getAllAffiliateCategories')
   getAllAffiliateCategories (
     @Query('offset') offset: number = 0,
@@ -62,6 +73,17 @@ export class CategoryController {
     @Query('limit') limit: number = 10,
   ) {
     return this.categoryService.getAllSubCategoriesByCategories(offset, limit);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Get('getAllAffiliateSubCategoriesByAffiliateCategories/:affiliateCategoryName')
+  getAllAffiliateSubCategoriesByAffiliateCategories(
+    @Param('affiliateCategoryName') affiliateCategoryName: string,
+    @Query('offset') offset: number = 0,
+    @Query('limit') limit: number = 10,
+  ) {
+    return this.categoryService.getAllAffiliateSubCategoriesByAffiliateCategories(affiliateCategoryName, offset, limit);
   }
 
   @UseGuards(JwtAuthGuard)

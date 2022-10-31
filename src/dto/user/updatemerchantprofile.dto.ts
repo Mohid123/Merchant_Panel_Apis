@@ -11,6 +11,16 @@ export class UpdateMerchantProfileDto {
   @ApiProperty()
   phoneNumber: string;
 
+  @ApiProperty({
+    example: [
+      {
+        affiliateCategoryName: '',
+        affiliateSubCategoryName: ''
+      }
+    ]
+  })
+  businessType: string[];
+
   @ApiProperty()
   legalName: string;
 

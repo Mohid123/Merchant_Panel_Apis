@@ -5,7 +5,7 @@ import { generateStringId } from '../../components/file-management/utils/utils';
 export const affiliateCategorySchema = new mongoose.Schema(
   {
     _id: { type: String, default: generateStringId },
-    categoryName: { type: String, default: '' },
+    affiliateCategoryName: { type: String, default: '' },
   },
   {
     collection: 'affiliateCategories',
@@ -27,5 +27,5 @@ affiliateCategorySchema.pre<affiliateCategoryInterface>('save', async function (
   next();
 });
 
-affiliateCategorySchema.index({ categoryName: 1 });
+affiliateCategorySchema.index({ affiliateCategoryName: 1 });
 affiliateCategorySchema.index({ _id: 1 });

@@ -6,6 +6,7 @@ import { CategoryInterface } from '../../interface/category/category.interface';
 import { UsersInterface } from 'src/interface/user/users.interface';
 import { pipeline } from 'stream';
 import { affiliateCategoryInterface } from 'src/interface/category/affiliatecategory.interface';
+import { AffiliateSubCategoryInterface } from 'src/interface/category/affiliatesubcategory.interface';
 
 @Injectable()
 export class CategoryService {
@@ -16,6 +17,8 @@ export class CategoryService {
     private readonly subCategoryModel: Model<SubCategoryInterface>,
     @InjectModel('affiliateCategories')
     private readonly affiliateCategoryModel: Model<affiliateCategoryInterface>,
+    @InjectModel('affiliateSubCategories')
+    private readonly affiliateSubCategoryModel: Model<AffiliateSubCategoryInterface>,
   ) {}
 
   async createCategory(categoryDto) {
@@ -40,6 +43,15 @@ export class CategoryService {
     try {
       let subCategory = await this.subCategoryModel.create(subCategoryDto);
       return subCategory;
+    } catch (err) {
+      throw new HttpException(err, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async createAffiliateSubCategory (subCategoryDto) {
+    try {
+      let affiliateSubCategory = await this.affiliateSubCategoryModel.create(subCategoryDto);
+      return affiliateSubCategory;
     } catch (err) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
     }
@@ -111,6 +123,34 @@ export class CategoryService {
       };
     } catch (err) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async getAllAffiliateSubCategoriesByAffiliateCategories (affiliateCategoryName, offset, limit) {
+    try {
+      let affiliateSubCategories = await this.affiliateSubCategoryModel.aggregate([
+        {
+          $match: {
+            affiliateCategoryName: affiliateCategoryName
+          }
+        },
+        {
+          $addFields: {
+            id: '$_id'
+          }
+        },
+        {
+          $project: {
+            _id: 0
+          }
+        }
+      ])
+      .skip(parseInt(offset))
+      .limit(parseInt(limit))
+
+      return affiliateSubCategories;
+    } catch (err) {
+      
     }
   }
 

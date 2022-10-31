@@ -30,6 +30,7 @@ export interface UsersInterface {
   phoneNumber: string;
   role: string;
   businessType: string[];
+  subBusinessType: string;
   legalName: string;
   tradeName: string;
   streetAddress: string;
