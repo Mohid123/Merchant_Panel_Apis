@@ -1394,6 +1394,63 @@ export class VouchersService {
     }
   }
 
+  async getVoucherSoldPerDayForAffiliates (numberOfDays, req) {
+    try {
+      let startTime = Date.now() - numberOfDays * 24 * 60 * 60 * 1000;
+
+      startTime =
+        Math.floor(startTime / (24 * 60 * 60 * 1000)) * (24 * 60 * 60 * 1000);
+
+      const data = await this.voucherModel.aggregate([
+        {
+          $match: {
+            affiliateMongoID: req.user.id,
+            affiliateID: req.user.affiliateID,
+            createdAt: { $gte: new Date(startTime) },
+          },
+        },
+        {
+          $group: {
+            _id: { $dayOfYear: '$createdAt' },
+            createdAt: { $last: '$createdAt' },
+            count: { $sum: 1 },
+          },
+        },
+        {
+          $sort: { _id: 1 },
+        },
+      ]);
+
+      let counts = [];
+      for (let i = 0; i < numberOfDays; i++) {
+        let tempDate = Date.now() - (numberOfDays - i) * 24 * 60 * 60 * 1000;
+
+        let tempNextDate = tempDate + 24 * 60 * 60 * 1000;
+
+        const filtered = data?.filter(
+          (item) =>
+            new Date(item?.createdAt).getTime() >= tempDate &&
+            new Date(item?.createdAt).getTime() <= tempNextDate,
+        );
+
+        if (filtered?.length) {
+          counts.push({
+            createdAt: filtered[0]?.createdAt,
+            count: filtered[0]?.count,
+          });
+        } else {
+          counts.push({ createdAt: new Date(tempDate), count: 0 });
+        }
+      }
+
+      let maxCount = Math.max(...counts.map((el) => el.count));
+      return { maxCount, counts };
+    } catch (err) {
+      console.log(err);
+      throw new BadRequestException(err);
+    }
+  }
+
   async getCustomerRanking (affiliateMongoID, byMonthYearQuarter, dateFrom, dateTo, totalVouchers, totalEarnings, offset, limit) {
     try {
       offset = parseInt(offset) < 0 ? 0 : offset;

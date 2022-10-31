@@ -197,6 +197,16 @@ export class VouchersController {
     return this.voucherService.getNetRevenue(req);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @Get('getVoucherSoldPerDayForAffiliates/:days')
+  getVoucherSoldPerDayForAffiliates (
+    @Param('days') days: number,
+    @Req() req
+  ) {
+    return this.voucherService.getVoucherSoldPerDayForAffiliates(days, req)
+  }
+
   @ApiQuery({ name: "byMonthYearQuarter", type: String, required: false })
   @ApiQuery({ name: "dateFrom", type: Number, required: false })
   @ApiQuery({ name: "dateTo", type: Number, required: false })
