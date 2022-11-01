@@ -8,6 +8,7 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { ScheduleDealDto } from 'src/dto/schedule/scheduleDeal.dto';
+import { AFFILIATEPAYMENTSTATUS } from 'src/enum/affiliate/affiliate.enum';
 import { BILLINGSTATUS } from 'src/enum/billing/billingStatus.enum';
 import { DEALSTATUS } from 'src/enum/deal/dealstatus.enum';
 import { MERCHANTPAYMENTSTATUS } from 'src/enum/merchant/merchant.enum';
@@ -111,12 +112,14 @@ export class ScheduleService {
         const paymentClearDate = currentDate - (15*24*60*60*1000);
 
         const vouchersPaymentUpdate = await this._voucherModel.updateMany({
-          deletedCheck:false,
-          boughtDate:{$lte:paymentClearDate},
+          deletedCheck: false,
+          affiliatePaymentStatus: AFFILIATEPAYMENTSTATUS.pending,
+          merchantPaymentStatus: MERCHANTPAYMENTSTATUS.pending,
+          boughtDate: {$lte: paymentClearDate},
         },{
-          $set:{
-            affiliatePaymentStatus:MERCHANTPAYMENTSTATUS?.approved,
-            merchantPaymentStatus:MERCHANTPAYMENTSTATUS?.approved,
+          $set: {
+            affiliatePaymentStatus: AFFILIATEPAYMENTSTATUS?.approved,
+            merchantPaymentStatus: MERCHANTPAYMENTSTATUS?.approved,
           }
         });
 
