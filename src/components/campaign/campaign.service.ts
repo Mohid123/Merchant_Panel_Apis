@@ -2,6 +2,7 @@ import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestj
 import { REQUEST } from '@nestjs/core';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { SORT } from 'src/enum/sort/sort.enum';
 import { CampaignInterface } from 'src/interface/campaign/campaign.interfce';
 
 @Injectable()
@@ -146,10 +147,42 @@ export class CampaignService {
         }
     }
 
-    async getAllCampaignsByAffiliate (offset, limit, req) {
+    async getAllCampaignsByAffiliate (vouchers, fundingGoal, collectedAmount, offset, limit, req) {
         try {
             offset = parseInt(offset) < 0 ? 0 : offset;
             limit = parseInt(limit) < 1 ? 10 : limit;
+
+            let sort = {};
+
+            if (vouchers) {
+                let sortVoucher = vouchers == SORT.ASC ? 1 : -1;
+                sort = {
+                  ...sort,
+                  voucherHeader: sortVoucher,
+                };
+            }
+
+            if (fundingGoal) {
+                let sortFundingGoals = fundingGoal == SORT.ASC ? 1 : -1;
+                sort = {
+                  ...sort,
+                  fundingGoals: sortFundingGoals,
+                };
+            }
+
+            if (collectedAmount) {
+                let sortCollectedAmount = collectedAmount == SORT.ASC ? 1 : -1;
+                sort = {
+                  ...sort,
+                  collectedAmount: sortCollectedAmount,
+                };
+            }
+
+            if (Object.keys(sort).length === 0 && sort.constructor === Object) {
+                sort = {
+                  createdAt: -1,
+                };
+            }
 
             let totalCount = await this.campaignModel.countDocuments({
                 affiliateID: req.user.affiliateID,
@@ -161,11 +194,6 @@ export class CampaignService {
                     $match: {
                         affiliateID: req.user.affiliateID,
                         affiliateMongoID: req.user.id
-                    }
-                },
-                {
-                    $sort: {
-                        createdAt: -1
                     }
                 },
                 {
@@ -194,6 +222,9 @@ export class CampaignService {
                             $size: '$voucherData'
                         }
                     }
+                },
+                {
+                    $sort: sort
                 },
                 {
                     $project: {

@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { CamapaignDto } from 'src/dto/campaign/campaign.dto';
+import { SORT } from 'src/enum/sort/sort.enum';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CampaignService } from './campaign.service';
 
@@ -57,12 +58,18 @@ export class CampaignController {
 
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
+    @ApiQuery({ name: 'vouchers', enum: SORT, required: false })
+    @ApiQuery({ name: 'fundingGoal', enum: SORT, required: false })
+    @ApiQuery({ name: 'collectedAmount', enum: SORT, required: false })
     @Get('getAllCampaignsByAffiliate')
     getAllCampaignsByAffiliate (
+        @Query('vouchers') vouchers: SORT,
+        @Query('fundingGoal') fundingGoal: SORT,
+        @Query('collectedAmount') collectedAmount: SORT,
         @Query('offset') offset: number = 0,
         @Query('limit') limit: number = 10,
         @Req() req
     ) {
-        return this.camapaignService.getAllCampaignsByAffiliate(offset, limit, req)
+        return this.camapaignService.getAllCampaignsByAffiliate(vouchers, fundingGoal, collectedAmount, offset, limit, req)
     }
 }

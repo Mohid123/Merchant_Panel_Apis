@@ -218,8 +218,8 @@ export class VouchersController {
     @Query("byMonthYearQuarter") byMonthYearQuarter: string = '',
     @Query("dateFrom") dateFrom: number = 0,
     @Query("dateTo") dateTo: number = 0,
-    @Query('totalVouchers') totalVouchers: number,
-    @Query('totalEarnings') totalEarnings: string,
+    @Query('totalVouchers') totalVouchers: SORT,
+    @Query('totalEarnings') totalEarnings: SORT,
     @Query('offset') offset: number = 0,
     @Query('limit') limit: number = 10,
   ) {
