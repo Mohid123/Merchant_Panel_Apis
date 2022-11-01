@@ -1,6 +1,7 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { BILLINGSTATUS } from 'src/enum/billing/billingStatus.enum';
 import { INVOICEAMOUNTENUM } from '../../enum/sorting/sortinvoiceamount.enum';
 import { INVOICEDATEENUM } from '../../enum/sorting/sortinvoicedate.enum';
 import { InvoiceInterface } from '../../interface/invoices/invoices.interface';
@@ -26,7 +27,11 @@ export class InvoicesService {
       { new: true },
     );
 
-    return 'I' + sequenceDocument.sequenceValue;
+    const year = new Date().getFullYear() % 2000;
+
+    return `INV-BE${year}${sequenceDocument.sequenceValue < 100000 ? '0' : ''}${
+      sequenceDocument.sequenceValue < 10000 ? '0' : ''
+    }${sequenceDocument.sequenceValue}`;
   }
 
   async createInvoice(invoiceDto) {
@@ -251,6 +256,116 @@ export class InvoicesService {
         filteredCount,
         data: invoices,
       };
+    } catch (err) {
+      throw new HttpException(err, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async getAllInvoicesByAffiliate (affiliateMongoID, invoiceID, dateFrom, dateTo, multipleInvoicesDto, offset, limit) {
+    try {
+      offset = parseInt(offset) < 0 ? 0 : offset;
+      limit = parseInt(limit) < 1 ? 10 : limit;
+
+      dateFrom = parseInt(dateFrom);
+      dateTo = parseInt(dateTo);
+      let matchFilter = {};
+
+      let dateToFilters = {};
+      let dateFromFilters = {};
+
+      if (dateFrom) {
+        dateFromFilters = {
+          ...dateFromFilters,
+          $gte: dateFrom,
+        };
+      }
+
+      if (dateTo) {
+        dateToFilters = {
+          ...dateToFilters,
+          $lte: dateTo,
+        };
+      }
+
+      if (dateFrom || dateTo) {
+        matchFilter = {
+          ...matchFilter,
+          invoiceDate: {
+            ...dateFromFilters,
+            ...dateToFilters,
+          },
+        };
+      }
+
+      let filters = {};
+
+      if (invoiceID.trim().length) {
+        var query = new RegExp(`${invoiceID}`, 'i');
+        filters = {
+          ...filters,
+          invoiceID: query,
+        };
+      }
+
+      if (multipleInvoicesDto?.invoiceIDsArray?.length) {
+        filters = {
+          ...filters,
+          invoiceID: { $in: multipleInvoicesDto.invoiceIDsArray },
+        };
+      }
+
+      let totalCount = await this._invoicesModel.countDocuments({
+        affiliateMongoID: affiliateMongoID,
+        deletedCheck: false
+      });
+
+      let filteredCount = await this._invoicesModel.countDocuments({
+        affiliateMongoID: affiliateMongoID,
+        deletedCheck: false,
+        status: BILLINGSTATUS.paid,
+        ...filters,
+        ...matchFilter,
+      });
+
+      let affiliateInvoices = await this._invoicesModel.aggregate([
+        {
+          $match: {
+            affiliateMongoID: affiliateMongoID,
+            deletedCheck: false,
+            status: BILLINGSTATUS.paid,
+            ...filters,
+            ...matchFilter
+          }
+        },
+        {
+          $sort: {
+            createdAt: -1
+          }
+        },
+        {
+          $addFields: {
+            id: '$_id'
+          }
+        },
+        {
+          $project: {
+            _id: 0
+          }
+        }
+      ])
+      .skip(parseInt(offset))
+      .limit(parseInt(limit));
+
+      // if (affiliateInvoices.length == 0) {
+      //   throw new HttpException('Invoices against this affiliate not found!', HttpStatus.NOT_FOUND)
+      // }
+
+      return {
+        totalCount: totalCount,
+        filteredCount: filteredCount,
+        data: affiliateInvoices
+      }
+
     } catch (err) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
     }
