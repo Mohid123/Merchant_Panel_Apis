@@ -102,9 +102,10 @@ export class CampaignService {
                         _id: 0
                     }
                 }
-            ]);
+            ])
+            .then(items=>items[0]);
 
-            if(campaign.length == 0) {
+            if(!campaign) {
                 throw new HttpException('Campaign not found', HttpStatus.NOT_FOUND);
             }
 
@@ -126,7 +127,18 @@ export class CampaignService {
                 },
                 {
                     $addFields: {
-                        id: '$_id'
+                        id: '$_id',
+                        percentage: {
+                            $multiply: [
+                                {
+                                    $divide: [
+                                        '$collectedAmount',
+                                        '$fundingGoals'
+                                    ]
+                                },
+                                100
+                            ]
+                        }
                     }
                 },
                 {
