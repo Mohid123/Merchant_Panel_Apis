@@ -32,9 +32,9 @@ export class CampaignController {
 
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
-    @Post('deleteCampaign/:id')
-    deleteCampaign (@Param('id') id: string) {
-        return this.camapaignService.deleteCampaign(id);
+    @Post('endCampaign/:id')
+    endCampaign (@Param('id') id: string) {
+        return this.camapaignService.endCampaign(id);
     }
 
     @UseGuards(JwtAuthGuard)
@@ -61,8 +61,8 @@ export class CampaignController {
     @ApiQuery({ name: 'vouchers', enum: SORT, required: false })
     @ApiQuery({ name: 'fundingGoal', enum: SORT, required: false })
     @ApiQuery({ name: 'collectedAmount', enum: SORT, required: false })
-    @Get('getAllCampaignsByAffiliate')
-    getAllCampaignsByAffiliate (
+    @Get('getCampaignsHistoryByAffiliate')
+    getCampaignsHistoryByAffiliate (
         @Query('vouchers') vouchers: SORT,
         @Query('fundingGoal') fundingGoal: SORT,
         @Query('collectedAmount') collectedAmount: SORT,
@@ -70,6 +70,6 @@ export class CampaignController {
         @Query('limit') limit: number = 10,
         @Req() req
     ) {
-        return this.camapaignService.getAllCampaignsByAffiliate(vouchers, fundingGoal, collectedAmount, offset, limit, req)
+        return this.camapaignService.getCampaignsHistoryByAffiliate(vouchers, fundingGoal, collectedAmount, offset, limit, req)
     }
 }

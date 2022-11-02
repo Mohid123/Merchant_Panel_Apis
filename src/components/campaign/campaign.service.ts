@@ -54,17 +54,25 @@ export class CampaignService {
         }
     }
 
-    async deleteCampaign (id) {
+    async endCampaign (id) {
         try {
             let campaign = await this.campaignModel.findOne({_id: id, deletedCheck: false});
-
             if(!campaign) {
-                throw new NotFoundException('Campaign not found');
-            } else {
-                await this.campaignModel.updateOne({_id: id}, {deletedCheck: true});
-                return {
-                    message: 'Campaign has been deleted successfully!'
+                throw new HttpException('Campaign not found', HttpStatus.NOT_FOUND);
+            }
+
+            await this.campaignModel.updateOne(
+                {
+                    _id: id
+                },
+                {
+                    deletedCheck: true,
+                    endDate: new Date().getTime()
                 }
+            );
+
+            return {
+                message: 'Campaign has been deleted successfully!'
             }
         } catch (err) {
             throw new HttpException(err, HttpStatus.BAD_REQUEST);
@@ -159,7 +167,7 @@ export class CampaignService {
         }
     }
 
-    async getAllCampaignsByAffiliate (vouchers, fundingGoal, collectedAmount, offset, limit, req) {
+    async getCampaignsHistoryByAffiliate (vouchers, fundingGoal, collectedAmount, offset, limit, req) {
         try {
             offset = parseInt(offset) < 0 ? 0 : offset;
             limit = parseInt(limit) < 1 ? 10 : limit;
@@ -198,14 +206,16 @@ export class CampaignService {
 
             let totalCount = await this.campaignModel.countDocuments({
                 affiliateID: req.user.affiliateID,
-                affiliateMongoID: req.user.id
+                affiliateMongoID: req.user.id,
+                deletedCheck: true
             });
 
             let campaigns = await this.campaignModel.aggregate([
                 {
                     $match: {
                         affiliateID: req.user.affiliateID,
-                        affiliateMongoID: req.user.id
+                        affiliateMongoID: req.user.id,
+                        deletedCheck: true
                     }
                 },
                 {
