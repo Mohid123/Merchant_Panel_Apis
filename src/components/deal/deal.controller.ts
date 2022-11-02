@@ -439,7 +439,7 @@ export class DealController {
     @Query('limit') limit: number = 10,
     @Req() req,
   ) {
-    return this.dealService.getDiscountedDeals(lat, lng, distance, percentage, offset, limit, req);
+    return this.dealService.getDiscountedDeals(percentage, lat, lng, distance, offset, limit, req);
   }
 
   @UseGuards(OptionalJwtAuthGuard)
