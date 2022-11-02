@@ -14,7 +14,7 @@ export class CampaignService {
 
     async createCampaign (campaignDto, req) {
         try {
-            let affiliateCampaigns = await this.campaignModel.find({
+            let affiliateCampaigns = await this.campaignModel.findOne({
                 affiliateID: req.user.affiliateID,
                 affiliateMongoID: req.user.id,
                 deletedCheck: false
