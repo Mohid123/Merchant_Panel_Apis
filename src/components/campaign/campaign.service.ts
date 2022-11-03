@@ -159,7 +159,9 @@ export class CampaignService {
             .then(items=>items[0]);
 
             if (!activeCampaign) {
-                return false;
+                return {
+                    message: false
+                }
             }
 
             return activeCampaign;
