@@ -159,7 +159,7 @@ export class CampaignService {
             .then(items=>items[0]);
 
             if (!activeCampaign) {
-                throw new HttpException('No active campaign against this affiliate!', HttpStatus.NOT_FOUND);
+                return false;
             }
 
             return activeCampaign;
