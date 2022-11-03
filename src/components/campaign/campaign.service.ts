@@ -25,6 +25,7 @@ export class CampaignService {
 
             campaignDto.affiliateMongoID = req.user.id;
             campaignDto.affiliateID = req.user.affiliateID;
+            campaignDto.startDate = new Date().getTime();
 
             let campaign = new this.campaignModel(campaignDto).save();
             return campaign;
@@ -72,7 +73,7 @@ export class CampaignService {
             );
 
             return {
-                message: 'Campaign has been deleted successfully!'
+                message: 'Your campaign has ended!'
             }
         } catch (err) {
             throw new HttpException(err, HttpStatus.BAD_REQUEST);
@@ -158,7 +159,7 @@ export class CampaignService {
             .then(items=>items[0]);
 
             if (!activeCampaign) {
-                throw new NotFoundException('No active campaign against this affiliate!')
+                throw new HttpException('No active campaign against this affiliate!', HttpStatus.NOT_FOUND);
             }
 
             return activeCampaign;
@@ -259,7 +260,7 @@ export class CampaignService {
             .limit(parseInt(limit))
 
             if (campaigns.length == 0) {
-                throw new NotFoundException('Campaigns not found!');
+                throw new HttpException('Campaigns not found!', HttpStatus.NOT_FOUND);
             }
 
             return {

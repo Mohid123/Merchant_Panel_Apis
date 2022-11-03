@@ -11,12 +11,4 @@ export class CamapaignDto {
     @ApiProperty()
     details: string;
 
-    @ApiProperty()
-    startDate: number;
-
-    @ApiProperty()
-    endDate: number;
-
-    @ApiProperty()
-    deletedCheck: boolean;
 }
