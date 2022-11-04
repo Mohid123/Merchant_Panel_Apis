@@ -8,6 +8,16 @@ export class UpdateAffiliateProfileDto {
     @ApiProperty()
     lastName: string;
 
+    @ApiProperty({
+      example: [
+        {
+          affiliateCategoryName: '',
+          affiliateSubCategoryName: ''
+        }
+      ]
+    })
+    businessType: string[];
+
     @ApiProperty()
     phoneNumber: string;
 
@@ -46,9 +56,6 @@ export class UpdateAffiliateProfileDto {
 
     @ApiProperty()
     karibuURL: string;
-
-    @ApiProperty()
-    businessType: string[];
 
     @ApiProperty()
     aboutUs: string;

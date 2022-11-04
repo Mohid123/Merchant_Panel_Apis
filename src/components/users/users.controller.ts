@@ -13,6 +13,7 @@ import { ThrottlerGuard } from '@nestjs/throttler';
 import { ResetPasswordDto } from 'src/dto/resetPasswordDto/resetPassword.dto';
 import { ApproveMerchantDTO } from 'src/dto/user/approveMerchant.dto';
 import { IsPasswordExistsDto } from 'src/dto/user/is-password-exists.dto';
+import { UpdateAffiliateProfileDto } from 'src/dto/user/updateaffiliateprofile.dto';
 import { UpdateCustomerProfileDto } from 'src/dto/user/updatecustomerprofile.dto';
 import { UpdateMerchantFromCrmDto } from 'src/dto/user/updatemerchantfromcrm.dto';
 import { UpdatePasswordDto } from 'src/dto/user/updatepassword.dto';
@@ -94,7 +95,7 @@ export class UsersController {
   @Post('updateAffiliateProfile/:affiliateID')
   updateAffiliateProfile(
     @Param('affiliateID') affiliateID: string,
-    @Body() usersDto: UpdateMerchantProfileDto,
+    @Body() usersDto: UpdateAffiliateProfileDto,
   ) {
     return this._usersService.updateAffiliateProfile(affiliateID, usersDto);
   }
