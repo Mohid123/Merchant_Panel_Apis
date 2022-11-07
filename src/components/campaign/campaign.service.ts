@@ -181,7 +181,7 @@ export class CampaignService {
                 let sortVoucher = vouchers == SORT.ASC ? 1 : -1;
                 sort = {
                   ...sort,
-                  voucherHeader: sortVoucher,
+                  totalVouchers: sortVoucher,
                 };
             }
 
