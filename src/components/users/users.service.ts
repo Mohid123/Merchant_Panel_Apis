@@ -847,18 +847,198 @@ export class UsersService {
       console.log(sort);
       console.log(matchFilter);
 
-      const totalCount = await this._userModel.countDocuments({
-        role: USERROLE.affiliate,
-        status: USERSTATUS.approved,
-        deletedCheck: false,
-      });
+      const totalCount = await this._userModel
+        .aggregate([
+          {
+            $match: {
+              role: USERROLE.affiliate,
+              status: USERSTATUS.approved,
+              deletedCheck: false,
+            },
+          },
+          {
+            $sort: sort,
+          },
+          {
+            $lookup: {
+              from: 'campaigns',
+              as: 'campaignData',
+              let: {
+                affiliateID: '$affiliateID',
+                deletedCheck: '$deletedCheck',
+              },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $and: [
+                        {
+                          $eq: ['$$affiliateID', '$affiliateID'],
+                        },
+                        {
+                          $eq: ['$deletedCheck', false],
+                        },
+                      ],
+                    },
+                  },
+                },
+              ],
+            },
+          },
+          {
+            $unwind: '$campaignData'
+          },
+          {
+            $lookup: {
+              from: 'affiliateFvaourites',
+              as: 'favouriteAffiliate',
+              let: {
+                affiliateID: '$affiliateID',
+                customerMongoID: req?.user?.id,
+                deletedCheck: '$deletedCheck',
+              },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $and: [
+                        {
+                          $eq: ['$$affiliateID', '$affiliateID'],
+                        },
+                        {
+                          $eq: ['$$customerMongoID', '$customerMongoID'],
+                        },
+                        {
+                          $eq: ['$deletedCheck', false],
+                        },
+                      ],
+                    },
+                  },
+                },
+              ],
+            },
+          },
+          {
+            $unwind: {
+              path: '$favouriteAffiliate',
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          {
+            $addFields: {
+              id: '$_id',
+              isFavourite: {
+                $cond: [
+                  {
+                    $ifNull: ['$favouriteAffiliate', false],
+                  },
+                  true,
+                  false,
+                ],
+              },
+            },
+          },
+          {
+            $count: 'totalCount'
+          }
+        ]);
 
-      const filteredCount = await this._userModel.countDocuments({
-        role: USERROLE.affiliate,
-        status: USERSTATUS.approved,
-        deletedCheck: false,
-        ...matchFilter,
-      });
+      const filteredCount = await this._userModel
+        .aggregate([
+          {
+            $match: {
+              role: USERROLE.affiliate,
+              status: USERSTATUS.approved,
+              deletedCheck: false,
+              ...matchFilter,
+            },
+          },
+          {
+            $sort: sort,
+          },
+          {
+            $lookup: {
+              from: 'campaigns',
+              as: 'campaignData',
+              let: {
+                affiliateID: '$affiliateID',
+                deletedCheck: '$deletedCheck',
+              },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $and: [
+                        {
+                          $eq: ['$$affiliateID', '$affiliateID'],
+                        },
+                        {
+                          $eq: ['$deletedCheck', false],
+                        },
+                      ],
+                    },
+                  },
+                },
+              ],
+            },
+          },
+          {
+            $unwind: '$campaignData'
+          },
+          {
+            $lookup: {
+              from: 'affiliateFvaourites',
+              as: 'favouriteAffiliate',
+              let: {
+                affiliateID: '$affiliateID',
+                customerMongoID: req?.user?.id,
+                deletedCheck: '$deletedCheck',
+              },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $and: [
+                        {
+                          $eq: ['$$affiliateID', '$affiliateID'],
+                        },
+                        {
+                          $eq: ['$$customerMongoID', '$customerMongoID'],
+                        },
+                        {
+                          $eq: ['$deletedCheck', false],
+                        },
+                      ],
+                    },
+                  },
+                },
+              ],
+            },
+          },
+          {
+            $unwind: {
+              path: '$favouriteAffiliate',
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          {
+            $addFields: {
+              id: '$_id',
+              isFavourite: {
+                $cond: [
+                  {
+                    $ifNull: ['$favouriteAffiliate', false],
+                  },
+                  true,
+                  false,
+                ],
+              },
+            },
+          },
+          {
+            $count: 'filteredCount'
+          }
+        ]);
 
       const affiliates = await this._userModel
         .aggregate([
@@ -872,6 +1052,35 @@ export class UsersService {
           },
           {
             $sort: sort,
+          },
+          {
+            $lookup: {
+              from: 'campaigns',
+              as: 'campaignData',
+              let: {
+                affiliateID: '$affiliateID',
+                deletedCheck: '$deletedCheck',
+              },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $and: [
+                        {
+                          $eq: ['$$affiliateID', '$affiliateID'],
+                        },
+                        {
+                          $eq: ['$deletedCheck', false],
+                        },
+                      ],
+                    },
+                  },
+                },
+              ],
+            },
+          },
+          {
+            $unwind: '$campaignData'
           },
           {
             $lookup: {
@@ -968,7 +1177,17 @@ export class UsersService {
               minRating: 0,
               isSubscribed: 0,
               __v: 0,
+              karibuURL: 0,
+              bankStatement: 0,
+              createdAt: 0,
+              updatedAt: 0,
+              merchantID: 0,
+              customerID: 0,
+              deletedCheck: 0,
+              status: 0,
+              platformPercentage: 0,
               favouriteAffiliate: 0,
+              campaignData: 0
             },
           },
         ])
@@ -976,8 +1195,8 @@ export class UsersService {
         .limit(parseInt(limit));
 
       return {
-        totalCount: totalCount,
-        filteredCount: filteredCount,
+        totalCount: totalCount?.length > 0 ? totalCount[0].totalCount : 0,
+        filteredCount: filteredCount?.length > 0 ? filteredCount[0].filteredCount : 0,
         data: affiliates,
       };
     } catch (err) {
@@ -990,11 +1209,103 @@ export class UsersService {
       offset = parseInt(offset) < 0 ? 0 : offset;
       limit = parseInt(limit) < 1 ? 10 : limit;
 
-      const totalCount = await this._userModel.countDocuments({
-        role: USERROLE.affiliate,
-        status: USERSTATUS.approved,
-        deletedCheck: false,
-      });
+      const totalCount = await this._userModel
+        .aggregate([
+          {
+            $match: {
+              role: USERROLE.affiliate,
+              status: USERSTATUS.approved,
+              deletedCheck: false,
+            },
+          },
+          {
+            $sort: {
+              popularCount: -1,
+            },
+          },
+          {
+            $lookup: {
+              from: 'campaigns',
+              as: 'campaignData',
+              let: {
+                affiliateID: '$affiliateID',
+                deletedCheck: '$deletedCheck',
+              },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $and: [
+                        {
+                          $eq: ['$$affiliateID', '$affiliateID'],
+                        },
+                        {
+                          $eq: ['$deletedCheck', false],
+                        },
+                      ],
+                    },
+                  },
+                },
+              ],
+            },
+          },
+          {
+            $unwind: '$campaignData'
+          },
+          {
+            $lookup: {
+              from: 'affiliateFvaourites',
+              as: 'favouriteAffiliate',
+              let: {
+                affiliateID: '$affiliateID',
+                customerMongoID: req?.user?.id,
+                deletedCheck: '$deletedCheck',
+              },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $and: [
+                        {
+                          $eq: ['$$affiliateID', '$affiliateID'],
+                        },
+                        {
+                          $eq: ['$$customerMongoID', '$customerMongoID'],
+                        },
+                        {
+                          $eq: ['$deletedCheck', false],
+                        },
+                      ],
+                    },
+                  },
+                },
+              ],
+            },
+          },
+          {
+            $unwind: {
+              path: '$favouriteAffiliate',
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          {
+            $addFields: {
+              id: '$_id',
+              isFavourite: {
+                $cond: [
+                  {
+                    $ifNull: ['$favouriteAffiliate', false],
+                  },
+                  true,
+                  false,
+                ],
+              },
+            },
+          },
+          {
+            $count: 'totalCount'
+          }
+        ]);
 
       const affiliates = await this._userModel
         .aggregate([
@@ -1012,6 +1323,35 @@ export class UsersService {
           },
           {
             $lookup: {
+              from: 'campaigns',
+              as: 'campaignData',
+              let: {
+                affiliateID: '$affiliateID',
+                deletedCheck: '$deletedCheck',
+              },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $and: [
+                        {
+                          $eq: ['$$affiliateID', '$affiliateID'],
+                        },
+                        {
+                          $eq: ['$deletedCheck', false],
+                        },
+                      ],
+                    },
+                  },
+                },
+              ],
+            },
+          },
+          {
+            $unwind: '$campaignData'
+          },
+          {
+            $lookup: {
               from: 'affiliateFvaourites',
               as: 'favouriteAffiliate',
               let: {
@@ -1105,7 +1445,17 @@ export class UsersService {
               minRating: 0,
               isSubscribed: 0,
               __v: 0,
+              karibuURL: 0,
+              bankStatement: 0,
+              createdAt: 0,
+              updatedAt: 0,
+              merchantID: 0,
+              customerID: 0,
+              deletedCheck: 0,
+              status: 0,
+              platformPercentage: 0,
               favouriteAffiliate: 0,
+              campaignData: 0
             },
           },
         ])
@@ -1113,7 +1463,7 @@ export class UsersService {
         .limit(parseInt(limit));
 
       return {
-        totalCount: totalCount,
+        totalCount: totalCount?.length > 0 ? totalCount[0].totalCount : 0,
         data: affiliates,
       };
     } catch (err) {
@@ -1138,6 +1488,35 @@ export class UsersService {
           $sort: {
             createdAt: -1,
           },
+        },
+        {
+          $lookup: {
+            from: 'campaigns',
+            as: 'campaignData',
+            let: {
+              affiliateID: '$affiliateID',
+              deletedCheck: '$deletedCheck',
+            },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $and: [
+                      {
+                        $eq: ['$$affiliateID', '$affiliateID'],
+                      },
+                      {
+                        $eq: ['$deletedCheck', false],
+                      },
+                    ],
+                  },
+                },
+              },
+            ],
+          },
+        },
+        {
+          $unwind: '$campaignData'
         },
         {
           $lookup: {
@@ -1209,6 +1588,35 @@ export class UsersService {
           },
           {
             $lookup: {
+              from: 'campaigns',
+              as: 'campaignData',
+              let: {
+                affiliateID: '$affiliateID',
+                deletedCheck: '$deletedCheck',
+              },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $and: [
+                        {
+                          $eq: ['$$affiliateID', '$affiliateID'],
+                        },
+                        {
+                          $eq: ['$deletedCheck', false],
+                        },
+                      ],
+                    },
+                  },
+                },
+              ],
+            },
+          },
+          {
+            $unwind: '$campaignData'
+          },
+          {
+            $lookup: {
               from: 'affiliateFvaourites',
               as: 'favouriteAffiliate',
               let: {
@@ -1301,7 +1709,17 @@ export class UsersService {
               minRating: 0,
               isSubscribed: 0,
               __v: 0,
+              karibuURL: 0,
+              bankStatement: 0,
+              createdAt: 0,
+              updatedAt: 0,
+              merchantID: 0,
+              customerID: 0,
+              deletedCheck: 0,
+              status: 0,
+              platformPercentage: 0,
               favouriteAffiliate: 0,
+              campaignData: 0
             },
           },
         ])
