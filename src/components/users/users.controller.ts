@@ -13,6 +13,7 @@ import { ThrottlerGuard } from '@nestjs/throttler';
 import { ResetPasswordDto } from 'src/dto/resetPasswordDto/resetPassword.dto';
 import { ApproveMerchantDTO } from 'src/dto/user/approveMerchant.dto';
 import { IsPasswordExistsDto } from 'src/dto/user/is-password-exists.dto';
+import { UpdateAffiliateProfileDto } from 'src/dto/user/updateaffiliateprofile.dto';
 import { UpdateCustomerProfileDto } from 'src/dto/user/updatecustomerprofile.dto';
 import { UpdateMerchantFromCrmDto } from 'src/dto/user/updatemerchantfromcrm.dto';
 import { UpdatePasswordDto } from 'src/dto/user/updatepassword.dto';
@@ -63,9 +64,9 @@ export class UsersController {
 
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @Post('completeKYC/:merchantID')
-  completeKYC(@Param('merchantID') merchantID: string, @Body() kycDto: KycDto) {
-    return this._usersService.completeKYC(merchantID, kycDto);
+  @Post('completeKYC/:id')
+  completeKYC(@Param('id') id: string, @Body() kycDto: KycDto) {
+    return this._usersService.completeKYC(id, kycDto);
   }
 
   @Post('updateVoucherPinCode/:merchantID')
@@ -91,6 +92,16 @@ export class UsersController {
 
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
+  @Post('updateAffiliateProfile/:affiliateID')
+  updateAffiliateProfile(
+    @Param('affiliateID') affiliateID: string,
+    @Body() usersDto: UpdateAffiliateProfileDto,
+  ) {
+    return this._usersService.updateAffiliateProfile(affiliateID, usersDto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @Post('updateCustomerProfile/:customerID')
   updateCustomerProfile(
     @Param('customerID') customerID: string,
@@ -104,6 +115,15 @@ export class UsersController {
   @Get('getCustomer/:id')
   getCustomer(@Param('id') id: string) {
     return this._usersService.getCustomer(id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Get('getAffiliate/:id')
+  getAffiliate (
+    @Param('id') id:string
+  ) {
+    return this._usersService.getAffiliate(id)
   }
 
   @UseGuards(JwtAuthGuard)

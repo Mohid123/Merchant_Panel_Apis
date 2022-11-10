@@ -178,7 +178,42 @@ export class AuthService {
     return { user, token: token.access_token };
   }
 
-  async loginAdmin(loginDto) {
+  async loginAffiliate (loginDto) {
+    let user = await this._usersService.findOne({
+      email: loginDto.email.toLowerCase(),
+      deletedCheck: false,
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('Incorrect email!');
+    }
+
+    if (!(user.status == USERSTATUS.approved && (user.role == USERROLE.affiliate))) {
+      throw new NotFoundException('This user is not an affiliate!');
+    }
+
+    const isValidCredentials = await bcrypt.compare(
+      loginDto.password,
+      user.password,
+    );
+
+    if (!isValidCredentials) {
+      throw new UnauthorizedException('Incorrect password!');
+    }
+    user = JSON.parse(JSON.stringify(user));
+
+    delete user.password;
+    delete user.aboutUs;
+    delete user.finePrint;
+    delete user.businessHours;
+    delete user.gallery;
+
+    const token = this.generateToken(user);
+
+    return { user, token: token.access_token };
+  }
+
+  async loginAdmin (loginDto) {
     try {
       let user = await this._usersService.findOne({
         email: loginDto.email.toLowerCase(),
@@ -305,6 +340,48 @@ export class AuthService {
     const token = this.generateToken(newUser);
 
     return { newUser, token: token.access_token };
+  }
+
+  async signupAffiliate (signupAffiliateDto) {
+    try {
+      signupAffiliateDto.email = signupAffiliateDto?.email?.toLowerCase();
+    let user = await this._usersService.findOne({
+      email: signupAffiliateDto.email,
+      deletedCheck: false,
+    });
+
+    if (user && user.role == USERROLE.merchant) {
+      throw new ForbiddenException('This user is already a merchant');
+    }
+
+    if (user && user.role == USERROLE.affiliate) {
+      throw new ForbiddenException('This user is already an affiliate');
+    }
+
+    if (user && user.role == USERROLE.customer) {
+      signupAffiliateDto.status = USERSTATUS.new;
+      signupAffiliateDto.tradeName = signupAffiliateDto.companyName;
+      signupAffiliateDto.countryCode = 'BE';
+      signupAffiliateDto.leadSource = 'web';
+      signupAffiliateDto.businessHours = businessHours;
+      signupAffiliateDto.platformPercentage = 25;
+
+      await this._usersService.updateOne({_id: user._id}, signupAffiliateDto);
+      return user;
+    } else {
+      signupAffiliateDto._id = new Types.ObjectId().toString();
+
+      signupAffiliateDto.status = USERSTATUS.new;
+      signupAffiliateDto.role = USERROLE.affiliate;
+      signupAffiliateDto.tradeName = signupAffiliateDto.companyName;
+      signupAffiliateDto.countryCode = 'BE';
+      signupAffiliateDto.leadSource = 'web';
+
+      return await new this._usersService(signupAffiliateDto).save();
+    }
+    } catch (err) {
+      throw new HttpException(err, HttpStatus.BAD_REQUEST);
+    }
   }
 
   async sendMail(emailDto: EmailDTO) {

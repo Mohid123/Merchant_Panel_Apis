@@ -14,4 +14,7 @@ export class KycDto {
 
     @ApiProperty()
     bankName: string;
+
+    @ApiProperty()
+    bankStatement: string;
 }

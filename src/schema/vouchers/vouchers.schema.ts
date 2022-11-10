@@ -24,6 +24,8 @@ export const VoucherSchema = new mongoose.Schema(
     affiliatePercentage: { type: Number },
     affiliateFee: { type: Number, default: 0 },
     affiliatePaymentStatus: { type: String, default: '' },
+    affiliateCampaignID: { type: String, default: '' },
+    affiliateCampaignName: { type: String, default: '' },
     amount: { type: Number, default: 0 },
     platformPercentage: { type: Number },
     fee: { type: Number, default: 0 },

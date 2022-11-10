@@ -173,15 +173,24 @@ export class DealController {
 
   @UseGuards(OptionalJwtAuthGuard)
   @ApiBearerAuth()
+  @ApiQuery({ name: 'lat', required: false })
+  @ApiQuery({ name: 'lng', required: false })
+  @ApiQuery({ name: 'distance', required: false })
   @Get('getDealsByMerchantIDForCustomerPanel/:merchantID')
   getDealsByMerchantIDForCustomerPanel(
     @Param('merchantID') merchantID: string,
+    @Query('lat') lat: number,
+    @Query('lng') lng: number,
+    @Query('distance') distance: number,
     @Query('offset') offset: number = 0,
     @Query('limit') limit: number = 10,
     @Req() req,
   ) {
     return this.dealService.getDealsByMerchantIDForCustomerPanel(
       merchantID,
+      lat,
+      lng,
+      distance,
       offset,
       limit,
       req,
@@ -197,8 +206,6 @@ export class DealController {
 
   @ApiQuery({ name: 'createdAt', enum: SORT, required: false })
   @ApiQuery({ name: 'totalRating', enum: SORT, required: false })
-  // @ApiBearerAuth()
-  // @UseGuards(JwtAuthGuard)
   @ApiQuery({ name: 'rating', required: false })
   @Get('getDealReviews/:dealID')
   getDealReviews(
@@ -228,74 +235,269 @@ export class DealController {
 
   @UseGuards(OptionalJwtAuthGuard)
   @ApiBearerAuth()
-  @Get('getNewDeals')
-  getNewDeals(
+  @ApiQuery({ name: 'lat', required: false })
+  @ApiQuery({ name: 'lng', required: false })
+  @ApiQuery({ name: 'distance', required: false })
+  @ApiQuery({ name: 'price', required: false })
+  @ApiQuery({ name: 'percentage', required: false })
+  @ApiQuery({ name: 'categoryName', required: false })
+  @ApiQuery({ name: 'subCategoryName', required: false })
+  @ApiQuery({ name: 'fromPrice', required: false })
+  @ApiQuery({ name: 'toPrice', required: false })
+  @ApiQuery({ name: 'reviewRating', required: false })
+  @ApiQuery({ name: 'sorting', enum: SORTINGENUM, required: false })
+  @Post('getAllDynamicAPIs')
+  getAllDynamicAPIs (
+    @Query('apiName') apiName: string,
+    @Query('price') price: number,
+    @Query('percentage') percentage: number,
+    @Query('lat') lat: number,
+    @Query('lng') lng: number,
+    @Query('distance') distance: number,
+    @Query('categoryName') categoryName: string,
+    @Query('subCategoryName') subCategoryName: string,
+    @Query('fromPrice') fromPrice: number,
+    @Query('toPrice') toPrice: number,
+    @Query('reviewRating') reviewRating: number,
+    @Query('sorting') sorting: SORT,
     @Query('offset') offset: number = 0,
     @Query('limit') limit: number = 10,
+    @Body() filterCategoriesApiDto: FilterCategoriesApiDto,
     @Req() req,
   ) {
-    return this.dealService.getNewDeals(offset, limit, req);
+    switch (apiName) {
+      case 'getNewDealsDynamically':
+        return this.dealService.getNewDealsDynamically(
+          lat,
+          lng,
+          distance,
+          categoryName,
+          subCategoryName,
+          fromPrice,
+          toPrice,
+          reviewRating,
+          sorting,
+          offset,
+          limit,
+          filterCategoriesApiDto,
+          req
+        )
+
+      case 'getLowPriceDealsDynamically':
+        return this.dealService.getLowPriceDealsDynamically(
+          lat,
+          lng,
+          distance,
+          price,
+          categoryName,
+          subCategoryName,
+          fromPrice,
+          toPrice,
+          reviewRating,
+          sorting,
+          offset,
+          limit,
+          filterCategoriesApiDto,
+          req
+        )
+      
+      case 'getDiscountedDealsDynamically':
+        return this.dealService.getDiscountedDealsDynamically(
+          lat,
+          lng,
+          distance,
+          percentage,
+          categoryName,
+          subCategoryName,
+          fromPrice,
+          toPrice,
+          reviewRating,
+          sorting,
+          offset,
+          limit,
+          filterCategoriesApiDto,
+          req
+        )
+
+      case 'getSpecialOfferDealsDynamically':
+        return this.dealService.getSpecialOfferDealsDynamically(
+          lat,
+          lng,
+          distance,
+          categoryName,
+          subCategoryName,
+          fromPrice,
+          toPrice,
+          reviewRating,
+          sorting,
+          offset,
+          limit,
+          filterCategoriesApiDto,
+          req
+        )
+
+      case 'getHotDealsDynamically':
+        return this.dealService.getHotDealsDynamically(
+          lat,
+          lng,
+          distance,
+          categoryName,
+          subCategoryName,
+          fromPrice,
+          toPrice,
+          reviewRating,
+          sorting,
+          offset,
+          limit,
+          filterCategoriesApiDto,
+          req
+        )
+
+      case 'getNewFavouriteDealDynamically':
+        return this.dealService.getNewFavouriteDealDynamically(
+          lat,
+          lng,
+          distance,
+          categoryName,
+          subCategoryName,
+          fromPrice,
+          toPrice,
+          reviewRating,
+          sorting,
+          offset,
+          limit,
+          filterCategoriesApiDto,
+          req
+        )
+
+      case 'getNearByDealsDynamically':
+        return this.dealService.getNearByDealsDynamically(
+          lat,
+          lng,
+          distance,
+          categoryName,
+          subCategoryName,
+          fromPrice,
+          toPrice,
+          reviewRating,
+          sorting,
+          offset,
+          limit,
+          filterCategoriesApiDto,
+          req,
+        )
+    }
   }
 
   @UseGuards(OptionalJwtAuthGuard)
   @ApiBearerAuth()
+  @ApiQuery({ name: 'lat', required: false })
+  @ApiQuery({ name: 'lng', required: false })
+  @ApiQuery({ name: 'distance', required: false })
+  @Get('getNewDeals')
+  getNewDeals(
+    @Query('lat') lat: number,
+    @Query('lng') lng: number,
+    @Query('distance') distance: number,
+    @Query('offset') offset: number = 0,
+    @Query('limit') limit: number = 10,
+    @Req() req,
+  ) {
+    return this.dealService.getNewDeals(lat, lng, distance, offset, limit, req);
+  }
+
+  @UseGuards(OptionalJwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiQuery({ name: 'lat', required: false })
+  @ApiQuery({ name: 'lng', required: false })
+  @ApiQuery({ name: 'distance', required: false })
   @Get('getLowPriceDeals/:price')
   getLowPriceDeals(
     @Param('price') price: number,
+    @Query('lat') lat: number,
+    @Query('lng') lng: number,
+    @Query('distance') distance: number,
     @Query('offset') offset: number = 0,
     @Query('limit') limit: number = 10,
     @Req() req,
   ) {
-    return this.dealService.getLowPriceDeals(price, offset, limit, req);
+    return this.dealService.getLowPriceDeals(price, lat, lng, distance, offset, limit, req);
   }
 
   @UseGuards(OptionalJwtAuthGuard)
   @ApiBearerAuth()
+  @ApiQuery({ name: 'lat', required: false })
+  @ApiQuery({ name: 'lng', required: false })
+  @ApiQuery({ name: 'distance', required: false })
   @Get('getDiscountedDeals/:percentage')
   getDiscountedDeals(
     @Param('percentage') percentage: number,
+    @Query('lat') lat: number,
+    @Query('lng') lng: number,
+    @Query('distance') distance: number,
     @Query('offset') offset: number = 0,
     @Query('limit') limit: number = 10,
     @Req() req,
   ) {
-    return this.dealService.getDiscountedDeals(percentage, offset, limit, req);
+    return this.dealService.getDiscountedDeals(percentage, lat, lng, distance, offset, limit, req);
   }
 
   @UseGuards(OptionalJwtAuthGuard)
   @ApiBearerAuth()
+  @ApiQuery({ name: 'lat', required: false })
+  @ApiQuery({ name: 'lng', required: false })
+  @ApiQuery({ name: 'distance', required: false })
   @Get('getSpecialOfferDeals')
   getSpecialOfferDeals(
+    @Query('lat') lat: number,
+    @Query('lng') lng: number,
+    @Query('distance') distance: number,
     @Query('offset') offset: number = 0,
     @Query('limit') limit: number = 10,
     @Req() req,
   ) {
-    return this.dealService.getSpecialOfferDeals(offset, limit, req);
+    return this.dealService.getSpecialOfferDeals(lat, lng, distance, offset, limit, req);
   }
 
   @UseGuards(OptionalJwtAuthGuard)
   @ApiBearerAuth()
+  @ApiQuery({ name: 'lat', required: false })
+  @ApiQuery({ name: 'lng', required: false })
+  @ApiQuery({ name: 'distance', required: false })
   @Get('getHotDeals')
   getHotDeals(
+    @Query('lat') lat: number,
+    @Query('lng') lng: number,
+    @Query('distance') distance: number,
     @Query('offset') offset: number = 0,
     @Query('limit') limit: number = 10,
     @Req() req,
   ) {
-    return this.dealService.getHotDeals(offset, limit, req);
+    return this.dealService.getHotDeals(lat, lng, distance, offset, limit, req);
   }
 
   @UseGuards(OptionalJwtAuthGuard)
   @ApiBearerAuth()
+  @ApiQuery({ name: 'lat', required: false })
+  @ApiQuery({ name: 'lng', required: false })
+  @ApiQuery({ name: 'distance', required: false })
   @Get('getNewFavouriteDeal')
   getNewFavouriteDeal(
+    @Query('lat') lat: number,
+    @Query('lng') lng: number,
+    @Query('distance') distance: number,
     @Query('offset') offset: number = 0,
     @Query('limit') limit: number = 10,
     @Req() req,
   ) {
-    return this.dealService.getNewFavouriteDeal(offset, limit, req);
+    return this.dealService.getNewFavouriteDeal(lat, lng, distance, offset, limit, req);
   }
 
   @UseGuards(OptionalJwtAuthGuard)
   @ApiBearerAuth()
+  @ApiQuery({ name: 'lat', required: false })
+  @ApiQuery({ name: 'lng', required: false })
+  @ApiQuery({ name: 'distance', required: false })
   @Get('getNearByDeals')
   getNearByDeals(
     @Query('lat') lat: number,
@@ -322,10 +524,16 @@ export class DealController {
   @ApiQuery({ name: 'fromPrice', required: false })
   @ApiQuery({ name: 'toPrice', required: false })
   @ApiQuery({ name: 'reviewRating', required: false })
+  @ApiQuery({ name: 'lat', required: false })
+  @ApiQuery({ name: 'lng', required: false })
+  @ApiQuery({ name: 'distance', required: false })
   @UseGuards(OptionalJwtAuthGuard)
   @ApiBearerAuth()
   @Post('searchDeals')
   searchDeals(
+    @Query('lat') lat: number,
+    @Query('lng') lng: number,
+    @Query('distance') distance: number,
     @Query('searchBar') searchBar: string = '',
     @Query('header') header: string = '',
     @Query('categoryName') categoryName: string,
@@ -339,6 +547,9 @@ export class DealController {
     @Req() req,
   ) {
     return this.dealService.searchDeals(
+      lat,
+      lng,
+      distance,
       searchBar,
       header,
       categoryName,
@@ -359,10 +570,16 @@ export class DealController {
   @ApiQuery({ name: 'toPrice', required: false })
   @ApiQuery({ name: 'reviewRating', required: false })
   @ApiQuery({ name: 'sorting', enum: SORTINGENUM, required: false })
+  @ApiQuery({ name: 'lat', required: false })
+  @ApiQuery({ name: 'lng', required: false })
+  @ApiQuery({ name: 'distance', required: false })
   @UseGuards(OptionalJwtAuthGuard)
   @ApiBearerAuth()
   @Post('getDealsByCategories')
   getDealsByCategories(
+    @Query('lat') lat: number,
+    @Query('lng') lng: number,
+    @Query('distance') distance: number,
     @Query('categoryName') categoryName: string,
     @Query('subCategoryName') subCategoryName: string,
     @Query('fromPrice') fromPrice: number,
@@ -375,6 +592,9 @@ export class DealController {
     @Req() req,
   ) {
     return this.dealService.getDealsByCategories(
+      lat,
+      lng,
+      distance,
       categoryName,
       subCategoryName,
       fromPrice,
@@ -401,21 +621,33 @@ export class DealController {
 
   @UseGuards(OptionalJwtAuthGuard)
   @ApiBearerAuth()
+  @ApiQuery({ name: 'lat', required: false })
+  @ApiQuery({ name: 'lng', required: false })
+  @ApiQuery({ name: 'distance', required: false })
   @Get('getTrendingDeals')
   getTrendingDeals(
+    @Query('lat') lat: number,
+    @Query('lng') lng: number,
+    @Query('distance') distance: number,
     @Query('offset') offset: number = 0,
     @Query('limit') limit: number = 10,
     @Req() req,
   ) {
-    return this.dealService.getTrendingDeals(offset, limit, req);
+    return this.dealService.getTrendingDeals(lat, lng, distance, offset, limit, req);
   }
 
   @UseGuards(OptionalJwtAuthGuard)
   @ApiBearerAuth()
+  @ApiQuery({ name: 'lat', required: false })
+  @ApiQuery({ name: 'lng', required: false })
+  @ApiQuery({ name: 'distance', required: false })
   @Get('getSimilarDeals/:categoryName/:subCategoryName')
   getSimilarDeals(
     @Param('categoryName') categoryName: string,
     @Param('subCategoryName') subCategoryName: string,
+    @Query('lat') lat: number,
+    @Query('lng') lng: number,
+    @Query('distance') distance: number,
     @Query('offset') offset: number = 0,
     @Query('limit') limit: number = 10,
     @Req() req,
@@ -423,6 +655,9 @@ export class DealController {
     return this.dealService.getSimilarDeals(
       categoryName,
       subCategoryName,
+      lat,
+      lng,
+      distance,
       offset,
       limit,
       req,
@@ -442,13 +677,19 @@ export class DealController {
 
   @UseGuards(OptionalJwtAuthGuard)
   @ApiBearerAuth()
+  @ApiQuery({ name: 'lat', required: false })
+  @ApiQuery({ name: 'lng', required: false })
+  @ApiQuery({ name: 'distance', required: false })
   @Get('getRecommendedForYouDeals')
   getRecommendedForYouDeals(
+    @Query('lat') lat: number,
+    @Query('lng') lng: number,
+    @Query('distance') distance: number,
     @Query('offset') offset: number = 0,
     @Query('limit') limit: number = 10,
     @Req() req,
   ) {
-    return this.dealService.getRecommendedForYouDeals(offset, limit, req);
+    return this.dealService.getRecommendedForYouDeals(lat, lng, distance, offset, limit, req);
   }
 
   @ApiBearerAuth()
