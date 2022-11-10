@@ -227,4 +227,30 @@ export class VouchersController {
   ) {
     return this.voucherService.getCustomerRanking(affiliateMongoID, byMonthYearQuarter, dateFrom, dateTo, totalVouchers, totalEarnings, offset, limit)
   }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiQuery({ name: "byMonthYearQuarter", type: String, required: false })
+  @ApiQuery({ name: "dateFrom", type: Number, required: false })
+  @ApiQuery({ name: "dateTo", type: Number, required: false })
+  @ApiQuery({ name: 'totalVouchers', enum: SORT, required: false })
+  @ApiQuery({ name: 'totalEarnings', enum: SORT, required: false })
+  @Get('getUsersForTableCSV')
+  getUsersForTableCSV(
+    @Query('affiliateMongoID') affiliateMongoID: string,
+    @Query("byMonthYearQuarter") byMonthYearQuarter: string = '',
+    @Query("dateFrom") dateFrom: number = 0,
+    @Query("dateTo") dateTo: number = 0,
+    @Query('totalVouchers') totalVouchers: SORT,
+    @Query('totalEarnings') totalEarnings: SORT,
+  ) {
+    return this.voucherService.getCustomerRankingCSV(
+      affiliateMongoID,
+      byMonthYearQuarter,
+      dateFrom,
+      dateTo,
+      totalVouchers,
+      totalEarnings
+    );
+  }
 }

@@ -3,6 +3,7 @@ import {
   HttpException,
   HttpStatus,
   Injectable,
+  OnModuleInit,
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
@@ -20,14 +21,19 @@ import { USERSTATUS } from 'src/enum/user/userstatus.enum';
 import { DealInterface } from 'src/interface/deal/deal.interface';
 import axios from 'axios';
 import { pipeline } from 'stream';
+const { convertArrayToCSV } = require('convert-array-to-csv');
+const Converter = require("csv-converter-to-pdf-and-html");
+const path = require("path");
 import { DEALSTATUS } from 'src/enum/deal/dealstatus.enum';
 import { ActivityService } from '../activity/activity.service';
 import { ACTIVITYENUM } from 'src/enum/activity/activity.enum';
 import { USERROLE } from 'src/enum/user/userrole.enum';
 import { AFFILIATEPAYMENTSTATUS } from 'src/enum/affiliate/affiliate.enum';
 
+const converter = new Converter();
+
 @Injectable()
-export class VouchersService {
+export class VouchersService implements OnModuleInit{
   constructor(
     @InjectModel('Voucher')
     private readonly voucherModel: Model<VoucherInterface>,
@@ -40,6 +46,21 @@ export class VouchersService {
     private _activityService: ActivityService,
     @InjectModel('Deal') private readonly dealModel: Model<DealInterface>,
   ) {}
+
+  onModuleInit() {
+    console.log('Wallet Module Initialized');
+    const dir = 'mediaFiles/NFT/customerRankingCSV';
+    let exist = fs.existsSync(dir);
+
+    if (!exist) {
+      fs.mkdir(dir, { recursive: true }, (err) => {
+        if (err) {
+          return console.log('err');
+        }
+        console.log('Customer Ranking CSV directory created');
+      });
+    }
+  }
 
   async generateVoucherId(sequenceName) {
     const sequenceDocument = await this.voucherCounterModel.findByIdAndUpdate(
@@ -1878,6 +1899,39 @@ export class VouchersService {
       }
     } catch (err) {
       throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async getCustomerRankingCSV (affiliateMongoID, byMonthYearQuarter, dateFrom, dateTo, totalVouchers, totalEarnings) {
+    try {
+      let data: any = await this.getCustomerRanking(
+        affiliateMongoID,
+        byMonthYearQuarter,
+        dateFrom,
+        dateTo,
+        totalVouchers,
+        totalEarnings, 
+        0,
+        Number.MAX_SAFE_INTEGER,
+      );
+
+      let csv = convertArrayToCSV(data.data);
+
+      let randomName = Array(32)
+        .fill(null)
+        .map(() => Math.round(Math.random() * 16).toString(16))
+        .join('');
+
+      const url = `${process.env.URL}media-upload/mediaFiles/customerRankingCSV/${randomName}.csv`;
+
+      await fs.promises.writeFile(
+        `./mediaFiles/NFT/customerRankingCSV/${randomName}.csv`,
+        csv,
+      );
+
+      return { url };
+    } catch (err) {
+      throw new HttpException(err, HttpStatus.BAD_REQUEST);
     }
   }
 }
