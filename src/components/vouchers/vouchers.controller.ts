@@ -235,8 +235,8 @@ export class VouchersController {
   @ApiQuery({ name: "dateTo", type: Number, required: false })
   @ApiQuery({ name: 'totalVouchers', enum: SORT, required: false })
   @ApiQuery({ name: 'totalEarnings', enum: SORT, required: false })
-  @Get('getUsersForTableCSV')
-  getUsersForTableCSV(
+  @Get('getCustomerRankingCSV')
+  getCustomerRankingCSV(
     @Query('affiliateMongoID') affiliateMongoID: string,
     @Query("byMonthYearQuarter") byMonthYearQuarter: string = '',
     @Query("dateFrom") dateFrom: number = 0,
