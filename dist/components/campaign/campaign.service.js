@@ -180,7 +180,7 @@ let CampaignService = class CampaignService {
             }
             if (collectedAmount) {
                 let sortCollectedAmount = collectedAmount == sort_enum_1.SORT.ASC ? 1 : -1;
-                sort = Object.assign(Object.assign({}, sort), { collectedAmount: sortCollectedAmount });
+                sort = Object.assign(Object.assign({}, sort), { percentage: sortCollectedAmount });
             }
             if (Object.keys(sort).length === 0 && sort.constructor === Object) {
                 sort = {
