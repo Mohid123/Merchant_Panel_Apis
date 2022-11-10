@@ -20,7 +20,7 @@ export declare class UsersService {
     }>;
     changePassword(id: any, updatepasswordDto: any): Promise<import("mongodb").UpdateResult>;
     validateVatNumber(vatNumber: any): Promise<any>;
-    completeKYC(merchantID: any, kycDto: any): Promise<{
+    completeKYC(id: any, kycDto: any): Promise<{
         message: string;
     }>;
     updateVoucherPinCode(merchantID: any, voucherPinCodeDto: any): Promise<{
@@ -29,10 +29,14 @@ export declare class UsersService {
     updateMerchantprofile(merchantID: any, usersDto: any): Promise<{
         message: string;
     }>;
+    updateAffiliateProfile(affiliateID: any, usersDto: any): Promise<{
+        message: string;
+    }>;
     updateCustomerProfile(customerID: any, usersDto: any): Promise<{
         message: string;
     }>;
     getCustomer(id: any): Promise<any>;
+    getAffiliate(id: any): Promise<any>;
     updateBusinessHours(updateHoursDTO: UpdateHoursDto): Promise<import("mongodb").UpdateResult>;
     deleteUser(id: any): Promise<import("mongodb").UpdateResult>;
     getUserById(id: any): Promise<any>;
@@ -47,12 +51,12 @@ export declare class UsersService {
         data: any[];
     }>;
     searchAllAffiliates(searchAffiliates: any, categories: any, Affiliates: any, offset: any, limit: any, req: any): Promise<{
-        totalCount: number;
-        filteredCount: number;
+        totalCount: any;
+        filteredCount: any;
         data: any[];
     }>;
     getPopularAffiliates(offset: any, limit: any, req: any): Promise<{
-        totalCount: number;
+        totalCount: any;
         data: any[];
     }>;
     getFavouriteAffiliates(offset: any, limit: any, req: any): Promise<{

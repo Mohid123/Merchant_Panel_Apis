@@ -3,4 +3,5 @@ export declare class KycDto {
     bic_swiftCode: string;
     accountHolder: string;
     bankName: string;
+    bankStatement: string;
 }

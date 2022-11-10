@@ -37,6 +37,7 @@ const favourites_module_1 = require("./components/favourites/favourites.module")
 const vouchers_schema_1 = require("./schema/vouchers/vouchers.schema");
 const views_module_1 = require("./components/views/views.module");
 const throttler_1 = require("@nestjs/throttler");
+const campaign_module_1 = require("./components/campaign/campaign.module");
 let AppModule = class AppModule {
 };
 AppModule = __decorate([
@@ -76,6 +77,7 @@ AppModule = __decorate([
             favourites_module_1.FavouritesModule,
             views_module_1.ViewsModule,
             stripe_module_1.StripeModule,
+            campaign_module_1.CampaignModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService, schedule_service_1.ScheduleService],

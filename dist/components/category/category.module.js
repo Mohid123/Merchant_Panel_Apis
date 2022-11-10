@@ -13,6 +13,8 @@ const category_controller_1 = require("./category.controller");
 const category_schema_1 = require("../../schema/category/category.schema");
 const category_service_1 = require("./category.service");
 const subcategory_schema_1 = require("../../schema/category/subcategory.schema");
+const affiliatecategory_schema_1 = require("../../schema/category/affiliatecategory.schema");
+const affiliatesubcategory_schema_1 = require("../../schema/category/affiliatesubcategory.schema");
 let CategoryModule = class CategoryModule {
 };
 CategoryModule = __decorate([
@@ -20,6 +22,8 @@ CategoryModule = __decorate([
         imports: [
             mongoose_1.MongooseModule.forFeature([{ name: 'Category', schema: category_schema_1.CategorySchema }]),
             mongoose_1.MongooseModule.forFeature([{ name: 'SubCategory', schema: subcategory_schema_1.SubCategorySchema }]),
+            mongoose_1.MongooseModule.forFeature([{ name: 'affiliateCategories', schema: affiliatecategory_schema_1.affiliateCategorySchema }]),
+            mongoose_1.MongooseModule.forFeature([{ name: 'affiliateSubCategories', schema: affiliatesubcategory_schema_1.affiliateSubCategoriesSchema }])
         ],
         controllers: [category_controller_1.CategoryController],
         providers: [category_service_1.CategoryService],

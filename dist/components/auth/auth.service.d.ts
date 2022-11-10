@@ -33,6 +33,12 @@ export declare class AuthService {
         };
         token: string;
     }>;
+    loginAffiliate(loginDto: any): Promise<{
+        user: import("mongoose").Document<unknown, any, UsersInterface> & UsersInterface & {
+            _id: string;
+        };
+        token: string;
+    }>;
     loginAdmin(loginDto: any): Promise<{
         user: import("mongoose").Document<unknown, any, UsersInterface> & UsersInterface & {
             _id: string;
@@ -48,6 +54,9 @@ export declare class AuthService {
             _id: string;
         };
         token: string;
+    }>;
+    signupAffiliate(signupAffiliateDto: any): Promise<import("mongoose").Document<unknown, any, UsersInterface> & UsersInterface & {
+        _id: string;
     }>;
     sendMail(emailDto: EmailDTO): Promise<void>;
     isEmailExists(email: any): Promise<boolean>;

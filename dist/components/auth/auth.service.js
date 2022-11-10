@@ -129,6 +129,30 @@ let AuthService = class AuthService {
         const token = this.generateToken(user);
         return { user, token: token.access_token };
     }
+    async loginAffiliate(loginDto) {
+        let user = await this._usersService.findOne({
+            email: loginDto.email.toLowerCase(),
+            deletedCheck: false,
+        });
+        if (!user) {
+            throw new common_1.UnauthorizedException('Incorrect email!');
+        }
+        if (!(user.status == userstatus_enum_1.USERSTATUS.approved && (user.role == userrole_enum_1.USERROLE.affiliate))) {
+            throw new common_1.NotFoundException('This user is not an affiliate!');
+        }
+        const isValidCredentials = await bcrypt.compare(loginDto.password, user.password);
+        if (!isValidCredentials) {
+            throw new common_1.UnauthorizedException('Incorrect password!');
+        }
+        user = JSON.parse(JSON.stringify(user));
+        delete user.password;
+        delete user.aboutUs;
+        delete user.finePrint;
+        delete user.businessHours;
+        delete user.gallery;
+        const token = this.generateToken(user);
+        return { user, token: token.access_token };
+    }
     async loginAdmin(loginDto) {
         try {
             let user = await this._usersService.findOne({
@@ -228,6 +252,44 @@ let AuthService = class AuthService {
         const res = await axios_1.default.get(`https://www.zohoapis.eu/crm/v2/functions/createcustomer/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&customerid=${newUser.customerID}`);
         const token = this.generateToken(newUser);
         return { newUser, token: token.access_token };
+    }
+    async signupAffiliate(signupAffiliateDto) {
+        var _a;
+        try {
+            signupAffiliateDto.email = (_a = signupAffiliateDto === null || signupAffiliateDto === void 0 ? void 0 : signupAffiliateDto.email) === null || _a === void 0 ? void 0 : _a.toLowerCase();
+            let user = await this._usersService.findOne({
+                email: signupAffiliateDto.email,
+                deletedCheck: false,
+            });
+            if (user && user.role == userrole_enum_1.USERROLE.merchant) {
+                throw new common_1.ForbiddenException('This user is already a merchant');
+            }
+            if (user && user.role == userrole_enum_1.USERROLE.affiliate) {
+                throw new common_1.ForbiddenException('This user is already an affiliate');
+            }
+            if (user && user.role == userrole_enum_1.USERROLE.customer) {
+                signupAffiliateDto.status = userstatus_enum_1.USERSTATUS.new;
+                signupAffiliateDto.tradeName = signupAffiliateDto.companyName;
+                signupAffiliateDto.countryCode = 'BE';
+                signupAffiliateDto.leadSource = 'web';
+                signupAffiliateDto.businessHours = businesshours_1.businessHours;
+                signupAffiliateDto.platformPercentage = 25;
+                await this._usersService.updateOne({ _id: user._id }, signupAffiliateDto);
+                return user;
+            }
+            else {
+                signupAffiliateDto._id = new mongoose_2.Types.ObjectId().toString();
+                signupAffiliateDto.status = userstatus_enum_1.USERSTATUS.new;
+                signupAffiliateDto.role = userrole_enum_1.USERROLE.affiliate;
+                signupAffiliateDto.tradeName = signupAffiliateDto.companyName;
+                signupAffiliateDto.countryCode = 'BE';
+                signupAffiliateDto.leadSource = 'web';
+                return await new this._usersService(signupAffiliateDto).save();
+            }
+        }
+        catch (err) {
+            throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
+        }
     }
     async sendMail(emailDto) {
         var mailOptions = {

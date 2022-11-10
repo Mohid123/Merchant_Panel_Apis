@@ -16,6 +16,8 @@ export interface VoucherInterface extends Document {
     affiliatePercentage: number;
     affiliateFee: number;
     affiliatePaymentStatus: string;
+    affiliateCampaignID: string;
+    affiliateCampaignName: string;
     merchantMongoID: string;
     merchantPaymentStatus: string;
     customerID: string;

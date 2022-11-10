@@ -17,9 +17,11 @@ const common_1 = require("@nestjs/common");
 const mongoose_1 = require("@nestjs/mongoose");
 const mongoose_2 = require("mongoose");
 let CategoryService = class CategoryService {
-    constructor(categoryModel, subCategoryModel) {
+    constructor(categoryModel, subCategoryModel, affiliateCategoryModel, affiliateSubCategoryModel) {
         this.categoryModel = categoryModel;
         this.subCategoryModel = subCategoryModel;
+        this.affiliateCategoryModel = affiliateCategoryModel;
+        this.affiliateSubCategoryModel = affiliateSubCategoryModel;
     }
     async createCategory(categoryDto) {
         try {
@@ -30,10 +32,28 @@ let CategoryService = class CategoryService {
             throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
         }
     }
+    async createAffiliateCategory(categoryDto) {
+        try {
+            let affiliateCategory = await new this.affiliateCategoryModel(categoryDto).save();
+            return affiliateCategory;
+        }
+        catch (err) {
+            throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
+        }
+    }
     async createSubCategory(subCategoryDto) {
         try {
             let subCategory = await this.subCategoryModel.create(subCategoryDto);
             return subCategory;
+        }
+        catch (err) {
+            throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
+        }
+    }
+    async createAffiliateSubCategory(subCategoryDto) {
+        try {
+            let affiliateSubCategory = await this.affiliateSubCategoryModel.create(subCategoryDto);
+            return affiliateSubCategory;
         }
         catch (err) {
             throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
@@ -71,6 +91,61 @@ let CategoryService = class CategoryService {
         }
         catch (err) {
             throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
+        }
+    }
+    async getAllAffiliateCategories(offset, limit) {
+        try {
+            offset = parseInt(offset) < 0 ? 0 : offset;
+            limit = parseInt(limit) < 1 ? 10 : limit;
+            const totalCount = await this.affiliateCategoryModel.countDocuments();
+            let affiliateCategories = await this.affiliateCategoryModel
+                .aggregate([
+                {
+                    $addFields: {
+                        id: '$_id',
+                    },
+                },
+                {
+                    $project: {
+                        _id: 0,
+                    },
+                },
+            ])
+                .skip(parseInt(offset))
+                .limit(parseInt(limit));
+            return {
+                totalCount: totalCount,
+                data: affiliateCategories,
+            };
+        }
+        catch (err) {
+            throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
+        }
+    }
+    async getAllAffiliateSubCategoriesByAffiliateCategories(affiliateCategoryName, offset, limit) {
+        try {
+            let affiliateSubCategories = await this.affiliateSubCategoryModel.aggregate([
+                {
+                    $match: {
+                        affiliateCategoryName: affiliateCategoryName
+                    }
+                },
+                {
+                    $addFields: {
+                        id: '$_id'
+                    }
+                },
+                {
+                    $project: {
+                        _id: 0
+                    }
+                }
+            ])
+                .skip(parseInt(offset))
+                .limit(parseInt(limit));
+            return affiliateSubCategories;
+        }
+        catch (err) {
         }
     }
     async getAllSubCategoriesByCategories(offset, limit) {
@@ -170,7 +245,11 @@ CategoryService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, mongoose_1.InjectModel)('Category')),
     __param(1, (0, mongoose_1.InjectModel)('SubCategory')),
+    __param(2, (0, mongoose_1.InjectModel)('affiliateCategories')),
+    __param(3, (0, mongoose_1.InjectModel)('affiliateSubCategories')),
     __metadata("design:paramtypes", [mongoose_2.Model,
+        mongoose_2.Model,
+        mongoose_2.Model,
         mongoose_2.Model])
 ], CategoryService);
 exports.CategoryService = CategoryService;

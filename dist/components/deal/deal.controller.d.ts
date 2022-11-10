@@ -40,7 +40,7 @@ export declare class DealController {
         filteredCount: number;
         data: any[];
     }>;
-    getDealsByMerchantIDForCustomerPanel(merchantID: string, offset: number, limit: number, req: any): Promise<{
+    getDealsByMerchantIDForCustomerPanel(merchantID: string, lat: number, lng: number, distance: number, offset: number, limit: number, req: any): Promise<{
         totalCount: number;
         data: any[];
     }>;
@@ -69,45 +69,52 @@ export declare class DealController {
         deal: any;
     }>;
     getTopRatedDeals(merchantID: string): Promise<any[]>;
-    getNewDeals(offset: number, limit: number, req: any): Promise<unknown>;
-    getLowPriceDeals(price: number, offset: number, limit: number, req: any): Promise<{
+    getAllDynamicAPIs(apiName: string, price: number, percentage: number, lat: number, lng: number, distance: number, categoryName: string, subCategoryName: string, fromPrice: number, toPrice: number, reviewRating: number, sorting: SORT, offset: number, limit: number, filterCategoriesApiDto: FilterCategoriesApiDto, req: any): Promise<any>;
+    getNewDeals(lat: number, lng: number, distance: number, offset: number, limit: number, req: any): Promise<{
+        totalCount: number;
+        data: any[];
+    }>;
+    getLowPriceDeals(price: number, lat: number, lng: number, distance: number, offset: number, limit: number, req: any): Promise<{
         filterValue: any;
         totalCount: any;
         data: any[];
     }>;
-    getDiscountedDeals(percentage: number, offset: number, limit: number, req: any): Promise<{
+    getDiscountedDeals(percentage: number, lat: number, lng: number, distance: number, offset: number, limit: number, req: any): Promise<{
         filterValue: any;
         totalCount: any;
         data: any[];
     }>;
-    getSpecialOfferDeals(offset: number, limit: number, req: any): Promise<{
+    getSpecialOfferDeals(lat: number, lng: number, distance: number, offset: number, limit: number, req: any): Promise<{
         totalCount: number;
         data: any[];
     }>;
-    getHotDeals(offset: number, limit: number, req: any): Promise<unknown>;
-    getNewFavouriteDeal(offset: number, limit: number, req: any): Promise<{
+    getHotDeals(lat: number, lng: number, distance: number, offset: number, limit: number, req: any): Promise<{
         totalCount: number;
         data: any[];
     }>;
-    getNearByDeals(lat: number, lng: number, distance: number, offset: number, limit: number, req: any): Promise<any>;
-    searchDeals(searchBar: string, header: string, categoryName: string, subCategoryName: string, fromPrice: number, toPrice: number, reviewRating: number, offset: number, limit: number, filterCategoriesApiDto: FilterCategoriesApiDto, req: any): Promise<any>;
-    getDealsByCategories(categoryName: string, subCategoryName: string, fromPrice: number, toPrice: number, reviewRating: number, sorting: SORT, offset: number, limit: number, filterCategoriesApiDto: FilterCategoriesApiDto, req: any): Promise<any>;
+    getNewFavouriteDeal(lat: number, lng: number, distance: number, offset: number, limit: number, req: any): Promise<{
+        totalCount: number;
+        data: any[];
+    }>;
+    getNearByDeals(lat: number, lng: number, distance: number, offset: number, limit: number, req: any): Promise<any[]>;
+    searchDeals(lat: number, lng: number, distance: number, searchBar: string, header: string, categoryName: string, subCategoryName: string, fromPrice: number, toPrice: number, reviewRating: number, offset: number, limit: number, filterCategoriesApiDto: FilterCategoriesApiDto, req: any): Promise<any>;
+    getDealsByCategories(lat: number, lng: number, distance: number, categoryName: string, subCategoryName: string, fromPrice: number, toPrice: number, reviewRating: number, sorting: SORT, offset: number, limit: number, filterCategoriesApiDto: FilterCategoriesApiDto, req: any): Promise<any>;
     getWishListDeals(offset: number, limit: number, req: any): Promise<{
         totalCount: any;
         data: any[];
     }>;
-    getTrendingDeals(offset: number, limit: number, req: any): Promise<{
+    getTrendingDeals(lat: number, lng: number, distance: number, offset: number, limit: number, req: any): Promise<{
         totalDeals: number;
         data: any[];
     }>;
-    getSimilarDeals(categoryName: string, subCategoryName: string, offset: number, limit: number, req: any): Promise<{
+    getSimilarDeals(categoryName: string, subCategoryName: string, lat: number, lng: number, distance: number, offset: number, limit: number, req: any): Promise<{
         totalCount: number;
         deals: any[];
     }>;
     getRecentlyViewedDeals(offset: number, limit: number, req: any): Promise<{
         data: any[];
     }>;
-    getRecommendedForYouDeals(offset: number, limit: number, req: any): Promise<{
+    getRecommendedForYouDeals(lat: number, lng: number, distance: number, offset: number, limit: number, req: any): Promise<{
         totalCount: number;
         data: any[];
     }>;

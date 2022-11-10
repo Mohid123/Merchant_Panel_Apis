@@ -41,7 +41,7 @@ const merchant_enum_1 = require("../../enum/merchant/merchant.enum");
 const categoryapisorting_enum_1 = require("../../enum/sort/categoryapisorting.enum");
 let transporter;
 let DealService = class DealService {
-    constructor(dealModel, preComputedDealModel, cacheManager, categorymodel, voucherCounterModel, subCategoryModel, _userModel, _scheduleModel, _viewsModel, reviewModel, categoryAnalyticsModel, _scheduleService, _stripeService, _voucherService, viewsService) {
+    constructor(dealModel, preComputedDealModel, cacheManager, categorymodel, voucherCounterModel, subCategoryModel, _userModel, _scheduleModel, _viewsModel, reviewModel, categoryAnalyticsModel, campaignModel, _scheduleService, _stripeService, _voucherService, viewsService) {
         this.dealModel = dealModel;
         this.preComputedDealModel = preComputedDealModel;
         this.cacheManager = cacheManager;
@@ -53,6 +53,7 @@ let DealService = class DealService {
         this._viewsModel = _viewsModel;
         this.reviewModel = reviewModel;
         this.categoryAnalyticsModel = categoryAnalyticsModel;
+        this.campaignModel = campaignModel;
         this._scheduleService = _scheduleService;
         this._stripeService = _stripeService;
         this._voucherService = _voucherService;
@@ -1180,11 +1181,23 @@ let DealService = class DealService {
             throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
         }
     }
-    async getDealsByMerchantIDForCustomerPanel(merchantID, offset, limit, req) {
+    async getDealsByMerchantIDForCustomerPanel(merchantID, lat, lng, distance, offset, limit, req) {
         var _a;
         try {
             offset = parseInt(offset) < 0 ? 0 : offset;
             limit = parseInt(limit) < 1 ? 10 : limit;
+            lat = parseFloat(lat);
+            lng = parseFloat(lng);
+            distance = parseFloat(distance);
+            if (!distance) {
+                distance = 10;
+            }
+            let radius = parseFloat(distance) / 6378.1;
+            if (!lat && !lng) {
+                lat = 50.8476;
+                lng = 4.3572;
+                radius = 20 / 6378.1;
+            }
             const totalCount = await this.dealModel.countDocuments({
                 merchantMongoID: merchantID,
                 deletedCheck: false,
@@ -1197,6 +1210,31 @@ let DealService = class DealService {
                         merchantMongoID: merchantID,
                         deletedCheck: false,
                         dealStatus: dealstatus_enum_1.DEALSTATUS.published,
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'locations',
+                        as: 'location',
+                        localField: 'merchantID',
+                        foreignField: 'merchantID',
+                    },
+                },
+                {
+                    $unwind: '$location',
+                },
+                {
+                    $addFields: {
+                        locationCoordinates: '$location.location',
+                    },
+                },
+                {
+                    $match: {
+                        locationCoordinates: {
+                            $geoWithin: {
+                                $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+                            },
+                        },
                     },
                 },
                 {
@@ -1351,6 +1389,7 @@ let DealService = class DealService {
                         startDate: 0,
                         reviewMediaUrl: 0,
                         favouriteDeal: 0,
+                        location: 0,
                     },
                 },
             ])
@@ -1387,12 +1426,24 @@ let DealService = class DealService {
             throw new common_1.HttpException(error.message, common_1.HttpStatus.BAD_REQUEST);
         }
     }
-    async getLowPriceDeals(price, offset, limit, req) {
+    async getLowPriceDeals(price, lat, lng, distance, offset, limit, req) {
         var _a, _b;
         try {
             price = parseFloat(price);
             offset = parseInt(offset) < 0 ? 0 : offset;
             limit = parseInt(limit) < 1 ? 10 : limit;
+            lat = parseFloat(lat);
+            lng = parseFloat(lng);
+            distance = parseFloat(distance);
+            if (!distance) {
+                distance = 10;
+            }
+            let radius = parseFloat(distance) / 6378.1;
+            if (!lat && !lng) {
+                lat = 50.8476;
+                lng = 4.3572;
+                radius = 20 / 6378.1;
+            }
             let totalCount;
             let priceIncrease = 10;
             do {
@@ -1421,6 +1472,31 @@ let DealService = class DealService {
                     },
                 },
                 {
+                    $lookup: {
+                        from: 'locations',
+                        as: 'location',
+                        localField: 'merchantID',
+                        foreignField: 'merchantID',
+                    },
+                },
+                {
+                    $unwind: '$location',
+                },
+                {
+                    $addFields: {
+                        locationCoordinates: '$location.location',
+                    },
+                },
+                {
+                    $match: {
+                        locationCoordinates: {
+                            $geoWithin: {
+                                $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+                            },
+                        },
+                    },
+                },
+                {
                     $sort: {
                         createdAt: -1,
                     },
@@ -1572,6 +1648,7 @@ let DealService = class DealService {
                         startDate: 0,
                         reviewMediaUrl: 0,
                         favouriteDeal: 0,
+                        location: 0
                     },
                 },
             ])
@@ -1591,1230 +1668,48 @@ let DealService = class DealService {
             throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
         }
     }
-    async getNewDeals(offset, limit, req) {
-        var _a;
+    async getLowPriceDealsDynamically(lat, lng, distance, price, categoryName, subCategoryName, fromPrice, toPrice, reviewRating, sorting, offset, limit, filterCategoriesApiDto, req) {
+        var _a, _b, _c, _d, _e;
         try {
+            price = parseFloat(price);
             offset = parseInt(offset) < 0 ? 0 : offset;
             limit = parseInt(limit) < 1 ? 10 : limit;
-            const value = await this.cacheManager.get(`getNewDeals${offset}${limit}`);
-            let totalCount;
-            let deals;
-            if (!value) {
-                totalCount = await this.dealModel.countDocuments({
-                    deletedCheck: false,
-                    dealStatus: dealstatus_enum_1.DEALSTATUS.published,
-                });
-                deals = await this.dealModel
-                    .aggregate([
-                    {
-                        $match: {
-                            deletedCheck: false,
-                            dealStatus: dealstatus_enum_1.DEALSTATUS.published,
-                        },
-                    },
-                    {
-                        $sort: {
-                            createdAt: -1,
-                        },
-                    },
-                    {
-                        $lookup: {
-                            from: 'favourites',
-                            as: 'favouriteDeal',
-                            let: {
-                                dealID: '$dealID',
-                                customerMongoID: (_a = req === null || req === void 0 ? void 0 : req.user) === null || _a === void 0 ? void 0 : _a.id,
-                                deletedCheck: '$deletedCheck',
-                            },
-                            pipeline: [
-                                {
-                                    $match: {
-                                        $expr: {
-                                            $and: [
-                                                {
-                                                    $eq: ['$$dealID', '$dealID'],
-                                                },
-                                                {
-                                                    $eq: ['$$customerMongoID', '$customerMongoID'],
-                                                },
-                                                {
-                                                    $eq: ['$deletedCheck', false],
-                                                },
-                                            ],
-                                        },
-                                    },
-                                },
-                            ],
-                        },
-                    },
-                    {
-                        $unwind: {
-                            path: '$favouriteDeal',
-                            preserveNullAndEmptyArrays: true,
-                        },
-                    },
-                    {
-                        $lookup: {
-                            from: 'users',
-                            as: 'merchantDetails',
-                            let: {
-                                merchantID: '$merchantID',
-                                deletedCheck: '$deletedCheck',
-                            },
-                            pipeline: [
-                                {
-                                    $match: {
-                                        $expr: {
-                                            $and: [
-                                                {
-                                                    $eq: ['$$merchantID', '$merchantID'],
-                                                },
-                                                {
-                                                    $eq: ['$deletedCheck', false],
-                                                },
-                                            ],
-                                        },
-                                    },
-                                },
-                                {
-                                    $lookup: {
-                                        from: 'locations',
-                                        as: 'locationData',
-                                        localField: 'merchantID',
-                                        foreignField: 'merchantID',
-                                    },
-                                },
-                                {
-                                    $unwind: '$locationData',
-                                },
-                                {
-                                    $addFields: {
-                                        id: '$_id',
-                                        tradeName: '$locationData.tradeName',
-                                    },
-                                },
-                                {
-                                    $project: {
-                                        _id: 0,
-                                        id: 1,
-                                        totalReviews: 1,
-                                        ratingsAverage: 1,
-                                        tradeName: 1,
-                                        city: 1,
-                                    },
-                                },
-                            ],
-                        },
-                    },
-                    {
-                        $unwind: '$merchantDetails',
-                    },
-                    {
-                        $addFields: {
-                            id: '$_id',
-                            mediaUrl: {
-                                $slice: [
-                                    {
-                                        $filter: {
-                                            input: '$mediaUrl',
-                                            as: 'mediaUrl',
-                                            cond: {
-                                                $eq: ['$$mediaUrl.type', 'Image'],
-                                            },
-                                        },
-                                    },
-                                    1,
-                                ],
-                            },
-                            isFavourite: {
-                                $cond: [
-                                    {
-                                        $ifNull: ['$favouriteDeal', false],
-                                    },
-                                    true,
-                                    false,
-                                ],
-                            },
-                        },
-                    },
-                    {
-                        $project: {
-                            _id: 0,
-                            merchantMongoID: 0,
-                            merchantID: 0,
-                            subTitle: 0,
-                            categoryName: 0,
-                            subCategoryID: 0,
-                            subCategory: 0,
-                            subDeals: 0,
-                            availableVouchers: 0,
-                            aboutThisDeal: 0,
-                            readMore: 0,
-                            finePrints: 0,
-                            netEarnings: 0,
-                            isCollapsed: 0,
-                            isDuplicate: 0,
-                            totalReviews: 0,
-                            maxRating: 0,
-                            minRating: 0,
-                            pageNumber: 0,
-                            updatedAt: 0,
-                            __v: 0,
-                            endDate: 0,
-                            startDate: 0,
-                            reviewMediaUrl: 0,
-                        },
-                    },
-                ])
-                    .skip(parseInt(offset))
-                    .limit(parseInt(limit));
-                await this.cacheManager.set(`getNewDeals${offset}${limit}`, {
-                    totalCount: totalCount,
-                    data: deals,
-                }, { ttl: 1000 });
-                return {
-                    totalCount: totalCount,
-                    data: deals,
-                };
-            }
-            return value;
-        }
-        catch (err) {
-            throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
-        }
-    }
-    async getDiscountedDeals(percentage, offset, limit, req) {
-        var _a, _b;
-        try {
-            percentage = parseFloat(percentage);
-            offset = parseInt(offset) < 0 ? 0 : offset;
-            limit = parseInt(limit) < 1 ? 10 : limit;
-            let totalCount;
-            do {
-                totalCount = await this.dealModel.countDocuments({
-                    deletedCheck: false,
-                    dealStatus: dealstatus_enum_1.DEALSTATUS.published,
-                    subDeals: {
-                        $elemMatch: { discountPercentage: { $lte: percentage } },
-                    },
-                });
-                percentage += 10;
-                if (percentage > 95) {
-                    break;
-                }
-            } while (totalCount < 6);
-            percentage = percentage - 10;
-            let filterValue = percentage;
-            const deals = await this.dealModel
-                .aggregate([
-                {
-                    $match: {
-                        deletedCheck: false,
-                        dealStatus: dealstatus_enum_1.DEALSTATUS.published,
-                        subDeals: {
-                            $elemMatch: { discountPercentage: { $lte: percentage } },
-                        },
-                    },
-                },
-                {
-                    $sort: {
-                        createdAt: -1,
-                    },
-                },
-                {
-                    $lookup: {
-                        from: 'favourites',
-                        as: 'favouriteDeal',
-                        let: {
-                            dealID: '$dealID',
-                            customerMongoID: (_a = req === null || req === void 0 ? void 0 : req.user) === null || _a === void 0 ? void 0 : _a.id,
-                            deletedCheck: '$deletedCheck',
-                        },
-                        pipeline: [
-                            {
-                                $match: {
-                                    $expr: {
-                                        $and: [
-                                            {
-                                                $eq: ['$$dealID', '$dealID'],
-                                            },
-                                            {
-                                                $eq: ['$$customerMongoID', '$customerMongoID'],
-                                            },
-                                            {
-                                                $eq: ['$deletedCheck', false],
-                                            },
-                                        ],
-                                    },
-                                },
-                            },
-                        ],
-                    },
-                },
-                {
-                    $unwind: {
-                        path: '$favouriteDeal',
-                        preserveNullAndEmptyArrays: true,
-                    },
-                },
-                {
-                    $lookup: {
-                        from: 'users',
-                        as: 'merchantDetails',
-                        let: {
-                            merchantID: '$merchantID',
-                            deletedCheck: '$deletedCheck',
-                        },
-                        pipeline: [
-                            {
-                                $match: {
-                                    $expr: {
-                                        $and: [
-                                            {
-                                                $eq: ['$$merchantID', '$merchantID'],
-                                            },
-                                            {
-                                                $eq: ['$deletedCheck', false],
-                                            },
-                                        ],
-                                    },
-                                },
-                            },
-                            {
-                                $lookup: {
-                                    from: 'locations',
-                                    as: 'locationData',
-                                    localField: 'merchantID',
-                                    foreignField: 'merchantID',
-                                },
-                            },
-                            {
-                                $unwind: '$locationData',
-                            },
-                            {
-                                $addFields: {
-                                    id: '$_id',
-                                    tradeName: '$locationData.tradeName',
-                                },
-                            },
-                            {
-                                $project: {
-                                    _id: 0,
-                                    id: 1,
-                                    totalReviews: 1,
-                                    ratingsAverage: 1,
-                                    tradeName: 1,
-                                    city: 1,
-                                },
-                            },
-                        ],
-                    },
-                },
-                {
-                    $unwind: '$merchantDetails',
-                },
-                {
-                    $addFields: {
-                        id: '$_id',
-                        mediaUrl: {
-                            $slice: [
-                                {
-                                    $filter: {
-                                        input: '$mediaUrl',
-                                        as: 'mediaUrl',
-                                        cond: {
-                                            $eq: ['$$mediaUrl.type', 'Image'],
-                                        },
-                                    },
-                                },
-                                1,
-                            ],
-                        },
-                        isFavourite: {
-                            $cond: [
-                                {
-                                    $ifNull: ['$favouriteDeal', false],
-                                },
-                                true,
-                                false,
-                            ],
-                        },
-                    },
-                },
-                {
-                    $project: {
-                        _id: 0,
-                        merchantMongoID: 0,
-                        merchantID: 0,
-                        subTitle: 0,
-                        categoryName: 0,
-                        subCategoryID: 0,
-                        subCategory: 0,
-                        subDeals: 0,
-                        availableVouchers: 0,
-                        aboutThisDeal: 0,
-                        readMore: 0,
-                        finePrints: 0,
-                        netEarnings: 0,
-                        isCollapsed: 0,
-                        isDuplicate: 0,
-                        totalReviews: 0,
-                        maxRating: 0,
-                        minRating: 0,
-                        pageNumber: 0,
-                        updatedAt: 0,
-                        __v: 0,
-                        endDate: 0,
-                        startDate: 0,
-                        reviewMediaUrl: 0,
-                        favouriteDeal: 0,
-                    },
-                },
-            ])
-                .skip(parseInt(offset))
-                .limit(parseInt(limit));
-            if (deals === null || deals === void 0 ? void 0 : deals.length) {
-                const updatedFilterValue = Math.ceil(((_b = deals === null || deals === void 0 ? void 0 : deals.sort((a, b) => (b === null || b === void 0 ? void 0 : b.minDiscountPercentage) - (a === null || a === void 0 ? void 0 : a.minDiscountPercentage))[0]) === null || _b === void 0 ? void 0 : _b.minDiscountPercentage) / 10) * 10;
-                filterValue = updatedFilterValue;
-            }
-            return {
-                filterValue,
-                totalCount: totalCount,
-                data: deals,
-            };
-        }
-        catch (err) {
-            throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
-        }
-    }
-    async getHotDeals(offset, limit, req) {
-        var _a;
-        try {
-            offset = parseInt(offset) < 0 ? 0 : offset;
-            limit = parseInt(limit) < 1 ? 10 : limit;
-            const value = await this.cacheManager.get(`getHotDeals${offset}${limit}`);
-            let totalCount;
-            let deals;
-            if (!value) {
-                totalCount = await this.dealModel.countDocuments({
-                    deletedCheck: false,
-                    dealStatus: dealstatus_enum_1.DEALSTATUS.published,
-                    availableVouchers: { $gt: 0 },
-                    soldVouchers: { $gt: 0 },
-                });
-                deals = await this.dealModel
-                    .aggregate([
-                    {
-                        $match: {
-                            deletedCheck: false,
-                            dealStatus: dealstatus_enum_1.DEALSTATUS.published,
-                            availableVouchers: { $gt: 0 },
-                            soldVouchers: { $gt: 0 },
-                        },
-                    },
-                    {
-                        $addFields: {
-                            id: '$_id',
-                            added: { $add: ['$soldVouchers', '$availableVouchers'] },
-                        },
-                    },
-                    {
-                        $addFields: {
-                            divided: { $divide: ['$soldVouchers', '$added'] },
-                            percent: {
-                                $multiply: ['$divided', 100],
-                            },
-                        },
-                    },
-                    {
-                        $addFields: {
-                            percent: {
-                                $multiply: ['$divided', 100],
-                            },
-                        },
-                    },
-                    {
-                        $lookup: {
-                            from: 'favourites',
-                            as: 'favouriteDeal',
-                            let: {
-                                dealID: '$dealID',
-                                customerMongoID: (_a = req === null || req === void 0 ? void 0 : req.user) === null || _a === void 0 ? void 0 : _a.id,
-                                deletedCheck: '$deletedCheck',
-                            },
-                            pipeline: [
-                                {
-                                    $match: {
-                                        $expr: {
-                                            $and: [
-                                                {
-                                                    $eq: ['$$dealID', '$dealID'],
-                                                },
-                                                {
-                                                    $eq: ['$$customerMongoID', '$customerMongoID'],
-                                                },
-                                                {
-                                                    $eq: ['$deletedCheck', false],
-                                                },
-                                            ],
-                                        },
-                                    },
-                                },
-                            ],
-                        },
-                    },
-                    {
-                        $unwind: {
-                            path: '$favouriteDeal',
-                            preserveNullAndEmptyArrays: true,
-                        },
-                    },
-                    {
-                        $lookup: {
-                            from: 'users',
-                            as: 'merchantDetails',
-                            let: {
-                                merchantID: '$merchantID',
-                                deletedCheck: '$deletedCheck',
-                            },
-                            pipeline: [
-                                {
-                                    $match: {
-                                        $expr: {
-                                            $and: [
-                                                {
-                                                    $eq: ['$$merchantID', '$merchantID'],
-                                                },
-                                                {
-                                                    $eq: ['$deletedCheck', false],
-                                                },
-                                            ],
-                                        },
-                                    },
-                                },
-                                {
-                                    $lookup: {
-                                        from: 'locations',
-                                        as: 'locationData',
-                                        localField: 'merchantID',
-                                        foreignField: 'merchantID',
-                                    },
-                                },
-                                {
-                                    $unwind: '$locationData',
-                                },
-                                {
-                                    $addFields: {
-                                        id: '$_id',
-                                        tradeName: '$locationData.tradeName',
-                                    },
-                                },
-                                {
-                                    $project: {
-                                        _id: 0,
-                                        id: 1,
-                                        totalReviews: 1,
-                                        ratingsAverage: 1,
-                                        tradeName: 1,
-                                        city: 1,
-                                    },
-                                },
-                            ],
-                        },
-                    },
-                    {
-                        $unwind: '$merchantDetails',
-                    },
-                    {
-                        $addFields: {
-                            mediaUrl: {
-                                $slice: [
-                                    {
-                                        $filter: {
-                                            input: '$mediaUrl',
-                                            as: 'mediaUrl',
-                                            cond: {
-                                                $eq: ['$$mediaUrl.type', 'Image'],
-                                            },
-                                        },
-                                    },
-                                    1,
-                                ],
-                            },
-                            isFavourite: {
-                                $cond: [
-                                    {
-                                        $ifNull: ['$favouriteDeal', false],
-                                    },
-                                    true,
-                                    false,
-                                ],
-                            },
-                        },
-                    },
-                    {
-                        $project: {
-                            _id: 0,
-                            added: 0,
-                            divided: 0,
-                            merchantMongoID: 0,
-                            merchantID: 0,
-                            subTitle: 0,
-                            categoryName: 0,
-                            subCategoryID: 0,
-                            subCategory: 0,
-                            subDeals: 0,
-                            availableVouchers: 0,
-                            aboutThisDeal: 0,
-                            readMore: 0,
-                            finePrints: 0,
-                            netEarnings: 0,
-                            isCollapsed: 0,
-                            isDuplicate: 0,
-                            totalReviews: 0,
-                            maxRating: 0,
-                            minRating: 0,
-                            pageNumber: 0,
-                            updatedAt: 0,
-                            __v: 0,
-                            endDate: 0,
-                            startDate: 0,
-                            reviewMediaUrl: 0,
-                            favouriteDeal: 0,
-                        },
-                    },
-                    {
-                        $sort: {
-                            percent: -1,
-                        },
-                    },
-                ])
-                    .skip(parseInt(offset))
-                    .limit(parseInt(limit));
-                await this.cacheManager.set(`getHotDeals${offset}${limit}`, {
-                    totalCount: totalCount,
-                    data: deals,
-                }, { ttl: 1000 });
-                return {
-                    totalCount: totalCount,
-                    data: deals,
-                };
-            }
-            return value;
-        }
-        catch (err) {
-            throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
-        }
-    }
-    async getSpecialOfferDeals(offset, limit, req) {
-        var _a;
-        try {
-            offset = parseInt(offset) < 0 ? 0 : offset;
-            limit = parseInt(limit) < 1 ? 10 : limit;
-            const totalCount = await this.dealModel.countDocuments({
-                deletedCheck: false,
-                dealStatus: dealstatus_enum_1.DEALSTATUS.published,
-                isSpecialOffer: true,
-            });
-            let deals = await this.dealModel
-                .aggregate([
-                {
-                    $match: {
-                        deletedCheck: false,
-                        dealStatus: dealstatus_enum_1.DEALSTATUS.published,
-                        isSpecialOffer: true,
-                    },
-                },
-                {
-                    $lookup: {
-                        from: 'favourites',
-                        as: 'favouriteDeal',
-                        let: {
-                            dealID: '$dealID',
-                            customerMongoID: (_a = req === null || req === void 0 ? void 0 : req.user) === null || _a === void 0 ? void 0 : _a.id,
-                            deletedCheck: '$deletedCheck',
-                        },
-                        pipeline: [
-                            {
-                                $match: {
-                                    $expr: {
-                                        $and: [
-                                            {
-                                                $eq: ['$$dealID', '$dealID'],
-                                            },
-                                            {
-                                                $eq: ['$$customerMongoID', '$customerMongoID'],
-                                            },
-                                            {
-                                                $eq: ['$deletedCheck', false],
-                                            },
-                                        ],
-                                    },
-                                },
-                            },
-                        ],
-                    },
-                },
-                {
-                    $unwind: {
-                        path: '$favouriteDeal',
-                        preserveNullAndEmptyArrays: true,
-                    },
-                },
-                {
-                    $lookup: {
-                        from: 'users',
-                        as: 'merchantDetails',
-                        let: {
-                            merchantID: '$merchantID',
-                            deletedCheck: '$deletedCheck',
-                        },
-                        pipeline: [
-                            {
-                                $match: {
-                                    $expr: {
-                                        $and: [
-                                            {
-                                                $eq: ['$$merchantID', '$merchantID'],
-                                            },
-                                            {
-                                                $eq: ['$deletedCheck', false],
-                                            },
-                                        ],
-                                    },
-                                },
-                            },
-                            {
-                                $lookup: {
-                                    from: 'locations',
-                                    as: 'locationData',
-                                    localField: 'merchantID',
-                                    foreignField: 'merchantID',
-                                },
-                            },
-                            {
-                                $unwind: '$locationData',
-                            },
-                            {
-                                $addFields: {
-                                    id: '$_id',
-                                    tradeName: '$locationData.tradeName',
-                                },
-                            },
-                            {
-                                $project: {
-                                    _id: 0,
-                                    id: 1,
-                                    totalReviews: 1,
-                                    ratingsAverage: 1,
-                                    tradeName: 1,
-                                    city: 1,
-                                },
-                            },
-                        ],
-                    },
-                },
-                {
-                    $unwind: '$merchantDetails',
-                },
-                {
-                    $addFields: {
-                        id: '$_id',
-                        mediaUrl: {
-                            $slice: [
-                                {
-                                    $filter: {
-                                        input: '$mediaUrl',
-                                        as: 'mediaUrl',
-                                        cond: {
-                                            $eq: ['$$mediaUrl.type', 'Image'],
-                                        },
-                                    },
-                                },
-                                1,
-                            ],
-                        },
-                        isFavourite: {
-                            $cond: [
-                                {
-                                    $ifNull: ['$favouriteDeal', false],
-                                },
-                                true,
-                                false,
-                            ],
-                        },
-                    },
-                },
-                {
-                    $project: {
-                        _id: 0,
-                        merchantMongoID: 0,
-                        merchantID: 0,
-                        subTitle: 0,
-                        categoryName: 0,
-                        subCategoryID: 0,
-                        subCategory: 0,
-                        subDeals: 0,
-                        availableVouchers: 0,
-                        aboutThisDeal: 0,
-                        readMore: 0,
-                        finePrints: 0,
-                        netEarnings: 0,
-                        isCollapsed: 0,
-                        isDuplicate: 0,
-                        totalReviews: 0,
-                        maxRating: 0,
-                        minRating: 0,
-                        pageNumber: 0,
-                        updatedAt: 0,
-                        __v: 0,
-                        endDate: 0,
-                        startDate: 0,
-                        reviewMediaUrl: 0,
-                        favouriteDeal: 0,
-                    },
-                },
-                {
-                    $sort: {
-                        createdAt: -1,
-                    },
-                },
-            ])
-                .skip(parseInt(offset))
-                .limit(parseInt(limit));
-            return {
-                totalCount: totalCount,
-                data: deals,
-            };
-        }
-        catch (err) {
-            throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
-        }
-    }
-    async getNewFavouriteDeal(offset, limit, req) {
-        var _a;
-        try {
-            offset = parseInt(offset) < 0 ? 0 : offset;
-            limit = parseInt(limit) < 1 ? 10 : limit;
-            const totalCount = await this.dealModel.countDocuments({
-                deletedCheck: false,
-                dealStatus: dealstatus_enum_1.DEALSTATUS.published,
-            });
-            const deals = await this.dealModel
-                .aggregate([
-                {
-                    $match: {
-                        deletedCheck: false,
-                        dealStatus: dealstatus_enum_1.DEALSTATUS.published,
-                    },
-                },
-                {
-                    $sample: { size: totalCount },
-                },
-                {
-                    $sort: {
-                        createdAt: -1,
-                    },
-                },
-                {
-                    $lookup: {
-                        from: 'favourites',
-                        as: 'favouriteDeal',
-                        let: {
-                            dealID: '$dealID',
-                            customerMongoID: (_a = req === null || req === void 0 ? void 0 : req.user) === null || _a === void 0 ? void 0 : _a.id,
-                            deletedCheck: '$deletedCheck',
-                        },
-                        pipeline: [
-                            {
-                                $match: {
-                                    $expr: {
-                                        $and: [
-                                            {
-                                                $eq: ['$$dealID', '$dealID'],
-                                            },
-                                            {
-                                                $eq: ['$$customerMongoID', '$customerMongoID'],
-                                            },
-                                            {
-                                                $eq: ['$deletedCheck', false],
-                                            },
-                                        ],
-                                    },
-                                },
-                            },
-                        ],
-                    },
-                },
-                {
-                    $unwind: {
-                        path: '$favouriteDeal',
-                        preserveNullAndEmptyArrays: true,
-                    },
-                },
-                {
-                    $lookup: {
-                        from: 'users',
-                        as: 'merchantDetails',
-                        let: {
-                            merchantID: '$merchantID',
-                            deletedCheck: '$deletedCheck',
-                        },
-                        pipeline: [
-                            {
-                                $match: {
-                                    $expr: {
-                                        $and: [
-                                            {
-                                                $eq: ['$$merchantID', '$merchantID'],
-                                            },
-                                            {
-                                                $eq: ['$deletedCheck', false],
-                                            },
-                                        ],
-                                    },
-                                },
-                            },
-                            {
-                                $lookup: {
-                                    from: 'locations',
-                                    as: 'locationData',
-                                    localField: 'merchantID',
-                                    foreignField: 'merchantID',
-                                },
-                            },
-                            {
-                                $unwind: '$locationData',
-                            },
-                            {
-                                $addFields: {
-                                    id: '$_id',
-                                    tradeName: '$locationData.tradeName',
-                                },
-                            },
-                            {
-                                $project: {
-                                    _id: 0,
-                                    id: 1,
-                                    totalReviews: 1,
-                                    ratingsAverage: 1,
-                                    tradeName: 1,
-                                    city: 1,
-                                },
-                            },
-                        ],
-                    },
-                },
-                {
-                    $unwind: '$merchantDetails',
-                },
-                {
-                    $addFields: {
-                        id: '$_id',
-                        mediaUrl: {
-                            $slice: [
-                                {
-                                    $filter: {
-                                        input: '$mediaUrl',
-                                        as: 'mediaUrl',
-                                        cond: {
-                                            $eq: ['$$mediaUrl.type', 'Image'],
-                                        },
-                                    },
-                                },
-                                1,
-                            ],
-                        },
-                        isFavourite: {
-                            $cond: [
-                                {
-                                    $ifNull: ['$favouriteDeal', false],
-                                },
-                                true,
-                                false,
-                            ],
-                        },
-                    },
-                },
-                {
-                    $project: {
-                        _id: 0,
-                        merchantMongoID: 0,
-                        merchantID: 0,
-                        subTitle: 0,
-                        categoryName: 0,
-                        subCategoryID: 0,
-                        subCategory: 0,
-                        subDeals: 0,
-                        availableVouchers: 0,
-                        aboutThisDeal: 0,
-                        readMore: 0,
-                        finePrints: 0,
-                        netEarnings: 0,
-                        isCollapsed: 0,
-                        isDuplicate: 0,
-                        totalReviews: 0,
-                        maxRating: 0,
-                        minRating: 0,
-                        pageNumber: 0,
-                        updatedAt: 0,
-                        __v: 0,
-                        endDate: 0,
-                        startDate: 0,
-                        reviewMediaUrl: 0,
-                        favouriteDeal: 0,
-                    },
-                },
-            ])
-                .skip(parseInt(offset))
-                .limit(parseInt(limit));
-            return {
-                totalCount: totalCount,
-                data: deals,
-            };
-        }
-        catch (err) {
-            throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
-        }
-    }
-    async getNearByDeals(lat, lng, distance, offset, limit, req) {
-        var _a;
-        try {
-            offset = parseInt(offset) < 0 ? 0 : offset;
-            limit = parseInt(limit) < 1 ? 10 : limit;
+            lat = parseFloat(lat);
+            lng = parseFloat(lng);
+            distance = parseFloat(distance);
             if (!distance) {
                 distance = 10;
             }
             let radius = parseFloat(distance) / 6378.1;
             if (!lat && !lng) {
-                lat = 51.0397129;
-                lng = 3.7141549000597;
+                lat = 50.8476;
+                lng = 4.3572;
                 radius = 20 / 6378.1;
             }
-            let deal;
-            let isFound = false;
-            while (!isFound) {
-                deal = await this.dealModel
-                    .aggregate([
-                    {
-                        $match: {
-                            deletedCheck: false,
-                            dealStatus: dealstatus_enum_1.DEALSTATUS.published,
-                        },
-                    },
-                    {
-                        $lookup: {
-                            from: 'locations',
-                            as: 'location',
-                            localField: 'merchantID',
-                            foreignField: 'merchantID',
-                        },
-                    },
-                    {
-                        $unwind: '$location',
-                    },
-                    {
-                        $addFields: {
-                            locationCoordinates: '$location.location',
-                        },
-                    },
-                    {
-                        $match: {
-                            locationCoordinates: {
-                                $geoWithin: {
-                                    $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
-                                },
-                            },
-                        },
-                    },
-                    {
-                        $lookup: {
-                            from: 'favourites',
-                            as: 'favouriteDeal',
-                            let: {
-                                dealID: '$dealID',
-                                customerMongoID: (_a = req === null || req === void 0 ? void 0 : req.user) === null || _a === void 0 ? void 0 : _a.id,
-                                deletedCheck: '$deletedCheck',
-                            },
-                            pipeline: [
-                                {
-                                    $match: {
-                                        $expr: {
-                                            $and: [
-                                                {
-                                                    $eq: ['$$dealID', '$dealID'],
-                                                },
-                                                {
-                                                    $eq: ['$$customerMongoID', '$customerMongoID'],
-                                                },
-                                                {
-                                                    $eq: ['$deletedCheck', false],
-                                                },
-                                            ],
-                                        },
-                                    },
-                                },
-                            ],
-                        },
-                    },
-                    {
-                        $unwind: {
-                            path: '$favouriteDeal',
-                            preserveNullAndEmptyArrays: true,
-                        },
-                    },
-                    {
-                        $lookup: {
-                            from: 'users',
-                            as: 'merchantDetails',
-                            let: {
-                                merchantID: '$merchantID',
-                                deletedCheck: '$deletedCheck',
-                            },
-                            pipeline: [
-                                {
-                                    $match: {
-                                        $expr: {
-                                            $and: [
-                                                {
-                                                    $eq: ['$$merchantID', '$merchantID'],
-                                                },
-                                                {
-                                                    $eq: ['$deletedCheck', false],
-                                                },
-                                            ],
-                                        },
-                                    },
-                                },
-                                {
-                                    $lookup: {
-                                        from: 'locations',
-                                        as: 'locationData',
-                                        localField: 'merchantID',
-                                        foreignField: 'merchantID',
-                                    },
-                                },
-                                {
-                                    $unwind: '$locationData',
-                                },
-                                {
-                                    $addFields: {
-                                        id: '$_id',
-                                        tradeName: '$locationData.tradeName',
-                                    },
-                                },
-                                {
-                                    $project: {
-                                        _id: 0,
-                                        id: 1,
-                                        totalReviews: 1,
-                                        ratingsAverage: 1,
-                                        tradeName: 1,
-                                        city: 1,
-                                    },
-                                },
-                            ],
-                        },
-                    },
-                    {
-                        $unwind: '$merchantDetails',
-                    },
-                    {
-                        $addFields: {
-                            id: '$_id',
-                            mediaUrl: {
-                                $slice: [
-                                    {
-                                        $filter: {
-                                            input: '$mediaUrl',
-                                            as: 'mediaUrl',
-                                            cond: {
-                                                $eq: ['$$mediaUrl.type', 'Image'],
-                                            },
-                                        },
-                                    },
-                                    1,
-                                ],
-                            },
-                            isFavourite: {
-                                $cond: [
-                                    {
-                                        $ifNull: ['$favouriteDeal', false],
-                                    },
-                                    true,
-                                    false,
-                                ],
-                            },
-                        },
-                    },
-                    {
-                        $project: {
-                            _id: 0,
-                            merchantMongoID: 0,
-                            merchantID: 0,
-                            subTitle: 0,
-                            categoryName: 0,
-                            subCategoryID: 0,
-                            subCategory: 0,
-                            subDeals: 0,
-                            availableVouchers: 0,
-                            aboutThisDeal: 0,
-                            readMore: 0,
-                            finePrints: 0,
-                            netEarnings: 0,
-                            isCollapsed: 0,
-                            isDuplicate: 0,
-                            totalReviews: 0,
-                            maxRating: 0,
-                            minRating: 0,
-                            pageNumber: 0,
-                            updatedAt: 0,
-                            __v: 0,
-                            endDate: 0,
-                            startDate: 0,
-                            reviewMediaUrl: 0,
-                            favouriteDeal: 0,
-                        },
-                    },
-                ])
-                    .skip(parseInt(offset))
-                    .limit(parseInt(limit));
-                if (deal.length > 0) {
+            let count;
+            let priceIncrease = 10;
+            do {
+                priceIncrease += 10;
+                count = await this.dealModel.countDocuments({
+                    deletedCheck: false,
+                    dealStatus: dealstatus_enum_1.DEALSTATUS.published,
+                    subDeals: { $elemMatch: { dealPrice: { $lt: price } } },
+                });
+                if (price > 150) {
                     break;
                 }
-                if (lat == 33.5705073 && lng == 73.1434092) {
-                    isFound = true;
-                }
-                lat = 33.5705073;
-                lng = 73.1434092;
-            }
-            return deal;
-        }
-        catch (err) {
-            console.log(err);
-        }
-    }
-    async searchDeals(searchBar, header, categoryName, subCategoryName, fromPrice, toPrice, reviewRating, offset, limit, filterCategoriesApiDto, req) {
-        var _a, _b, _c, _d;
-        try {
-            offset = parseInt(offset) < 0 ? 0 : offset;
-            limit = parseInt(limit) < 1 ? 10 : limit;
-            let filters = {};
-            searchBar = searchBar.trim();
-            var headerQuery = new RegExp(`${searchBar}`, 'i');
-            var categoryQuery = new RegExp(`${searchBar}`, 'i');
-            var subCategoryQuery = new RegExp(`${searchBar}`, 'i');
-            if (header.trim().length) {
-                var query = new RegExp(`${header}`, 'i');
-                filters = Object.assign(Object.assign({}, filters), { dealHeader: query });
-            }
-            let matchFilter = {};
+                price = price + priceIncrease;
+            } while (count < 6);
+            price = price - priceIncrease;
+            let filterValue = price;
+            let categoryFilters = {};
             if (categoryName) {
-                matchFilter = Object.assign(Object.assign({}, matchFilter), { categoryName: categoryName });
+                categoryFilters = Object.assign(Object.assign({}, categoryFilters), { categoryName: categoryName });
             }
             if (subCategoryName) {
-                matchFilter = Object.assign(Object.assign({}, matchFilter), { subCategory: subCategoryName });
+                categoryFilters = Object.assign(Object.assign({}, categoryFilters), { subCategory: subCategoryName });
             }
+            let matchFilter = {};
             let minValue = parseInt(fromPrice);
             let maxValue = parseInt(toPrice);
             if (fromPrice && toPrice) {
@@ -2839,48 +1734,104 @@ let DealService = class DealService {
                         $gte: rating,
                     } });
             }
+            let sort = {};
+            if (sorting == categoryapisorting_enum_1.SORTINGENUM.priceAsc || sorting == categoryapisorting_enum_1.SORTINGENUM.priceDesc) {
+                let sortPrice = sorting == categoryapisorting_enum_1.SORTINGENUM.priceAsc ? 1 : -1;
+                console.log('sorting');
+                sort = {
+                    minDealPrice: sortPrice,
+                };
+            }
+            if (sorting == categoryapisorting_enum_1.SORTINGENUM.ratingAsc ||
+                sorting == categoryapisorting_enum_1.SORTINGENUM.ratingDesc) {
+                let sortRating = sorting == categoryapisorting_enum_1.SORTINGENUM.ratingAsc ? 1 : -1;
+                console.log('sorting');
+                sort = {
+                    ratingsAverage: sortRating,
+                };
+            }
+            if (sorting == categoryapisorting_enum_1.SORTINGENUM.dateAsc || sorting == categoryapisorting_enum_1.SORTINGENUM.dateDesc) {
+                let sortDate = sorting == categoryapisorting_enum_1.SORTINGENUM.dateAsc ? 1 : -1;
+                console.log('sorting');
+                sort = {
+                    createdAt: sortDate,
+                };
+            }
             let locationFilter = {};
             if ((_a = filterCategoriesApiDto === null || filterCategoriesApiDto === void 0 ? void 0 : filterCategoriesApiDto.provincesArray) === null || _a === void 0 ? void 0 : _a.length) {
                 locationFilter = Object.assign(Object.assign({}, locationFilter), { province: { $in: filterCategoriesApiDto.provincesArray } });
             }
-            console.log(filters);
-            console.log(locationFilter);
+            if (Object.keys(sort).length === 0 && sort.constructor === Object) {
+                sort = {
+                    createdAt: -1,
+                };
+            }
+            let fromPriceFilter = {};
+            let toPriceFilter = {};
+            if (fromPrice) {
+                fromPriceFilter = Object.assign({ $gte: ['$minDealPrice', minValue] }, fromPriceFilter);
+            }
+            if (toPrice) {
+                toPriceFilter = {
+                    $lte: ['$minDealPrice', maxValue]
+                };
+            }
+            let ratingFilter = {};
+            if (reviewRating) {
+                ratingFilter = {
+                    $gte: ['$ratingsAverage', rating]
+                };
+            }
+            let provincesArray = [];
+            if (filterCategoriesApiDto.provincesArray.length == 0) {
+                provincesArray = [
+                    'West-Vlaanderen',
+                    'Vlaams-Brabant',
+                    'Limburg',
+                    'Oost-Vlaanderen',
+                    'Antwerpen'
+                ];
+            }
+            else {
+                provincesArray = filterCategoriesApiDto.provincesArray;
+            }
             const totalCount = await this.dealModel.aggregate([
                 {
                     $match: {
                         deletedCheck: false,
                         dealStatus: dealstatus_enum_1.DEALSTATUS.published,
+                        subDeals: {
+                            $elemMatch: { dealPrice: { $lt: price } },
+                        },
                     },
                 },
                 {
+                    $lookup: {
+                        from: 'locations',
+                        as: 'location',
+                        localField: 'merchantID',
+                        foreignField: 'merchantID',
+                    },
+                },
+                {
+                    $unwind: '$location',
+                },
+                {
                     $addFields: {
-                        isHeader: {
-                            $regexMatch: { input: '$dealHeader', regex: headerQuery },
-                        },
-                        isCategory: {
-                            $regexMatch: { input: '$categoryName', regex: categoryQuery },
-                        },
-                        isSubCategory: {
-                            $regexMatch: { input: '$subCategory', regex: subCategoryQuery },
-                        },
+                        locationCoordinates: '$location.location',
                     },
                 },
                 {
                     $match: {
-                        $or: [
-                            { isCategory: true },
-                            { isSubCategory: true },
-                            { isHeader: true },
-                        ],
+                        locationCoordinates: {
+                            $geoWithin: {
+                                $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+                            },
+                        },
                     },
                 },
                 {
-                    $sort: {
-                        isCategory: -1,
-                        isSubCategory: -1,
-                        isHeader: -1,
-                        createdAt: -1,
-                    },
+                    $sort: sort,
                 },
                 {
                     $lookup: {
@@ -3019,6 +1970,8 @@ let DealService = class DealService {
                                             {
                                                 $lte: ['$minDealPrice', 50],
                                             },
+                                            Object.assign({}, ratingFilter),
+                                            { $in: ['$province', provincesArray] }
                                         ],
                                     },
                                     1,
@@ -3037,6 +1990,8 @@ let DealService = class DealService {
                                             {
                                                 $lte: ['$minDealPrice', 150],
                                             },
+                                            Object.assign({}, ratingFilter),
+                                            { $in: ['$province', provincesArray] }
                                         ],
                                     },
                                     1,
@@ -3055,6 +2010,8 @@ let DealService = class DealService {
                                             {
                                                 $lte: ['$minDealPrice', 300],
                                             },
+                                            Object.assign({}, ratingFilter),
+                                            { $in: ['$province', provincesArray] }
                                         ],
                                     },
                                     1,
@@ -3073,6 +2030,8 @@ let DealService = class DealService {
                                             {
                                                 $lte: ['$minDealPrice', 450],
                                             },
+                                            Object.assign({}, ratingFilter),
+                                            { $in: ['$province', provincesArray] }
                                         ],
                                     },
                                     1,
@@ -3084,7 +2043,13 @@ let DealService = class DealService {
                             $sum: {
                                 $cond: [
                                     {
-                                        $gte: ['$minDealPrice', 450],
+                                        $and: [
+                                            {
+                                                $gte: ['$minDealPrice', 450],
+                                            },
+                                            Object.assign({}, ratingFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
                                     },
                                     1,
                                     0,
@@ -3094,8 +2059,12 @@ let DealService = class DealService {
                         FourUp: {
                             $sum: {
                                 $cond: [
-                                    {
-                                        $gte: ['$ratingsAverage', 4],
+                                    { $and: [
+                                            { $gte: ['$ratingsAverage', 4] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
                                     },
                                     1,
                                     0,
@@ -3106,7 +2075,12 @@ let DealService = class DealService {
                             $sum: {
                                 $cond: [
                                     {
-                                        $gte: ['$ratingsAverage', 3],
+                                        $and: [
+                                            { $gte: ['$ratingsAverage', 3] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
                                     },
                                     1,
                                     0,
@@ -3117,7 +2091,12 @@ let DealService = class DealService {
                             $sum: {
                                 $cond: [
                                     {
-                                        $gte: ['$ratingsAverage', 2],
+                                        $and: [
+                                            { $gte: ['$ratingsAverage', 2] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
                                     },
                                     1,
                                     0,
@@ -3128,7 +2107,12 @@ let DealService = class DealService {
                             $sum: {
                                 $cond: [
                                     {
-                                        $gte: ['$ratingsAverage', 1],
+                                        $and: [
+                                            { $gte: ['$ratingsAverage', 1] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
                                     },
                                     1,
                                     0,
@@ -3139,7 +2123,12 @@ let DealService = class DealService {
                             $sum: {
                                 $cond: [
                                     {
-                                        $gte: ['$ratingsAverage', 0],
+                                        $and: [
+                                            { $gte: ['$ratingsAverage', 0] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
                                     },
                                     1,
                                     0,
@@ -3150,7 +2139,12 @@ let DealService = class DealService {
                             $sum: {
                                 $cond: [
                                     {
-                                        $eq: ['$province', 'West-Vlaanderen'],
+                                        $and: [
+                                            { $eq: ['$province', 'West-Vlaanderen'] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            Object.assign({}, ratingFilter),
+                                        ]
                                     },
                                     1,
                                     0,
@@ -3161,7 +2155,12 @@ let DealService = class DealService {
                             $sum: {
                                 $cond: [
                                     {
-                                        $eq: ['$province', 'Oost-Vlaanderen'],
+                                        $and: [
+                                            { $eq: ['$province', 'Oost-Vlaanderen'] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            Object.assign({}, ratingFilter),
+                                        ]
                                     },
                                     1,
                                     0,
@@ -3172,7 +2171,12 @@ let DealService = class DealService {
                             $sum: {
                                 $cond: [
                                     {
-                                        $eq: ['$province', 'Antwerpen'],
+                                        $and: [
+                                            { $eq: ['$province', 'Antwerpen'] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            Object.assign({}, ratingFilter),
+                                        ]
                                     },
                                     1,
                                     0,
@@ -3183,7 +2187,12 @@ let DealService = class DealService {
                             $sum: {
                                 $cond: [
                                     {
-                                        $eq: ['$province', 'Limburg'],
+                                        $and: [
+                                            { $eq: ['$province', 'Limburg'] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            Object.assign({}, ratingFilter),
+                                        ]
                                     },
                                     1,
                                     0,
@@ -3194,7 +2203,12 @@ let DealService = class DealService {
                             $sum: {
                                 $cond: [
                                     {
-                                        $eq: ['$province', 'Vlaams-Brabant'],
+                                        $and: [
+                                            { $eq: ['$province', 'Vlaams-Brabant'] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            Object.assign({}, ratingFilter),
+                                        ]
                                     },
                                     1,
                                     0,
@@ -3211,37 +2225,37 @@ let DealService = class DealService {
             ]);
             const filteredCount = await this.dealModel.aggregate([
                 {
-                    $match: Object.assign(Object.assign({ deletedCheck: false, dealStatus: dealstatus_enum_1.DEALSTATUS.published }, filters), matchFilter),
+                    $match: Object.assign(Object.assign({ deletedCheck: false, dealStatus: dealstatus_enum_1.DEALSTATUS.published, subDeals: {
+                            $elemMatch: { dealPrice: { $lt: price } },
+                        } }, categoryFilters), matchFilter),
+                },
+                {
+                    $lookup: {
+                        from: 'locations',
+                        as: 'location',
+                        localField: 'merchantID',
+                        foreignField: 'merchantID',
+                    },
+                },
+                {
+                    $unwind: '$location',
                 },
                 {
                     $addFields: {
-                        isHeader: {
-                            $regexMatch: { input: '$dealHeader', regex: headerQuery },
-                        },
-                        isCategory: {
-                            $regexMatch: { input: '$categoryName', regex: categoryQuery },
-                        },
-                        isSubCategory: {
-                            $regexMatch: { input: '$subCategory', regex: subCategoryQuery },
-                        },
+                        locationCoordinates: '$location.location',
                     },
                 },
                 {
                     $match: {
-                        $or: [
-                            { isCategory: true },
-                            { isSubCategory: true },
-                            { isHeader: true },
-                        ],
+                        locationCoordinates: {
+                            $geoWithin: {
+                                $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+                            },
+                        },
                     },
                 },
                 {
-                    $sort: {
-                        isCategory: -1,
-                        isSubCategory: -1,
-                        isHeader: -1,
-                        createdAt: -1,
-                    },
+                    $sort: sort,
                 },
                 {
                     $lookup: {
@@ -3372,40 +2386,40 @@ let DealService = class DealService {
                     $count: 'filteredCount',
                 },
             ]);
-            const deals = await this.dealModel
+            let deals = await this.dealModel
                 .aggregate([
                 {
-                    $match: Object.assign(Object.assign({ deletedCheck: false, dealStatus: dealstatus_enum_1.DEALSTATUS.published }, filters), matchFilter),
+                    $match: Object.assign(Object.assign({ deletedCheck: false, dealStatus: dealstatus_enum_1.DEALSTATUS.published, subDeals: {
+                            $elemMatch: { dealPrice: { $lt: price } },
+                        } }, categoryFilters), matchFilter),
+                },
+                {
+                    $lookup: {
+                        from: 'locations',
+                        as: 'location',
+                        localField: 'merchantID',
+                        foreignField: 'merchantID',
+                    },
+                },
+                {
+                    $unwind: '$location',
                 },
                 {
                     $addFields: {
-                        isHeader: {
-                            $regexMatch: { input: '$dealHeader', regex: headerQuery },
-                        },
-                        isCategory: {
-                            $regexMatch: { input: '$categoryName', regex: categoryQuery },
-                        },
-                        isSubCategory: {
-                            $regexMatch: { input: '$subCategory', regex: subCategoryQuery },
-                        },
+                        locationCoordinates: '$location.location',
                     },
                 },
                 {
                     $match: {
-                        $or: [
-                            { isCategory: true },
-                            { isSubCategory: true },
-                            { isHeader: true },
-                        ],
+                        locationCoordinates: {
+                            $geoWithin: {
+                                $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+                            },
+                        },
                     },
                 },
                 {
-                    $sort: {
-                        isCategory: -1,
-                        isSubCategory: -1,
-                        isHeader: -1,
-                        createdAt: -1,
-                    },
+                    $sort: sort
                 },
                 {
                     $lookup: {
@@ -3491,7 +2505,6 @@ let DealService = class DealService {
                                     ratingsAverage: 1,
                                     tradeName: 1,
                                     city: 1,
-                                    province: 1,
                                 },
                             },
                         ],
@@ -3503,7 +2516,6 @@ let DealService = class DealService {
                 {
                     $addFields: {
                         id: '$_id',
-                        province: '$merchantDetails.province',
                         mediaUrl: {
                             $slice: [
                                 {
@@ -3528,9 +2540,6 @@ let DealService = class DealService {
                             ],
                         },
                     },
-                },
-                {
-                    $match: Object.assign({}, locationFilter),
                 },
                 {
                     $project: {
@@ -3559,22 +2568,259 @@ let DealService = class DealService {
                         startDate: 0,
                         reviewMediaUrl: 0,
                         favouriteDeal: 0,
+                        location: 0
                     },
                 },
             ])
                 .skip(parseInt(offset))
                 .limit(parseInt(limit));
-            return Object.assign(Object.assign({}, totalCount[0]), { filteredCount: (filteredCount === null || filteredCount === void 0 ? void 0 : filteredCount.length) > 0 ? filteredCount[0].filteredCount : 0, data: deals });
+            if (deals === null || deals === void 0 ? void 0 : deals.length) {
+                const updatedFilterValue = Math.ceil(((_e = deals === null || deals === void 0 ? void 0 : deals.sort((a, b) => (b === null || b === void 0 ? void 0 : b.minDealPrice) - (a === null || a === void 0 ? void 0 : a.minDealPrice))[0]) === null || _e === void 0 ? void 0 : _e.minDealPrice) / 10) * 10;
+                filterValue = updatedFilterValue;
+            }
+            return Object.assign(Object.assign({ filterValue }, totalCount[0]), { filteredCount: (filteredCount === null || filteredCount === void 0 ? void 0 : filteredCount.length) > 0 ? filteredCount[0].filteredCount : 0, data: deals });
         }
         catch (err) {
             throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
         }
     }
-    async getDealsByCategories(categoryName, subCategoryName, fromPrice, toPrice, reviewRating, sorting, offset, limit, filterCategoriesApiDto, req) {
+    async getNewDeals(lat, lng, distance, offset, limit, req) {
+        var _a;
+        try {
+            offset = parseInt(offset) < 0 ? 0 : offset;
+            limit = parseInt(limit) < 1 ? 10 : limit;
+            lat = parseFloat(lat);
+            lng = parseFloat(lng);
+            distance = parseFloat(distance);
+            if (!distance) {
+                distance = 10;
+            }
+            let radius = parseFloat(distance) / 6378.1;
+            if (!lat && !lng) {
+                lat = 50.8476;
+                lng = 4.3572;
+                radius = 20 / 6378.1;
+            }
+            let totalCount = await this.dealModel.countDocuments({
+                deletedCheck: false,
+                dealStatus: dealstatus_enum_1.DEALSTATUS.published,
+            });
+            let deals = await this.dealModel
+                .aggregate([
+                {
+                    $match: {
+                        deletedCheck: false,
+                        dealStatus: dealstatus_enum_1.DEALSTATUS.published,
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'locations',
+                        as: 'location',
+                        localField: 'merchantID',
+                        foreignField: 'merchantID',
+                    },
+                },
+                {
+                    $unwind: '$location',
+                },
+                {
+                    $addFields: {
+                        locationCoordinates: '$location.location',
+                    },
+                },
+                {
+                    $match: {
+                        locationCoordinates: {
+                            $geoWithin: {
+                                $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+                            },
+                        },
+                    },
+                },
+                {
+                    $sort: {
+                        createdAt: -1,
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'favourites',
+                        as: 'favouriteDeal',
+                        let: {
+                            dealID: '$dealID',
+                            customerMongoID: (_a = req === null || req === void 0 ? void 0 : req.user) === null || _a === void 0 ? void 0 : _a.id,
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$dealID', '$dealID'],
+                                            },
+                                            {
+                                                $eq: ['$$customerMongoID', '$customerMongoID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: {
+                        path: '$favouriteDeal',
+                        preserveNullAndEmptyArrays: true,
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'users',
+                        as: 'merchantDetails',
+                        let: {
+                            merchantID: '$merchantID',
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$merchantID', '$merchantID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                            {
+                                $lookup: {
+                                    from: 'locations',
+                                    as: 'locationData',
+                                    localField: 'merchantID',
+                                    foreignField: 'merchantID',
+                                },
+                            },
+                            {
+                                $unwind: '$locationData',
+                            },
+                            {
+                                $addFields: {
+                                    id: '$_id',
+                                    tradeName: '$locationData.tradeName',
+                                },
+                            },
+                            {
+                                $project: {
+                                    _id: 0,
+                                    id: 1,
+                                    totalReviews: 1,
+                                    ratingsAverage: 1,
+                                    tradeName: 1,
+                                    city: 1,
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: '$merchantDetails',
+                },
+                {
+                    $addFields: {
+                        id: '$_id',
+                        mediaUrl: {
+                            $slice: [
+                                {
+                                    $filter: {
+                                        input: '$mediaUrl',
+                                        as: 'mediaUrl',
+                                        cond: {
+                                            $eq: ['$$mediaUrl.type', 'Image'],
+                                        },
+                                    },
+                                },
+                                1,
+                            ],
+                        },
+                        isFavourite: {
+                            $cond: [
+                                {
+                                    $ifNull: ['$favouriteDeal', false],
+                                },
+                                true,
+                                false,
+                            ],
+                        },
+                    },
+                },
+                {
+                    $project: {
+                        _id: 0,
+                        merchantMongoID: 0,
+                        merchantID: 0,
+                        subTitle: 0,
+                        categoryName: 0,
+                        subCategoryID: 0,
+                        subCategory: 0,
+                        subDeals: 0,
+                        availableVouchers: 0,
+                        aboutThisDeal: 0,
+                        readMore: 0,
+                        finePrints: 0,
+                        netEarnings: 0,
+                        isCollapsed: 0,
+                        isDuplicate: 0,
+                        totalReviews: 0,
+                        maxRating: 0,
+                        minRating: 0,
+                        pageNumber: 0,
+                        updatedAt: 0,
+                        __v: 0,
+                        endDate: 0,
+                        startDate: 0,
+                        reviewMediaUrl: 0,
+                        location: 0
+                    },
+                },
+            ])
+                .skip(parseInt(offset))
+                .limit(parseInt(limit));
+            return {
+                totalCount: totalCount,
+                data: deals,
+            };
+        }
+        catch (err) {
+            throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
+        }
+    }
+    async getNewDealsDynamically(lat, lng, distance, categoryName, subCategoryName, fromPrice, toPrice, reviewRating, sorting, offset, limit, filterCategoriesApiDto, req) {
         var _a, _b, _c, _d;
         try {
             offset = parseInt(offset) < 0 ? 0 : offset;
             limit = parseInt(limit) < 1 ? 10 : limit;
+            lat = parseFloat(lat);
+            lng = parseFloat(lng);
+            distance = parseFloat(distance);
+            if (!distance) {
+                distance = 10;
+            }
+            let radius = parseFloat(distance) / 6378.1;
+            if (!lat && !lng) {
+                lat = 50.8476;
+                lng = 4.3572;
+                radius = 20 / 6378.1;
+            }
             let categoryFilters = {};
             if (categoryName) {
                 categoryFilters = Object.assign(Object.assign({}, categoryFilters), { categoryName: categoryName });
@@ -3657,14 +2903,48 @@ let DealService = class DealService {
             }
             let provincesArray = [];
             if (filterCategoriesApiDto.provincesArray.length == 0) {
-                provincesArray = ['West-Vlaanderen', 'Vlaams-Brabant', 'Limburg', 'Oost-Vlaanderen', 'Antwerpen'];
+                provincesArray = [
+                    'West-Vlaanderen',
+                    'Vlaams-Brabant',
+                    'Limburg',
+                    'Oost-Vlaanderen',
+                    'Antwerpen'
+                ];
             }
             else {
                 provincesArray = filterCategoriesApiDto.provincesArray;
             }
             const totalCount = await this.dealModel.aggregate([
                 {
-                    $match: Object.assign({ deletedCheck: false, dealStatus: dealstatus_enum_1.DEALSTATUS.published }, categoryFilters),
+                    $match: {
+                        deletedCheck: false,
+                        dealStatus: dealstatus_enum_1.DEALSTATUS.published,
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'locations',
+                        as: 'location',
+                        localField: 'merchantID',
+                        foreignField: 'merchantID',
+                    },
+                },
+                {
+                    $unwind: '$location',
+                },
+                {
+                    $addFields: {
+                        locationCoordinates: '$location.location',
+                    },
+                },
+                {
+                    $match: {
+                        locationCoordinates: {
+                            $geoWithin: {
+                                $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+                            },
+                        },
+                    },
                 },
                 {
                     $sort: sort,
@@ -4064,6 +3344,31 @@ let DealService = class DealService {
                     $match: Object.assign(Object.assign({ deletedCheck: false, dealStatus: dealstatus_enum_1.DEALSTATUS.published }, categoryFilters), matchFilter),
                 },
                 {
+                    $lookup: {
+                        from: 'locations',
+                        as: 'location',
+                        localField: 'merchantID',
+                        foreignField: 'merchantID',
+                    },
+                },
+                {
+                    $unwind: '$location',
+                },
+                {
+                    $addFields: {
+                        locationCoordinates: '$location.location',
+                    },
+                },
+                {
+                    $match: {
+                        locationCoordinates: {
+                            $geoWithin: {
+                                $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+                            },
+                        },
+                    },
+                },
+                {
                     $sort: sort,
                 },
                 {
@@ -4199,6 +3504,31 @@ let DealService = class DealService {
                 .aggregate([
                 {
                     $match: Object.assign(Object.assign({ deletedCheck: false, dealStatus: dealstatus_enum_1.DEALSTATUS.published }, categoryFilters), matchFilter),
+                },
+                {
+                    $lookup: {
+                        from: 'locations',
+                        as: 'location',
+                        localField: 'merchantID',
+                        foreignField: 'merchantID',
+                    },
+                },
+                {
+                    $unwind: '$location',
+                },
+                {
+                    $addFields: {
+                        locationCoordinates: '$location.location',
+                    },
+                },
+                {
+                    $match: {
+                        locationCoordinates: {
+                            $geoWithin: {
+                                $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+                            },
+                        },
+                    },
                 },
                 {
                     $sort: sort,
@@ -4355,6 +3685,7450 @@ let DealService = class DealService {
                         startDate: 0,
                         reviewMediaUrl: 0,
                         favouriteDeal: 0,
+                        location: 0
+                    },
+                },
+            ])
+                .skip(parseInt(offset))
+                .limit(parseInt(limit));
+            return Object.assign(Object.assign({}, totalCount[0]), { filteredCount: (filteredCount === null || filteredCount === void 0 ? void 0 : filteredCount.length) > 0 ? filteredCount[0].filteredCount : 0, data: deals });
+        }
+        catch (err) {
+            throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
+        }
+    }
+    async getDiscountedDeals(percentage, lat, lng, distance, offset, limit, req) {
+        var _a, _b;
+        try {
+            percentage = parseFloat(percentage);
+            offset = parseInt(offset) < 0 ? 0 : offset;
+            limit = parseInt(limit) < 1 ? 10 : limit;
+            lat = parseFloat(lat);
+            lng = parseFloat(lng);
+            distance = parseFloat(distance);
+            if (!distance) {
+                distance = 10;
+            }
+            let radius = parseFloat(distance) / 6378.1;
+            if (!lat && !lng) {
+                lat = 50.8476;
+                lng = 4.3572;
+                radius = 20 / 6378.1;
+            }
+            let totalCount;
+            do {
+                totalCount = await this.dealModel.countDocuments({
+                    deletedCheck: false,
+                    dealStatus: dealstatus_enum_1.DEALSTATUS.published,
+                    subDeals: {
+                        $elemMatch: { discountPercentage: { $lte: percentage } },
+                    },
+                });
+                percentage += 10;
+                if (percentage > 95) {
+                    break;
+                }
+            } while (totalCount < 6);
+            percentage = percentage - 10;
+            let filterValue = percentage;
+            const deals = await this.dealModel
+                .aggregate([
+                {
+                    $match: {
+                        deletedCheck: false,
+                        dealStatus: dealstatus_enum_1.DEALSTATUS.published,
+                        subDeals: {
+                            $elemMatch: { discountPercentage: { $lte: percentage } },
+                        },
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'locations',
+                        as: 'location',
+                        localField: 'merchantID',
+                        foreignField: 'merchantID',
+                    },
+                },
+                {
+                    $unwind: '$location',
+                },
+                {
+                    $addFields: {
+                        locationCoordinates: '$location.location',
+                    },
+                },
+                {
+                    $match: {
+                        locationCoordinates: {
+                            $geoWithin: {
+                                $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+                            },
+                        },
+                    },
+                },
+                {
+                    $sort: {
+                        createdAt: -1,
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'favourites',
+                        as: 'favouriteDeal',
+                        let: {
+                            dealID: '$dealID',
+                            customerMongoID: (_a = req === null || req === void 0 ? void 0 : req.user) === null || _a === void 0 ? void 0 : _a.id,
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$dealID', '$dealID'],
+                                            },
+                                            {
+                                                $eq: ['$$customerMongoID', '$customerMongoID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: {
+                        path: '$favouriteDeal',
+                        preserveNullAndEmptyArrays: true,
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'users',
+                        as: 'merchantDetails',
+                        let: {
+                            merchantID: '$merchantID',
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$merchantID', '$merchantID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                            {
+                                $lookup: {
+                                    from: 'locations',
+                                    as: 'locationData',
+                                    localField: 'merchantID',
+                                    foreignField: 'merchantID',
+                                },
+                            },
+                            {
+                                $unwind: '$locationData',
+                            },
+                            {
+                                $addFields: {
+                                    id: '$_id',
+                                    tradeName: '$locationData.tradeName',
+                                },
+                            },
+                            {
+                                $project: {
+                                    _id: 0,
+                                    id: 1,
+                                    totalReviews: 1,
+                                    ratingsAverage: 1,
+                                    tradeName: 1,
+                                    city: 1,
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: '$merchantDetails',
+                },
+                {
+                    $addFields: {
+                        id: '$_id',
+                        mediaUrl: {
+                            $slice: [
+                                {
+                                    $filter: {
+                                        input: '$mediaUrl',
+                                        as: 'mediaUrl',
+                                        cond: {
+                                            $eq: ['$$mediaUrl.type', 'Image'],
+                                        },
+                                    },
+                                },
+                                1,
+                            ],
+                        },
+                        isFavourite: {
+                            $cond: [
+                                {
+                                    $ifNull: ['$favouriteDeal', false],
+                                },
+                                true,
+                                false,
+                            ],
+                        },
+                    },
+                },
+                {
+                    $project: {
+                        _id: 0,
+                        merchantMongoID: 0,
+                        merchantID: 0,
+                        subTitle: 0,
+                        categoryName: 0,
+                        subCategoryID: 0,
+                        subCategory: 0,
+                        subDeals: 0,
+                        availableVouchers: 0,
+                        aboutThisDeal: 0,
+                        readMore: 0,
+                        finePrints: 0,
+                        netEarnings: 0,
+                        isCollapsed: 0,
+                        isDuplicate: 0,
+                        totalReviews: 0,
+                        maxRating: 0,
+                        minRating: 0,
+                        pageNumber: 0,
+                        updatedAt: 0,
+                        __v: 0,
+                        endDate: 0,
+                        startDate: 0,
+                        reviewMediaUrl: 0,
+                        favouriteDeal: 0,
+                        location: 0
+                    },
+                },
+            ])
+                .skip(parseInt(offset))
+                .limit(parseInt(limit));
+            if (deals === null || deals === void 0 ? void 0 : deals.length) {
+                const updatedFilterValue = Math.ceil(((_b = deals === null || deals === void 0 ? void 0 : deals.sort((a, b) => (b === null || b === void 0 ? void 0 : b.minDiscountPercentage) - (a === null || a === void 0 ? void 0 : a.minDiscountPercentage))[0]) === null || _b === void 0 ? void 0 : _b.minDiscountPercentage) / 10) * 10;
+                filterValue = updatedFilterValue;
+            }
+            return {
+                filterValue,
+                totalCount: totalCount,
+                data: deals,
+            };
+        }
+        catch (err) {
+            throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
+        }
+    }
+    async getDiscountedDealsDynamically(lat, lng, distance, percentage, categoryName, subCategoryName, fromPrice, toPrice, reviewRating, sorting, offset, limit, filterCategoriesApiDto, req) {
+        var _a, _b, _c, _d, _e;
+        try {
+            percentage = parseFloat(percentage);
+            offset = parseInt(offset) < 0 ? 0 : offset;
+            limit = parseInt(limit) < 1 ? 10 : limit;
+            lat = parseFloat(lat);
+            lng = parseFloat(lng);
+            distance = parseFloat(distance);
+            if (!distance) {
+                distance = 10;
+            }
+            let radius = parseFloat(distance) / 6378.1;
+            if (!lat && !lng) {
+                lat = 50.8476;
+                lng = 4.3572;
+                radius = 20 / 6378.1;
+            }
+            let count;
+            do {
+                count = await this.dealModel.countDocuments({
+                    deletedCheck: false,
+                    dealStatus: dealstatus_enum_1.DEALSTATUS.published,
+                    subDeals: {
+                        $elemMatch: { discountPercentage: { $lte: percentage } },
+                    },
+                });
+                percentage += 10;
+                if (percentage > 95) {
+                    break;
+                }
+            } while (count < 6);
+            percentage = percentage - 10;
+            let filterValue = percentage;
+            let categoryFilters = {};
+            if (categoryName) {
+                categoryFilters = Object.assign(Object.assign({}, categoryFilters), { categoryName: categoryName });
+            }
+            if (subCategoryName) {
+                categoryFilters = Object.assign(Object.assign({}, categoryFilters), { subCategory: subCategoryName });
+            }
+            let matchFilter = {};
+            let minValue = parseInt(fromPrice);
+            let maxValue = parseInt(toPrice);
+            if (fromPrice && toPrice) {
+                matchFilter = Object.assign(Object.assign({}, matchFilter), { minDealPrice: {
+                        $gte: minValue,
+                        $lte: maxValue,
+                    } });
+            }
+            else if (fromPrice) {
+                matchFilter = Object.assign(Object.assign({}, matchFilter), { minDealPrice: {
+                        $gte: minValue,
+                    } });
+            }
+            else if (toPrice) {
+                matchFilter = Object.assign(Object.assign({}, matchFilter), { minDealPrice: {
+                        $lte: maxValue,
+                    } });
+            }
+            let rating = parseFloat(reviewRating);
+            if (reviewRating) {
+                matchFilter = Object.assign(Object.assign({}, matchFilter), { ratingsAverage: {
+                        $gte: rating,
+                    } });
+            }
+            let sort = {};
+            if (sorting == categoryapisorting_enum_1.SORTINGENUM.priceAsc || sorting == categoryapisorting_enum_1.SORTINGENUM.priceDesc) {
+                let sortPrice = sorting == categoryapisorting_enum_1.SORTINGENUM.priceAsc ? 1 : -1;
+                console.log('sorting');
+                sort = {
+                    minDealPrice: sortPrice,
+                };
+            }
+            if (sorting == categoryapisorting_enum_1.SORTINGENUM.ratingAsc ||
+                sorting == categoryapisorting_enum_1.SORTINGENUM.ratingDesc) {
+                let sortRating = sorting == categoryapisorting_enum_1.SORTINGENUM.ratingAsc ? 1 : -1;
+                console.log('sorting');
+                sort = {
+                    ratingsAverage: sortRating,
+                };
+            }
+            if (sorting == categoryapisorting_enum_1.SORTINGENUM.dateAsc || sorting == categoryapisorting_enum_1.SORTINGENUM.dateDesc) {
+                let sortDate = sorting == categoryapisorting_enum_1.SORTINGENUM.dateAsc ? 1 : -1;
+                console.log('sorting');
+                sort = {
+                    createdAt: sortDate,
+                };
+            }
+            let locationFilter = {};
+            if ((_a = filterCategoriesApiDto === null || filterCategoriesApiDto === void 0 ? void 0 : filterCategoriesApiDto.provincesArray) === null || _a === void 0 ? void 0 : _a.length) {
+                locationFilter = Object.assign(Object.assign({}, locationFilter), { province: { $in: filterCategoriesApiDto.provincesArray } });
+            }
+            if (Object.keys(sort).length === 0 && sort.constructor === Object) {
+                sort = {
+                    createdAt: -1,
+                };
+            }
+            let fromPriceFilter = {};
+            let toPriceFilter = {};
+            if (fromPrice) {
+                fromPriceFilter = Object.assign({ $gte: ['$minDealPrice', minValue] }, fromPriceFilter);
+            }
+            if (toPrice) {
+                toPriceFilter = {
+                    $lte: ['$minDealPrice', maxValue]
+                };
+            }
+            let ratingFilter = {};
+            if (reviewRating) {
+                ratingFilter = {
+                    $gte: ['$ratingsAverage', rating]
+                };
+            }
+            let provincesArray = [];
+            if (filterCategoriesApiDto.provincesArray.length == 0) {
+                provincesArray = [
+                    'West-Vlaanderen',
+                    'Vlaams-Brabant',
+                    'Limburg',
+                    'Oost-Vlaanderen',
+                    'Antwerpen'
+                ];
+            }
+            else {
+                provincesArray = filterCategoriesApiDto.provincesArray;
+            }
+            const totalCount = await this.dealModel.aggregate([
+                {
+                    $match: {
+                        deletedCheck: false,
+                        dealStatus: dealstatus_enum_1.DEALSTATUS.published,
+                        subDeals: {
+                            $elemMatch: { discountPercentage: { $lte: percentage } },
+                        },
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'locations',
+                        as: 'location',
+                        localField: 'merchantID',
+                        foreignField: 'merchantID',
+                    },
+                },
+                {
+                    $unwind: '$location',
+                },
+                {
+                    $addFields: {
+                        locationCoordinates: '$location.location',
+                    },
+                },
+                {
+                    $match: {
+                        locationCoordinates: {
+                            $geoWithin: {
+                                $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+                            },
+                        },
+                    },
+                },
+                {
+                    $sort: sort,
+                },
+                {
+                    $lookup: {
+                        from: 'favourites',
+                        as: 'favouriteDeal',
+                        let: {
+                            dealID: '$dealID',
+                            customerMongoID: (_b = req === null || req === void 0 ? void 0 : req.user) === null || _b === void 0 ? void 0 : _b.id,
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$dealID', '$dealID'],
+                                            },
+                                            {
+                                                $eq: ['$$customerMongoID', '$customerMongoID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: {
+                        path: '$favouriteDeal',
+                        preserveNullAndEmptyArrays: true,
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'users',
+                        as: 'merchantDetails',
+                        let: {
+                            merchantID: '$merchantID',
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$merchantID', '$merchantID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                            {
+                                $lookup: {
+                                    from: 'locations',
+                                    as: 'locationData',
+                                    localField: 'merchantID',
+                                    foreignField: 'merchantID',
+                                },
+                            },
+                            {
+                                $unwind: '$locationData',
+                            },
+                            {
+                                $addFields: {
+                                    id: '$_id',
+                                    tradeName: '$locationData.tradeName',
+                                },
+                            },
+                            {
+                                $project: {
+                                    _id: 0,
+                                    id: 1,
+                                    totalReviews: 1,
+                                    ratingsAverage: 1,
+                                    tradeName: 1,
+                                    city: 1,
+                                    province: 1,
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: '$merchantDetails',
+                },
+                {
+                    $addFields: {
+                        id: '$_id',
+                        province: '$merchantDetails.province',
+                        mediaUrl: {
+                            $slice: [
+                                {
+                                    $filter: {
+                                        input: '$mediaUrl',
+                                        as: 'mediaUrl',
+                                        cond: {
+                                            $eq: ['$$mediaUrl.type', 'Image'],
+                                        },
+                                    },
+                                },
+                                1,
+                            ],
+                        },
+                        isFavourite: {
+                            $cond: [
+                                {
+                                    $ifNull: ['$favouriteDeal', false],
+                                },
+                                true,
+                                false,
+                            ],
+                        },
+                    },
+                },
+                {
+                    $group: {
+                        _id: null,
+                        totalCount: { $sum: 1 },
+                        Between0and50: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            {
+                                                $gte: ['$minDealPrice', 0],
+                                            },
+                                            {
+                                                $lte: ['$minDealPrice', 50],
+                                            },
+                                            Object.assign({}, ratingFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        Between50and150: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            {
+                                                $gte: ['$minDealPrice', 50],
+                                            },
+                                            {
+                                                $lte: ['$minDealPrice', 150],
+                                            },
+                                            Object.assign({}, ratingFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        Between150and300: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            {
+                                                $gte: ['$minDealPrice', 150],
+                                            },
+                                            {
+                                                $lte: ['$minDealPrice', 300],
+                                            },
+                                            Object.assign({}, ratingFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        Between300and450: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            {
+                                                $gte: ['$minDealPrice', 300],
+                                            },
+                                            {
+                                                $lte: ['$minDealPrice', 450],
+                                            },
+                                            Object.assign({}, ratingFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        Plus450: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            {
+                                                $gte: ['$minDealPrice', 450],
+                                            },
+                                            Object.assign({}, ratingFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        FourUp: {
+                            $sum: {
+                                $cond: [
+                                    { $and: [
+                                            { $gte: ['$ratingsAverage', 4] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        ThreeUp: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            { $gte: ['$ratingsAverage', 3] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        TwoUp: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            { $gte: ['$ratingsAverage', 2] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        OneUp: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            { $gte: ['$ratingsAverage', 1] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        allRating: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            { $gte: ['$ratingsAverage', 0] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        WestVlaanderen: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            { $eq: ['$province', 'West-Vlaanderen'] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            Object.assign({}, ratingFilter),
+                                        ]
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        OostVlaanderen: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            { $eq: ['$province', 'Oost-Vlaanderen'] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            Object.assign({}, ratingFilter),
+                                        ]
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        Antwerpen: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            { $eq: ['$province', 'Antwerpen'] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            Object.assign({}, ratingFilter),
+                                        ]
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        Limburg: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            { $eq: ['$province', 'Limburg'] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            Object.assign({}, ratingFilter),
+                                        ]
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        VlaamsBrabant: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            { $eq: ['$province', 'Vlaams-Brabant'] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            Object.assign({}, ratingFilter),
+                                        ]
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                    },
+                },
+                {
+                    $project: {
+                        _id: 0,
+                    },
+                },
+            ]);
+            const filteredCount = await this.dealModel.aggregate([
+                {
+                    $match: Object.assign(Object.assign({ deletedCheck: false, dealStatus: dealstatus_enum_1.DEALSTATUS.published, subDeals: {
+                            $elemMatch: { discountPercentage: { $lte: percentage } },
+                        } }, categoryFilters), matchFilter),
+                },
+                {
+                    $lookup: {
+                        from: 'locations',
+                        as: 'location',
+                        localField: 'merchantID',
+                        foreignField: 'merchantID',
+                    },
+                },
+                {
+                    $unwind: '$location',
+                },
+                {
+                    $addFields: {
+                        locationCoordinates: '$location.location',
+                    },
+                },
+                {
+                    $match: {
+                        locationCoordinates: {
+                            $geoWithin: {
+                                $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+                            },
+                        },
+                    },
+                },
+                {
+                    $sort: sort,
+                },
+                {
+                    $lookup: {
+                        from: 'favourites',
+                        as: 'favouriteDeal',
+                        let: {
+                            dealID: '$dealID',
+                            customerMongoID: (_c = req === null || req === void 0 ? void 0 : req.user) === null || _c === void 0 ? void 0 : _c.id,
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$dealID', '$dealID'],
+                                            },
+                                            {
+                                                $eq: ['$$customerMongoID', '$customerMongoID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: {
+                        path: '$favouriteDeal',
+                        preserveNullAndEmptyArrays: true,
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'users',
+                        as: 'merchantDetails',
+                        let: {
+                            merchantID: '$merchantID',
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$merchantID', '$merchantID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                            {
+                                $lookup: {
+                                    from: 'locations',
+                                    as: 'locationData',
+                                    localField: 'merchantID',
+                                    foreignField: 'merchantID',
+                                },
+                            },
+                            {
+                                $unwind: '$locationData',
+                            },
+                            {
+                                $addFields: {
+                                    id: '$_id',
+                                    tradeName: '$locationData.tradeName',
+                                },
+                            },
+                            {
+                                $project: {
+                                    _id: 0,
+                                    id: 1,
+                                    totalReviews: 1,
+                                    ratingsAverage: 1,
+                                    tradeName: 1,
+                                    city: 1,
+                                    province: 1,
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: '$merchantDetails',
+                },
+                {
+                    $addFields: {
+                        id: '$_id',
+                        province: '$merchantDetails.province',
+                        mediaUrl: {
+                            $slice: [
+                                {
+                                    $filter: {
+                                        input: '$mediaUrl',
+                                        as: 'mediaUrl',
+                                        cond: {
+                                            $eq: ['$$mediaUrl.type', 'Image'],
+                                        },
+                                    },
+                                },
+                                1,
+                            ],
+                        },
+                        isFavourite: {
+                            $cond: [
+                                {
+                                    $ifNull: ['$favouriteDeal', false],
+                                },
+                                true,
+                                false,
+                            ],
+                        },
+                    },
+                },
+                {
+                    $match: Object.assign({}, locationFilter),
+                },
+                {
+                    $count: 'filteredCount',
+                },
+            ]);
+            const deals = await this.dealModel
+                .aggregate([
+                {
+                    $match: Object.assign(Object.assign({ deletedCheck: false, dealStatus: dealstatus_enum_1.DEALSTATUS.published, subDeals: {
+                            $elemMatch: { discountPercentage: { $lte: percentage } },
+                        } }, categoryFilters), matchFilter),
+                },
+                {
+                    $lookup: {
+                        from: 'locations',
+                        as: 'location',
+                        localField: 'merchantID',
+                        foreignField: 'merchantID',
+                    },
+                },
+                {
+                    $unwind: '$location',
+                },
+                {
+                    $addFields: {
+                        locationCoordinates: '$location.location',
+                    },
+                },
+                {
+                    $match: {
+                        locationCoordinates: {
+                            $geoWithin: {
+                                $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+                            },
+                        },
+                    },
+                },
+                {
+                    $sort: sort,
+                },
+                {
+                    $lookup: {
+                        from: 'favourites',
+                        as: 'favouriteDeal',
+                        let: {
+                            dealID: '$dealID',
+                            customerMongoID: (_d = req === null || req === void 0 ? void 0 : req.user) === null || _d === void 0 ? void 0 : _d.id,
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$dealID', '$dealID'],
+                                            },
+                                            {
+                                                $eq: ['$$customerMongoID', '$customerMongoID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: {
+                        path: '$favouriteDeal',
+                        preserveNullAndEmptyArrays: true,
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'users',
+                        as: 'merchantDetails',
+                        let: {
+                            merchantID: '$merchantID',
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$merchantID', '$merchantID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                            {
+                                $lookup: {
+                                    from: 'locations',
+                                    as: 'locationData',
+                                    localField: 'merchantID',
+                                    foreignField: 'merchantID',
+                                },
+                            },
+                            {
+                                $unwind: '$locationData',
+                            },
+                            {
+                                $addFields: {
+                                    id: '$_id',
+                                    tradeName: '$locationData.tradeName',
+                                },
+                            },
+                            {
+                                $project: {
+                                    _id: 0,
+                                    id: 1,
+                                    totalReviews: 1,
+                                    ratingsAverage: 1,
+                                    tradeName: 1,
+                                    city: 1,
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: '$merchantDetails',
+                },
+                {
+                    $addFields: {
+                        id: '$_id',
+                        mediaUrl: {
+                            $slice: [
+                                {
+                                    $filter: {
+                                        input: '$mediaUrl',
+                                        as: 'mediaUrl',
+                                        cond: {
+                                            $eq: ['$$mediaUrl.type', 'Image'],
+                                        },
+                                    },
+                                },
+                                1,
+                            ],
+                        },
+                        isFavourite: {
+                            $cond: [
+                                {
+                                    $ifNull: ['$favouriteDeal', false],
+                                },
+                                true,
+                                false,
+                            ],
+                        },
+                    },
+                },
+                {
+                    $project: {
+                        _id: 0,
+                        merchantMongoID: 0,
+                        merchantID: 0,
+                        subTitle: 0,
+                        categoryName: 0,
+                        subCategoryID: 0,
+                        subCategory: 0,
+                        subDeals: 0,
+                        availableVouchers: 0,
+                        aboutThisDeal: 0,
+                        readMore: 0,
+                        finePrints: 0,
+                        netEarnings: 0,
+                        isCollapsed: 0,
+                        isDuplicate: 0,
+                        totalReviews: 0,
+                        maxRating: 0,
+                        minRating: 0,
+                        pageNumber: 0,
+                        updatedAt: 0,
+                        __v: 0,
+                        endDate: 0,
+                        startDate: 0,
+                        reviewMediaUrl: 0,
+                        favouriteDeal: 0,
+                        location: 0
+                    },
+                },
+            ])
+                .skip(parseInt(offset))
+                .limit(parseInt(limit));
+            if (deals === null || deals === void 0 ? void 0 : deals.length) {
+                const updatedFilterValue = Math.ceil(((_e = deals === null || deals === void 0 ? void 0 : deals.sort((a, b) => (b === null || b === void 0 ? void 0 : b.minDiscountPercentage) - (a === null || a === void 0 ? void 0 : a.minDiscountPercentage))[0]) === null || _e === void 0 ? void 0 : _e.minDiscountPercentage) / 10) * 10;
+                filterValue = updatedFilterValue;
+            }
+            return Object.assign(Object.assign({ filterValue }, totalCount[0]), { filteredCount: (filteredCount === null || filteredCount === void 0 ? void 0 : filteredCount.length) > 0 ? filteredCount[0].filteredCount : 0, data: deals });
+        }
+        catch (err) {
+            throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
+        }
+    }
+    async getHotDeals(lat, lng, distance, offset, limit, req) {
+        var _a;
+        try {
+            offset = parseInt(offset) < 0 ? 0 : offset;
+            limit = parseInt(limit) < 1 ? 10 : limit;
+            lat = parseFloat(lat);
+            lng = parseFloat(lng);
+            distance = parseFloat(distance);
+            if (!distance) {
+                distance = 10;
+            }
+            let radius = parseFloat(distance) / 6378.1;
+            if (!lat && !lng) {
+                lat = 50.8476;
+                lng = 4.3572;
+                radius = 20 / 6378.1;
+            }
+            let totalCount = await this.dealModel.countDocuments({
+                deletedCheck: false,
+                dealStatus: dealstatus_enum_1.DEALSTATUS.published,
+                availableVouchers: { $gt: 0 },
+                soldVouchers: { $gt: 0 },
+            });
+            let deals = await this.dealModel
+                .aggregate([
+                {
+                    $match: {
+                        deletedCheck: false,
+                        dealStatus: dealstatus_enum_1.DEALSTATUS.published,
+                        availableVouchers: { $gt: 0 },
+                        soldVouchers: { $gt: 0 },
+                    },
+                },
+                {
+                    $addFields: {
+                        id: '$_id',
+                        added: { $add: ['$soldVouchers', '$availableVouchers'] },
+                    },
+                },
+                {
+                    $addFields: {
+                        divided: { $divide: ['$soldVouchers', '$added'] },
+                        percent: {
+                            $multiply: ['$divided', 100],
+                        },
+                    },
+                },
+                {
+                    $addFields: {
+                        percent: {
+                            $multiply: ['$divided', 100],
+                        },
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'locations',
+                        as: 'location',
+                        localField: 'merchantID',
+                        foreignField: 'merchantID',
+                    },
+                },
+                {
+                    $unwind: '$location',
+                },
+                {
+                    $addFields: {
+                        locationCoordinates: '$location.location',
+                    },
+                },
+                {
+                    $match: {
+                        locationCoordinates: {
+                            $geoWithin: {
+                                $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+                            },
+                        },
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'favourites',
+                        as: 'favouriteDeal',
+                        let: {
+                            dealID: '$dealID',
+                            customerMongoID: (_a = req === null || req === void 0 ? void 0 : req.user) === null || _a === void 0 ? void 0 : _a.id,
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$dealID', '$dealID'],
+                                            },
+                                            {
+                                                $eq: ['$$customerMongoID', '$customerMongoID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: {
+                        path: '$favouriteDeal',
+                        preserveNullAndEmptyArrays: true,
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'users',
+                        as: 'merchantDetails',
+                        let: {
+                            merchantID: '$merchantID',
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$merchantID', '$merchantID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                            {
+                                $lookup: {
+                                    from: 'locations',
+                                    as: 'locationData',
+                                    localField: 'merchantID',
+                                    foreignField: 'merchantID',
+                                },
+                            },
+                            {
+                                $unwind: '$locationData',
+                            },
+                            {
+                                $addFields: {
+                                    id: '$_id',
+                                    tradeName: '$locationData.tradeName',
+                                },
+                            },
+                            {
+                                $project: {
+                                    _id: 0,
+                                    id: 1,
+                                    totalReviews: 1,
+                                    ratingsAverage: 1,
+                                    tradeName: 1,
+                                    city: 1,
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: '$merchantDetails',
+                },
+                {
+                    $addFields: {
+                        mediaUrl: {
+                            $slice: [
+                                {
+                                    $filter: {
+                                        input: '$mediaUrl',
+                                        as: 'mediaUrl',
+                                        cond: {
+                                            $eq: ['$$mediaUrl.type', 'Image'],
+                                        },
+                                    },
+                                },
+                                1,
+                            ],
+                        },
+                        isFavourite: {
+                            $cond: [
+                                {
+                                    $ifNull: ['$favouriteDeal', false],
+                                },
+                                true,
+                                false,
+                            ],
+                        },
+                    },
+                },
+                {
+                    $project: {
+                        _id: 0,
+                        added: 0,
+                        divided: 0,
+                        merchantMongoID: 0,
+                        merchantID: 0,
+                        subTitle: 0,
+                        categoryName: 0,
+                        subCategoryID: 0,
+                        subCategory: 0,
+                        subDeals: 0,
+                        availableVouchers: 0,
+                        aboutThisDeal: 0,
+                        readMore: 0,
+                        finePrints: 0,
+                        netEarnings: 0,
+                        isCollapsed: 0,
+                        isDuplicate: 0,
+                        totalReviews: 0,
+                        maxRating: 0,
+                        minRating: 0,
+                        pageNumber: 0,
+                        updatedAt: 0,
+                        __v: 0,
+                        endDate: 0,
+                        startDate: 0,
+                        reviewMediaUrl: 0,
+                        favouriteDeal: 0,
+                        location: 0
+                    },
+                },
+                {
+                    $sort: {
+                        percent: -1,
+                    },
+                },
+            ])
+                .skip(parseInt(offset))
+                .limit(parseInt(limit));
+            return {
+                totalCount: totalCount,
+                data: deals,
+            };
+        }
+        catch (err) {
+            throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
+        }
+    }
+    async getHotDealsDynamically(lat, lng, distance, categoryName, subCategoryName, fromPrice, toPrice, reviewRating, sorting, offset, limit, filterCategoriesApiDto, req) {
+        var _a, _b, _c, _d;
+        try {
+            offset = parseInt(offset) < 0 ? 0 : offset;
+            limit = parseInt(limit) < 1 ? 10 : limit;
+            lat = parseFloat(lat);
+            lng = parseFloat(lng);
+            distance = parseFloat(distance);
+            if (!distance) {
+                distance = 10;
+            }
+            let radius = parseFloat(distance) / 6378.1;
+            if (!lat && !lng) {
+                lat = 50.8476;
+                lng = 4.3572;
+                radius = 20 / 6378.1;
+            }
+            let categoryFilters = {};
+            if (categoryName) {
+                categoryFilters = Object.assign(Object.assign({}, categoryFilters), { categoryName: categoryName });
+            }
+            if (subCategoryName) {
+                categoryFilters = Object.assign(Object.assign({}, categoryFilters), { subCategory: subCategoryName });
+            }
+            let matchFilter = {};
+            let minValue = parseInt(fromPrice);
+            let maxValue = parseInt(toPrice);
+            if (fromPrice && toPrice) {
+                matchFilter = Object.assign(Object.assign({}, matchFilter), { minDealPrice: {
+                        $gte: minValue,
+                        $lte: maxValue,
+                    } });
+            }
+            else if (fromPrice) {
+                matchFilter = Object.assign(Object.assign({}, matchFilter), { minDealPrice: {
+                        $gte: minValue,
+                    } });
+            }
+            else if (toPrice) {
+                matchFilter = Object.assign(Object.assign({}, matchFilter), { minDealPrice: {
+                        $lte: maxValue,
+                    } });
+            }
+            let rating = parseFloat(reviewRating);
+            if (reviewRating) {
+                matchFilter = Object.assign(Object.assign({}, matchFilter), { ratingsAverage: {
+                        $gte: rating,
+                    } });
+            }
+            let sort = {};
+            if (sorting == categoryapisorting_enum_1.SORTINGENUM.priceAsc || sorting == categoryapisorting_enum_1.SORTINGENUM.priceDesc) {
+                let sortPrice = sorting == categoryapisorting_enum_1.SORTINGENUM.priceAsc ? 1 : -1;
+                console.log('sorting');
+                sort = {
+                    minDealPrice: sortPrice,
+                };
+            }
+            if (sorting == categoryapisorting_enum_1.SORTINGENUM.ratingAsc ||
+                sorting == categoryapisorting_enum_1.SORTINGENUM.ratingDesc) {
+                let sortRating = sorting == categoryapisorting_enum_1.SORTINGENUM.ratingAsc ? 1 : -1;
+                console.log('sorting');
+                sort = {
+                    ratingsAverage: sortRating,
+                };
+            }
+            if (sorting == categoryapisorting_enum_1.SORTINGENUM.dateAsc || sorting == categoryapisorting_enum_1.SORTINGENUM.dateDesc) {
+                let sortDate = sorting == categoryapisorting_enum_1.SORTINGENUM.dateAsc ? 1 : -1;
+                console.log('sorting');
+                sort = {
+                    createdAt: sortDate,
+                };
+            }
+            let locationFilter = {};
+            if ((_a = filterCategoriesApiDto === null || filterCategoriesApiDto === void 0 ? void 0 : filterCategoriesApiDto.provincesArray) === null || _a === void 0 ? void 0 : _a.length) {
+                locationFilter = Object.assign(Object.assign({}, locationFilter), { province: { $in: filterCategoriesApiDto.provincesArray } });
+            }
+            if (Object.keys(sort).length === 0 && sort.constructor === Object) {
+                sort = {
+                    createdAt: -1,
+                };
+            }
+            let fromPriceFilter = {};
+            let toPriceFilter = {};
+            if (fromPrice) {
+                fromPriceFilter = Object.assign({ $gte: ['$minDealPrice', minValue] }, fromPriceFilter);
+            }
+            if (toPrice) {
+                toPriceFilter = {
+                    $lte: ['$minDealPrice', maxValue]
+                };
+            }
+            let ratingFilter = {};
+            if (reviewRating) {
+                ratingFilter = {
+                    $gte: ['$ratingsAverage', rating]
+                };
+            }
+            let provincesArray = [];
+            if (filterCategoriesApiDto.provincesArray.length == 0) {
+                provincesArray = [
+                    'West-Vlaanderen',
+                    'Vlaams-Brabant',
+                    'Limburg',
+                    'Oost-Vlaanderen',
+                    'Antwerpen'
+                ];
+            }
+            else {
+                provincesArray = filterCategoriesApiDto.provincesArray;
+            }
+            const totalCount = await this.dealModel.aggregate([
+                {
+                    $match: {
+                        deletedCheck: false,
+                        dealStatus: dealstatus_enum_1.DEALSTATUS.published,
+                        availableVouchers: { $gt: 0 },
+                        soldVouchers: { $gt: 0 },
+                    },
+                },
+                {
+                    $addFields: {
+                        id: '$_id',
+                        added: { $add: ['$soldVouchers', '$availableVouchers'] },
+                    },
+                },
+                {
+                    $addFields: {
+                        divided: { $divide: ['$soldVouchers', '$added'] },
+                        percent: {
+                            $multiply: ['$divided', 100],
+                        },
+                    },
+                },
+                {
+                    $addFields: {
+                        percent: {
+                            $multiply: ['$divided', 100],
+                        },
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'locations',
+                        as: 'location',
+                        localField: 'merchantID',
+                        foreignField: 'merchantID',
+                    },
+                },
+                {
+                    $unwind: '$location',
+                },
+                {
+                    $addFields: {
+                        locationCoordinates: '$location.location',
+                    },
+                },
+                {
+                    $match: {
+                        locationCoordinates: {
+                            $geoWithin: {
+                                $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+                            },
+                        },
+                    },
+                },
+                {
+                    $sort: sort,
+                },
+                {
+                    $lookup: {
+                        from: 'favourites',
+                        as: 'favouriteDeal',
+                        let: {
+                            dealID: '$dealID',
+                            customerMongoID: (_b = req === null || req === void 0 ? void 0 : req.user) === null || _b === void 0 ? void 0 : _b.id,
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$dealID', '$dealID'],
+                                            },
+                                            {
+                                                $eq: ['$$customerMongoID', '$customerMongoID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: {
+                        path: '$favouriteDeal',
+                        preserveNullAndEmptyArrays: true,
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'users',
+                        as: 'merchantDetails',
+                        let: {
+                            merchantID: '$merchantID',
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$merchantID', '$merchantID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                            {
+                                $lookup: {
+                                    from: 'locations',
+                                    as: 'locationData',
+                                    localField: 'merchantID',
+                                    foreignField: 'merchantID',
+                                },
+                            },
+                            {
+                                $unwind: '$locationData',
+                            },
+                            {
+                                $addFields: {
+                                    id: '$_id',
+                                    tradeName: '$locationData.tradeName',
+                                },
+                            },
+                            {
+                                $project: {
+                                    _id: 0,
+                                    id: 1,
+                                    totalReviews: 1,
+                                    ratingsAverage: 1,
+                                    tradeName: 1,
+                                    city: 1,
+                                    province: 1,
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: '$merchantDetails',
+                },
+                {
+                    $addFields: {
+                        id: '$_id',
+                        province: '$merchantDetails.province',
+                        mediaUrl: {
+                            $slice: [
+                                {
+                                    $filter: {
+                                        input: '$mediaUrl',
+                                        as: 'mediaUrl',
+                                        cond: {
+                                            $eq: ['$$mediaUrl.type', 'Image'],
+                                        },
+                                    },
+                                },
+                                1,
+                            ],
+                        },
+                        isFavourite: {
+                            $cond: [
+                                {
+                                    $ifNull: ['$favouriteDeal', false],
+                                },
+                                true,
+                                false,
+                            ],
+                        },
+                    },
+                },
+                {
+                    $group: {
+                        _id: null,
+                        totalCount: { $sum: 1 },
+                        Between0and50: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            {
+                                                $gte: ['$minDealPrice', 0],
+                                            },
+                                            {
+                                                $lte: ['$minDealPrice', 50],
+                                            },
+                                            Object.assign({}, ratingFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        Between50and150: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            {
+                                                $gte: ['$minDealPrice', 50],
+                                            },
+                                            {
+                                                $lte: ['$minDealPrice', 150],
+                                            },
+                                            Object.assign({}, ratingFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        Between150and300: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            {
+                                                $gte: ['$minDealPrice', 150],
+                                            },
+                                            {
+                                                $lte: ['$minDealPrice', 300],
+                                            },
+                                            Object.assign({}, ratingFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        Between300and450: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            {
+                                                $gte: ['$minDealPrice', 300],
+                                            },
+                                            {
+                                                $lte: ['$minDealPrice', 450],
+                                            },
+                                            Object.assign({}, ratingFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        Plus450: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            {
+                                                $gte: ['$minDealPrice', 450],
+                                            },
+                                            Object.assign({}, ratingFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        FourUp: {
+                            $sum: {
+                                $cond: [
+                                    { $and: [
+                                            { $gte: ['$ratingsAverage', 4] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        ThreeUp: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            { $gte: ['$ratingsAverage', 3] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        TwoUp: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            { $gte: ['$ratingsAverage', 2] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        OneUp: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            { $gte: ['$ratingsAverage', 1] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        allRating: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            { $gte: ['$ratingsAverage', 0] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        WestVlaanderen: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            { $eq: ['$province', 'West-Vlaanderen'] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            Object.assign({}, ratingFilter),
+                                        ]
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        OostVlaanderen: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            { $eq: ['$province', 'Oost-Vlaanderen'] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            Object.assign({}, ratingFilter),
+                                        ]
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        Antwerpen: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            { $eq: ['$province', 'Antwerpen'] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            Object.assign({}, ratingFilter),
+                                        ]
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        Limburg: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            { $eq: ['$province', 'Limburg'] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            Object.assign({}, ratingFilter),
+                                        ]
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        VlaamsBrabant: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            { $eq: ['$province', 'Vlaams-Brabant'] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            Object.assign({}, ratingFilter),
+                                        ]
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                    },
+                },
+                {
+                    $project: {
+                        _id: 0,
+                    },
+                },
+            ]);
+            const filteredCount = await this.dealModel.aggregate([
+                {
+                    $match: Object.assign(Object.assign({ deletedCheck: false, dealStatus: dealstatus_enum_1.DEALSTATUS.published, availableVouchers: { $gt: 0 }, soldVouchers: { $gt: 0 } }, categoryFilters), matchFilter),
+                },
+                {
+                    $addFields: {
+                        id: '$_id',
+                        added: { $add: ['$soldVouchers', '$availableVouchers'] },
+                    },
+                },
+                {
+                    $addFields: {
+                        divided: { $divide: ['$soldVouchers', '$added'] },
+                        percent: {
+                            $multiply: ['$divided', 100],
+                        },
+                    },
+                },
+                {
+                    $addFields: {
+                        percent: {
+                            $multiply: ['$divided', 100],
+                        },
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'locations',
+                        as: 'location',
+                        localField: 'merchantID',
+                        foreignField: 'merchantID',
+                    },
+                },
+                {
+                    $unwind: '$location',
+                },
+                {
+                    $addFields: {
+                        locationCoordinates: '$location.location',
+                    },
+                },
+                {
+                    $match: {
+                        locationCoordinates: {
+                            $geoWithin: {
+                                $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+                            },
+                        },
+                    },
+                },
+                {
+                    $sort: sort,
+                },
+                {
+                    $lookup: {
+                        from: 'favourites',
+                        as: 'favouriteDeal',
+                        let: {
+                            dealID: '$dealID',
+                            customerMongoID: (_c = req === null || req === void 0 ? void 0 : req.user) === null || _c === void 0 ? void 0 : _c.id,
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$dealID', '$dealID'],
+                                            },
+                                            {
+                                                $eq: ['$$customerMongoID', '$customerMongoID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: {
+                        path: '$favouriteDeal',
+                        preserveNullAndEmptyArrays: true,
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'users',
+                        as: 'merchantDetails',
+                        let: {
+                            merchantID: '$merchantID',
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$merchantID', '$merchantID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                            {
+                                $lookup: {
+                                    from: 'locations',
+                                    as: 'locationData',
+                                    localField: 'merchantID',
+                                    foreignField: 'merchantID',
+                                },
+                            },
+                            {
+                                $unwind: '$locationData',
+                            },
+                            {
+                                $addFields: {
+                                    id: '$_id',
+                                    tradeName: '$locationData.tradeName',
+                                },
+                            },
+                            {
+                                $project: {
+                                    _id: 0,
+                                    id: 1,
+                                    totalReviews: 1,
+                                    ratingsAverage: 1,
+                                    tradeName: 1,
+                                    city: 1,
+                                    province: 1,
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: '$merchantDetails',
+                },
+                {
+                    $addFields: {
+                        id: '$_id',
+                        province: '$merchantDetails.province',
+                        mediaUrl: {
+                            $slice: [
+                                {
+                                    $filter: {
+                                        input: '$mediaUrl',
+                                        as: 'mediaUrl',
+                                        cond: {
+                                            $eq: ['$$mediaUrl.type', 'Image'],
+                                        },
+                                    },
+                                },
+                                1,
+                            ],
+                        },
+                        isFavourite: {
+                            $cond: [
+                                {
+                                    $ifNull: ['$favouriteDeal', false],
+                                },
+                                true,
+                                false,
+                            ],
+                        },
+                    },
+                },
+                {
+                    $match: Object.assign({}, locationFilter),
+                },
+                {
+                    $count: 'filteredCount',
+                },
+            ]);
+            let deals = await this.dealModel.aggregate([
+                {
+                    $match: Object.assign(Object.assign({ deletedCheck: false, dealStatus: dealstatus_enum_1.DEALSTATUS.published, availableVouchers: { $gt: 0 }, soldVouchers: { $gt: 0 } }, categoryFilters), matchFilter),
+                },
+                {
+                    $addFields: {
+                        id: '$_id',
+                        added: { $add: ['$soldVouchers', '$availableVouchers'] },
+                    },
+                },
+                {
+                    $addFields: {
+                        divided: { $divide: ['$soldVouchers', '$added'] },
+                        percent: {
+                            $multiply: ['$divided', 100],
+                        },
+                    },
+                },
+                {
+                    $addFields: {
+                        percent: {
+                            $multiply: ['$divided', 100],
+                        },
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'locations',
+                        as: 'location',
+                        localField: 'merchantID',
+                        foreignField: 'merchantID',
+                    },
+                },
+                {
+                    $unwind: '$location',
+                },
+                {
+                    $addFields: {
+                        locationCoordinates: '$location.location',
+                    },
+                },
+                {
+                    $match: {
+                        locationCoordinates: {
+                            $geoWithin: {
+                                $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+                            },
+                        },
+                    },
+                },
+                {
+                    $sort: sort,
+                },
+                {
+                    $lookup: {
+                        from: 'favourites',
+                        as: 'favouriteDeal',
+                        let: {
+                            dealID: '$dealID',
+                            customerMongoID: (_d = req === null || req === void 0 ? void 0 : req.user) === null || _d === void 0 ? void 0 : _d.id,
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$dealID', '$dealID'],
+                                            },
+                                            {
+                                                $eq: ['$$customerMongoID', '$customerMongoID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: {
+                        path: '$favouriteDeal',
+                        preserveNullAndEmptyArrays: true,
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'users',
+                        as: 'merchantDetails',
+                        let: {
+                            merchantID: '$merchantID',
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$merchantID', '$merchantID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                            {
+                                $lookup: {
+                                    from: 'locations',
+                                    as: 'locationData',
+                                    localField: 'merchantID',
+                                    foreignField: 'merchantID',
+                                },
+                            },
+                            {
+                                $unwind: '$locationData',
+                            },
+                            {
+                                $addFields: {
+                                    id: '$_id',
+                                    tradeName: '$locationData.tradeName',
+                                },
+                            },
+                            {
+                                $project: {
+                                    _id: 0,
+                                    id: 1,
+                                    totalReviews: 1,
+                                    ratingsAverage: 1,
+                                    tradeName: 1,
+                                    city: 1,
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: '$merchantDetails',
+                },
+                {
+                    $addFields: {
+                        mediaUrl: {
+                            $slice: [
+                                {
+                                    $filter: {
+                                        input: '$mediaUrl',
+                                        as: 'mediaUrl',
+                                        cond: {
+                                            $eq: ['$$mediaUrl.type', 'Image'],
+                                        },
+                                    },
+                                },
+                                1,
+                            ],
+                        },
+                        isFavourite: {
+                            $cond: [
+                                {
+                                    $ifNull: ['$favouriteDeal', false],
+                                },
+                                true,
+                                false,
+                            ],
+                        },
+                    },
+                },
+                {
+                    $project: {
+                        _id: 0,
+                        added: 0,
+                        divided: 0,
+                        merchantMongoID: 0,
+                        merchantID: 0,
+                        subTitle: 0,
+                        categoryName: 0,
+                        subCategoryID: 0,
+                        subCategory: 0,
+                        subDeals: 0,
+                        availableVouchers: 0,
+                        aboutThisDeal: 0,
+                        readMore: 0,
+                        finePrints: 0,
+                        netEarnings: 0,
+                        isCollapsed: 0,
+                        isDuplicate: 0,
+                        totalReviews: 0,
+                        maxRating: 0,
+                        minRating: 0,
+                        pageNumber: 0,
+                        updatedAt: 0,
+                        __v: 0,
+                        endDate: 0,
+                        startDate: 0,
+                        reviewMediaUrl: 0,
+                        favouriteDeal: 0,
+                        location: 0
+                    },
+                },
+                {
+                    $sort: {
+                        percent: -1,
+                    },
+                },
+            ])
+                .skip(parseInt(offset))
+                .limit(parseInt(limit));
+            return Object.assign(Object.assign({}, totalCount[0]), { filteredCount: (filteredCount === null || filteredCount === void 0 ? void 0 : filteredCount.length) > 0 ? filteredCount[0].filteredCount : 0, data: deals });
+        }
+        catch (err) {
+            throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
+        }
+    }
+    async getSpecialOfferDeals(lat, lng, distance, offset, limit, req) {
+        var _a;
+        try {
+            offset = parseInt(offset) < 0 ? 0 : offset;
+            limit = parseInt(limit) < 1 ? 10 : limit;
+            lat = parseFloat(lat);
+            lng = parseFloat(lng);
+            distance = parseFloat(distance);
+            if (!distance) {
+                distance = 10;
+            }
+            let radius = parseFloat(distance) / 6378.1;
+            if (!lat && !lng) {
+                lat = 50.8476;
+                lng = 4.3572;
+                radius = 20 / 6378.1;
+            }
+            const totalCount = await this.dealModel.countDocuments({
+                deletedCheck: false,
+                dealStatus: dealstatus_enum_1.DEALSTATUS.published,
+                isSpecialOffer: true,
+            });
+            let deals = await this.dealModel
+                .aggregate([
+                {
+                    $match: {
+                        deletedCheck: false,
+                        dealStatus: dealstatus_enum_1.DEALSTATUS.published,
+                        isSpecialOffer: true,
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'locations',
+                        as: 'location',
+                        localField: 'merchantID',
+                        foreignField: 'merchantID',
+                    },
+                },
+                {
+                    $unwind: '$location',
+                },
+                {
+                    $addFields: {
+                        locationCoordinates: '$location.location',
+                    },
+                },
+                {
+                    $match: {
+                        locationCoordinates: {
+                            $geoWithin: {
+                                $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+                            },
+                        },
+                    },
+                },
+                {
+                    $sort: {
+                        createdAt: -1,
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'favourites',
+                        as: 'favouriteDeal',
+                        let: {
+                            dealID: '$dealID',
+                            customerMongoID: (_a = req === null || req === void 0 ? void 0 : req.user) === null || _a === void 0 ? void 0 : _a.id,
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$dealID', '$dealID'],
+                                            },
+                                            {
+                                                $eq: ['$$customerMongoID', '$customerMongoID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: {
+                        path: '$favouriteDeal',
+                        preserveNullAndEmptyArrays: true,
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'users',
+                        as: 'merchantDetails',
+                        let: {
+                            merchantID: '$merchantID',
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$merchantID', '$merchantID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                            {
+                                $lookup: {
+                                    from: 'locations',
+                                    as: 'locationData',
+                                    localField: 'merchantID',
+                                    foreignField: 'merchantID',
+                                },
+                            },
+                            {
+                                $unwind: '$locationData',
+                            },
+                            {
+                                $addFields: {
+                                    id: '$_id',
+                                    tradeName: '$locationData.tradeName',
+                                },
+                            },
+                            {
+                                $project: {
+                                    _id: 0,
+                                    id: 1,
+                                    totalReviews: 1,
+                                    ratingsAverage: 1,
+                                    tradeName: 1,
+                                    city: 1,
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: '$merchantDetails',
+                },
+                {
+                    $addFields: {
+                        id: '$_id',
+                        mediaUrl: {
+                            $slice: [
+                                {
+                                    $filter: {
+                                        input: '$mediaUrl',
+                                        as: 'mediaUrl',
+                                        cond: {
+                                            $eq: ['$$mediaUrl.type', 'Image'],
+                                        },
+                                    },
+                                },
+                                1,
+                            ],
+                        },
+                        isFavourite: {
+                            $cond: [
+                                {
+                                    $ifNull: ['$favouriteDeal', false],
+                                },
+                                true,
+                                false,
+                            ],
+                        },
+                    },
+                },
+                {
+                    $project: {
+                        _id: 0,
+                        merchantMongoID: 0,
+                        merchantID: 0,
+                        subTitle: 0,
+                        categoryName: 0,
+                        subCategoryID: 0,
+                        subCategory: 0,
+                        subDeals: 0,
+                        availableVouchers: 0,
+                        aboutThisDeal: 0,
+                        readMore: 0,
+                        finePrints: 0,
+                        netEarnings: 0,
+                        isCollapsed: 0,
+                        isDuplicate: 0,
+                        totalReviews: 0,
+                        maxRating: 0,
+                        minRating: 0,
+                        pageNumber: 0,
+                        updatedAt: 0,
+                        __v: 0,
+                        endDate: 0,
+                        startDate: 0,
+                        reviewMediaUrl: 0,
+                        favouriteDeal: 0,
+                        location: 0
+                    },
+                }
+            ])
+                .skip(parseInt(offset))
+                .limit(parseInt(limit));
+            return {
+                totalCount: totalCount,
+                data: deals,
+            };
+        }
+        catch (err) {
+            throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
+        }
+    }
+    async getSpecialOfferDealsDynamically(lat, lng, distance, categoryName, subCategoryName, fromPrice, toPrice, reviewRating, sorting, offset, limit, filterCategoriesApiDto, req) {
+        var _a, _b, _c, _d;
+        try {
+            offset = parseInt(offset) < 0 ? 0 : offset;
+            limit = parseInt(limit) < 1 ? 10 : limit;
+            lat = parseFloat(lat);
+            lng = parseFloat(lng);
+            distance = parseFloat(distance);
+            if (!distance) {
+                distance = 10;
+            }
+            let radius = parseFloat(distance) / 6378.1;
+            if (!lat && !lng) {
+                lat = 50.8476;
+                lng = 4.3572;
+                radius = 20 / 6378.1;
+            }
+            let categoryFilters = {};
+            if (categoryName) {
+                categoryFilters = Object.assign(Object.assign({}, categoryFilters), { categoryName: categoryName });
+            }
+            if (subCategoryName) {
+                categoryFilters = Object.assign(Object.assign({}, categoryFilters), { subCategory: subCategoryName });
+            }
+            let matchFilter = {};
+            let minValue = parseInt(fromPrice);
+            let maxValue = parseInt(toPrice);
+            if (fromPrice && toPrice) {
+                matchFilter = Object.assign(Object.assign({}, matchFilter), { minDealPrice: {
+                        $gte: minValue,
+                        $lte: maxValue,
+                    } });
+            }
+            else if (fromPrice) {
+                matchFilter = Object.assign(Object.assign({}, matchFilter), { minDealPrice: {
+                        $gte: minValue,
+                    } });
+            }
+            else if (toPrice) {
+                matchFilter = Object.assign(Object.assign({}, matchFilter), { minDealPrice: {
+                        $lte: maxValue,
+                    } });
+            }
+            let rating = parseFloat(reviewRating);
+            if (reviewRating) {
+                matchFilter = Object.assign(Object.assign({}, matchFilter), { ratingsAverage: {
+                        $gte: rating,
+                    } });
+            }
+            let sort = {};
+            if (sorting == categoryapisorting_enum_1.SORTINGENUM.priceAsc || sorting == categoryapisorting_enum_1.SORTINGENUM.priceDesc) {
+                let sortPrice = sorting == categoryapisorting_enum_1.SORTINGENUM.priceAsc ? 1 : -1;
+                console.log('sorting');
+                sort = {
+                    minDealPrice: sortPrice,
+                };
+            }
+            if (sorting == categoryapisorting_enum_1.SORTINGENUM.ratingAsc ||
+                sorting == categoryapisorting_enum_1.SORTINGENUM.ratingDesc) {
+                let sortRating = sorting == categoryapisorting_enum_1.SORTINGENUM.ratingAsc ? 1 : -1;
+                console.log('sorting');
+                sort = {
+                    ratingsAverage: sortRating,
+                };
+            }
+            if (sorting == categoryapisorting_enum_1.SORTINGENUM.dateAsc || sorting == categoryapisorting_enum_1.SORTINGENUM.dateDesc) {
+                let sortDate = sorting == categoryapisorting_enum_1.SORTINGENUM.dateAsc ? 1 : -1;
+                console.log('sorting');
+                sort = {
+                    createdAt: sortDate,
+                };
+            }
+            let locationFilter = {};
+            if ((_a = filterCategoriesApiDto === null || filterCategoriesApiDto === void 0 ? void 0 : filterCategoriesApiDto.provincesArray) === null || _a === void 0 ? void 0 : _a.length) {
+                locationFilter = Object.assign(Object.assign({}, locationFilter), { province: { $in: filterCategoriesApiDto.provincesArray } });
+            }
+            if (Object.keys(sort).length === 0 && sort.constructor === Object) {
+                sort = {
+                    createdAt: -1,
+                };
+            }
+            let fromPriceFilter = {};
+            let toPriceFilter = {};
+            if (fromPrice) {
+                fromPriceFilter = Object.assign({ $gte: ['$minDealPrice', minValue] }, fromPriceFilter);
+            }
+            if (toPrice) {
+                toPriceFilter = {
+                    $lte: ['$minDealPrice', maxValue]
+                };
+            }
+            let ratingFilter = {};
+            if (reviewRating) {
+                ratingFilter = {
+                    $gte: ['$ratingsAverage', rating]
+                };
+            }
+            let provincesArray = [];
+            if (filterCategoriesApiDto.provincesArray.length == 0) {
+                provincesArray = [
+                    'West-Vlaanderen',
+                    'Vlaams-Brabant',
+                    'Limburg',
+                    'Oost-Vlaanderen',
+                    'Antwerpen'
+                ];
+            }
+            else {
+                provincesArray = filterCategoriesApiDto.provincesArray;
+            }
+            const totalCount = await this.dealModel.aggregate([
+                {
+                    $match: {
+                        deletedCheck: false,
+                        dealStatus: dealstatus_enum_1.DEALSTATUS.published,
+                        isSpecialOffer: true,
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'locations',
+                        as: 'location',
+                        localField: 'merchantID',
+                        foreignField: 'merchantID',
+                    },
+                },
+                {
+                    $unwind: '$location',
+                },
+                {
+                    $addFields: {
+                        locationCoordinates: '$location.location',
+                    },
+                },
+                {
+                    $match: {
+                        locationCoordinates: {
+                            $geoWithin: {
+                                $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+                            },
+                        },
+                    },
+                },
+                {
+                    $sort: sort,
+                },
+                {
+                    $lookup: {
+                        from: 'favourites',
+                        as: 'favouriteDeal',
+                        let: {
+                            dealID: '$dealID',
+                            customerMongoID: (_b = req === null || req === void 0 ? void 0 : req.user) === null || _b === void 0 ? void 0 : _b.id,
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$dealID', '$dealID'],
+                                            },
+                                            {
+                                                $eq: ['$$customerMongoID', '$customerMongoID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: {
+                        path: '$favouriteDeal',
+                        preserveNullAndEmptyArrays: true,
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'users',
+                        as: 'merchantDetails',
+                        let: {
+                            merchantID: '$merchantID',
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$merchantID', '$merchantID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                            {
+                                $lookup: {
+                                    from: 'locations',
+                                    as: 'locationData',
+                                    localField: 'merchantID',
+                                    foreignField: 'merchantID',
+                                },
+                            },
+                            {
+                                $unwind: '$locationData',
+                            },
+                            {
+                                $addFields: {
+                                    id: '$_id',
+                                    tradeName: '$locationData.tradeName',
+                                },
+                            },
+                            {
+                                $project: {
+                                    _id: 0,
+                                    id: 1,
+                                    totalReviews: 1,
+                                    ratingsAverage: 1,
+                                    tradeName: 1,
+                                    city: 1,
+                                    province: 1,
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: '$merchantDetails',
+                },
+                {
+                    $addFields: {
+                        id: '$_id',
+                        province: '$merchantDetails.province',
+                        mediaUrl: {
+                            $slice: [
+                                {
+                                    $filter: {
+                                        input: '$mediaUrl',
+                                        as: 'mediaUrl',
+                                        cond: {
+                                            $eq: ['$$mediaUrl.type', 'Image'],
+                                        },
+                                    },
+                                },
+                                1,
+                            ],
+                        },
+                        isFavourite: {
+                            $cond: [
+                                {
+                                    $ifNull: ['$favouriteDeal', false],
+                                },
+                                true,
+                                false,
+                            ],
+                        },
+                    },
+                },
+                {
+                    $group: {
+                        _id: null,
+                        totalCount: { $sum: 1 },
+                        Between0and50: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            {
+                                                $gte: ['$minDealPrice', 0],
+                                            },
+                                            {
+                                                $lte: ['$minDealPrice', 50],
+                                            },
+                                            Object.assign({}, ratingFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        Between50and150: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            {
+                                                $gte: ['$minDealPrice', 50],
+                                            },
+                                            {
+                                                $lte: ['$minDealPrice', 150],
+                                            },
+                                            Object.assign({}, ratingFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        Between150and300: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            {
+                                                $gte: ['$minDealPrice', 150],
+                                            },
+                                            {
+                                                $lte: ['$minDealPrice', 300],
+                                            },
+                                            Object.assign({}, ratingFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        Between300and450: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            {
+                                                $gte: ['$minDealPrice', 300],
+                                            },
+                                            {
+                                                $lte: ['$minDealPrice', 450],
+                                            },
+                                            Object.assign({}, ratingFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        Plus450: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            {
+                                                $gte: ['$minDealPrice', 450],
+                                            },
+                                            Object.assign({}, ratingFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        FourUp: {
+                            $sum: {
+                                $cond: [
+                                    { $and: [
+                                            { $gte: ['$ratingsAverage', 4] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        ThreeUp: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            { $gte: ['$ratingsAverage', 3] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        TwoUp: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            { $gte: ['$ratingsAverage', 2] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        OneUp: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            { $gte: ['$ratingsAverage', 1] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        allRating: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            { $gte: ['$ratingsAverage', 0] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        WestVlaanderen: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            { $eq: ['$province', 'West-Vlaanderen'] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            Object.assign({}, ratingFilter),
+                                        ]
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        OostVlaanderen: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            { $eq: ['$province', 'Oost-Vlaanderen'] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            Object.assign({}, ratingFilter),
+                                        ]
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        Antwerpen: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            { $eq: ['$province', 'Antwerpen'] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            Object.assign({}, ratingFilter),
+                                        ]
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        Limburg: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            { $eq: ['$province', 'Limburg'] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            Object.assign({}, ratingFilter),
+                                        ]
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        VlaamsBrabant: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            { $eq: ['$province', 'Vlaams-Brabant'] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            Object.assign({}, ratingFilter),
+                                        ]
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                    },
+                },
+                {
+                    $project: {
+                        _id: 0,
+                    },
+                },
+            ]);
+            const filteredCount = await this.dealModel.aggregate([
+                {
+                    $match: Object.assign(Object.assign({ deletedCheck: false, dealStatus: dealstatus_enum_1.DEALSTATUS.published, isSpecialOffer: true }, categoryFilters), matchFilter),
+                },
+                {
+                    $lookup: {
+                        from: 'locations',
+                        as: 'location',
+                        localField: 'merchantID',
+                        foreignField: 'merchantID',
+                    },
+                },
+                {
+                    $unwind: '$location',
+                },
+                {
+                    $addFields: {
+                        locationCoordinates: '$location.location',
+                    },
+                },
+                {
+                    $match: {
+                        locationCoordinates: {
+                            $geoWithin: {
+                                $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+                            },
+                        },
+                    },
+                },
+                {
+                    $sort: sort,
+                },
+                {
+                    $lookup: {
+                        from: 'favourites',
+                        as: 'favouriteDeal',
+                        let: {
+                            dealID: '$dealID',
+                            customerMongoID: (_c = req === null || req === void 0 ? void 0 : req.user) === null || _c === void 0 ? void 0 : _c.id,
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$dealID', '$dealID'],
+                                            },
+                                            {
+                                                $eq: ['$$customerMongoID', '$customerMongoID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: {
+                        path: '$favouriteDeal',
+                        preserveNullAndEmptyArrays: true,
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'users',
+                        as: 'merchantDetails',
+                        let: {
+                            merchantID: '$merchantID',
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$merchantID', '$merchantID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                            {
+                                $lookup: {
+                                    from: 'locations',
+                                    as: 'locationData',
+                                    localField: 'merchantID',
+                                    foreignField: 'merchantID',
+                                },
+                            },
+                            {
+                                $unwind: '$locationData',
+                            },
+                            {
+                                $addFields: {
+                                    id: '$_id',
+                                    tradeName: '$locationData.tradeName',
+                                },
+                            },
+                            {
+                                $project: {
+                                    _id: 0,
+                                    id: 1,
+                                    totalReviews: 1,
+                                    ratingsAverage: 1,
+                                    tradeName: 1,
+                                    city: 1,
+                                    province: 1,
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: '$merchantDetails',
+                },
+                {
+                    $addFields: {
+                        id: '$_id',
+                        province: '$merchantDetails.province',
+                        mediaUrl: {
+                            $slice: [
+                                {
+                                    $filter: {
+                                        input: '$mediaUrl',
+                                        as: 'mediaUrl',
+                                        cond: {
+                                            $eq: ['$$mediaUrl.type', 'Image'],
+                                        },
+                                    },
+                                },
+                                1,
+                            ],
+                        },
+                        isFavourite: {
+                            $cond: [
+                                {
+                                    $ifNull: ['$favouriteDeal', false],
+                                },
+                                true,
+                                false,
+                            ],
+                        },
+                    },
+                },
+                {
+                    $match: Object.assign({}, locationFilter),
+                },
+                {
+                    $count: 'filteredCount',
+                },
+            ]);
+            let deals = await this.dealModel
+                .aggregate([
+                {
+                    $match: Object.assign(Object.assign({ deletedCheck: false, dealStatus: dealstatus_enum_1.DEALSTATUS.published, isSpecialOffer: true }, categoryFilters), matchFilter),
+                },
+                {
+                    $lookup: {
+                        from: 'locations',
+                        as: 'location',
+                        localField: 'merchantID',
+                        foreignField: 'merchantID',
+                    },
+                },
+                {
+                    $unwind: '$location',
+                },
+                {
+                    $addFields: {
+                        locationCoordinates: '$location.location',
+                    },
+                },
+                {
+                    $match: {
+                        locationCoordinates: {
+                            $geoWithin: {
+                                $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+                            },
+                        },
+                    },
+                },
+                {
+                    $sort: sort
+                },
+                {
+                    $lookup: {
+                        from: 'favourites',
+                        as: 'favouriteDeal',
+                        let: {
+                            dealID: '$dealID',
+                            customerMongoID: (_d = req === null || req === void 0 ? void 0 : req.user) === null || _d === void 0 ? void 0 : _d.id,
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$dealID', '$dealID'],
+                                            },
+                                            {
+                                                $eq: ['$$customerMongoID', '$customerMongoID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: {
+                        path: '$favouriteDeal',
+                        preserveNullAndEmptyArrays: true,
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'users',
+                        as: 'merchantDetails',
+                        let: {
+                            merchantID: '$merchantID',
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$merchantID', '$merchantID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                            {
+                                $lookup: {
+                                    from: 'locations',
+                                    as: 'locationData',
+                                    localField: 'merchantID',
+                                    foreignField: 'merchantID',
+                                },
+                            },
+                            {
+                                $unwind: '$locationData',
+                            },
+                            {
+                                $addFields: {
+                                    id: '$_id',
+                                    tradeName: '$locationData.tradeName',
+                                },
+                            },
+                            {
+                                $project: {
+                                    _id: 0,
+                                    id: 1,
+                                    totalReviews: 1,
+                                    ratingsAverage: 1,
+                                    tradeName: 1,
+                                    city: 1,
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: '$merchantDetails',
+                },
+                {
+                    $addFields: {
+                        id: '$_id',
+                        mediaUrl: {
+                            $slice: [
+                                {
+                                    $filter: {
+                                        input: '$mediaUrl',
+                                        as: 'mediaUrl',
+                                        cond: {
+                                            $eq: ['$$mediaUrl.type', 'Image'],
+                                        },
+                                    },
+                                },
+                                1,
+                            ],
+                        },
+                        isFavourite: {
+                            $cond: [
+                                {
+                                    $ifNull: ['$favouriteDeal', false],
+                                },
+                                true,
+                                false,
+                            ],
+                        },
+                    },
+                },
+                {
+                    $project: {
+                        _id: 0,
+                        merchantMongoID: 0,
+                        merchantID: 0,
+                        subTitle: 0,
+                        categoryName: 0,
+                        subCategoryID: 0,
+                        subCategory: 0,
+                        subDeals: 0,
+                        availableVouchers: 0,
+                        aboutThisDeal: 0,
+                        readMore: 0,
+                        finePrints: 0,
+                        netEarnings: 0,
+                        isCollapsed: 0,
+                        isDuplicate: 0,
+                        totalReviews: 0,
+                        maxRating: 0,
+                        minRating: 0,
+                        pageNumber: 0,
+                        updatedAt: 0,
+                        __v: 0,
+                        endDate: 0,
+                        startDate: 0,
+                        reviewMediaUrl: 0,
+                        favouriteDeal: 0,
+                        location: 0
+                    },
+                }
+            ])
+                .skip(parseInt(offset))
+                .limit(parseInt(limit));
+            return Object.assign(Object.assign({}, totalCount[0]), { filteredCount: (filteredCount === null || filteredCount === void 0 ? void 0 : filteredCount.length) > 0 ? filteredCount[0].filteredCount : 0, data: deals });
+        }
+        catch (err) {
+            throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
+        }
+    }
+    async getNewFavouriteDeal(lat, lng, distance, offset, limit, req) {
+        var _a;
+        try {
+            offset = parseInt(offset) < 0 ? 0 : offset;
+            limit = parseInt(limit) < 1 ? 10 : limit;
+            lat = parseFloat(lat);
+            lng = parseFloat(lng);
+            distance = parseFloat(distance);
+            if (!distance) {
+                distance = 10;
+            }
+            let radius = parseFloat(distance) / 6378.1;
+            if (!lat && !lng) {
+                lat = 50.8476;
+                lng = 4.3572;
+                radius = 20 / 6378.1;
+            }
+            const totalCount = await this.dealModel.countDocuments({
+                deletedCheck: false,
+                dealStatus: dealstatus_enum_1.DEALSTATUS.published,
+            });
+            const deals = await this.dealModel
+                .aggregate([
+                {
+                    $match: {
+                        deletedCheck: false,
+                        dealStatus: dealstatus_enum_1.DEALSTATUS.published,
+                    },
+                },
+                {
+                    $sample: { size: totalCount },
+                },
+                {
+                    $lookup: {
+                        from: 'locations',
+                        as: 'location',
+                        localField: 'merchantID',
+                        foreignField: 'merchantID',
+                    },
+                },
+                {
+                    $unwind: '$location',
+                },
+                {
+                    $addFields: {
+                        locationCoordinates: '$location.location',
+                    },
+                },
+                {
+                    $match: {
+                        locationCoordinates: {
+                            $geoWithin: {
+                                $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+                            },
+                        },
+                    },
+                },
+                {
+                    $sort: {
+                        createdAt: -1,
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'favourites',
+                        as: 'favouriteDeal',
+                        let: {
+                            dealID: '$dealID',
+                            customerMongoID: (_a = req === null || req === void 0 ? void 0 : req.user) === null || _a === void 0 ? void 0 : _a.id,
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$dealID', '$dealID'],
+                                            },
+                                            {
+                                                $eq: ['$$customerMongoID', '$customerMongoID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: {
+                        path: '$favouriteDeal',
+                        preserveNullAndEmptyArrays: true,
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'users',
+                        as: 'merchantDetails',
+                        let: {
+                            merchantID: '$merchantID',
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$merchantID', '$merchantID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                            {
+                                $lookup: {
+                                    from: 'locations',
+                                    as: 'locationData',
+                                    localField: 'merchantID',
+                                    foreignField: 'merchantID',
+                                },
+                            },
+                            {
+                                $unwind: '$locationData',
+                            },
+                            {
+                                $addFields: {
+                                    id: '$_id',
+                                    tradeName: '$locationData.tradeName',
+                                },
+                            },
+                            {
+                                $project: {
+                                    _id: 0,
+                                    id: 1,
+                                    totalReviews: 1,
+                                    ratingsAverage: 1,
+                                    tradeName: 1,
+                                    city: 1,
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: '$merchantDetails',
+                },
+                {
+                    $addFields: {
+                        id: '$_id',
+                        mediaUrl: {
+                            $slice: [
+                                {
+                                    $filter: {
+                                        input: '$mediaUrl',
+                                        as: 'mediaUrl',
+                                        cond: {
+                                            $eq: ['$$mediaUrl.type', 'Image'],
+                                        },
+                                    },
+                                },
+                                1,
+                            ],
+                        },
+                        isFavourite: {
+                            $cond: [
+                                {
+                                    $ifNull: ['$favouriteDeal', false],
+                                },
+                                true,
+                                false,
+                            ],
+                        },
+                    },
+                },
+                {
+                    $project: {
+                        _id: 0,
+                        merchantMongoID: 0,
+                        merchantID: 0,
+                        subTitle: 0,
+                        categoryName: 0,
+                        subCategoryID: 0,
+                        subCategory: 0,
+                        subDeals: 0,
+                        availableVouchers: 0,
+                        aboutThisDeal: 0,
+                        readMore: 0,
+                        finePrints: 0,
+                        netEarnings: 0,
+                        isCollapsed: 0,
+                        isDuplicate: 0,
+                        totalReviews: 0,
+                        maxRating: 0,
+                        minRating: 0,
+                        pageNumber: 0,
+                        updatedAt: 0,
+                        __v: 0,
+                        endDate: 0,
+                        startDate: 0,
+                        reviewMediaUrl: 0,
+                        favouriteDeal: 0,
+                        location: 0
+                    },
+                },
+            ])
+                .skip(parseInt(offset))
+                .limit(parseInt(limit));
+            return {
+                totalCount: totalCount,
+                data: deals,
+            };
+        }
+        catch (err) {
+            throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
+        }
+    }
+    async getNewFavouriteDealDynamically(lat, lng, distance, categoryName, subCategoryName, fromPrice, toPrice, reviewRating, sorting, offset, limit, filterCategoriesApiDto, req) {
+        var _a, _b, _c, _d;
+        try {
+            offset = parseInt(offset) < 0 ? 0 : offset;
+            limit = parseInt(limit) < 1 ? 10 : limit;
+            lat = parseFloat(lat);
+            lng = parseFloat(lng);
+            distance = parseFloat(distance);
+            if (!distance) {
+                distance = 10;
+            }
+            let radius = parseFloat(distance) / 6378.1;
+            if (!lat && !lng) {
+                lat = 50.8476;
+                lng = 4.3572;
+                radius = 20 / 6378.1;
+            }
+            let categoryFilters = {};
+            if (categoryName) {
+                categoryFilters = Object.assign(Object.assign({}, categoryFilters), { categoryName: categoryName });
+            }
+            if (subCategoryName) {
+                categoryFilters = Object.assign(Object.assign({}, categoryFilters), { subCategory: subCategoryName });
+            }
+            let matchFilter = {};
+            let minValue = parseInt(fromPrice);
+            let maxValue = parseInt(toPrice);
+            if (fromPrice && toPrice) {
+                matchFilter = Object.assign(Object.assign({}, matchFilter), { minDealPrice: {
+                        $gte: minValue,
+                        $lte: maxValue,
+                    } });
+            }
+            else if (fromPrice) {
+                matchFilter = Object.assign(Object.assign({}, matchFilter), { minDealPrice: {
+                        $gte: minValue,
+                    } });
+            }
+            else if (toPrice) {
+                matchFilter = Object.assign(Object.assign({}, matchFilter), { minDealPrice: {
+                        $lte: maxValue,
+                    } });
+            }
+            let rating = parseFloat(reviewRating);
+            if (reviewRating) {
+                matchFilter = Object.assign(Object.assign({}, matchFilter), { ratingsAverage: {
+                        $gte: rating,
+                    } });
+            }
+            let sort = {};
+            if (sorting == categoryapisorting_enum_1.SORTINGENUM.priceAsc || sorting == categoryapisorting_enum_1.SORTINGENUM.priceDesc) {
+                let sortPrice = sorting == categoryapisorting_enum_1.SORTINGENUM.priceAsc ? 1 : -1;
+                console.log('sorting');
+                sort = {
+                    minDealPrice: sortPrice,
+                };
+            }
+            if (sorting == categoryapisorting_enum_1.SORTINGENUM.ratingAsc ||
+                sorting == categoryapisorting_enum_1.SORTINGENUM.ratingDesc) {
+                let sortRating = sorting == categoryapisorting_enum_1.SORTINGENUM.ratingAsc ? 1 : -1;
+                console.log('sorting');
+                sort = {
+                    ratingsAverage: sortRating,
+                };
+            }
+            if (sorting == categoryapisorting_enum_1.SORTINGENUM.dateAsc || sorting == categoryapisorting_enum_1.SORTINGENUM.dateDesc) {
+                let sortDate = sorting == categoryapisorting_enum_1.SORTINGENUM.dateAsc ? 1 : -1;
+                console.log('sorting');
+                sort = {
+                    createdAt: sortDate,
+                };
+            }
+            let locationFilter = {};
+            if ((_a = filterCategoriesApiDto === null || filterCategoriesApiDto === void 0 ? void 0 : filterCategoriesApiDto.provincesArray) === null || _a === void 0 ? void 0 : _a.length) {
+                locationFilter = Object.assign(Object.assign({}, locationFilter), { province: { $in: filterCategoriesApiDto.provincesArray } });
+            }
+            if (Object.keys(sort).length === 0 && sort.constructor === Object) {
+                sort = {
+                    createdAt: -1,
+                };
+            }
+            let fromPriceFilter = {};
+            let toPriceFilter = {};
+            if (fromPrice) {
+                fromPriceFilter = Object.assign({ $gte: ['$minDealPrice', minValue] }, fromPriceFilter);
+            }
+            if (toPrice) {
+                toPriceFilter = {
+                    $lte: ['$minDealPrice', maxValue]
+                };
+            }
+            let ratingFilter = {};
+            if (reviewRating) {
+                ratingFilter = {
+                    $gte: ['$ratingsAverage', rating]
+                };
+            }
+            let provincesArray = [];
+            if (filterCategoriesApiDto.provincesArray.length == 0) {
+                provincesArray = [
+                    'West-Vlaanderen',
+                    'Vlaams-Brabant',
+                    'Limburg',
+                    'Oost-Vlaanderen',
+                    'Antwerpen'
+                ];
+            }
+            else {
+                provincesArray = filterCategoriesApiDto.provincesArray;
+            }
+            const sampleCount = await this.dealModel.countDocuments({
+                deletedCheck: false,
+                dealStatus: dealstatus_enum_1.DEALSTATUS.published,
+            });
+            const totalCount = await this.dealModel.aggregate([
+                {
+                    $match: {
+                        deletedCheck: false,
+                        dealStatus: dealstatus_enum_1.DEALSTATUS.published,
+                    },
+                },
+                {
+                    $sample: { size: sampleCount },
+                },
+                {
+                    $lookup: {
+                        from: 'locations',
+                        as: 'location',
+                        localField: 'merchantID',
+                        foreignField: 'merchantID',
+                    },
+                },
+                {
+                    $unwind: '$location',
+                },
+                {
+                    $addFields: {
+                        locationCoordinates: '$location.location',
+                    },
+                },
+                {
+                    $match: {
+                        locationCoordinates: {
+                            $geoWithin: {
+                                $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+                            },
+                        },
+                    },
+                },
+                {
+                    $sort: sort,
+                },
+                {
+                    $lookup: {
+                        from: 'favourites',
+                        as: 'favouriteDeal',
+                        let: {
+                            dealID: '$dealID',
+                            customerMongoID: (_b = req === null || req === void 0 ? void 0 : req.user) === null || _b === void 0 ? void 0 : _b.id,
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$dealID', '$dealID'],
+                                            },
+                                            {
+                                                $eq: ['$$customerMongoID', '$customerMongoID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: {
+                        path: '$favouriteDeal',
+                        preserveNullAndEmptyArrays: true,
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'users',
+                        as: 'merchantDetails',
+                        let: {
+                            merchantID: '$merchantID',
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$merchantID', '$merchantID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                            {
+                                $lookup: {
+                                    from: 'locations',
+                                    as: 'locationData',
+                                    localField: 'merchantID',
+                                    foreignField: 'merchantID',
+                                },
+                            },
+                            {
+                                $unwind: '$locationData',
+                            },
+                            {
+                                $addFields: {
+                                    id: '$_id',
+                                    tradeName: '$locationData.tradeName',
+                                },
+                            },
+                            {
+                                $project: {
+                                    _id: 0,
+                                    id: 1,
+                                    totalReviews: 1,
+                                    ratingsAverage: 1,
+                                    tradeName: 1,
+                                    city: 1,
+                                    province: 1,
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: '$merchantDetails',
+                },
+                {
+                    $addFields: {
+                        id: '$_id',
+                        province: '$merchantDetails.province',
+                        mediaUrl: {
+                            $slice: [
+                                {
+                                    $filter: {
+                                        input: '$mediaUrl',
+                                        as: 'mediaUrl',
+                                        cond: {
+                                            $eq: ['$$mediaUrl.type', 'Image'],
+                                        },
+                                    },
+                                },
+                                1,
+                            ],
+                        },
+                        isFavourite: {
+                            $cond: [
+                                {
+                                    $ifNull: ['$favouriteDeal', false],
+                                },
+                                true,
+                                false,
+                            ],
+                        },
+                    },
+                },
+                {
+                    $group: {
+                        _id: null,
+                        totalCount: { $sum: 1 },
+                        Between0and50: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            {
+                                                $gte: ['$minDealPrice', 0],
+                                            },
+                                            {
+                                                $lte: ['$minDealPrice', 50],
+                                            },
+                                            Object.assign({}, ratingFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        Between50and150: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            {
+                                                $gte: ['$minDealPrice', 50],
+                                            },
+                                            {
+                                                $lte: ['$minDealPrice', 150],
+                                            },
+                                            Object.assign({}, ratingFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        Between150and300: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            {
+                                                $gte: ['$minDealPrice', 150],
+                                            },
+                                            {
+                                                $lte: ['$minDealPrice', 300],
+                                            },
+                                            Object.assign({}, ratingFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        Between300and450: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            {
+                                                $gte: ['$minDealPrice', 300],
+                                            },
+                                            {
+                                                $lte: ['$minDealPrice', 450],
+                                            },
+                                            Object.assign({}, ratingFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        Plus450: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            {
+                                                $gte: ['$minDealPrice', 450],
+                                            },
+                                            Object.assign({}, ratingFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        FourUp: {
+                            $sum: {
+                                $cond: [
+                                    { $and: [
+                                            { $gte: ['$ratingsAverage', 4] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        ThreeUp: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            { $gte: ['$ratingsAverage', 3] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        TwoUp: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            { $gte: ['$ratingsAverage', 2] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        OneUp: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            { $gte: ['$ratingsAverage', 1] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        allRating: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            { $gte: ['$ratingsAverage', 0] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        WestVlaanderen: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            { $eq: ['$province', 'West-Vlaanderen'] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            Object.assign({}, ratingFilter),
+                                        ]
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        OostVlaanderen: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            { $eq: ['$province', 'Oost-Vlaanderen'] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            Object.assign({}, ratingFilter),
+                                        ]
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        Antwerpen: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            { $eq: ['$province', 'Antwerpen'] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            Object.assign({}, ratingFilter),
+                                        ]
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        Limburg: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            { $eq: ['$province', 'Limburg'] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            Object.assign({}, ratingFilter),
+                                        ]
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        VlaamsBrabant: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            { $eq: ['$province', 'Vlaams-Brabant'] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            Object.assign({}, ratingFilter),
+                                        ]
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                    },
+                },
+                {
+                    $project: {
+                        _id: 0,
+                    },
+                },
+            ]);
+            const filteredCount = await this.dealModel.aggregate([
+                {
+                    $match: Object.assign(Object.assign({ deletedCheck: false, dealStatus: dealstatus_enum_1.DEALSTATUS.published }, categoryFilters), matchFilter),
+                },
+                {
+                    $sample: { size: sampleCount },
+                },
+                {
+                    $lookup: {
+                        from: 'locations',
+                        as: 'location',
+                        localField: 'merchantID',
+                        foreignField: 'merchantID',
+                    },
+                },
+                {
+                    $unwind: '$location',
+                },
+                {
+                    $addFields: {
+                        locationCoordinates: '$location.location',
+                    },
+                },
+                {
+                    $match: {
+                        locationCoordinates: {
+                            $geoWithin: {
+                                $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+                            },
+                        },
+                    },
+                },
+                {
+                    $sort: sort,
+                },
+                {
+                    $lookup: {
+                        from: 'favourites',
+                        as: 'favouriteDeal',
+                        let: {
+                            dealID: '$dealID',
+                            customerMongoID: (_c = req === null || req === void 0 ? void 0 : req.user) === null || _c === void 0 ? void 0 : _c.id,
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$dealID', '$dealID'],
+                                            },
+                                            {
+                                                $eq: ['$$customerMongoID', '$customerMongoID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: {
+                        path: '$favouriteDeal',
+                        preserveNullAndEmptyArrays: true,
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'users',
+                        as: 'merchantDetails',
+                        let: {
+                            merchantID: '$merchantID',
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$merchantID', '$merchantID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                            {
+                                $lookup: {
+                                    from: 'locations',
+                                    as: 'locationData',
+                                    localField: 'merchantID',
+                                    foreignField: 'merchantID',
+                                },
+                            },
+                            {
+                                $unwind: '$locationData',
+                            },
+                            {
+                                $addFields: {
+                                    id: '$_id',
+                                    tradeName: '$locationData.tradeName',
+                                },
+                            },
+                            {
+                                $project: {
+                                    _id: 0,
+                                    id: 1,
+                                    totalReviews: 1,
+                                    ratingsAverage: 1,
+                                    tradeName: 1,
+                                    city: 1,
+                                    province: 1,
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: '$merchantDetails',
+                },
+                {
+                    $addFields: {
+                        id: '$_id',
+                        province: '$merchantDetails.province',
+                        mediaUrl: {
+                            $slice: [
+                                {
+                                    $filter: {
+                                        input: '$mediaUrl',
+                                        as: 'mediaUrl',
+                                        cond: {
+                                            $eq: ['$$mediaUrl.type', 'Image'],
+                                        },
+                                    },
+                                },
+                                1,
+                            ],
+                        },
+                        isFavourite: {
+                            $cond: [
+                                {
+                                    $ifNull: ['$favouriteDeal', false],
+                                },
+                                true,
+                                false,
+                            ],
+                        },
+                    },
+                },
+                {
+                    $match: Object.assign({}, locationFilter),
+                },
+                {
+                    $count: 'filteredCount',
+                },
+            ]);
+            const deals = await this.dealModel
+                .aggregate([
+                {
+                    $match: Object.assign(Object.assign({ deletedCheck: false, dealStatus: dealstatus_enum_1.DEALSTATUS.published }, categoryFilters), matchFilter),
+                },
+                {
+                    $sample: { size: sampleCount },
+                },
+                {
+                    $lookup: {
+                        from: 'locations',
+                        as: 'location',
+                        localField: 'merchantID',
+                        foreignField: 'merchantID',
+                    },
+                },
+                {
+                    $unwind: '$location',
+                },
+                {
+                    $addFields: {
+                        locationCoordinates: '$location.location',
+                    },
+                },
+                {
+                    $match: {
+                        locationCoordinates: {
+                            $geoWithin: {
+                                $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+                            },
+                        },
+                    },
+                },
+                {
+                    $sort: sort
+                },
+                {
+                    $lookup: {
+                        from: 'favourites',
+                        as: 'favouriteDeal',
+                        let: {
+                            dealID: '$dealID',
+                            customerMongoID: (_d = req === null || req === void 0 ? void 0 : req.user) === null || _d === void 0 ? void 0 : _d.id,
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$dealID', '$dealID'],
+                                            },
+                                            {
+                                                $eq: ['$$customerMongoID', '$customerMongoID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: {
+                        path: '$favouriteDeal',
+                        preserveNullAndEmptyArrays: true,
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'users',
+                        as: 'merchantDetails',
+                        let: {
+                            merchantID: '$merchantID',
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$merchantID', '$merchantID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                            {
+                                $lookup: {
+                                    from: 'locations',
+                                    as: 'locationData',
+                                    localField: 'merchantID',
+                                    foreignField: 'merchantID',
+                                },
+                            },
+                            {
+                                $unwind: '$locationData',
+                            },
+                            {
+                                $addFields: {
+                                    id: '$_id',
+                                    tradeName: '$locationData.tradeName',
+                                },
+                            },
+                            {
+                                $project: {
+                                    _id: 0,
+                                    id: 1,
+                                    totalReviews: 1,
+                                    ratingsAverage: 1,
+                                    tradeName: 1,
+                                    city: 1,
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: '$merchantDetails',
+                },
+                {
+                    $addFields: {
+                        id: '$_id',
+                        mediaUrl: {
+                            $slice: [
+                                {
+                                    $filter: {
+                                        input: '$mediaUrl',
+                                        as: 'mediaUrl',
+                                        cond: {
+                                            $eq: ['$$mediaUrl.type', 'Image'],
+                                        },
+                                    },
+                                },
+                                1,
+                            ],
+                        },
+                        isFavourite: {
+                            $cond: [
+                                {
+                                    $ifNull: ['$favouriteDeal', false],
+                                },
+                                true,
+                                false,
+                            ],
+                        },
+                    },
+                },
+                {
+                    $project: {
+                        _id: 0,
+                        merchantMongoID: 0,
+                        merchantID: 0,
+                        subTitle: 0,
+                        categoryName: 0,
+                        subCategoryID: 0,
+                        subCategory: 0,
+                        subDeals: 0,
+                        availableVouchers: 0,
+                        aboutThisDeal: 0,
+                        readMore: 0,
+                        finePrints: 0,
+                        netEarnings: 0,
+                        isCollapsed: 0,
+                        isDuplicate: 0,
+                        totalReviews: 0,
+                        maxRating: 0,
+                        minRating: 0,
+                        pageNumber: 0,
+                        updatedAt: 0,
+                        __v: 0,
+                        endDate: 0,
+                        startDate: 0,
+                        reviewMediaUrl: 0,
+                        favouriteDeal: 0,
+                        location: 0
+                    },
+                },
+            ])
+                .skip(parseInt(offset))
+                .limit(parseInt(limit));
+            return Object.assign(Object.assign({}, totalCount[0]), { filteredCount: (filteredCount === null || filteredCount === void 0 ? void 0 : filteredCount.length) > 0 ? filteredCount[0].filteredCount : 0, data: deals });
+        }
+        catch (err) {
+            throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
+        }
+    }
+    async getNearByDeals(lat, lng, distance, offset, limit, req) {
+        var _a;
+        try {
+            offset = parseInt(offset) < 0 ? 0 : offset;
+            limit = parseInt(limit) < 1 ? 10 : limit;
+            lat = parseFloat(lat);
+            lng = parseFloat(lng);
+            distance = parseFloat(distance);
+            if (!distance) {
+                distance = 10;
+            }
+            let radius = parseFloat(distance) / 6378.1;
+            if (!lat && !lng) {
+                lat = 50.8476;
+                lng = 4.3572;
+                radius = 20 / 6378.1;
+            }
+            let deal = await this.dealModel.aggregate([
+                {
+                    $match: {
+                        deletedCheck: false,
+                        dealStatus: dealstatus_enum_1.DEALSTATUS.published,
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'locations',
+                        as: 'location',
+                        localField: 'merchantID',
+                        foreignField: 'merchantID',
+                    },
+                },
+                {
+                    $unwind: '$location',
+                },
+                {
+                    $addFields: {
+                        locationCoordinates: '$location.location',
+                    },
+                },
+                {
+                    $match: {
+                        locationCoordinates: {
+                            $geoWithin: {
+                                $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+                            },
+                        },
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'favourites',
+                        as: 'favouriteDeal',
+                        let: {
+                            dealID: '$dealID',
+                            customerMongoID: (_a = req === null || req === void 0 ? void 0 : req.user) === null || _a === void 0 ? void 0 : _a.id,
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$dealID', '$dealID'],
+                                            },
+                                            {
+                                                $eq: ['$$customerMongoID', '$customerMongoID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: {
+                        path: '$favouriteDeal',
+                        preserveNullAndEmptyArrays: true,
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'users',
+                        as: 'merchantDetails',
+                        let: {
+                            merchantID: '$merchantID',
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$merchantID', '$merchantID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                            {
+                                $lookup: {
+                                    from: 'locations',
+                                    as: 'locationData',
+                                    localField: 'merchantID',
+                                    foreignField: 'merchantID',
+                                },
+                            },
+                            {
+                                $unwind: '$locationData',
+                            },
+                            {
+                                $addFields: {
+                                    id: '$_id',
+                                    tradeName: '$locationData.tradeName',
+                                },
+                            },
+                            {
+                                $project: {
+                                    _id: 0,
+                                    id: 1,
+                                    totalReviews: 1,
+                                    ratingsAverage: 1,
+                                    tradeName: 1,
+                                    city: 1,
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: '$merchantDetails',
+                },
+                {
+                    $addFields: {
+                        id: '$_id',
+                        mediaUrl: {
+                            $slice: [
+                                {
+                                    $filter: {
+                                        input: '$mediaUrl',
+                                        as: 'mediaUrl',
+                                        cond: {
+                                            $eq: ['$$mediaUrl.type', 'Image'],
+                                        },
+                                    },
+                                },
+                                1,
+                            ],
+                        },
+                        isFavourite: {
+                            $cond: [
+                                {
+                                    $ifNull: ['$favouriteDeal', false],
+                                },
+                                true,
+                                false,
+                            ],
+                        },
+                    },
+                },
+                {
+                    $project: {
+                        _id: 0,
+                        merchantMongoID: 0,
+                        merchantID: 0,
+                        subTitle: 0,
+                        categoryName: 0,
+                        subCategoryID: 0,
+                        subCategory: 0,
+                        subDeals: 0,
+                        availableVouchers: 0,
+                        aboutThisDeal: 0,
+                        readMore: 0,
+                        finePrints: 0,
+                        netEarnings: 0,
+                        isCollapsed: 0,
+                        isDuplicate: 0,
+                        totalReviews: 0,
+                        maxRating: 0,
+                        minRating: 0,
+                        pageNumber: 0,
+                        updatedAt: 0,
+                        __v: 0,
+                        endDate: 0,
+                        startDate: 0,
+                        reviewMediaUrl: 0,
+                        favouriteDeal: 0,
+                        location: 0,
+                    },
+                },
+            ])
+                .skip(parseInt(offset))
+                .limit(parseInt(limit));
+            return deal;
+        }
+        catch (err) {
+            console.log(err);
+        }
+    }
+    async getNearByDealsDynamically(lat, lng, distance, categoryName, subCategoryName, fromPrice, toPrice, reviewRating, sorting, offset, limit, filterCategoriesApiDto, req) {
+        var _a, _b, _c, _d;
+        try {
+            offset = parseInt(offset) < 0 ? 0 : offset;
+            limit = parseInt(limit) < 1 ? 10 : limit;
+            lat = parseFloat(lat);
+            lng = parseFloat(lng);
+            distance = parseFloat(distance);
+            if (!distance) {
+                distance = 10;
+            }
+            let radius = parseFloat(distance) / 6378.1;
+            if (!lat && !lng) {
+                lat = 50.8476;
+                lng = 4.3572;
+                radius = 20 / 6378.1;
+            }
+            let categoryFilters = {};
+            if (categoryName) {
+                categoryFilters = Object.assign(Object.assign({}, categoryFilters), { categoryName: categoryName });
+            }
+            if (subCategoryName) {
+                categoryFilters = Object.assign(Object.assign({}, categoryFilters), { subCategory: subCategoryName });
+            }
+            let matchFilter = {};
+            let minValue = parseInt(fromPrice);
+            let maxValue = parseInt(toPrice);
+            if (fromPrice && toPrice) {
+                matchFilter = Object.assign(Object.assign({}, matchFilter), { minDealPrice: {
+                        $gte: minValue,
+                        $lte: maxValue,
+                    } });
+            }
+            else if (fromPrice) {
+                matchFilter = Object.assign(Object.assign({}, matchFilter), { minDealPrice: {
+                        $gte: minValue,
+                    } });
+            }
+            else if (toPrice) {
+                matchFilter = Object.assign(Object.assign({}, matchFilter), { minDealPrice: {
+                        $lte: maxValue,
+                    } });
+            }
+            let rating = parseFloat(reviewRating);
+            if (reviewRating) {
+                matchFilter = Object.assign(Object.assign({}, matchFilter), { ratingsAverage: {
+                        $gte: rating,
+                    } });
+            }
+            let sort = {};
+            if (sorting == categoryapisorting_enum_1.SORTINGENUM.priceAsc || sorting == categoryapisorting_enum_1.SORTINGENUM.priceDesc) {
+                let sortPrice = sorting == categoryapisorting_enum_1.SORTINGENUM.priceAsc ? 1 : -1;
+                console.log('sorting');
+                sort = {
+                    minDealPrice: sortPrice,
+                };
+            }
+            if (sorting == categoryapisorting_enum_1.SORTINGENUM.ratingAsc ||
+                sorting == categoryapisorting_enum_1.SORTINGENUM.ratingDesc) {
+                let sortRating = sorting == categoryapisorting_enum_1.SORTINGENUM.ratingAsc ? 1 : -1;
+                console.log('sorting');
+                sort = {
+                    ratingsAverage: sortRating,
+                };
+            }
+            if (sorting == categoryapisorting_enum_1.SORTINGENUM.dateAsc || sorting == categoryapisorting_enum_1.SORTINGENUM.dateDesc) {
+                let sortDate = sorting == categoryapisorting_enum_1.SORTINGENUM.dateAsc ? 1 : -1;
+                console.log('sorting');
+                sort = {
+                    createdAt: sortDate,
+                };
+            }
+            let locationFilter = {};
+            if ((_a = filterCategoriesApiDto === null || filterCategoriesApiDto === void 0 ? void 0 : filterCategoriesApiDto.provincesArray) === null || _a === void 0 ? void 0 : _a.length) {
+                locationFilter = Object.assign(Object.assign({}, locationFilter), { province: { $in: filterCategoriesApiDto.provincesArray } });
+            }
+            if (Object.keys(sort).length === 0 && sort.constructor === Object) {
+                sort = {
+                    createdAt: -1,
+                };
+            }
+            let fromPriceFilter = {};
+            let toPriceFilter = {};
+            if (fromPrice) {
+                fromPriceFilter = Object.assign({ $gte: ['$minDealPrice', minValue] }, fromPriceFilter);
+            }
+            if (toPrice) {
+                toPriceFilter = {
+                    $lte: ['$minDealPrice', maxValue]
+                };
+            }
+            let ratingFilter = {};
+            if (reviewRating) {
+                ratingFilter = {
+                    $gte: ['$ratingsAverage', rating]
+                };
+            }
+            let provincesArray = [];
+            if (filterCategoriesApiDto.provincesArray.length == 0) {
+                provincesArray = [
+                    'West-Vlaanderen',
+                    'Vlaams-Brabant',
+                    'Limburg',
+                    'Oost-Vlaanderen',
+                    'Antwerpen'
+                ];
+            }
+            else {
+                provincesArray = filterCategoriesApiDto.provincesArray;
+            }
+            const totalCount = await this.dealModel.aggregate([
+                {
+                    $match: {
+                        deletedCheck: false,
+                        dealStatus: dealstatus_enum_1.DEALSTATUS.published,
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'locations',
+                        as: 'location',
+                        localField: 'merchantID',
+                        foreignField: 'merchantID',
+                    },
+                },
+                {
+                    $unwind: '$location',
+                },
+                {
+                    $addFields: {
+                        locationCoordinates: '$location.location',
+                    },
+                },
+                {
+                    $match: {
+                        locationCoordinates: {
+                            $geoWithin: {
+                                $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+                            },
+                        },
+                    },
+                },
+                {
+                    $sort: sort,
+                },
+                {
+                    $lookup: {
+                        from: 'favourites',
+                        as: 'favouriteDeal',
+                        let: {
+                            dealID: '$dealID',
+                            customerMongoID: (_b = req === null || req === void 0 ? void 0 : req.user) === null || _b === void 0 ? void 0 : _b.id,
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$dealID', '$dealID'],
+                                            },
+                                            {
+                                                $eq: ['$$customerMongoID', '$customerMongoID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: {
+                        path: '$favouriteDeal',
+                        preserveNullAndEmptyArrays: true,
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'users',
+                        as: 'merchantDetails',
+                        let: {
+                            merchantID: '$merchantID',
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$merchantID', '$merchantID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                            {
+                                $lookup: {
+                                    from: 'locations',
+                                    as: 'locationData',
+                                    localField: 'merchantID',
+                                    foreignField: 'merchantID',
+                                },
+                            },
+                            {
+                                $unwind: '$locationData',
+                            },
+                            {
+                                $addFields: {
+                                    id: '$_id',
+                                    tradeName: '$locationData.tradeName',
+                                },
+                            },
+                            {
+                                $project: {
+                                    _id: 0,
+                                    id: 1,
+                                    totalReviews: 1,
+                                    ratingsAverage: 1,
+                                    tradeName: 1,
+                                    city: 1,
+                                    province: 1,
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: '$merchantDetails',
+                },
+                {
+                    $addFields: {
+                        id: '$_id',
+                        province: '$merchantDetails.province',
+                        mediaUrl: {
+                            $slice: [
+                                {
+                                    $filter: {
+                                        input: '$mediaUrl',
+                                        as: 'mediaUrl',
+                                        cond: {
+                                            $eq: ['$$mediaUrl.type', 'Image'],
+                                        },
+                                    },
+                                },
+                                1,
+                            ],
+                        },
+                        isFavourite: {
+                            $cond: [
+                                {
+                                    $ifNull: ['$favouriteDeal', false],
+                                },
+                                true,
+                                false,
+                            ],
+                        },
+                    },
+                },
+                {
+                    $group: {
+                        _id: null,
+                        totalCount: { $sum: 1 },
+                        Between0and50: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            {
+                                                $gte: ['$minDealPrice', 0],
+                                            },
+                                            {
+                                                $lte: ['$minDealPrice', 50],
+                                            },
+                                            Object.assign({}, ratingFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        Between50and150: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            {
+                                                $gte: ['$minDealPrice', 50],
+                                            },
+                                            {
+                                                $lte: ['$minDealPrice', 150],
+                                            },
+                                            Object.assign({}, ratingFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        Between150and300: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            {
+                                                $gte: ['$minDealPrice', 150],
+                                            },
+                                            {
+                                                $lte: ['$minDealPrice', 300],
+                                            },
+                                            Object.assign({}, ratingFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        Between300and450: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            {
+                                                $gte: ['$minDealPrice', 300],
+                                            },
+                                            {
+                                                $lte: ['$minDealPrice', 450],
+                                            },
+                                            Object.assign({}, ratingFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        Plus450: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            {
+                                                $gte: ['$minDealPrice', 450],
+                                            },
+                                            Object.assign({}, ratingFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        FourUp: {
+                            $sum: {
+                                $cond: [
+                                    { $and: [
+                                            { $gte: ['$ratingsAverage', 4] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        ThreeUp: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            { $gte: ['$ratingsAverage', 3] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        TwoUp: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            { $gte: ['$ratingsAverage', 2] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        OneUp: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            { $gte: ['$ratingsAverage', 1] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        allRating: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            { $gte: ['$ratingsAverage', 0] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        WestVlaanderen: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            { $eq: ['$province', 'West-Vlaanderen'] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            Object.assign({}, ratingFilter),
+                                        ]
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        OostVlaanderen: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            { $eq: ['$province', 'Oost-Vlaanderen'] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            Object.assign({}, ratingFilter),
+                                        ]
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        Antwerpen: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            { $eq: ['$province', 'Antwerpen'] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            Object.assign({}, ratingFilter),
+                                        ]
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        Limburg: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            { $eq: ['$province', 'Limburg'] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            Object.assign({}, ratingFilter),
+                                        ]
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        VlaamsBrabant: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            { $eq: ['$province', 'Vlaams-Brabant'] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            Object.assign({}, ratingFilter),
+                                        ]
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                    },
+                },
+                {
+                    $project: {
+                        _id: 0,
+                    },
+                },
+            ]);
+            const filteredCount = await this.dealModel.aggregate([
+                {
+                    $match: Object.assign(Object.assign({ deletedCheck: false, dealStatus: dealstatus_enum_1.DEALSTATUS.published }, categoryFilters), matchFilter),
+                },
+                {
+                    $lookup: {
+                        from: 'locations',
+                        as: 'location',
+                        localField: 'merchantID',
+                        foreignField: 'merchantID',
+                    },
+                },
+                {
+                    $unwind: '$location',
+                },
+                {
+                    $addFields: {
+                        locationCoordinates: '$location.location',
+                    },
+                },
+                {
+                    $match: {
+                        locationCoordinates: {
+                            $geoWithin: {
+                                $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+                            },
+                        },
+                    },
+                },
+                {
+                    $sort: sort,
+                },
+                {
+                    $lookup: {
+                        from: 'favourites',
+                        as: 'favouriteDeal',
+                        let: {
+                            dealID: '$dealID',
+                            customerMongoID: (_c = req === null || req === void 0 ? void 0 : req.user) === null || _c === void 0 ? void 0 : _c.id,
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$dealID', '$dealID'],
+                                            },
+                                            {
+                                                $eq: ['$$customerMongoID', '$customerMongoID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: {
+                        path: '$favouriteDeal',
+                        preserveNullAndEmptyArrays: true,
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'users',
+                        as: 'merchantDetails',
+                        let: {
+                            merchantID: '$merchantID',
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$merchantID', '$merchantID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                            {
+                                $lookup: {
+                                    from: 'locations',
+                                    as: 'locationData',
+                                    localField: 'merchantID',
+                                    foreignField: 'merchantID',
+                                },
+                            },
+                            {
+                                $unwind: '$locationData',
+                            },
+                            {
+                                $addFields: {
+                                    id: '$_id',
+                                    tradeName: '$locationData.tradeName',
+                                },
+                            },
+                            {
+                                $project: {
+                                    _id: 0,
+                                    id: 1,
+                                    totalReviews: 1,
+                                    ratingsAverage: 1,
+                                    tradeName: 1,
+                                    city: 1,
+                                    province: 1,
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: '$merchantDetails',
+                },
+                {
+                    $addFields: {
+                        id: '$_id',
+                        province: '$merchantDetails.province',
+                        mediaUrl: {
+                            $slice: [
+                                {
+                                    $filter: {
+                                        input: '$mediaUrl',
+                                        as: 'mediaUrl',
+                                        cond: {
+                                            $eq: ['$$mediaUrl.type', 'Image'],
+                                        },
+                                    },
+                                },
+                                1,
+                            ],
+                        },
+                        isFavourite: {
+                            $cond: [
+                                {
+                                    $ifNull: ['$favouriteDeal', false],
+                                },
+                                true,
+                                false,
+                            ],
+                        },
+                    },
+                },
+                {
+                    $match: Object.assign({}, locationFilter),
+                },
+                {
+                    $count: 'filteredCount',
+                },
+            ]);
+            let deals = await this.dealModel.aggregate([
+                {
+                    $match: Object.assign(Object.assign({ deletedCheck: false, dealStatus: dealstatus_enum_1.DEALSTATUS.published }, categoryFilters), matchFilter),
+                },
+                {
+                    $lookup: {
+                        from: 'locations',
+                        as: 'location',
+                        localField: 'merchantID',
+                        foreignField: 'merchantID',
+                    },
+                },
+                {
+                    $unwind: '$location',
+                },
+                {
+                    $addFields: {
+                        locationCoordinates: '$location.location',
+                    },
+                },
+                {
+                    $match: {
+                        locationCoordinates: {
+                            $geoWithin: {
+                                $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+                            },
+                        },
+                    },
+                },
+                {
+                    $sort: sort,
+                },
+                {
+                    $lookup: {
+                        from: 'favourites',
+                        as: 'favouriteDeal',
+                        let: {
+                            dealID: '$dealID',
+                            customerMongoID: (_d = req === null || req === void 0 ? void 0 : req.user) === null || _d === void 0 ? void 0 : _d.id,
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$dealID', '$dealID'],
+                                            },
+                                            {
+                                                $eq: ['$$customerMongoID', '$customerMongoID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: {
+                        path: '$favouriteDeal',
+                        preserveNullAndEmptyArrays: true,
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'users',
+                        as: 'merchantDetails',
+                        let: {
+                            merchantID: '$merchantID',
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$merchantID', '$merchantID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                            {
+                                $lookup: {
+                                    from: 'locations',
+                                    as: 'locationData',
+                                    localField: 'merchantID',
+                                    foreignField: 'merchantID',
+                                },
+                            },
+                            {
+                                $unwind: '$locationData',
+                            },
+                            {
+                                $addFields: {
+                                    id: '$_id',
+                                    tradeName: '$locationData.tradeName',
+                                },
+                            },
+                            {
+                                $project: {
+                                    _id: 0,
+                                    id: 1,
+                                    totalReviews: 1,
+                                    ratingsAverage: 1,
+                                    tradeName: 1,
+                                    city: 1,
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: '$merchantDetails',
+                },
+                {
+                    $addFields: {
+                        id: '$_id',
+                        mediaUrl: {
+                            $slice: [
+                                {
+                                    $filter: {
+                                        input: '$mediaUrl',
+                                        as: 'mediaUrl',
+                                        cond: {
+                                            $eq: ['$$mediaUrl.type', 'Image'],
+                                        },
+                                    },
+                                },
+                                1,
+                            ],
+                        },
+                        isFavourite: {
+                            $cond: [
+                                {
+                                    $ifNull: ['$favouriteDeal', false],
+                                },
+                                true,
+                                false,
+                            ],
+                        },
+                    },
+                },
+                {
+                    $project: {
+                        _id: 0,
+                        merchantMongoID: 0,
+                        merchantID: 0,
+                        subTitle: 0,
+                        categoryName: 0,
+                        subCategoryID: 0,
+                        subCategory: 0,
+                        subDeals: 0,
+                        availableVouchers: 0,
+                        aboutThisDeal: 0,
+                        readMore: 0,
+                        finePrints: 0,
+                        netEarnings: 0,
+                        isCollapsed: 0,
+                        isDuplicate: 0,
+                        totalReviews: 0,
+                        maxRating: 0,
+                        minRating: 0,
+                        pageNumber: 0,
+                        updatedAt: 0,
+                        __v: 0,
+                        endDate: 0,
+                        startDate: 0,
+                        reviewMediaUrl: 0,
+                        favouriteDeal: 0,
+                        location: 0,
+                    },
+                },
+            ])
+                .skip(parseInt(offset))
+                .limit(parseInt(limit));
+            return Object.assign(Object.assign({}, totalCount[0]), { filteredCount: (filteredCount === null || filteredCount === void 0 ? void 0 : filteredCount.length) > 0 ? filteredCount[0].filteredCount : 0, data: deals });
+        }
+        catch (err) {
+            console.log(err);
+        }
+    }
+    async searchDeals(lat, lng, distance, searchBar, header, categoryName, subCategoryName, fromPrice, toPrice, reviewRating, offset, limit, filterCategoriesApiDto, req) {
+        var _a, _b, _c, _d;
+        try {
+            offset = parseInt(offset) < 0 ? 0 : offset;
+            limit = parseInt(limit) < 1 ? 10 : limit;
+            lat = parseFloat(lat);
+            lng = parseFloat(lng);
+            distance = parseFloat(distance);
+            if (!distance) {
+                distance = 10;
+            }
+            let radius = parseFloat(distance) / 6378.1;
+            if (!lat && !lng) {
+                lat = 50.8476;
+                lng = 4.3572;
+                radius = 20 / 6378.1;
+            }
+            let filters = {};
+            searchBar = searchBar.trim();
+            var headerQuery = new RegExp(`${searchBar}`, 'i');
+            var categoryQuery = new RegExp(`${searchBar}`, 'i');
+            var subCategoryQuery = new RegExp(`${searchBar}`, 'i');
+            if (header.trim().length) {
+                var query = new RegExp(`${header}`, 'i');
+                filters = Object.assign(Object.assign({}, filters), { dealHeader: query });
+            }
+            let matchFilter = {};
+            if (categoryName) {
+                matchFilter = Object.assign(Object.assign({}, matchFilter), { categoryName: categoryName });
+            }
+            if (subCategoryName) {
+                matchFilter = Object.assign(Object.assign({}, matchFilter), { subCategory: subCategoryName });
+            }
+            let minValue = parseInt(fromPrice);
+            let maxValue = parseInt(toPrice);
+            if (fromPrice && toPrice) {
+                matchFilter = Object.assign(Object.assign({}, matchFilter), { minDealPrice: {
+                        $gte: minValue,
+                        $lte: maxValue,
+                    } });
+            }
+            else if (fromPrice) {
+                matchFilter = Object.assign(Object.assign({}, matchFilter), { minDealPrice: {
+                        $gte: minValue,
+                    } });
+            }
+            else if (toPrice) {
+                matchFilter = Object.assign(Object.assign({}, matchFilter), { minDealPrice: {
+                        $lte: maxValue,
+                    } });
+            }
+            let rating = parseFloat(reviewRating);
+            if (reviewRating) {
+                matchFilter = Object.assign(Object.assign({}, matchFilter), { ratingsAverage: {
+                        $gte: rating,
+                    } });
+            }
+            let locationFilter = {};
+            if ((_a = filterCategoriesApiDto === null || filterCategoriesApiDto === void 0 ? void 0 : filterCategoriesApiDto.provincesArray) === null || _a === void 0 ? void 0 : _a.length) {
+                locationFilter = Object.assign(Object.assign({}, locationFilter), { province: { $in: filterCategoriesApiDto.provincesArray } });
+            }
+            console.log(filters);
+            console.log(locationFilter);
+            const totalCount = await this.dealModel.aggregate([
+                {
+                    $match: {
+                        deletedCheck: false,
+                        dealStatus: dealstatus_enum_1.DEALSTATUS.published,
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'locations',
+                        as: 'location',
+                        localField: 'merchantID',
+                        foreignField: 'merchantID',
+                    },
+                },
+                {
+                    $unwind: '$location',
+                },
+                {
+                    $addFields: {
+                        locationCoordinates: '$location.location',
+                    },
+                },
+                {
+                    $match: {
+                        locationCoordinates: {
+                            $geoWithin: {
+                                $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+                            },
+                        },
+                    },
+                },
+                {
+                    $addFields: {
+                        isHeader: {
+                            $regexMatch: { input: '$dealHeader', regex: headerQuery },
+                        },
+                        isCategory: {
+                            $regexMatch: { input: '$categoryName', regex: categoryQuery },
+                        },
+                        isSubCategory: {
+                            $regexMatch: { input: '$subCategory', regex: subCategoryQuery },
+                        },
+                    },
+                },
+                {
+                    $match: {
+                        $or: [
+                            { isCategory: true },
+                            { isSubCategory: true },
+                            { isHeader: true },
+                        ],
+                    },
+                },
+                {
+                    $sort: {
+                        isCategory: -1,
+                        isSubCategory: -1,
+                        isHeader: -1,
+                        createdAt: -1,
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'favourites',
+                        as: 'favouriteDeal',
+                        let: {
+                            dealID: '$dealID',
+                            customerMongoID: (_b = req === null || req === void 0 ? void 0 : req.user) === null || _b === void 0 ? void 0 : _b.id,
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$dealID', '$dealID'],
+                                            },
+                                            {
+                                                $eq: ['$$customerMongoID', '$customerMongoID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: {
+                        path: '$favouriteDeal',
+                        preserveNullAndEmptyArrays: true,
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'users',
+                        as: 'merchantDetails',
+                        let: {
+                            merchantID: '$merchantID',
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$merchantID', '$merchantID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                            {
+                                $lookup: {
+                                    from: 'locations',
+                                    as: 'locationData',
+                                    localField: 'merchantID',
+                                    foreignField: 'merchantID',
+                                },
+                            },
+                            {
+                                $unwind: '$locationData',
+                            },
+                            {
+                                $addFields: {
+                                    id: '$_id',
+                                    tradeName: '$locationData.tradeName',
+                                },
+                            },
+                            {
+                                $project: {
+                                    _id: 0,
+                                    id: 1,
+                                    totalReviews: 1,
+                                    ratingsAverage: 1,
+                                    tradeName: 1,
+                                    city: 1,
+                                    province: 1,
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: '$merchantDetails',
+                },
+                {
+                    $addFields: {
+                        id: '$_id',
+                        province: '$merchantDetails.province',
+                        mediaUrl: {
+                            $slice: [
+                                {
+                                    $filter: {
+                                        input: '$mediaUrl',
+                                        as: 'mediaUrl',
+                                        cond: {
+                                            $eq: ['$$mediaUrl.type', 'Image'],
+                                        },
+                                    },
+                                },
+                                1,
+                            ],
+                        },
+                        isFavourite: {
+                            $cond: [
+                                {
+                                    $ifNull: ['$favouriteDeal', false],
+                                },
+                                true,
+                                false,
+                            ],
+                        },
+                    },
+                },
+                {
+                    $group: {
+                        _id: null,
+                        totalCount: { $sum: 1 },
+                        Between0and50: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            {
+                                                $gte: ['$minDealPrice', 0],
+                                            },
+                                            {
+                                                $lte: ['$minDealPrice', 50],
+                                            },
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        Between50and150: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            {
+                                                $gte: ['$minDealPrice', 50],
+                                            },
+                                            {
+                                                $lte: ['$minDealPrice', 150],
+                                            },
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        Between150and300: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            {
+                                                $gte: ['$minDealPrice', 150],
+                                            },
+                                            {
+                                                $lte: ['$minDealPrice', 300],
+                                            },
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        Between300and450: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            {
+                                                $gte: ['$minDealPrice', 300],
+                                            },
+                                            {
+                                                $lte: ['$minDealPrice', 450],
+                                            },
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        Plus450: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $gte: ['$minDealPrice', 450],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        FourUp: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $gte: ['$ratingsAverage', 4],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        ThreeUp: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $gte: ['$ratingsAverage', 3],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        TwoUp: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $gte: ['$ratingsAverage', 2],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        OneUp: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $gte: ['$ratingsAverage', 1],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        allRating: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $gte: ['$ratingsAverage', 0],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        WestVlaanderen: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $eq: ['$province', 'West-Vlaanderen'],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        OostVlaanderen: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $eq: ['$province', 'Oost-Vlaanderen'],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        Antwerpen: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $eq: ['$province', 'Antwerpen'],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        Limburg: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $eq: ['$province', 'Limburg'],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        VlaamsBrabant: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $eq: ['$province', 'Vlaams-Brabant'],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                    },
+                },
+                {
+                    $project: {
+                        _id: 0,
+                    },
+                },
+            ]);
+            const filteredCount = await this.dealModel.aggregate([
+                {
+                    $match: Object.assign(Object.assign({ deletedCheck: false, dealStatus: dealstatus_enum_1.DEALSTATUS.published }, filters), matchFilter),
+                },
+                {
+                    $lookup: {
+                        from: 'locations',
+                        as: 'location',
+                        localField: 'merchantID',
+                        foreignField: 'merchantID',
+                    },
+                },
+                {
+                    $unwind: '$location',
+                },
+                {
+                    $addFields: {
+                        locationCoordinates: '$location.location',
+                    },
+                },
+                {
+                    $match: {
+                        locationCoordinates: {
+                            $geoWithin: {
+                                $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+                            },
+                        },
+                    },
+                },
+                {
+                    $addFields: {
+                        isHeader: {
+                            $regexMatch: { input: '$dealHeader', regex: headerQuery },
+                        },
+                        isCategory: {
+                            $regexMatch: { input: '$categoryName', regex: categoryQuery },
+                        },
+                        isSubCategory: {
+                            $regexMatch: { input: '$subCategory', regex: subCategoryQuery },
+                        },
+                    },
+                },
+                {
+                    $match: {
+                        $or: [
+                            { isCategory: true },
+                            { isSubCategory: true },
+                            { isHeader: true },
+                        ],
+                    },
+                },
+                {
+                    $sort: {
+                        isCategory: -1,
+                        isSubCategory: -1,
+                        isHeader: -1,
+                        createdAt: -1,
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'favourites',
+                        as: 'favouriteDeal',
+                        let: {
+                            dealID: '$dealID',
+                            customerMongoID: (_c = req === null || req === void 0 ? void 0 : req.user) === null || _c === void 0 ? void 0 : _c.id,
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$dealID', '$dealID'],
+                                            },
+                                            {
+                                                $eq: ['$$customerMongoID', '$customerMongoID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: {
+                        path: '$favouriteDeal',
+                        preserveNullAndEmptyArrays: true,
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'users',
+                        as: 'merchantDetails',
+                        let: {
+                            merchantID: '$merchantID',
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$merchantID', '$merchantID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                            {
+                                $lookup: {
+                                    from: 'locations',
+                                    as: 'locationData',
+                                    localField: 'merchantID',
+                                    foreignField: 'merchantID',
+                                },
+                            },
+                            {
+                                $unwind: '$locationData',
+                            },
+                            {
+                                $addFields: {
+                                    id: '$_id',
+                                    tradeName: '$locationData.tradeName',
+                                },
+                            },
+                            {
+                                $project: {
+                                    _id: 0,
+                                    id: 1,
+                                    totalReviews: 1,
+                                    ratingsAverage: 1,
+                                    tradeName: 1,
+                                    city: 1,
+                                    province: 1,
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: '$merchantDetails',
+                },
+                {
+                    $addFields: {
+                        id: '$_id',
+                        province: '$merchantDetails.province',
+                        mediaUrl: {
+                            $slice: [
+                                {
+                                    $filter: {
+                                        input: '$mediaUrl',
+                                        as: 'mediaUrl',
+                                        cond: {
+                                            $eq: ['$$mediaUrl.type', 'Image'],
+                                        },
+                                    },
+                                },
+                                1,
+                            ],
+                        },
+                        isFavourite: {
+                            $cond: [
+                                {
+                                    $ifNull: ['$favouriteDeal', false],
+                                },
+                                true,
+                                false,
+                            ],
+                        },
+                    },
+                },
+                {
+                    $match: Object.assign({}, locationFilter),
+                },
+                {
+                    $count: 'filteredCount',
+                },
+            ]);
+            const deals = await this.dealModel
+                .aggregate([
+                {
+                    $match: Object.assign(Object.assign({ deletedCheck: false, dealStatus: dealstatus_enum_1.DEALSTATUS.published }, filters), matchFilter),
+                },
+                {
+                    $lookup: {
+                        from: 'locations',
+                        as: 'location',
+                        localField: 'merchantID',
+                        foreignField: 'merchantID',
+                    },
+                },
+                {
+                    $unwind: '$location',
+                },
+                {
+                    $addFields: {
+                        locationCoordinates: '$location.location',
+                    },
+                },
+                {
+                    $match: {
+                        locationCoordinates: {
+                            $geoWithin: {
+                                $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+                            },
+                        },
+                    },
+                },
+                {
+                    $addFields: {
+                        isHeader: {
+                            $regexMatch: { input: '$dealHeader', regex: headerQuery },
+                        },
+                        isCategory: {
+                            $regexMatch: { input: '$categoryName', regex: categoryQuery },
+                        },
+                        isSubCategory: {
+                            $regexMatch: { input: '$subCategory', regex: subCategoryQuery },
+                        },
+                    },
+                },
+                {
+                    $match: {
+                        $or: [
+                            { isCategory: true },
+                            { isSubCategory: true },
+                            { isHeader: true },
+                        ],
+                    },
+                },
+                {
+                    $sort: {
+                        isCategory: -1,
+                        isSubCategory: -1,
+                        isHeader: -1,
+                        createdAt: -1,
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'favourites',
+                        as: 'favouriteDeal',
+                        let: {
+                            dealID: '$dealID',
+                            customerMongoID: (_d = req === null || req === void 0 ? void 0 : req.user) === null || _d === void 0 ? void 0 : _d.id,
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$dealID', '$dealID'],
+                                            },
+                                            {
+                                                $eq: ['$$customerMongoID', '$customerMongoID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: {
+                        path: '$favouriteDeal',
+                        preserveNullAndEmptyArrays: true,
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'users',
+                        as: 'merchantDetails',
+                        let: {
+                            merchantID: '$merchantID',
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$merchantID', '$merchantID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                            {
+                                $lookup: {
+                                    from: 'locations',
+                                    as: 'locationData',
+                                    localField: 'merchantID',
+                                    foreignField: 'merchantID',
+                                },
+                            },
+                            {
+                                $unwind: '$locationData',
+                            },
+                            {
+                                $addFields: {
+                                    id: '$_id',
+                                    tradeName: '$locationData.tradeName',
+                                },
+                            },
+                            {
+                                $project: {
+                                    _id: 0,
+                                    id: 1,
+                                    totalReviews: 1,
+                                    ratingsAverage: 1,
+                                    tradeName: 1,
+                                    city: 1,
+                                    province: 1,
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: '$merchantDetails',
+                },
+                {
+                    $addFields: {
+                        id: '$_id',
+                        province: '$merchantDetails.province',
+                        mediaUrl: {
+                            $slice: [
+                                {
+                                    $filter: {
+                                        input: '$mediaUrl',
+                                        as: 'mediaUrl',
+                                        cond: {
+                                            $eq: ['$$mediaUrl.type', 'Image'],
+                                        },
+                                    },
+                                },
+                                1,
+                            ],
+                        },
+                        isFavourite: {
+                            $cond: [
+                                {
+                                    $ifNull: ['$favouriteDeal', false],
+                                },
+                                true,
+                                false,
+                            ],
+                        },
+                    },
+                },
+                {
+                    $match: Object.assign({}, locationFilter),
+                },
+                {
+                    $project: {
+                        _id: 0,
+                        merchantMongoID: 0,
+                        merchantID: 0,
+                        subTitle: 0,
+                        categoryName: 0,
+                        subCategoryID: 0,
+                        subCategory: 0,
+                        subDeals: 0,
+                        availableVouchers: 0,
+                        aboutThisDeal: 0,
+                        readMore: 0,
+                        finePrints: 0,
+                        netEarnings: 0,
+                        isCollapsed: 0,
+                        isDuplicate: 0,
+                        totalReviews: 0,
+                        maxRating: 0,
+                        minRating: 0,
+                        pageNumber: 0,
+                        updatedAt: 0,
+                        __v: 0,
+                        endDate: 0,
+                        startDate: 0,
+                        reviewMediaUrl: 0,
+                        favouriteDeal: 0,
+                        location: 0
+                    },
+                },
+            ])
+                .skip(parseInt(offset))
+                .limit(parseInt(limit));
+            return Object.assign(Object.assign({}, totalCount[0]), { filteredCount: (filteredCount === null || filteredCount === void 0 ? void 0 : filteredCount.length) > 0 ? filteredCount[0].filteredCount : 0, data: deals });
+        }
+        catch (err) {
+            throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
+        }
+    }
+    async getDealsByCategories(lat, lng, distance, categoryName, subCategoryName, fromPrice, toPrice, reviewRating, sorting, offset, limit, filterCategoriesApiDto, req) {
+        var _a, _b, _c, _d;
+        try {
+            offset = parseInt(offset) < 0 ? 0 : offset;
+            limit = parseInt(limit) < 1 ? 10 : limit;
+            lat = parseFloat(lat);
+            lng = parseFloat(lng);
+            distance = parseFloat(distance);
+            if (!distance) {
+                distance = 10;
+            }
+            let radius = parseFloat(distance) / 6378.1;
+            if (!lat && !lng) {
+                lat = 50.8476;
+                lng = 4.3572;
+                radius = 20 / 6378.1;
+            }
+            let categoryFilters = {};
+            if (categoryName) {
+                categoryFilters = Object.assign(Object.assign({}, categoryFilters), { categoryName: categoryName });
+            }
+            if (subCategoryName) {
+                categoryFilters = Object.assign(Object.assign({}, categoryFilters), { subCategory: subCategoryName });
+            }
+            let matchFilter = {};
+            let minValue = parseInt(fromPrice);
+            let maxValue = parseInt(toPrice);
+            if (fromPrice && toPrice) {
+                matchFilter = Object.assign(Object.assign({}, matchFilter), { minDealPrice: {
+                        $gte: minValue,
+                        $lte: maxValue,
+                    } });
+            }
+            else if (fromPrice) {
+                matchFilter = Object.assign(Object.assign({}, matchFilter), { minDealPrice: {
+                        $gte: minValue,
+                    } });
+            }
+            else if (toPrice) {
+                matchFilter = Object.assign(Object.assign({}, matchFilter), { minDealPrice: {
+                        $lte: maxValue,
+                    } });
+            }
+            let rating = parseFloat(reviewRating);
+            if (reviewRating) {
+                matchFilter = Object.assign(Object.assign({}, matchFilter), { ratingsAverage: {
+                        $gte: rating,
+                    } });
+            }
+            let sort = {};
+            if (sorting == categoryapisorting_enum_1.SORTINGENUM.priceAsc || sorting == categoryapisorting_enum_1.SORTINGENUM.priceDesc) {
+                let sortPrice = sorting == categoryapisorting_enum_1.SORTINGENUM.priceAsc ? 1 : -1;
+                console.log('sorting');
+                sort = {
+                    minDealPrice: sortPrice,
+                };
+            }
+            if (sorting == categoryapisorting_enum_1.SORTINGENUM.ratingAsc ||
+                sorting == categoryapisorting_enum_1.SORTINGENUM.ratingDesc) {
+                let sortRating = sorting == categoryapisorting_enum_1.SORTINGENUM.ratingAsc ? 1 : -1;
+                console.log('sorting');
+                sort = {
+                    ratingsAverage: sortRating,
+                };
+            }
+            if (sorting == categoryapisorting_enum_1.SORTINGENUM.dateAsc || sorting == categoryapisorting_enum_1.SORTINGENUM.dateDesc) {
+                let sortDate = sorting == categoryapisorting_enum_1.SORTINGENUM.dateAsc ? 1 : -1;
+                console.log('sorting');
+                sort = {
+                    createdAt: sortDate,
+                };
+            }
+            let locationFilter = {};
+            if ((_a = filterCategoriesApiDto === null || filterCategoriesApiDto === void 0 ? void 0 : filterCategoriesApiDto.provincesArray) === null || _a === void 0 ? void 0 : _a.length) {
+                locationFilter = Object.assign(Object.assign({}, locationFilter), { province: { $in: filterCategoriesApiDto.provincesArray } });
+            }
+            if (Object.keys(sort).length === 0 && sort.constructor === Object) {
+                sort = {
+                    createdAt: -1,
+                };
+            }
+            let fromPriceFilter = {};
+            let toPriceFilter = {};
+            if (fromPrice) {
+                fromPriceFilter = Object.assign({ $gte: ['$minDealPrice', minValue] }, fromPriceFilter);
+            }
+            if (toPrice) {
+                toPriceFilter = {
+                    $lte: ['$minDealPrice', maxValue]
+                };
+            }
+            let ratingFilter = {};
+            if (reviewRating) {
+                ratingFilter = {
+                    $gte: ['$ratingsAverage', rating]
+                };
+            }
+            let provincesArray = [];
+            if (filterCategoriesApiDto.provincesArray.length == 0) {
+                provincesArray = ['West-Vlaanderen', 'Vlaams-Brabant', 'Limburg', 'Oost-Vlaanderen', 'Antwerpen'];
+            }
+            else {
+                provincesArray = filterCategoriesApiDto.provincesArray;
+            }
+            const totalCount = await this.dealModel.aggregate([
+                {
+                    $match: Object.assign({ deletedCheck: false, dealStatus: dealstatus_enum_1.DEALSTATUS.published }, categoryFilters),
+                },
+                {
+                    $lookup: {
+                        from: 'locations',
+                        as: 'location',
+                        localField: 'merchantID',
+                        foreignField: 'merchantID',
+                    },
+                },
+                {
+                    $unwind: '$location',
+                },
+                {
+                    $addFields: {
+                        locationCoordinates: '$location.location',
+                    },
+                },
+                {
+                    $match: {
+                        locationCoordinates: {
+                            $geoWithin: {
+                                $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+                            },
+                        },
+                    },
+                },
+                {
+                    $sort: sort,
+                },
+                {
+                    $lookup: {
+                        from: 'favourites',
+                        as: 'favouriteDeal',
+                        let: {
+                            dealID: '$dealID',
+                            customerMongoID: (_b = req === null || req === void 0 ? void 0 : req.user) === null || _b === void 0 ? void 0 : _b.id,
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$dealID', '$dealID'],
+                                            },
+                                            {
+                                                $eq: ['$$customerMongoID', '$customerMongoID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: {
+                        path: '$favouriteDeal',
+                        preserveNullAndEmptyArrays: true,
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'users',
+                        as: 'merchantDetails',
+                        let: {
+                            merchantID: '$merchantID',
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$merchantID', '$merchantID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                            {
+                                $lookup: {
+                                    from: 'locations',
+                                    as: 'locationData',
+                                    localField: 'merchantID',
+                                    foreignField: 'merchantID',
+                                },
+                            },
+                            {
+                                $unwind: '$locationData',
+                            },
+                            {
+                                $addFields: {
+                                    id: '$_id',
+                                    tradeName: '$locationData.tradeName',
+                                },
+                            },
+                            {
+                                $project: {
+                                    _id: 0,
+                                    id: 1,
+                                    totalReviews: 1,
+                                    ratingsAverage: 1,
+                                    tradeName: 1,
+                                    city: 1,
+                                    province: 1,
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: '$merchantDetails',
+                },
+                {
+                    $addFields: {
+                        id: '$_id',
+                        province: '$merchantDetails.province',
+                        mediaUrl: {
+                            $slice: [
+                                {
+                                    $filter: {
+                                        input: '$mediaUrl',
+                                        as: 'mediaUrl',
+                                        cond: {
+                                            $eq: ['$$mediaUrl.type', 'Image'],
+                                        },
+                                    },
+                                },
+                                1,
+                            ],
+                        },
+                        isFavourite: {
+                            $cond: [
+                                {
+                                    $ifNull: ['$favouriteDeal', false],
+                                },
+                                true,
+                                false,
+                            ],
+                        },
+                    },
+                },
+                {
+                    $group: {
+                        _id: null,
+                        totalCount: { $sum: 1 },
+                        Between0and50: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            {
+                                                $gte: ['$minDealPrice', 0],
+                                            },
+                                            {
+                                                $lte: ['$minDealPrice', 50],
+                                            },
+                                            Object.assign({}, ratingFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        Between50and150: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            {
+                                                $gte: ['$minDealPrice', 50],
+                                            },
+                                            {
+                                                $lte: ['$minDealPrice', 150],
+                                            },
+                                            Object.assign({}, ratingFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        Between150and300: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            {
+                                                $gte: ['$minDealPrice', 150],
+                                            },
+                                            {
+                                                $lte: ['$minDealPrice', 300],
+                                            },
+                                            Object.assign({}, ratingFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        Between300and450: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            {
+                                                $gte: ['$minDealPrice', 300],
+                                            },
+                                            {
+                                                $lte: ['$minDealPrice', 450],
+                                            },
+                                            Object.assign({}, ratingFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        Plus450: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            {
+                                                $gte: ['$minDealPrice', 450],
+                                            },
+                                            Object.assign({}, ratingFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        FourUp: {
+                            $sum: {
+                                $cond: [
+                                    { $and: [
+                                            { $gte: ['$ratingsAverage', 4] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        ThreeUp: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            { $gte: ['$ratingsAverage', 3] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        TwoUp: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            { $gte: ['$ratingsAverage', 2] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        OneUp: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            { $gte: ['$ratingsAverage', 1] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        allRating: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            { $gte: ['$ratingsAverage', 0] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            { $in: ['$province', provincesArray] }
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        WestVlaanderen: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            { $eq: ['$province', 'West-Vlaanderen'] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            Object.assign({}, ratingFilter),
+                                        ]
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        OostVlaanderen: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            { $eq: ['$province', 'Oost-Vlaanderen'] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            Object.assign({}, ratingFilter),
+                                        ]
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        Antwerpen: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            { $eq: ['$province', 'Antwerpen'] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            Object.assign({}, ratingFilter),
+                                        ]
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        Limburg: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            { $eq: ['$province', 'Limburg'] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            Object.assign({}, ratingFilter),
+                                        ]
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        VlaamsBrabant: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            { $eq: ['$province', 'Vlaams-Brabant'] },
+                                            Object.assign({}, fromPriceFilter),
+                                            Object.assign({}, toPriceFilter),
+                                            Object.assign({}, ratingFilter),
+                                        ]
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                    },
+                },
+                {
+                    $project: {
+                        _id: 0,
+                    },
+                },
+            ]);
+            const filteredCount = await this.dealModel.aggregate([
+                {
+                    $match: Object.assign(Object.assign({ deletedCheck: false, dealStatus: dealstatus_enum_1.DEALSTATUS.published }, categoryFilters), matchFilter),
+                },
+                {
+                    $lookup: {
+                        from: 'locations',
+                        as: 'location',
+                        localField: 'merchantID',
+                        foreignField: 'merchantID',
+                    },
+                },
+                {
+                    $unwind: '$location',
+                },
+                {
+                    $addFields: {
+                        locationCoordinates: '$location.location',
+                    },
+                },
+                {
+                    $match: {
+                        locationCoordinates: {
+                            $geoWithin: {
+                                $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+                            },
+                        },
+                    },
+                },
+                {
+                    $sort: sort,
+                },
+                {
+                    $lookup: {
+                        from: 'favourites',
+                        as: 'favouriteDeal',
+                        let: {
+                            dealID: '$dealID',
+                            customerMongoID: (_c = req === null || req === void 0 ? void 0 : req.user) === null || _c === void 0 ? void 0 : _c.id,
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$dealID', '$dealID'],
+                                            },
+                                            {
+                                                $eq: ['$$customerMongoID', '$customerMongoID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: {
+                        path: '$favouriteDeal',
+                        preserveNullAndEmptyArrays: true,
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'users',
+                        as: 'merchantDetails',
+                        let: {
+                            merchantID: '$merchantID',
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$merchantID', '$merchantID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                            {
+                                $lookup: {
+                                    from: 'locations',
+                                    as: 'locationData',
+                                    localField: 'merchantID',
+                                    foreignField: 'merchantID',
+                                },
+                            },
+                            {
+                                $unwind: '$locationData',
+                            },
+                            {
+                                $addFields: {
+                                    id: '$_id',
+                                    tradeName: '$locationData.tradeName',
+                                },
+                            },
+                            {
+                                $project: {
+                                    _id: 0,
+                                    id: 1,
+                                    totalReviews: 1,
+                                    ratingsAverage: 1,
+                                    tradeName: 1,
+                                    city: 1,
+                                    province: 1,
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: '$merchantDetails',
+                },
+                {
+                    $addFields: {
+                        id: '$_id',
+                        province: '$merchantDetails.province',
+                        mediaUrl: {
+                            $slice: [
+                                {
+                                    $filter: {
+                                        input: '$mediaUrl',
+                                        as: 'mediaUrl',
+                                        cond: {
+                                            $eq: ['$$mediaUrl.type', 'Image'],
+                                        },
+                                    },
+                                },
+                                1,
+                            ],
+                        },
+                        isFavourite: {
+                            $cond: [
+                                {
+                                    $ifNull: ['$favouriteDeal', false],
+                                },
+                                true,
+                                false,
+                            ],
+                        },
+                    },
+                },
+                {
+                    $match: Object.assign({}, locationFilter),
+                },
+                {
+                    $count: 'filteredCount',
+                },
+            ]);
+            const deals = await this.dealModel
+                .aggregate([
+                {
+                    $match: Object.assign(Object.assign({ deletedCheck: false, dealStatus: dealstatus_enum_1.DEALSTATUS.published }, categoryFilters), matchFilter),
+                },
+                {
+                    $lookup: {
+                        from: 'locations',
+                        as: 'location',
+                        localField: 'merchantID',
+                        foreignField: 'merchantID',
+                    },
+                },
+                {
+                    $unwind: '$location',
+                },
+                {
+                    $addFields: {
+                        locationCoordinates: '$location.location',
+                    },
+                },
+                {
+                    $match: {
+                        locationCoordinates: {
+                            $geoWithin: {
+                                $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+                            },
+                        },
+                    },
+                },
+                {
+                    $sort: sort,
+                },
+                {
+                    $lookup: {
+                        from: 'favourites',
+                        as: 'favouriteDeal',
+                        let: {
+                            dealID: '$dealID',
+                            customerMongoID: (_d = req === null || req === void 0 ? void 0 : req.user) === null || _d === void 0 ? void 0 : _d.id,
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$dealID', '$dealID'],
+                                            },
+                                            {
+                                                $eq: ['$$customerMongoID', '$customerMongoID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: {
+                        path: '$favouriteDeal',
+                        preserveNullAndEmptyArrays: true,
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'users',
+                        as: 'merchantDetails',
+                        let: {
+                            merchantID: '$merchantID',
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$merchantID', '$merchantID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                            {
+                                $lookup: {
+                                    from: 'locations',
+                                    as: 'locationData',
+                                    localField: 'merchantID',
+                                    foreignField: 'merchantID',
+                                },
+                            },
+                            {
+                                $unwind: '$locationData',
+                            },
+                            {
+                                $addFields: {
+                                    id: '$_id',
+                                    tradeName: '$locationData.tradeName',
+                                },
+                            },
+                            {
+                                $project: {
+                                    _id: 0,
+                                    id: 1,
+                                    totalReviews: 1,
+                                    ratingsAverage: 1,
+                                    tradeName: 1,
+                                    city: 1,
+                                    province: 1,
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: '$merchantDetails',
+                },
+                {
+                    $addFields: {
+                        id: '$_id',
+                        province: '$merchantDetails.province',
+                        mediaUrl: {
+                            $slice: [
+                                {
+                                    $filter: {
+                                        input: '$mediaUrl',
+                                        as: 'mediaUrl',
+                                        cond: {
+                                            $eq: ['$$mediaUrl.type', 'Image'],
+                                        },
+                                    },
+                                },
+                                1,
+                            ],
+                        },
+                        isFavourite: {
+                            $cond: [
+                                {
+                                    $ifNull: ['$favouriteDeal', false],
+                                },
+                                true,
+                                false,
+                            ],
+                        },
+                    },
+                },
+                {
+                    $match: Object.assign({}, locationFilter),
+                },
+                {
+                    $project: {
+                        _id: 0,
+                        merchantMongoID: 0,
+                        merchantID: 0,
+                        subTitle: 0,
+                        categoryName: 0,
+                        subCategoryID: 0,
+                        subCategory: 0,
+                        subDeals: 0,
+                        availableVouchers: 0,
+                        aboutThisDeal: 0,
+                        readMore: 0,
+                        finePrints: 0,
+                        netEarnings: 0,
+                        isCollapsed: 0,
+                        isDuplicate: 0,
+                        totalReviews: 0,
+                        maxRating: 0,
+                        minRating: 0,
+                        pageNumber: 0,
+                        updatedAt: 0,
+                        __v: 0,
+                        endDate: 0,
+                        startDate: 0,
+                        reviewMediaUrl: 0,
+                        favouriteDeal: 0,
+                        location: 0
                     },
                 },
             ])
@@ -4679,11 +11453,23 @@ let DealService = class DealService {
             throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
         }
     }
-    async getRecommendedForYouDeals(offset, limit, req) {
+    async getRecommendedForYouDeals(lat, lng, distance, offset, limit, req) {
         var _a;
         try {
             offset = parseInt(offset) < 0 ? 0 : offset;
             limit = parseInt(limit) < 1 ? 10 : limit;
+            lat = parseFloat(lat);
+            lng = parseFloat(lng);
+            distance = parseFloat(distance);
+            if (!distance) {
+                distance = 10;
+            }
+            let radius = parseFloat(distance) / 6378.1;
+            if (!lat && !lng) {
+                lat = 50.8476;
+                lng = 4.3572;
+                radius = 20 / 6378.1;
+            }
             const totalCount = await this.dealModel.countDocuments({
                 deletedCheck: false,
                 dealStatus: dealstatus_enum_1.DEALSTATUS.published,
@@ -4698,6 +11484,31 @@ let DealService = class DealService {
                 },
                 {
                     $sample: { size: totalCount },
+                },
+                {
+                    $lookup: {
+                        from: 'locations',
+                        as: 'location',
+                        localField: 'merchantID',
+                        foreignField: 'merchantID',
+                    },
+                },
+                {
+                    $unwind: '$location',
+                },
+                {
+                    $addFields: {
+                        locationCoordinates: '$location.location',
+                    },
+                },
+                {
+                    $match: {
+                        locationCoordinates: {
+                            $geoWithin: {
+                                $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+                            },
+                        },
+                    },
                 },
                 {
                     $lookup: {
@@ -4846,6 +11657,7 @@ let DealService = class DealService {
                         startDate: 0,
                         reviewMediaUrl: 0,
                         favouriteDeal: 0,
+                        location: 0
                     },
                 },
             ])
@@ -4860,11 +11672,23 @@ let DealService = class DealService {
             throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
         }
     }
-    async getTrendingDeals(offset, limit, req) {
+    async getTrendingDeals(lat, lng, distance, offset, limit, req) {
         var _a;
         try {
             offset = parseInt(offset) < 0 ? 0 : offset;
             limit = parseInt(limit) < 1 ? 10 : limit;
+            lat = parseFloat(lat);
+            lng = parseFloat(lng);
+            distance = parseFloat(distance);
+            if (!distance) {
+                distance = 10;
+            }
+            let radius = parseFloat(distance) / 6378.1;
+            if (!lat && !lng) {
+                lat = 50.8476;
+                lng = 4.3572;
+                radius = 20 / 6378.1;
+            }
             const totalCount = await this.dealModel.countDocuments({
                 deletedCheck: false,
                 dealStatus: dealstatus_enum_1.DEALSTATUS.published,
@@ -4899,6 +11723,31 @@ let DealService = class DealService {
                     $addFields: {
                         percent: {
                             $multiply: ['$divided', 100],
+                        },
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'locations',
+                        as: 'location',
+                        localField: 'merchantID',
+                        foreignField: 'merchantID',
+                    },
+                },
+                {
+                    $unwind: '$location',
+                },
+                {
+                    $addFields: {
+                        locationCoordinates: '$location.location',
+                    },
+                },
+                {
+                    $match: {
+                        locationCoordinates: {
+                            $geoWithin: {
+                                $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+                            },
                         },
                     },
                 },
@@ -5050,6 +11899,7 @@ let DealService = class DealService {
                         startDate: 0,
                         reviewMediaUrl: 0,
                         favouriteDeal: 0,
+                        location: 0
                     },
                 },
                 {
@@ -5069,11 +11919,23 @@ let DealService = class DealService {
             throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
         }
     }
-    async getSimilarDeals(categoryName, subCategoryName, offset, limit, req) {
+    async getSimilarDeals(categoryName, subCategoryName, lat, lng, distance, offset, limit, req) {
         var _a;
         try {
             offset = parseInt(offset) < 0 ? 0 : offset;
             limit = parseInt(limit) < 1 ? 10 : limit;
+            lat = parseFloat(lat);
+            lng = parseFloat(lng);
+            distance = parseFloat(distance);
+            if (!distance) {
+                distance = 10;
+            }
+            let radius = parseFloat(distance) / 6378.1;
+            if (!lat && !lng) {
+                lat = 50.8476;
+                lng = 4.3572;
+                radius = 20 / 6378.1;
+            }
             const totalCount = await this.dealModel.countDocuments({
                 deletedCheck: false,
                 dealStatus: dealstatus_enum_1.DEALSTATUS.published,
@@ -5088,6 +11950,31 @@ let DealService = class DealService {
                         dealStatus: dealstatus_enum_1.DEALSTATUS.published,
                         categoryName: categoryName,
                         subCategory: subCategoryName,
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'locations',
+                        as: 'location',
+                        localField: 'merchantID',
+                        foreignField: 'merchantID',
+                    },
+                },
+                {
+                    $unwind: '$location',
+                },
+                {
+                    $addFields: {
+                        locationCoordinates: '$location.location',
+                    },
+                },
+                {
+                    $match: {
+                        locationCoordinates: {
+                            $geoWithin: {
+                                $centerSphere: [[parseFloat(lng), parseFloat(lat)], radius],
+                            },
+                        },
                     },
                 },
                 {
@@ -5242,6 +12129,7 @@ let DealService = class DealService {
                         startDate: 0,
                         reviewMediaUrl: 0,
                         favouriteDeal: 0,
+                        location: 0
                     },
                 },
             ])
@@ -5680,8 +12568,16 @@ let DealService = class DealService {
                 affiliateID: buyNowDto.affiliateID,
                 deletedCheck: false,
             });
+            const campaign = await this.campaignModel.findOne({
+                affiliateID: affiliate.affiliateID,
+                affiliateMongoID: affiliate._id,
+                deletedCheck: false
+            });
+            if (!campaign) {
+                throw new common_1.NotFoundException('Campaign not found!');
+            }
             if (!affiliate) {
-                throw new Error('Affiliate doesnot exist!');
+                throw new common_1.NotFoundException('Affiliate doesnot exist!');
             }
             const subDeal = deal.subDeals.find((el) => el.subDealID == buyNowDto.subDealID);
             if (subDeal.numberOfVouchers < buyNowDto.quantity) {
@@ -5767,6 +12663,8 @@ let DealService = class DealService {
                 affiliatePercentage: merchant.platformPercentage,
                 affiliateFee: calculatedFeeForAffiliate.toFixed(2),
                 affiliatePaymentStatus: affiliate_enum_1.AFFILIATEPAYMENTSTATUS.pending,
+                affiliateCampaignID: campaign._id,
+                affiliateCampaignName: campaign.title,
                 platformPercentage: merchant.platformPercentage,
                 customerID: customer.customerID,
                 affiliateMongoID: affiliate.id,
@@ -5785,11 +12683,13 @@ let DealService = class DealService {
             }
             await Promise.all(vouchers);
             const emailDto = (0, emailHtml_1.getEmailHTML)(customer.email, customer.firstName, customer.lastName);
+            debugger;
             await this.dealModel.updateOne({ dealID: buyNowDto.dealID }, deal);
             await this._userModel.updateOne({ merchantID: deal.merchantID }, {
                 purchasedVouchers: merchant.purchasedVouchers + buyNowDto.quantity,
                 totalEarnings: merchant.totalEarnings + netFeeForSubDeal,
             });
+            await this.campaignModel.updateOne({ _id: campaign._id }, { collectedAmount: campaign.collectedAmount + calculatedFeeForAffiliate * buyNowDto.quantity });
             const res = await axios_1.default.get(`https://www.zohoapis.eu/crm/v2/functions/updatesubdealquantity/actions/execute?auth_type=apikey&zapikey=1003.1477a209851dd22ebe19aa147012619a.4009ea1f2c8044d36137bf22c22235d2&subdealid=${subDeal.subDealID}&qtavailable=${subDeal.numberOfVouchers}&qtsold=${subDeal.soldVouchers}&merchantER=${subDeal.netEarning}&platformER=${subDeal.platformNetEarning}`);
             this.sendMail(emailDto);
             return { message: 'Purchase Successfull!' };
@@ -5870,8 +12770,10 @@ DealService = __decorate([
     __param(8, (0, mongoose_1.InjectModel)('views')),
     __param(9, (0, mongoose_1.InjectModel)('Review')),
     __param(10, (0, mongoose_1.InjectModel)('categories-Analytics')),
+    __param(11, (0, mongoose_1.InjectModel)('Campaign')),
     __metadata("design:paramtypes", [mongoose_2.Model,
         mongoose_2.Model, Object, mongoose_2.Model,
+        mongoose_2.Model,
         mongoose_2.Model,
         mongoose_2.Model,
         mongoose_2.Model,

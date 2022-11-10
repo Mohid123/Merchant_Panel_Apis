@@ -1,4 +1,5 @@
 import { MultipleVouchersDto } from 'src/dto/vouchers/multiplevouchers.dto';
+import { MultipleVouchersAffiliateDto } from 'src/dto/vouchers/multiplevouchersaffiliate.dto';
 import { RedeemVoucherDto } from 'src/dto/vouchers/redeemVoucher.dto';
 import { UpdateVoucherForCRMDto } from 'src/dto/vouchers/updatevoucherforcrom.dto';
 import { VoucherDto } from '../../dto/vouchers/vouchers.dto';
@@ -15,6 +16,11 @@ export declare class VouchersController {
         message: string;
     }>;
     getAllVouchers(merchantID: string, deal: SORT, voucher: SORT, amount: SORT, fee: SORT, net: SORT, status: VOUCHERSTATUSENUM, paymentStatus: BILLINGSTATUS, dateFrom: number, dateTo: number, voucherID: string, dealHeader: string, voucherHeader: string, voucherStatus: string, invoiceStatus: string, offset: number, limit: number, multipleVouchersDto: MultipleVouchersDto): Promise<{
+        totalCount: number;
+        filteredCount: number;
+        data: any[];
+    }>;
+    getVouchersByAffiliateID(affiliateMongoID: string, voucherID: string, offset: number, limit: number, multipleVouchersAffiliateDto: MultipleVouchersAffiliateDto): Promise<{
         totalCount: number;
         filteredCount: number;
         data: any[];
@@ -57,5 +63,16 @@ export declare class VouchersController {
         yearlyRevenue: number;
         maxRevenueForMonth: number;
         vouchers: any[];
+    }>;
+    getVoucherSoldPerDayForAffiliates(days: number, req: any): Promise<{
+        maxCount: number;
+        counts: any[];
+    }>;
+    getCustomerRanking(affiliateMongoID: string, byMonthYearQuarter: string, dateFrom: number, dateTo: number, totalVouchers: SORT, totalEarnings: SORT, offset?: number, limit?: number): Promise<{
+        totalCount: any;
+        data: any[];
+    }>;
+    getUsersForTableCSV(affiliateMongoID: string, byMonthYearQuarter: string, dateFrom: number, dateTo: number, totalVouchers: SORT, totalEarnings: SORT): Promise<{
+        url: string;
     }>;
 }

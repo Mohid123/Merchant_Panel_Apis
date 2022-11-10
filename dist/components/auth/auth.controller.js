@@ -40,6 +40,9 @@ let AuthController = class AuthController {
     loginCustomer(loginDto) {
         return this._authService.loginCustomer(loginDto);
     }
+    loginAffiliate(loginDto) {
+        return this._authService.loginAffiliate(loginDto);
+    }
     loginAdmin(loginDto) {
         return this._authService.loginAdmin(loginDto);
     }
@@ -48,6 +51,9 @@ let AuthController = class AuthController {
     }
     signupUser(signupUserDto) {
         return this._authService.signupCustomer(signupUserDto);
+    }
+    signupAffiliate(signupAffiliateDto) {
+        return this._authService.signupAffiliate(signupAffiliateDto);
     }
     sendEmail(emailDto) {
         return this._authService.sendMail(emailDto);
@@ -91,6 +97,13 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], AuthController.prototype, "loginCustomer", null);
 __decorate([
+    (0, common_1.Post)('loginAffiliate'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [login_dto_1.LoginDto]),
+    __metadata("design:returntype", void 0)
+], AuthController.prototype, "loginAffiliate", null);
+__decorate([
     (0, common_1.Post)('loginAdmin'),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
@@ -111,6 +124,13 @@ __decorate([
     __metadata("design:paramtypes", [signupcustomer_dto_1.SignUpCustomerDTO]),
     __metadata("design:returntype", void 0)
 ], AuthController.prototype, "signupUser", null);
+__decorate([
+    (0, common_1.Post)('signupAffiliate'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [signup_dto_1.SignUpDTO]),
+    __metadata("design:returntype", void 0)
+], AuthController.prototype, "signupAffiliate", null);
 __decorate([
     (0, common_1.Post)('sendEmail'),
     __param(0, (0, common_1.Body)()),

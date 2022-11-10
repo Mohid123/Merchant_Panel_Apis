@@ -22,4 +22,9 @@ export declare class InvoicesController {
         filteredCount: number;
         data: any[];
     }>;
+    getAllInvoicesByAffiliate(affiliateMongoID: string, invoiceID: string, dateFrom: number, dateTo: number, multipleInvoicesDto: MultipleInvoicesDto, offset?: number, limit?: number): Promise<{
+        totalCount: number;
+        filteredCount: number;
+        data: any[];
+    }>;
 }

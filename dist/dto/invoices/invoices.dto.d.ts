@@ -4,6 +4,8 @@ export declare class InvoiceDTO {
     invoiceAmount: number;
     status: string;
     invoiceURL: string;
-    merchantID: string;
     merchantMongoID: string;
+    merchantID: string;
+    affiliateMongoID: string;
+    affiliateID: string;
 }

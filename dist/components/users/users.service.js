@@ -107,9 +107,17 @@ let UsersService = class UsersService {
         console.log(res.data);
         return res.data;
     }
-    async completeKYC(merchantID, kycDto) {
-        await this._userModel.updateOne({ _id: merchantID }, kycDto);
-        await this._userModel.updateOne({ _id: merchantID }, { kycStatus: true });
+    async completeKYC(id, kycDto) {
+        let user = await this._userModel.findOne({
+            _id: id,
+            deletedCheck: false,
+            status: userstatus_enum_1.USERSTATUS.approved
+        });
+        if (!user) {
+            throw new common_1.HttpException('User not found', common_1.HttpStatus.NOT_FOUND);
+        }
+        await this._userModel.updateOne({ _id: id }, kycDto);
+        await this._userModel.updateOne({ _id: id }, { kycStatus: true });
         return {
             message: 'KYC has been updated successfully!',
         };
@@ -180,6 +188,71 @@ let UsersService = class UsersService {
             message: 'User has been updated succesfully',
         };
     }
+    async updateAffiliateProfile(affiliateID, usersDto) {
+        var e_2, _a;
+        let affiliate = await this._userModel.findOne({
+            _id: affiliateID,
+            deletedCheck: false,
+            status: userstatus_enum_1.USERSTATUS.approved,
+            role: userrole_enum_1.USERROLE.affiliate
+        });
+        if (!affiliate) {
+            throw new common_1.HttpException('Affiliate not found', common_1.HttpStatus.NOT_FOUND);
+        }
+        if (usersDto.gallery && usersDto.gallery.length) {
+            usersDto['type'] = usersDto.gallery[0].type;
+            usersDto['captureFileURL'] = usersDto.gallery[0].captureFileURL;
+            usersDto['path'] = usersDto.gallery[0].path;
+            if (usersDto['type'] == 'Video') {
+                usersDto['thumbnailURL'] = usersDto.gallery[0].thumbnailURL;
+                usersDto['thumbnailPath'] = usersDto.gallery[0].thumbnailPath;
+            }
+            if (usersDto.gallery) {
+                for (let i = 0; i < usersDto.gallery.length; i++) {
+                    if (usersDto.gallery[i].type == 'Video') {
+                        console.log('Inside if');
+                        var item = usersDto.gallery.splice(i, 1);
+                        usersDto.gallery.splice(0, 0, item[0]);
+                    }
+                }
+            }
+            try {
+                for (var _b = __asyncValues(usersDto.gallery), _c; _c = await _b.next(), !_c.done;) {
+                    let mediaObj = _c.value;
+                    await new Promise(async (resolve, reject) => {
+                        try {
+                            let urlMedia = '';
+                            if (mediaObj.type == 'Video') {
+                                urlMedia = mediaObj.thumbnailURL;
+                            }
+                            else {
+                                urlMedia = mediaObj.captureFileURL;
+                            }
+                            mediaObj['blurHash'] = await (0, utils_1.encodeImageToBlurhash)(urlMedia);
+                            let data = (mediaObj['backgroundColorHex'] = await (0, utils_1.getDominantColor)(urlMedia));
+                            mediaObj['backgroundColorHex'] = data.hexCode;
+                            resolve({});
+                        }
+                        catch (err) {
+                            console.log('Error', err);
+                            reject(err);
+                        }
+                    });
+                }
+            }
+            catch (e_2_1) { e_2 = { error: e_2_1 }; }
+            finally {
+                try {
+                    if (_c && !_c.done && (_a = _b.return)) await _a.call(_b);
+                }
+                finally { if (e_2) throw e_2.error; }
+            }
+        }
+        await this._userModel.updateOne({ _id: affiliateID }, usersDto);
+        return {
+            message: 'Affiliate has been updated succesfully',
+        };
+    }
     async updateCustomerProfile(customerID, usersDto) {
         try {
             let user = await this._userModel.findOne({
@@ -245,6 +318,69 @@ let UsersService = class UsersService {
                 throw new common_1.HttpException('Customer not found', common_1.HttpStatus.NOT_FOUND);
             }
             return customer;
+        }
+        catch (err) {
+            throw new common_1.HttpException(err.message, common_1.HttpStatus.BAD_REQUEST);
+        }
+    }
+    async getAffiliate(id) {
+        try {
+            let affiliate = await this._userModel.aggregate([
+                {
+                    $match: {
+                        _id: id,
+                        deletedCheck: false,
+                        status: userstatus_enum_1.USERSTATUS.approved,
+                        role: userrole_enum_1.USERROLE.affiliate
+                    }
+                },
+                {
+                    $addFields: {
+                        id: '$_id'
+                    }
+                },
+                {
+                    $project: {
+                        _id: 0,
+                        password: 0,
+                        role: 0,
+                        googleMapPin: 0,
+                        businessHours: 0,
+                        finePrint: 0,
+                        deletedCheck: 0,
+                        status: 0,
+                        bankStatement: 0,
+                        totalVoucherSales: 0,
+                        redeemedVouchers: 0,
+                        purchasedVouchers: 0,
+                        expiredVouchers: 0,
+                        totalEarnings: 0,
+                        paidEarnings: 0,
+                        pendingEarnings: 0,
+                        totalDeals: 0,
+                        scheduledDeals: 0,
+                        pendingDeals: 0,
+                        soldDeals: 0,
+                        countryCode: 0,
+                        leadSource: 0,
+                        ratingsAverage: 0,
+                        totalReviews: 0,
+                        maxRating: 0,
+                        minRating: 0,
+                        isSubscribed: 0,
+                        createdAt: 0,
+                        updatedAt: 0,
+                        __v: 0,
+                        popularCount: 0,
+                        platformPercentage: 0,
+                        merchantID: 0
+                    }
+                }
+            ]).then(items => items[0]);
+            if (!affiliate) {
+                throw new common_1.HttpException('Affiliate not found!', common_1.HttpStatus.BAD_REQUEST);
+            }
+            return affiliate;
         }
         catch (err) {
             throw new common_1.HttpException(err.message, common_1.HttpStatus.BAD_REQUEST);
@@ -540,7 +676,7 @@ let UsersService = class UsersService {
         };
     }
     async searchAllAffiliates(searchAffiliates, categories, Affiliates, offset, limit, req) {
-        var _a;
+        var _a, _b, _c;
         try {
             offset = parseInt(offset) < 0 ? 0 : offset;
             limit = parseInt(limit) < 1 ? 10 : limit;
@@ -565,12 +701,192 @@ let UsersService = class UsersService {
             }
             console.log(sort);
             console.log(matchFilter);
-            const totalCount = await this._userModel.countDocuments({
-                role: userrole_enum_1.USERROLE.affiliate,
-                status: userstatus_enum_1.USERSTATUS.approved,
-                deletedCheck: false,
-            });
-            const filteredCount = await this._userModel.countDocuments(Object.assign({ role: userrole_enum_1.USERROLE.affiliate, status: userstatus_enum_1.USERSTATUS.approved, deletedCheck: false }, matchFilter));
+            const totalCount = await this._userModel
+                .aggregate([
+                {
+                    $match: {
+                        role: userrole_enum_1.USERROLE.affiliate,
+                        status: userstatus_enum_1.USERSTATUS.approved,
+                        deletedCheck: false,
+                    },
+                },
+                {
+                    $sort: sort,
+                },
+                {
+                    $lookup: {
+                        from: 'campaigns',
+                        as: 'campaignData',
+                        let: {
+                            affiliateID: '$affiliateID',
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$affiliateID', '$affiliateID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: '$campaignData'
+                },
+                {
+                    $lookup: {
+                        from: 'affiliateFvaourites',
+                        as: 'favouriteAffiliate',
+                        let: {
+                            affiliateID: '$affiliateID',
+                            customerMongoID: (_a = req === null || req === void 0 ? void 0 : req.user) === null || _a === void 0 ? void 0 : _a.id,
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$affiliateID', '$affiliateID'],
+                                            },
+                                            {
+                                                $eq: ['$$customerMongoID', '$customerMongoID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: {
+                        path: '$favouriteAffiliate',
+                        preserveNullAndEmptyArrays: true,
+                    },
+                },
+                {
+                    $addFields: {
+                        id: '$_id',
+                        isFavourite: {
+                            $cond: [
+                                {
+                                    $ifNull: ['$favouriteAffiliate', false],
+                                },
+                                true,
+                                false,
+                            ],
+                        },
+                    },
+                },
+                {
+                    $count: 'totalCount'
+                }
+            ]);
+            const filteredCount = await this._userModel
+                .aggregate([
+                {
+                    $match: Object.assign({ role: userrole_enum_1.USERROLE.affiliate, status: userstatus_enum_1.USERSTATUS.approved, deletedCheck: false }, matchFilter),
+                },
+                {
+                    $sort: sort,
+                },
+                {
+                    $lookup: {
+                        from: 'campaigns',
+                        as: 'campaignData',
+                        let: {
+                            affiliateID: '$affiliateID',
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$affiliateID', '$affiliateID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: '$campaignData'
+                },
+                {
+                    $lookup: {
+                        from: 'affiliateFvaourites',
+                        as: 'favouriteAffiliate',
+                        let: {
+                            affiliateID: '$affiliateID',
+                            customerMongoID: (_b = req === null || req === void 0 ? void 0 : req.user) === null || _b === void 0 ? void 0 : _b.id,
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$affiliateID', '$affiliateID'],
+                                            },
+                                            {
+                                                $eq: ['$$customerMongoID', '$customerMongoID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: {
+                        path: '$favouriteAffiliate',
+                        preserveNullAndEmptyArrays: true,
+                    },
+                },
+                {
+                    $addFields: {
+                        id: '$_id',
+                        isFavourite: {
+                            $cond: [
+                                {
+                                    $ifNull: ['$favouriteAffiliate', false],
+                                },
+                                true,
+                                false,
+                            ],
+                        },
+                    },
+                },
+                {
+                    $count: 'filteredCount'
+                }
+            ]);
             const affiliates = await this._userModel
                 .aggregate([
                 {
@@ -581,11 +897,40 @@ let UsersService = class UsersService {
                 },
                 {
                     $lookup: {
+                        from: 'campaigns',
+                        as: 'campaignData',
+                        let: {
+                            affiliateID: '$affiliateID',
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$affiliateID', '$affiliateID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: '$campaignData'
+                },
+                {
+                    $lookup: {
                         from: 'affiliateFvaourites',
                         as: 'favouriteAffiliate',
                         let: {
                             affiliateID: '$affiliateID',
-                            customerMongoID: (_a = req === null || req === void 0 ? void 0 : req.user) === null || _a === void 0 ? void 0 : _a.id,
+                            customerMongoID: (_c = req === null || req === void 0 ? void 0 : req.user) === null || _c === void 0 ? void 0 : _c.id,
                             deletedCheck: '$deletedCheck',
                         },
                         pipeline: [
@@ -674,15 +1019,25 @@ let UsersService = class UsersService {
                         minRating: 0,
                         isSubscribed: 0,
                         __v: 0,
+                        karibuURL: 0,
+                        bankStatement: 0,
+                        createdAt: 0,
+                        updatedAt: 0,
+                        merchantID: 0,
+                        customerID: 0,
+                        deletedCheck: 0,
+                        status: 0,
+                        platformPercentage: 0,
                         favouriteAffiliate: 0,
+                        campaignData: 0
                     },
                 },
             ])
                 .skip(parseInt(offset))
                 .limit(parseInt(limit));
             return {
-                totalCount: totalCount,
-                filteredCount: filteredCount,
+                totalCount: (totalCount === null || totalCount === void 0 ? void 0 : totalCount.length) > 0 ? totalCount[0].totalCount : 0,
+                filteredCount: (filteredCount === null || filteredCount === void 0 ? void 0 : filteredCount.length) > 0 ? filteredCount[0].filteredCount : 0,
                 data: affiliates,
             };
         }
@@ -691,15 +1046,107 @@ let UsersService = class UsersService {
         }
     }
     async getPopularAffiliates(offset, limit, req) {
-        var _a;
+        var _a, _b;
         try {
             offset = parseInt(offset) < 0 ? 0 : offset;
             limit = parseInt(limit) < 1 ? 10 : limit;
-            const totalCount = await this._userModel.countDocuments({
-                role: userrole_enum_1.USERROLE.affiliate,
-                status: userstatus_enum_1.USERSTATUS.approved,
-                deletedCheck: false,
-            });
+            const totalCount = await this._userModel
+                .aggregate([
+                {
+                    $match: {
+                        role: userrole_enum_1.USERROLE.affiliate,
+                        status: userstatus_enum_1.USERSTATUS.approved,
+                        deletedCheck: false,
+                    },
+                },
+                {
+                    $sort: {
+                        popularCount: -1,
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'campaigns',
+                        as: 'campaignData',
+                        let: {
+                            affiliateID: '$affiliateID',
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$affiliateID', '$affiliateID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: '$campaignData'
+                },
+                {
+                    $lookup: {
+                        from: 'affiliateFvaourites',
+                        as: 'favouriteAffiliate',
+                        let: {
+                            affiliateID: '$affiliateID',
+                            customerMongoID: (_a = req === null || req === void 0 ? void 0 : req.user) === null || _a === void 0 ? void 0 : _a.id,
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$affiliateID', '$affiliateID'],
+                                            },
+                                            {
+                                                $eq: ['$$customerMongoID', '$customerMongoID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: {
+                        path: '$favouriteAffiliate',
+                        preserveNullAndEmptyArrays: true,
+                    },
+                },
+                {
+                    $addFields: {
+                        id: '$_id',
+                        isFavourite: {
+                            $cond: [
+                                {
+                                    $ifNull: ['$favouriteAffiliate', false],
+                                },
+                                true,
+                                false,
+                            ],
+                        },
+                    },
+                },
+                {
+                    $count: 'totalCount'
+                }
+            ]);
             const affiliates = await this._userModel
                 .aggregate([
                 {
@@ -716,11 +1163,40 @@ let UsersService = class UsersService {
                 },
                 {
                     $lookup: {
+                        from: 'campaigns',
+                        as: 'campaignData',
+                        let: {
+                            affiliateID: '$affiliateID',
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$affiliateID', '$affiliateID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: '$campaignData'
+                },
+                {
+                    $lookup: {
                         from: 'affiliateFvaourites',
                         as: 'favouriteAffiliate',
                         let: {
                             affiliateID: '$affiliateID',
-                            customerMongoID: (_a = req === null || req === void 0 ? void 0 : req.user) === null || _a === void 0 ? void 0 : _a.id,
+                            customerMongoID: (_b = req === null || req === void 0 ? void 0 : req.user) === null || _b === void 0 ? void 0 : _b.id,
                             deletedCheck: '$deletedCheck',
                         },
                         pipeline: [
@@ -809,14 +1285,24 @@ let UsersService = class UsersService {
                         minRating: 0,
                         isSubscribed: 0,
                         __v: 0,
+                        karibuURL: 0,
+                        bankStatement: 0,
+                        createdAt: 0,
+                        updatedAt: 0,
+                        merchantID: 0,
+                        customerID: 0,
+                        deletedCheck: 0,
+                        status: 0,
+                        platformPercentage: 0,
                         favouriteAffiliate: 0,
+                        campaignData: 0
                     },
                 },
             ])
                 .skip(parseInt(offset))
                 .limit(parseInt(limit));
             return {
-                totalCount: totalCount,
+                totalCount: (totalCount === null || totalCount === void 0 ? void 0 : totalCount.length) > 0 ? totalCount[0].totalCount : 0,
                 data: affiliates,
             };
         }
@@ -841,6 +1327,35 @@ let UsersService = class UsersService {
                     $sort: {
                         createdAt: -1,
                     },
+                },
+                {
+                    $lookup: {
+                        from: 'campaigns',
+                        as: 'campaignData',
+                        let: {
+                            affiliateID: '$affiliateID',
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$affiliateID', '$affiliateID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: '$campaignData'
                 },
                 {
                     $lookup: {
@@ -908,6 +1423,35 @@ let UsersService = class UsersService {
                     $sort: {
                         createdAt: -1,
                     },
+                },
+                {
+                    $lookup: {
+                        from: 'campaigns',
+                        as: 'campaignData',
+                        let: {
+                            affiliateID: '$affiliateID',
+                            deletedCheck: '$deletedCheck',
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$affiliateID', '$affiliateID'],
+                                            },
+                                            {
+                                                $eq: ['$deletedCheck', false],
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: '$campaignData'
                 },
                 {
                     $lookup: {
@@ -1003,7 +1547,17 @@ let UsersService = class UsersService {
                         minRating: 0,
                         isSubscribed: 0,
                         __v: 0,
+                        karibuURL: 0,
+                        bankStatement: 0,
+                        createdAt: 0,
+                        updatedAt: 0,
+                        merchantID: 0,
+                        customerID: 0,
+                        deletedCheck: 0,
+                        status: 0,
+                        platformPercentage: 0,
                         favouriteAffiliate: 0,
+                        campaignData: 0
                     },
                 },
             ])
@@ -3028,7 +3582,7 @@ let UsersService = class UsersService {
         }
     }
     async addNewIDs() {
-        var e_2, _a;
+        var e_3, _a;
         try {
             let docs = await this._userModel.find({ role: userrole_enum_1.USERROLE.merchant });
             let num = 0;
@@ -3043,12 +3597,12 @@ let UsersService = class UsersService {
                     await this._userModel.updateOne({ _id: doc._id }, { $set: { customerID: genereatedCustomerID } });
                 }
             }
-            catch (e_2_1) { e_2 = { error: e_2_1 }; }
+            catch (e_3_1) { e_3 = { error: e_3_1 }; }
             finally {
                 try {
                     if (docs_1_1 && !docs_1_1.done && (_a = docs_1.return)) await _a.call(docs_1);
                 }
-                finally { if (e_2) throw e_2.error; }
+                finally { if (e_3) throw e_3.error; }
             }
         }
         catch (err) {
@@ -3056,7 +3610,7 @@ let UsersService = class UsersService {
         }
     }
     async updatePasswordForAllMerchant() {
-        var e_3, _a;
+        var e_4, _a;
         try {
             let merchants = await this._userModel.find({ role: 'Merchant' });
             merchants = JSON.parse(JSON.stringify(merchants));
@@ -3069,12 +3623,12 @@ let UsersService = class UsersService {
                     await this._userModel.updateOne({ _id: merchantItem === null || merchantItem === void 0 ? void 0 : merchantItem.id }, { password: hashedPassword, newUser: false });
                 }
             }
-            catch (e_3_1) { e_3 = { error: e_3_1 }; }
+            catch (e_4_1) { e_4 = { error: e_4_1 }; }
             finally {
                 try {
                     if (merchants_1_1 && !merchants_1_1.done && (_a = merchants_1.return)) await _a.call(merchants_1);
                 }
-                finally { if (e_3) throw e_3.error; }
+                finally { if (e_4) throw e_4.error; }
             }
         }
         catch (err) {

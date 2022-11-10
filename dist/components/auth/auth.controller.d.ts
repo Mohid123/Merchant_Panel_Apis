@@ -25,6 +25,12 @@ export declare class AuthController {
         };
         token: string;
     }>;
+    loginAffiliate(loginDto: LoginDto): Promise<{
+        user: import("mongoose").Document<unknown, any, import("../../interface/user/users.interface").UsersInterface> & import("../../interface/user/users.interface").UsersInterface & {
+            _id: string;
+        };
+        token: string;
+    }>;
     loginAdmin(loginDto: LoginDto): Promise<{
         user: import("mongoose").Document<unknown, any, import("../../interface/user/users.interface").UsersInterface> & import("../../interface/user/users.interface").UsersInterface & {
             _id: string;
@@ -39,6 +45,9 @@ export declare class AuthController {
             _id: string;
         };
         token: string;
+    }>;
+    signupAffiliate(signupAffiliateDto: SignUpDTO): Promise<import("mongoose").Document<unknown, any, import("../../interface/user/users.interface").UsersInterface> & import("../../interface/user/users.interface").UsersInterface & {
+        _id: string;
     }>;
     sendEmail(emailDto: EmailDTO): Promise<void>;
     isEmailExists(isEmailExistsDto: IsEmailExistsDTO): Promise<boolean>;

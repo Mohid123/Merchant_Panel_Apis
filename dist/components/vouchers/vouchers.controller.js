@@ -17,6 +17,7 @@ const common_1 = require("@nestjs/common");
 const passport_1 = require("@nestjs/passport");
 const swagger_1 = require("@nestjs/swagger");
 const multiplevouchers_dto_1 = require("../../dto/vouchers/multiplevouchers.dto");
+const multiplevouchersaffiliate_dto_1 = require("../../dto/vouchers/multiplevouchersaffiliate.dto");
 const redeemVoucher_dto_1 = require("../../dto/vouchers/redeemVoucher.dto");
 const updatevoucherforcrom_dto_1 = require("../../dto/vouchers/updatevoucherforcrom.dto");
 const vouchers_dto_1 = require("../../dto/vouchers/vouchers.dto");
@@ -43,6 +44,9 @@ let VouchersController = class VouchersController {
     getAllVouchers(merchantID, deal, voucher, amount, fee, net, status, paymentStatus, dateFrom, dateTo, voucherID = '', dealHeader = '', voucherHeader = '', voucherStatus = '', invoiceStatus = '', offset = 0, limit = 10, multipleVouchersDto) {
         return this.voucherService.getAllVouchersByMerchantID(deal, voucher, amount, fee, net, status, paymentStatus, dateFrom, dateTo, merchantID, voucherID, dealHeader, voucherHeader, voucherStatus, invoiceStatus, offset, limit, multipleVouchersDto);
     }
+    getVouchersByAffiliateID(affiliateMongoID, voucherID = '', offset = 0, limit = 10, multipleVouchersAffiliateDto) {
+        return this.voucherService.getVouchersByAffiliateID(affiliateMongoID, voucherID, multipleVouchersAffiliateDto, offset, limit);
+    }
     getVouchersByCustomerID(customerID, searchVoucher = '', voucherStatus, offset = 0, limit = 10) {
         return this.voucherService.getVouchersByCustomerID(customerID, searchVoucher, voucherStatus, offset, limit);
     }
@@ -63,6 +67,15 @@ let VouchersController = class VouchersController {
     }
     getNetRevenue(req) {
         return this.voucherService.getNetRevenue(req);
+    }
+    getVoucherSoldPerDayForAffiliates(days, req) {
+        return this.voucherService.getVoucherSoldPerDayForAffiliates(days, req);
+    }
+    getCustomerRanking(affiliateMongoID, byMonthYearQuarter = '', dateFrom = 0, dateTo = 0, totalVouchers, totalEarnings, offset = 0, limit = 10) {
+        return this.voucherService.getCustomerRanking(affiliateMongoID, byMonthYearQuarter, dateFrom, dateTo, totalVouchers, totalEarnings, offset, limit);
+    }
+    getUsersForTableCSV(affiliateMongoID, byMonthYearQuarter = '', dateFrom = 0, dateTo = 0, totalVouchers, totalEarnings) {
+        return this.voucherService.getCustomerRankingCSV(affiliateMongoID, byMonthYearQuarter, dateFrom, dateTo, totalVouchers, totalEarnings);
     }
 };
 __decorate([
@@ -130,6 +143,20 @@ __decorate([
     __metadata("design:paramtypes", [String, String, String, String, String, String, String, String, Number, Number, String, String, String, String, String, Number, Number, multiplevouchers_dto_1.MultipleVouchersDto]),
     __metadata("design:returntype", void 0)
 ], VouchersController.prototype, "getAllVouchers", null);
+__decorate([
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiQuery)({ name: 'voucherID', type: String, required: false }),
+    (0, common_1.Post)('getVouchersByAffiliateID/:affiliateMongoID'),
+    __param(0, (0, common_1.Param)('affiliateMongoID')),
+    __param(1, (0, common_1.Query)('voucherID')),
+    __param(2, (0, common_1.Query)('offset')),
+    __param(3, (0, common_1.Query)('limit')),
+    __param(4, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, Number, Number, multiplevouchersaffiliate_dto_1.MultipleVouchersAffiliateDto]),
+    __metadata("design:returntype", void 0)
+], VouchersController.prototype, "getVouchersByAffiliateID", null);
 __decorate([
     (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
@@ -203,6 +230,56 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], VouchersController.prototype, "getNetRevenue", null);
+__decorate([
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Get)('getVoucherSoldPerDayForAffiliates/:days'),
+    __param(0, (0, common_1.Param)('days')),
+    __param(1, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, Object]),
+    __metadata("design:returntype", void 0)
+], VouchersController.prototype, "getVoucherSoldPerDayForAffiliates", null);
+__decorate([
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiQuery)({ name: "byMonthYearQuarter", type: String, required: false }),
+    (0, swagger_1.ApiQuery)({ name: "dateFrom", type: Number, required: false }),
+    (0, swagger_1.ApiQuery)({ name: "dateTo", type: Number, required: false }),
+    (0, swagger_1.ApiQuery)({ name: 'totalVouchers', enum: sort_enum_1.SORT, required: false }),
+    (0, swagger_1.ApiQuery)({ name: 'totalEarnings', enum: sort_enum_1.SORT, required: false }),
+    (0, common_1.Get)('getCustomerRanking/:affiliateMongoID'),
+    __param(0, (0, common_1.Param)('affiliateMongoID')),
+    __param(1, (0, common_1.Query)("byMonthYearQuarter")),
+    __param(2, (0, common_1.Query)("dateFrom")),
+    __param(3, (0, common_1.Query)("dateTo")),
+    __param(4, (0, common_1.Query)('totalVouchers')),
+    __param(5, (0, common_1.Query)('totalEarnings')),
+    __param(6, (0, common_1.Query)('offset')),
+    __param(7, (0, common_1.Query)('limit')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, Number, Number, String, String, Number, Number]),
+    __metadata("design:returntype", void 0)
+], VouchersController.prototype, "getCustomerRanking", null);
+__decorate([
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiQuery)({ name: "byMonthYearQuarter", type: String, required: false }),
+    (0, swagger_1.ApiQuery)({ name: "dateFrom", type: Number, required: false }),
+    (0, swagger_1.ApiQuery)({ name: "dateTo", type: Number, required: false }),
+    (0, swagger_1.ApiQuery)({ name: 'totalVouchers', enum: sort_enum_1.SORT, required: false }),
+    (0, swagger_1.ApiQuery)({ name: 'totalEarnings', enum: sort_enum_1.SORT, required: false }),
+    (0, common_1.Get)('getUsersForTableCSV'),
+    __param(0, (0, common_1.Query)('affiliateMongoID')),
+    __param(1, (0, common_1.Query)("byMonthYearQuarter")),
+    __param(2, (0, common_1.Query)("dateFrom")),
+    __param(3, (0, common_1.Query)("dateTo")),
+    __param(4, (0, common_1.Query)('totalVouchers')),
+    __param(5, (0, common_1.Query)('totalEarnings')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, Number, Number, String, String]),
+    __metadata("design:returntype", void 0)
+], VouchersController.prototype, "getUsersForTableCSV", null);
 VouchersController = __decorate([
     (0, swagger_1.ApiTags)('Voucher'),
     (0, common_1.Controller)('voucher'),

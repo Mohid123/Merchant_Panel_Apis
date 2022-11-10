@@ -38,6 +38,9 @@ let InvoicesController = class InvoicesController {
     getAllInvoicesByMerchant(merchantID, dateFrom = 0, dateTo = 0, invoiceDate, invoiceAmount, status, invoiceID = "", offset = 0, limit = 10, multipleInvoicesDto) {
         return this._invoiceService.getAllInvoicesByMerchant(merchantID, dateFrom, dateTo, invoiceDate, invoiceAmount, status, invoiceID, offset, limit, multipleInvoicesDto);
     }
+    getAllInvoicesByAffiliate(affiliateMongoID, invoiceID = '', dateFrom = 0, dateTo = 0, multipleInvoicesDto, offset = 0, limit = 10) {
+        return this._invoiceService.getAllInvoicesByAffiliate(affiliateMongoID, invoiceID, dateFrom, dateTo, multipleInvoicesDto, offset, limit);
+    }
 };
 __decorate([
     (0, common_1.Post)('createInvoice'),
@@ -82,6 +85,22 @@ __decorate([
     __metadata("design:paramtypes", [String, Number, Number, String, String, String, String, Number, Number, multipleinvoices_dto_1.MultipleInvoicesDto]),
     __metadata("design:returntype", void 0)
 ], InvoicesController.prototype, "getAllInvoicesByMerchant", null);
+__decorate([
+    (0, swagger_1.ApiQuery)({ name: 'invoiceID', type: String, required: false }),
+    (0, swagger_1.ApiQuery)({ name: 'dateFrom', type: Number, required: false }),
+    (0, swagger_1.ApiQuery)({ name: 'dateTo', type: Number, required: false }),
+    (0, common_1.Post)('getAllInvoicesByAffiliate/:affiliateMongoID'),
+    __param(0, (0, common_1.Param)('affiliateMongoID')),
+    __param(1, (0, common_1.Query)('invoiceID')),
+    __param(2, (0, common_1.Query)('dateFrom')),
+    __param(3, (0, common_1.Query)('dateTo')),
+    __param(4, (0, common_1.Body)()),
+    __param(5, (0, common_1.Query)('offset')),
+    __param(6, (0, common_1.Query)('limit')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, Number, Number, multipleinvoices_dto_1.MultipleInvoicesDto, Number, Number]),
+    __metadata("design:returntype", void 0)
+], InvoicesController.prototype, "getAllInvoicesByAffiliate", null);
 InvoicesController = __decorate([
     (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),

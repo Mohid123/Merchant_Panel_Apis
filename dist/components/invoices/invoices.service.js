@@ -16,6 +16,7 @@ exports.InvoicesService = void 0;
 const common_1 = require("@nestjs/common");
 const mongoose_1 = require("@nestjs/mongoose");
 const mongoose_2 = require("mongoose");
+const billingStatus_enum_1 = require("../../enum/billing/billingStatus.enum");
 const sortinvoiceamount_enum_1 = require("../../enum/sorting/sortinvoiceamount.enum");
 const sortinvoicedate_enum_1 = require("../../enum/sorting/sortinvoicedate.enum");
 let InvoicesService = class InvoicesService {
@@ -29,7 +30,8 @@ let InvoicesService = class InvoicesService {
                 sequenceValue: 1,
             },
         }, { new: true });
-        return 'I' + sequenceDocument.sequenceValue;
+        const year = new Date().getFullYear() % 2000;
+        return `INV-BE${year}${sequenceDocument.sequenceValue < 100000 ? '0' : ''}${sequenceDocument.sequenceValue < 10000 ? '0' : ''}${sequenceDocument.sequenceValue}`;
     }
     async createInvoice(invoiceDto) {
         try {
@@ -176,6 +178,70 @@ let InvoicesService = class InvoicesService {
                 totalCount: totalCount,
                 filteredCount,
                 data: invoices,
+            };
+        }
+        catch (err) {
+            throw new common_1.HttpException(err, common_1.HttpStatus.BAD_REQUEST);
+        }
+    }
+    async getAllInvoicesByAffiliate(affiliateMongoID, invoiceID, dateFrom, dateTo, multipleInvoicesDto, offset, limit) {
+        var _a;
+        try {
+            offset = parseInt(offset) < 0 ? 0 : offset;
+            limit = parseInt(limit) < 1 ? 10 : limit;
+            dateFrom = parseInt(dateFrom);
+            dateTo = parseInt(dateTo);
+            let matchFilter = {};
+            let dateToFilters = {};
+            let dateFromFilters = {};
+            if (dateFrom) {
+                dateFromFilters = Object.assign(Object.assign({}, dateFromFilters), { $gte: dateFrom });
+            }
+            if (dateTo) {
+                dateToFilters = Object.assign(Object.assign({}, dateToFilters), { $lte: dateTo });
+            }
+            if (dateFrom || dateTo) {
+                matchFilter = Object.assign(Object.assign({}, matchFilter), { invoiceDate: Object.assign(Object.assign({}, dateFromFilters), dateToFilters) });
+            }
+            let filters = {};
+            if (invoiceID.trim().length) {
+                var query = new RegExp(`${invoiceID}`, 'i');
+                filters = Object.assign(Object.assign({}, filters), { invoiceID: query });
+            }
+            if ((_a = multipleInvoicesDto === null || multipleInvoicesDto === void 0 ? void 0 : multipleInvoicesDto.invoiceIDsArray) === null || _a === void 0 ? void 0 : _a.length) {
+                filters = Object.assign(Object.assign({}, filters), { invoiceID: { $in: multipleInvoicesDto.invoiceIDsArray } });
+            }
+            let totalCount = await this._invoicesModel.countDocuments({
+                affiliateMongoID: affiliateMongoID,
+                deletedCheck: false
+            });
+            let filteredCount = await this._invoicesModel.countDocuments(Object.assign(Object.assign({ affiliateMongoID: affiliateMongoID, deletedCheck: false, status: billingStatus_enum_1.BILLINGSTATUS.paid }, filters), matchFilter));
+            let affiliateInvoices = await this._invoicesModel.aggregate([
+                {
+                    $match: Object.assign(Object.assign({ affiliateMongoID: affiliateMongoID, deletedCheck: false, status: billingStatus_enum_1.BILLINGSTATUS.paid }, filters), matchFilter)
+                },
+                {
+                    $sort: {
+                        createdAt: -1
+                    }
+                },
+                {
+                    $addFields: {
+                        id: '$_id'
+                    }
+                },
+                {
+                    $project: {
+                        _id: 0
+                    }
+                }
+            ])
+                .skip(parseInt(offset))
+                .limit(parseInt(limit));
+            return {
+                totalCount: totalCount,
+                filteredCount: filteredCount,
+                data: affiliateInvoices
             };
         }
         catch (err) {

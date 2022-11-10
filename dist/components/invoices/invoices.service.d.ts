@@ -21,4 +21,9 @@ export declare class InvoicesService {
         filteredCount: number;
         data: any[];
     }>;
+    getAllInvoicesByAffiliate(affiliateMongoID: any, invoiceID: any, dateFrom: any, dateTo: any, multipleInvoicesDto: any, offset: any, limit: any): Promise<{
+        totalCount: number;
+        filteredCount: number;
+        data: any[];
+    }>;
 }

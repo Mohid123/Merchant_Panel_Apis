@@ -16,6 +16,7 @@ exports.ScheduleService = void 0;
 const common_1 = require("@nestjs/common");
 const mongoose_1 = require("@nestjs/mongoose");
 const mongoose_2 = require("mongoose");
+const affiliate_enum_1 = require("../../enum/affiliate/affiliate.enum");
 const dealstatus_enum_1 = require("../../enum/deal/dealstatus.enum");
 const merchant_enum_1 = require("../../enum/merchant/merchant.enum");
 const voucherstatus_enum_1 = require("../../enum/voucher/voucherstatus.enum");
@@ -66,10 +67,12 @@ let ScheduleService = class ScheduleService {
             const paymentClearDate = currentDate - (15 * 24 * 60 * 60 * 1000);
             const vouchersPaymentUpdate = await this._voucherModel.updateMany({
                 deletedCheck: false,
+                affiliatePaymentStatus: affiliate_enum_1.AFFILIATEPAYMENTSTATUS.pending,
+                merchantPaymentStatus: merchant_enum_1.MERCHANTPAYMENTSTATUS.pending,
                 boughtDate: { $lte: paymentClearDate },
             }, {
                 $set: {
-                    affiliatePaymentStatus: merchant_enum_1.MERCHANTPAYMENTSTATUS === null || merchant_enum_1.MERCHANTPAYMENTSTATUS === void 0 ? void 0 : merchant_enum_1.MERCHANTPAYMENTSTATUS.approved,
+                    affiliatePaymentStatus: affiliate_enum_1.AFFILIATEPAYMENTSTATUS === null || affiliate_enum_1.AFFILIATEPAYMENTSTATUS === void 0 ? void 0 : affiliate_enum_1.AFFILIATEPAYMENTSTATUS.approved,
                     merchantPaymentStatus: merchant_enum_1.MERCHANTPAYMENTSTATUS === null || merchant_enum_1.MERCHANTPAYMENTSTATUS === void 0 ? void 0 : merchant_enum_1.MERCHANTPAYMENTSTATUS.approved,
                 }
             });

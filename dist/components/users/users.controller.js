@@ -17,6 +17,7 @@ const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const resetPassword_dto_1 = require("../../dto/resetPasswordDto/resetPassword.dto");
 const approveMerchant_dto_1 = require("../../dto/user/approveMerchant.dto");
+const updateaffiliateprofile_dto_1 = require("../../dto/user/updateaffiliateprofile.dto");
 const updatecustomerprofile_dto_1 = require("../../dto/user/updatecustomerprofile.dto");
 const updatemerchantfromcrm_dto_1 = require("../../dto/user/updatemerchantfromcrm.dto");
 const updatepassword_dto_1 = require("../../dto/user/updatepassword.dto");
@@ -40,8 +41,8 @@ let UsersController = class UsersController {
     changePassword(id, updatepasswordDto) {
         return this._usersService.changePassword(id, updatepasswordDto);
     }
-    completeKYC(merchantID, kycDto) {
-        return this._usersService.completeKYC(merchantID, kycDto);
+    completeKYC(id, kycDto) {
+        return this._usersService.completeKYC(id, kycDto);
     }
     updateVoucherPinCode(merchantID, voucherPinCodeDto) {
         return this._usersService.updateVoucherPinCode(merchantID, voucherPinCodeDto);
@@ -49,11 +50,17 @@ let UsersController = class UsersController {
     updateMerchantprofile(merchantID, usersDto) {
         return this._usersService.updateMerchantprofile(merchantID, usersDto);
     }
+    updateAffiliateProfile(affiliateID, usersDto) {
+        return this._usersService.updateAffiliateProfile(affiliateID, usersDto);
+    }
     updateCustomerProfile(customerID, usersDto) {
         return this._usersService.updateCustomerProfile(customerID, usersDto);
     }
     getCustomer(id) {
         return this._usersService.getCustomer(id);
+    }
+    getAffiliate(id) {
+        return this._usersService.getAffiliate(id);
     }
     updateBusinessHours(updateHoursDTO) {
         return this._usersService.updateBusinessHours(updateHoursDTO);
@@ -132,8 +139,8 @@ __decorate([
 __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, swagger_1.ApiBearerAuth)(),
-    (0, common_1.Post)('completeKYC/:merchantID'),
-    __param(0, (0, common_1.Param)('merchantID')),
+    (0, common_1.Post)('completeKYC/:id'),
+    __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, kyc_dto_1.KycDto]),
@@ -160,6 +167,16 @@ __decorate([
 __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.Post)('updateAffiliateProfile/:affiliateID'),
+    __param(0, (0, common_1.Param)('affiliateID')),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, updateaffiliateprofile_dto_1.UpdateAffiliateProfileDto]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "updateAffiliateProfile", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.Post)('updateCustomerProfile/:customerID'),
     __param(0, (0, common_1.Param)('customerID')),
     __param(1, (0, common_1.Body)()),
@@ -176,6 +193,15 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "getCustomer", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.Get)('getAffiliate/:id'),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "getAffiliate", null);
 __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, swagger_1.ApiBearerAuth)(),
