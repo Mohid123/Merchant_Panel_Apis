@@ -72,4 +72,20 @@ export class InvoicesController {
       multipleInvoicesDto
     );
   }
+
+  @ApiQuery({ name: 'invoiceID', type: String, required: false })
+  @ApiQuery({ name: 'dateFrom', type: Number, required: false })
+  @ApiQuery({ name: 'dateTo', type: Number, required: false })
+  @Post('getAllInvoicesByAffiliate/:affiliateMongoID')
+  getAllInvoicesByAffiliate (
+    @Param('affiliateMongoID') affiliateMongoID: string,
+    @Query('invoiceID') invoiceID: string = '',
+    @Query('dateFrom') dateFrom: number = 0,
+    @Query('dateTo') dateTo: number = 0,
+    @Body() multipleInvoicesDto: MultipleInvoicesDto,
+    @Query('offset') offset: number = 0,
+    @Query('limit') limit: number = 10,
+  ) {
+    return this._invoiceService.getAllInvoicesByAffiliate(affiliateMongoID, invoiceID, dateFrom, dateTo, multipleInvoicesDto, offset, limit)
+  }
 }

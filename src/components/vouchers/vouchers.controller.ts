@@ -11,6 +11,7 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { MultipleVouchersDto } from 'src/dto/vouchers/multiplevouchers.dto';
+import { MultipleVouchersAffiliateDto } from 'src/dto/vouchers/multiplevouchersaffiliate.dto';
 import { RedeemVoucherDto } from 'src/dto/vouchers/redeemVoucher.dto';
 import { UpdateVoucherForCRMDto } from 'src/dto/vouchers/updatevoucherforcrom.dto';
 import { VoucherDto } from '../../dto/vouchers/vouchers.dto';
@@ -112,6 +113,20 @@ export class VouchersController {
 
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
+  @ApiQuery({ name: 'voucherID', type: String, required: false })
+  @Post('getVouchersByAffiliateID/:affiliateMongoID')
+  getVouchersByAffiliateID (
+    @Param('affiliateMongoID') affiliateMongoID: string,
+    @Query('voucherID') voucherID: string = '',
+    @Query('offset') offset: number = 0,
+    @Query('limit') limit: number = 10,
+    @Body() multipleVouchersAffiliateDto: MultipleVouchersAffiliateDto,
+  ) {
+    return this.voucherService.getVouchersByAffiliateID(affiliateMongoID, voucherID, multipleVouchersAffiliateDto, offset, limit)
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
   @ApiQuery({ name: 'searchVoucher', required: false })
   @ApiQuery({ name: 'voucherStatus', enum: VOUCHERSTATUSENUM, required: false })
   @Get('getVouchersByCustomerID/:customerID')
@@ -180,5 +195,62 @@ export class VouchersController {
   @Get('getNetRevenue')
   getNetRevenue(@Req() req) {
     return this.voucherService.getNetRevenue(req);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @Get('getVoucherSoldPerDayForAffiliates/:days')
+  getVoucherSoldPerDayForAffiliates (
+    @Param('days') days: number,
+    @Req() req
+  ) {
+    return this.voucherService.getVoucherSoldPerDayForAffiliates(days, req)
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiQuery({ name: "byMonthYearQuarter", type: String, required: false })
+  @ApiQuery({ name: "dateFrom", type: Number, required: false })
+  @ApiQuery({ name: "dateTo", type: Number, required: false })
+  @ApiQuery({ name: 'totalVouchers', enum: SORT, required: false })
+  @ApiQuery({ name: 'totalEarnings', enum: SORT, required: false })
+  @Get('getCustomerRanking/:affiliateMongoID')
+  getCustomerRanking (
+    @Param('affiliateMongoID') affiliateMongoID: string,
+    @Query("byMonthYearQuarter") byMonthYearQuarter: string = '',
+    @Query("dateFrom") dateFrom: number = 0,
+    @Query("dateTo") dateTo: number = 0,
+    @Query('totalVouchers') totalVouchers: SORT,
+    @Query('totalEarnings') totalEarnings: SORT,
+    @Query('offset') offset: number = 0,
+    @Query('limit') limit: number = 10,
+  ) {
+    return this.voucherService.getCustomerRanking(affiliateMongoID, byMonthYearQuarter, dateFrom, dateTo, totalVouchers, totalEarnings, offset, limit)
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiQuery({ name: "byMonthYearQuarter", type: String, required: false })
+  @ApiQuery({ name: "dateFrom", type: Number, required: false })
+  @ApiQuery({ name: "dateTo", type: Number, required: false })
+  @ApiQuery({ name: 'totalVouchers', enum: SORT, required: false })
+  @ApiQuery({ name: 'totalEarnings', enum: SORT, required: false })
+  @Get('getUsersForTableCSV')
+  getUsersForTableCSV(
+    @Query('affiliateMongoID') affiliateMongoID: string,
+    @Query("byMonthYearQuarter") byMonthYearQuarter: string = '',
+    @Query("dateFrom") dateFrom: number = 0,
+    @Query("dateTo") dateTo: number = 0,
+    @Query('totalVouchers') totalVouchers: SORT,
+    @Query('totalEarnings') totalEarnings: SORT,
+  ) {
+    return this.voucherService.getCustomerRankingCSV(
+      affiliateMongoID,
+      byMonthYearQuarter,
+      dateFrom,
+      dateTo,
+      totalVouchers,
+      totalEarnings
+    );
   }
 }

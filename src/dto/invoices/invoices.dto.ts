@@ -17,8 +17,14 @@ export class InvoiceDTO {
     invoiceURL: string;
 
     @ApiProperty()
+    merchantMongoID: string;
+
+    @ApiProperty()
     merchantID: string;
 
     @ApiProperty()
-    merchantMongoID: string;
+    affiliateMongoID: string;
+
+    @ApiProperty()
+    affiliateID: string;
 }

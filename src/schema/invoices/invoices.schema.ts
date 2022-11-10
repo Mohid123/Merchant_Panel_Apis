@@ -9,8 +9,11 @@ export const InvoiceSchema = new mongoose.Schema(
         invoiceAmount: { type: Number, default: 0 },
         status: { type: String, default: '' },
         invoiceURL: { type: String, default: '' },
+        merchantMongoID: { type: String, default: '' },
         merchantID: { type: String, default: '' },
-        merchantMongoID: { type: String, default: '' }
+        affiliateMongoID: { type: String, default: '' },
+        affiliateID: { type: String, default: '' },
+        deletedCheck: { type: Boolean, default: false }
     },
     {
         collection: 'invoices'

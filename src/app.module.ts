@@ -28,6 +28,7 @@ import { FavouritesModule } from './components/favourites/favourites.module';
 import { VoucherSchema } from './schema/vouchers/vouchers.schema';
 import { ViewsModule } from './components/views/views.module';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { CampaignModule } from './components/campaign/campaign.module';
 
 @Module({
   imports: [
@@ -65,6 +66,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
     FavouritesModule,
     ViewsModule,
     StripeModule,
+    CampaignModule,
   ],
   controllers: [AppController],
   providers: [AppService, ScheduleService],
