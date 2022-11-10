@@ -22,15 +22,11 @@ import { DealInterface } from 'src/interface/deal/deal.interface';
 import axios from 'axios';
 import { pipeline } from 'stream';
 const { convertArrayToCSV } = require('convert-array-to-csv');
-const Converter = require("csv-converter-to-pdf-and-html");
-const path = require("path");
 import { DEALSTATUS } from 'src/enum/deal/dealstatus.enum';
 import { ActivityService } from '../activity/activity.service';
 import { ACTIVITYENUM } from 'src/enum/activity/activity.enum';
 import { USERROLE } from 'src/enum/user/userrole.enum';
 import { AFFILIATEPAYMENTSTATUS } from 'src/enum/affiliate/affiliate.enum';
-
-const converter = new Converter();
 
 @Injectable()
 export class VouchersService implements OnModuleInit{
