@@ -197,7 +197,7 @@ export class CampaignService {
                 let sortCollectedAmount = collectedAmount == SORT.ASC ? 1 : -1;
                 sort = {
                   ...sort,
-                  collectedAmount: sortCollectedAmount,
+                  percentage: sortCollectedAmount,
                 };
             }
 
