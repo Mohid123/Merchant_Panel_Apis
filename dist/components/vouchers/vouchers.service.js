@@ -40,8 +40,7 @@ let VouchersService = class VouchersService {
         this.dealModel = dealModel;
     }
     onModuleInit() {
-        console.log('Wallet Module Initialized');
-        const dir = 'mediaFiles/NFT/customerRankingCSV';
+        const dir = 'mediaFiles/NFT/customerrankingcsv';
         let exist = fs.existsSync(dir);
         if (!exist) {
             fs.mkdir(dir, { recursive: true }, (err) => {
@@ -1339,8 +1338,8 @@ let VouchersService = class VouchersService {
                 .fill(null)
                 .map(() => Math.round(Math.random() * 16).toString(16))
                 .join('');
-            const url = `${process.env.URL}media-upload/mediaFiles/customerRankingCSV/${randomName}.csv`;
-            await fs.promises.writeFile(`./mediaFiles/NFT/customerRankingCSV/${randomName}.csv`, csv);
+            const url = `${process.env.URL}media-upload/mediaFiles/customerrankingcsv/${randomName}.csv`;
+            await fs.promises.writeFile(`./mediaFiles/NFT/customerrankingcsv/${randomName}.csv`, csv);
             return { url };
         }
         catch (err) {

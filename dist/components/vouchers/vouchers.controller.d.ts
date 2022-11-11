@@ -72,7 +72,7 @@ export declare class VouchersController {
         totalCount: any;
         data: any[];
     }>;
-    getUsersForTableCSV(affiliateMongoID: string, byMonthYearQuarter: string, dateFrom: number, dateTo: number, totalVouchers: SORT, totalEarnings: SORT): Promise<{
+    getCustomerRankingCSV(affiliateMongoID: string, byMonthYearQuarter: string, dateFrom: number, dateTo: number, totalVouchers: SORT, totalEarnings: SORT): Promise<{
         url: string;
     }>;
 }

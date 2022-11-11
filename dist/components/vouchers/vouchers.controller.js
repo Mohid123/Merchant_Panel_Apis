@@ -74,7 +74,7 @@ let VouchersController = class VouchersController {
     getCustomerRanking(affiliateMongoID, byMonthYearQuarter = '', dateFrom = 0, dateTo = 0, totalVouchers, totalEarnings, offset = 0, limit = 10) {
         return this.voucherService.getCustomerRanking(affiliateMongoID, byMonthYearQuarter, dateFrom, dateTo, totalVouchers, totalEarnings, offset, limit);
     }
-    getUsersForTableCSV(affiliateMongoID, byMonthYearQuarter = '', dateFrom = 0, dateTo = 0, totalVouchers, totalEarnings) {
+    getCustomerRankingCSV(affiliateMongoID, byMonthYearQuarter = '', dateFrom = 0, dateTo = 0, totalVouchers, totalEarnings) {
         return this.voucherService.getCustomerRankingCSV(affiliateMongoID, byMonthYearQuarter, dateFrom, dateTo, totalVouchers, totalEarnings);
     }
 };
@@ -269,7 +269,7 @@ __decorate([
     (0, swagger_1.ApiQuery)({ name: "dateTo", type: Number, required: false }),
     (0, swagger_1.ApiQuery)({ name: 'totalVouchers', enum: sort_enum_1.SORT, required: false }),
     (0, swagger_1.ApiQuery)({ name: 'totalEarnings', enum: sort_enum_1.SORT, required: false }),
-    (0, common_1.Get)('getUsersForTableCSV'),
+    (0, common_1.Get)('getCustomerRankingCSV'),
     __param(0, (0, common_1.Query)('affiliateMongoID')),
     __param(1, (0, common_1.Query)("byMonthYearQuarter")),
     __param(2, (0, common_1.Query)("dateFrom")),
@@ -279,7 +279,7 @@ __decorate([
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, String, Number, Number, String, String]),
     __metadata("design:returntype", void 0)
-], VouchersController.prototype, "getUsersForTableCSV", null);
+], VouchersController.prototype, "getCustomerRankingCSV", null);
 VouchersController = __decorate([
     (0, swagger_1.ApiTags)('Voucher'),
     (0, common_1.Controller)('voucher'),
