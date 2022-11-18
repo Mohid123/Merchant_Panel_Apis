@@ -1498,7 +1498,7 @@ export class DealService implements OnModuleInit {
       distance = parseFloat(distance);
 
       if (!distance) {
-        distance = 10;
+        distance = 100;
       }
 
       let radius = parseFloat(distance) / 6378.1;
@@ -1506,7 +1506,7 @@ export class DealService implements OnModuleInit {
       if (!lat && !lng) {
         lat = 50.8476;
         lng = 4.3572;
-        radius = 20 / 6378.1;
+        radius = 100 / 6378.1;
       }
 
       const totalCount = await this.dealModel.countDocuments({
@@ -1751,7 +1751,7 @@ export class DealService implements OnModuleInit {
       distance = parseFloat(distance);
 
       if (!distance) {
-        distance = 10;
+        distance = 100;
       }
 
       let radius = parseFloat(distance) / 6378.1;
@@ -1759,7 +1759,7 @@ export class DealService implements OnModuleInit {
       if (!lat && !lng) {
         lat = 50.8476;
         lng = 4.3572;
-        radius = 20 / 6378.1;
+        radius = 100 / 6378.1;
       }
 
       let totalCount;
@@ -2008,7 +2008,7 @@ export class DealService implements OnModuleInit {
       distance = parseFloat(distance);
 
       if (!distance) {
-        distance = 10;
+        distance = 100;
       }
 
       let radius = parseFloat(distance) / 6378.1;
@@ -2016,7 +2016,7 @@ export class DealService implements OnModuleInit {
       if (!lat && !lng) {
         lat = 50.8476;
         lng = 4.3572;
-        radius = 20 / 6378.1;
+        radius = 100 / 6378.1;
       }
 
       let count;
@@ -3065,7 +3065,7 @@ export class DealService implements OnModuleInit {
       distance = parseFloat(distance);
 
       if (!distance) {
-        distance = 10;
+        distance = 100;
       }
 
       let radius = parseFloat(distance) / 6378.1;
@@ -3073,9 +3073,9 @@ export class DealService implements OnModuleInit {
       if (!lat && !lng) {
         lat = 50.8476;
         lng = 4.3572;
-        radius = 20 / 6378.1;
+        radius = 100 / 6378.1;
       }
-
+      debugger
       // const value = await this.cacheManager.get(`getNewDeals${offset}${limit}`);
       // let totalCount;
       // let deals;
@@ -3084,7 +3084,7 @@ export class DealService implements OnModuleInit {
           deletedCheck: false,
           dealStatus: DEALSTATUS.published,
         });
-
+        debugger
         let deals = await this.dealModel
           .aggregate([
             {
@@ -3276,7 +3276,6 @@ export class DealService implements OnModuleInit {
           ])
           .skip(parseInt(offset))
           .limit(parseInt(limit));
-
         // await this.cacheManager.set(
         //   `getNewDeals${offset}${limit}`,
         //   {
@@ -3306,7 +3305,7 @@ export class DealService implements OnModuleInit {
       distance = parseFloat(distance);
 
       if (!distance) {
-        distance = 10;
+        distance = 100;
       }
 
       let radius = parseFloat(distance) / 6378.1;
@@ -3314,7 +3313,7 @@ export class DealService implements OnModuleInit {
       if (!lat && !lng) {
         lat = 50.8476;
         lng = 4.3572;
-        radius = 20 / 6378.1;
+        radius = 100 / 6378.1;
       }
 
       let categoryFilters = {};
@@ -4333,7 +4332,7 @@ export class DealService implements OnModuleInit {
       distance = parseFloat(distance);
 
       if (!distance) {
-        distance = 10;
+        distance = 100;
       }
 
       let radius = parseFloat(distance) / 6378.1;
@@ -4341,7 +4340,7 @@ export class DealService implements OnModuleInit {
       if (!lat && !lng) {
         lat = 50.8476;
         lng = 4.3572;
-        radius = 20 / 6378.1;
+        radius = 100 / 6378.1;
       }
 
       let totalCount;
@@ -4588,7 +4587,7 @@ export class DealService implements OnModuleInit {
       distance = parseFloat(distance);
 
       if (!distance) {
-        distance = 10;
+        distance = 100;
       }
 
       let radius = parseFloat(distance) / 6378.1;
@@ -4596,7 +4595,7 @@ export class DealService implements OnModuleInit {
       if (!lat && !lng) {
         lat = 50.8476;
         lng = 4.3572;
-        radius = 20 / 6378.1;
+        radius = 100 / 6378.1;
       }
 
       let count;
@@ -5643,7 +5642,7 @@ export class DealService implements OnModuleInit {
       distance = parseFloat(distance);
 
       if (!distance) {
-        distance = 10;
+        distance = 100;
       }
 
       let radius = parseFloat(distance) / 6378.1;
@@ -5651,7 +5650,7 @@ export class DealService implements OnModuleInit {
       if (!lat && !lng) {
         lat = 50.8476;
         lng = 4.3572;
-        radius = 20 / 6378.1;
+        radius = 100 / 6378.1;
       }
 
       // const value = await this.cacheManager.get(`getHotDeals${offset}${limit}`);
@@ -5910,7 +5909,7 @@ export class DealService implements OnModuleInit {
       distance = parseFloat(distance);
 
       if (!distance) {
-        distance = 10;
+        distance = 100;
       }
 
       let radius = parseFloat(distance) / 6378.1;
@@ -5918,7 +5917,7 @@ export class DealService implements OnModuleInit {
       if (!lat && !lng) {
         lat = 50.8476;
         lng = 4.3572;
-        radius = 20 / 6378.1;
+        radius = 100 / 6378.1;
       }
 
       let categoryFilters = {};
@@ -7002,7 +7001,7 @@ export class DealService implements OnModuleInit {
       distance = parseFloat(distance);
 
       if (!distance) {
-        distance = 10;
+        distance = 100;
       }
 
       let radius = parseFloat(distance) / 6378.1;
@@ -7010,7 +7009,7 @@ export class DealService implements OnModuleInit {
       if (!lat && !lng) {
         lat = 50.8476;
         lng = 4.3572;
-        radius = 20 / 6378.1;
+        radius = 100 / 6378.1;
       }
 
       const totalCount = await this.dealModel.countDocuments({
@@ -7230,7 +7229,7 @@ export class DealService implements OnModuleInit {
       distance = parseFloat(distance);
 
       if (!distance) {
-        distance = 10;
+        distance = 100;
       }
 
       let radius = parseFloat(distance) / 6378.1;
@@ -7238,7 +7237,7 @@ export class DealService implements OnModuleInit {
       if (!lat && !lng) {
         lat = 50.8476;
         lng = 4.3572;
-        radius = 20 / 6378.1;
+        radius = 100 / 6378.1;
       }
 
       let categoryFilters = {};
@@ -8251,7 +8250,7 @@ export class DealService implements OnModuleInit {
       distance = parseFloat(distance);
 
       if (!distance) {
-        distance = 10;
+        distance = 100;
       }
 
       let radius = parseFloat(distance) / 6378.1;
@@ -8259,7 +8258,7 @@ export class DealService implements OnModuleInit {
       if (!lat && !lng) {
         lat = 50.8476;
         lng = 4.3572;
-        radius = 20 / 6378.1;
+        radius = 100 / 6378.1;
       }
 
       const totalCount = await this.dealModel.countDocuments({
@@ -8480,7 +8479,7 @@ export class DealService implements OnModuleInit {
       distance = parseFloat(distance);
 
       if (!distance) {
-        distance = 10;
+        distance = 100;
       }
 
       let radius = parseFloat(distance) / 6378.1;
@@ -8488,7 +8487,7 @@ export class DealService implements OnModuleInit {
       if (!lat && !lng) {
         lat = 50.8476;
         lng = 4.3572;
-        radius = 20 / 6378.1;
+        radius = 100 / 6378.1;
       }
 
       let categoryFilters = {};
@@ -9512,7 +9511,7 @@ export class DealService implements OnModuleInit {
       distance = parseFloat(distance);
 
       if (!distance) {
-        distance = 10;
+        distance = 100;
       }
 
       let radius = parseFloat(distance) / 6378.1;
@@ -9520,7 +9519,7 @@ export class DealService implements OnModuleInit {
       if (!lat && !lng) {
         lat = 50.8476;
         lng = 4.3572;
-        radius = 20 / 6378.1;
+        radius = 100 / 6378.1;
       }
       
       let deal = await this.dealModel.aggregate([
@@ -9725,7 +9724,7 @@ export class DealService implements OnModuleInit {
       distance = parseFloat(distance);
 
       if (!distance) {
-        distance = 10;
+        distance = 100;
       }
 
       let radius = parseFloat(distance) / 6378.1;
@@ -9733,7 +9732,7 @@ export class DealService implements OnModuleInit {
       if (!lat && !lng) {
         lat = 50.8476;
         lng = 4.3572;
-        radius = 20 / 6378.1;
+        radius = 100 / 6378.1;
       }
 
       let categoryFilters = {};
@@ -10756,7 +10755,7 @@ export class DealService implements OnModuleInit {
       distance = parseFloat(distance);
 
       if (!distance) {
-        distance = 10;
+        distance = 100;
       }
 
       let radius = parseFloat(distance) / 6378.1;
@@ -10764,7 +10763,7 @@ export class DealService implements OnModuleInit {
       if (!lat && !lng) {
         lat = 50.8476;
         lng = 4.3572;
-        radius = 20 / 6378.1;
+        radius = 100 / 6378.1;
       }
 
       let filters = {};
@@ -11701,7 +11700,7 @@ export class DealService implements OnModuleInit {
       distance = parseFloat(distance);
 
       if (!distance) {
-        distance = 10;
+        distance = 100;
       }
 
       let radius = parseFloat(distance) / 6378.1;
@@ -11709,7 +11708,7 @@ export class DealService implements OnModuleInit {
       if (!lat && !lng) {
         lat = 50.8476;
         lng = 4.3572;
-        radius = 20 / 6378.1;
+        radius = 100 / 6378.1;
       }
 
       let categoryFilters = {};
@@ -13037,7 +13036,7 @@ export class DealService implements OnModuleInit {
       distance = parseFloat(distance);
 
       if (!distance) {
-        distance = 10;
+        distance = 100;
       }
 
       let radius = parseFloat(distance) / 6378.1;
@@ -13045,7 +13044,7 @@ export class DealService implements OnModuleInit {
       if (!lat && !lng) {
         lat = 50.8476;
         lng = 4.3572;
-        radius = 20 / 6378.1;
+        radius = 100 / 6378.1;
       }
 
       const totalCount = await this.dealModel.countDocuments({
@@ -13261,7 +13260,7 @@ export class DealService implements OnModuleInit {
       distance = parseFloat(distance);
 
       if (!distance) {
-        distance = 10;
+        distance = 100;
       }
 
       let radius = parseFloat(distance) / 6378.1;
@@ -13269,7 +13268,7 @@ export class DealService implements OnModuleInit {
       if (!lat && !lng) {
         lat = 50.8476;
         lng = 4.3572;
-        radius = 20 / 6378.1;
+        radius = 100 / 6378.1;
       }
 
       const totalCount = await this.dealModel.countDocuments({
@@ -13514,7 +13513,7 @@ export class DealService implements OnModuleInit {
       distance = parseFloat(distance);
 
       if (!distance) {
-        distance = 10;
+        distance = 100;
       }
 
       let radius = parseFloat(distance) / 6378.1;
@@ -13522,7 +13521,7 @@ export class DealService implements OnModuleInit {
       if (!lat && !lng) {
         lat = 50.8476;
         lng = 4.3572;
-        radius = 20 / 6378.1;
+        radius = 100 / 6378.1;
       }
 
       const totalCount = await this.dealModel.countDocuments({

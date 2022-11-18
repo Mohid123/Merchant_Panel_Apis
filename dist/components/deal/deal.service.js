@@ -1190,13 +1190,13 @@ let DealService = class DealService {
             lng = parseFloat(lng);
             distance = parseFloat(distance);
             if (!distance) {
-                distance = 10;
+                distance = 100;
             }
             let radius = parseFloat(distance) / 6378.1;
             if (!lat && !lng) {
                 lat = 50.8476;
                 lng = 4.3572;
-                radius = 20 / 6378.1;
+                radius = 100 / 6378.1;
             }
             const totalCount = await this.dealModel.countDocuments({
                 merchantMongoID: merchantID,
@@ -1436,13 +1436,13 @@ let DealService = class DealService {
             lng = parseFloat(lng);
             distance = parseFloat(distance);
             if (!distance) {
-                distance = 10;
+                distance = 100;
             }
             let radius = parseFloat(distance) / 6378.1;
             if (!lat && !lng) {
                 lat = 50.8476;
                 lng = 4.3572;
-                radius = 20 / 6378.1;
+                radius = 100 / 6378.1;
             }
             let totalCount;
             let priceIncrease = 10;
@@ -1678,13 +1678,13 @@ let DealService = class DealService {
             lng = parseFloat(lng);
             distance = parseFloat(distance);
             if (!distance) {
-                distance = 10;
+                distance = 100;
             }
             let radius = parseFloat(distance) / 6378.1;
             if (!lat && !lng) {
                 lat = 50.8476;
                 lng = 4.3572;
-                radius = 20 / 6378.1;
+                radius = 100 / 6378.1;
             }
             let count;
             let priceIncrease = 10;
@@ -2593,18 +2593,20 @@ let DealService = class DealService {
             lng = parseFloat(lng);
             distance = parseFloat(distance);
             if (!distance) {
-                distance = 10;
+                distance = 100;
             }
             let radius = parseFloat(distance) / 6378.1;
             if (!lat && !lng) {
                 lat = 50.8476;
                 lng = 4.3572;
-                radius = 20 / 6378.1;
+                radius = 100 / 6378.1;
             }
+            debugger;
             let totalCount = await this.dealModel.countDocuments({
                 deletedCheck: false,
                 dealStatus: dealstatus_enum_1.DEALSTATUS.published,
             });
+            debugger;
             let deals = await this.dealModel
                 .aggregate([
                 {
@@ -2813,13 +2815,13 @@ let DealService = class DealService {
             lng = parseFloat(lng);
             distance = parseFloat(distance);
             if (!distance) {
-                distance = 10;
+                distance = 100;
             }
             let radius = parseFloat(distance) / 6378.1;
             if (!lat && !lng) {
                 lat = 50.8476;
                 lng = 4.3572;
-                radius = 20 / 6378.1;
+                radius = 100 / 6378.1;
             }
             let categoryFilters = {};
             if (categoryName) {
@@ -3707,13 +3709,13 @@ let DealService = class DealService {
             lng = parseFloat(lng);
             distance = parseFloat(distance);
             if (!distance) {
-                distance = 10;
+                distance = 100;
             }
             let radius = parseFloat(distance) / 6378.1;
             if (!lat && !lng) {
                 lat = 50.8476;
                 lng = 4.3572;
-                radius = 20 / 6378.1;
+                radius = 100 / 6378.1;
             }
             let totalCount;
             do {
@@ -3949,13 +3951,13 @@ let DealService = class DealService {
             lng = parseFloat(lng);
             distance = parseFloat(distance);
             if (!distance) {
-                distance = 10;
+                distance = 100;
             }
             let radius = parseFloat(distance) / 6378.1;
             if (!lat && !lng) {
                 lat = 50.8476;
                 lng = 4.3572;
-                radius = 20 / 6378.1;
+                radius = 100 / 6378.1;
             }
             let count;
             do {
@@ -4864,13 +4866,13 @@ let DealService = class DealService {
             lng = parseFloat(lng);
             distance = parseFloat(distance);
             if (!distance) {
-                distance = 10;
+                distance = 100;
             }
             let radius = parseFloat(distance) / 6378.1;
             if (!lat && !lng) {
                 lat = 50.8476;
                 lng = 4.3572;
-                radius = 20 / 6378.1;
+                radius = 100 / 6378.1;
             }
             let totalCount = await this.dealModel.countDocuments({
                 deletedCheck: false,
@@ -5111,13 +5113,13 @@ let DealService = class DealService {
             lng = parseFloat(lng);
             distance = parseFloat(distance);
             if (!distance) {
-                distance = 10;
+                distance = 100;
             }
             let radius = parseFloat(distance) / 6378.1;
             if (!lat && !lng) {
                 lat = 50.8476;
                 lng = 4.3572;
-                radius = 20 / 6378.1;
+                radius = 100 / 6378.1;
             }
             let categoryFilters = {};
             if (categoryName) {
@@ -6069,13 +6071,13 @@ let DealService = class DealService {
             lng = parseFloat(lng);
             distance = parseFloat(distance);
             if (!distance) {
-                distance = 10;
+                distance = 100;
             }
             let radius = parseFloat(distance) / 6378.1;
             if (!lat && !lng) {
                 lat = 50.8476;
                 lng = 4.3572;
-                radius = 20 / 6378.1;
+                radius = 100 / 6378.1;
             }
             const totalCount = await this.dealModel.countDocuments({
                 deletedCheck: false,
@@ -6292,13 +6294,13 @@ let DealService = class DealService {
             lng = parseFloat(lng);
             distance = parseFloat(distance);
             if (!distance) {
-                distance = 10;
+                distance = 100;
             }
             let radius = parseFloat(distance) / 6378.1;
             if (!lat && !lng) {
                 lat = 50.8476;
                 lng = 4.3572;
-                radius = 20 / 6378.1;
+                radius = 100 / 6378.1;
             }
             let categoryFilters = {};
             if (categoryName) {
@@ -7181,13 +7183,13 @@ let DealService = class DealService {
             lng = parseFloat(lng);
             distance = parseFloat(distance);
             if (!distance) {
-                distance = 10;
+                distance = 100;
             }
             let radius = parseFloat(distance) / 6378.1;
             if (!lat && !lng) {
                 lat = 50.8476;
                 lng = 4.3572;
-                radius = 20 / 6378.1;
+                radius = 100 / 6378.1;
             }
             const totalCount = await this.dealModel.countDocuments({
                 deletedCheck: false,
@@ -7405,13 +7407,13 @@ let DealService = class DealService {
             lng = parseFloat(lng);
             distance = parseFloat(distance);
             if (!distance) {
-                distance = 10;
+                distance = 100;
             }
             let radius = parseFloat(distance) / 6378.1;
             if (!lat && !lng) {
                 lat = 50.8476;
                 lng = 4.3572;
-                radius = 20 / 6378.1;
+                radius = 100 / 6378.1;
             }
             let categoryFilters = {};
             if (categoryName) {
@@ -8306,13 +8308,13 @@ let DealService = class DealService {
             lng = parseFloat(lng);
             distance = parseFloat(distance);
             if (!distance) {
-                distance = 10;
+                distance = 100;
             }
             let radius = parseFloat(distance) / 6378.1;
             if (!lat && !lng) {
                 lat = 50.8476;
                 lng = 4.3572;
-                radius = 20 / 6378.1;
+                radius = 100 / 6378.1;
             }
             let deal = await this.dealModel.aggregate([
                 {
@@ -8514,13 +8516,13 @@ let DealService = class DealService {
             lng = parseFloat(lng);
             distance = parseFloat(distance);
             if (!distance) {
-                distance = 10;
+                distance = 100;
             }
             let radius = parseFloat(distance) / 6378.1;
             if (!lat && !lng) {
                 lat = 50.8476;
                 lng = 4.3572;
-                radius = 20 / 6378.1;
+                radius = 100 / 6378.1;
             }
             let categoryFilters = {};
             if (categoryName) {
@@ -9401,13 +9403,13 @@ let DealService = class DealService {
             lng = parseFloat(lng);
             distance = parseFloat(distance);
             if (!distance) {
-                distance = 10;
+                distance = 100;
             }
             let radius = parseFloat(distance) / 6378.1;
             if (!lat && !lng) {
                 lat = 50.8476;
                 lng = 4.3572;
-                radius = 20 / 6378.1;
+                radius = 100 / 6378.1;
             }
             let filters = {};
             searchBar = searchBar.trim();
@@ -10265,13 +10267,13 @@ let DealService = class DealService {
             lng = parseFloat(lng);
             distance = parseFloat(distance);
             if (!distance) {
-                distance = 10;
+                distance = 100;
             }
             let radius = parseFloat(distance) / 6378.1;
             if (!lat && !lng) {
                 lat = 50.8476;
                 lng = 4.3572;
-                radius = 20 / 6378.1;
+                radius = 100 / 6378.1;
             }
             let categoryFilters = {};
             if (categoryName) {
@@ -11462,13 +11464,13 @@ let DealService = class DealService {
             lng = parseFloat(lng);
             distance = parseFloat(distance);
             if (!distance) {
-                distance = 10;
+                distance = 100;
             }
             let radius = parseFloat(distance) / 6378.1;
             if (!lat && !lng) {
                 lat = 50.8476;
                 lng = 4.3572;
-                radius = 20 / 6378.1;
+                radius = 100 / 6378.1;
             }
             const totalCount = await this.dealModel.countDocuments({
                 deletedCheck: false,
@@ -11681,13 +11683,13 @@ let DealService = class DealService {
             lng = parseFloat(lng);
             distance = parseFloat(distance);
             if (!distance) {
-                distance = 10;
+                distance = 100;
             }
             let radius = parseFloat(distance) / 6378.1;
             if (!lat && !lng) {
                 lat = 50.8476;
                 lng = 4.3572;
-                radius = 20 / 6378.1;
+                radius = 100 / 6378.1;
             }
             const totalCount = await this.dealModel.countDocuments({
                 deletedCheck: false,
@@ -11928,13 +11930,13 @@ let DealService = class DealService {
             lng = parseFloat(lng);
             distance = parseFloat(distance);
             if (!distance) {
-                distance = 10;
+                distance = 100;
             }
             let radius = parseFloat(distance) / 6378.1;
             if (!lat && !lng) {
                 lat = 50.8476;
                 lng = 4.3572;
-                radius = 20 / 6378.1;
+                radius = 100 / 6378.1;
             }
             const totalCount = await this.dealModel.countDocuments({
                 deletedCheck: false,
